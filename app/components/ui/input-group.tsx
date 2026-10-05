@@ -23,14 +23,14 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 const inputGroupAddonVariants = cva(
-  "flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
+  "flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
         "inline-start":
-          "order-first ps-2 has-[>button]:ms-[-0.3rem] has-[>kbd]:ms-[-0.15rem]",
+          "order-first ps-4 has-[>button]:ms-[-0.3rem] has-[>kbd]:ms-[-0.15rem]",
         "inline-end":
-          "order-last pe-2 has-[>button]:me-[-0.3rem] has-[>kbd]:me-[-0.15rem]",
+          "order-last pe-4 has-[>button]:me-[-0.3rem] has-[>kbd]:me-[-0.15rem]",
         "block-start":
           "order-first w-full justify-start px-2.5 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2",
         "block-end":
@@ -124,7 +124,11 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        "h-full flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 disabled:bg-transparent aria-invalid:ring-0 dark:bg-transparent dark:disabled:bg-transparent",
+        // Rounded like the group (minus its 1px border) so nothing paints square corners over it.
+        "h-full flex-1 rounded-[calc(var(--radius)-1px)] border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 disabled:bg-transparent aria-invalid:ring-0 dark:bg-transparent dark:disabled:bg-transparent",
+        // Chrome fills autofilled inputs with its own color, which shows as a box inside the group.
+        // An inset shadow in the group's background is the reliable way to cover it.
+        "autofill:shadow-[inset_0_0_0_100px_var(--card)] autofill:[-webkit-text-fill-color:var(--foreground)] dark:autofill:shadow-[inset_0_0_0_100px_color-mix(in_oklab,var(--input)_30%,var(--background))]",
         className
       )}
       {...props}
