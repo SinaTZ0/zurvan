@@ -16,10 +16,12 @@ app/
       components/           # components used only by this route
       hooks/                # hooks used only by this route
       queries.ts            # data-fetching options used only by this route
+      atoms.ts              # Jotai atoms used only by this route
       schema.ts             # form schemas owned by this route
       *.server.ts           # server-only helpers for this route's loader/action
   components/               # UI shared by multiple routes
   hooks/                    # hooks shared by multiple routes
+  atoms/                    # Jotai atoms shared by multiple routes
   lib/                      # shared helpers (browser-safe, or *.server.ts)
   orpc/client.ts            # typed API client (see backend guideline)
 ```
@@ -47,6 +49,13 @@ Not every slice needs every file. Start with the route module alone and split it
   modules. Secrets and environment values never reach a component.
 - The frontend may import browser-safe backend files (contracts, `constants.ts`, `*.errors.ts`) for types and shared
   option values, never services, repositories, or `*.server.ts` files.
+
+## State
+
+- Server data belongs to loaders and TanStack Query. Shareable view state belongs in URL search params, and form input
+  belongs to the form.
+- Local state uses `useState` and props. Use Jotai only for client state shared across distant parts of the tree.
+- See [`jotai.md`](./jotai.md) for how to define, place, and use atoms.
 
 ## Forms
 
