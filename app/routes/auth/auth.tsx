@@ -52,10 +52,10 @@ export default function AuthPage() {
       {/*===== Forms =====*/}
       <Tabs value={tab} onValueChange={(value: AuthTab) => void setSearchParams({ tab: value })} className="mt-8 gap-6">
         <TabsList className="w-full rounded-lg p-1 group-data-horizontal/tabs:h-12">
-          <TabsTrigger value="login" className="rounded-md text-sm font-bold data-active:shadow-none">
+          <TabsTrigger value="login" className="rounded-md text-sm font-bold">
             ورود
           </TabsTrigger>
-          <TabsTrigger value="signup" className="rounded-md text-sm font-bold data-active:shadow-none">
+          <TabsTrigger value="signup" className="rounded-md text-sm font-bold">
             ثبت‌نام
           </TabsTrigger>
         </TabsList>

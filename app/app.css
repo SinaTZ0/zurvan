@@ -180,8 +180,9 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Vazirmatn at 400 reads thin on screen, so body text (and the inputs that inherit it) defaults to 500 */
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-medium text-foreground;
   }
   html {
     @apply font-sans;
