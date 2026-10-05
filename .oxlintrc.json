@@ -45,6 +45,8 @@
     ".react-router/",
     "build/",
     "playwright-report/",
-    "test-results/"
+    "test-results/",
+    "storybook-static/",
+    "claude-design-assets/"
   ]
 }
