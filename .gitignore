@@ -1,7 +1,15 @@
 .DS_Store
 .env
+.env.*
+!.env.example
 /node_modules/
 
 # React Router
 /.react-router/
 /build/
+.tmp-claude
+
+# Playwright
+/playwright-report/
+/test-results/
+/playwright/.cache/
