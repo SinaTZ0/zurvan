@@ -2,3 +2,15 @@
 build
 node_modules
 README.md
+
+# Keep local secrets out of the image; Compose supplies env at runtime.
+.env
+.env.*
+!.env.example
+
+.git
+playwright-report
+test-results
+storybook-static
+.tmp-claude
+.tmp-codex

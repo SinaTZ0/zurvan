@@ -44,25 +44,21 @@ npm run build
 
 ## Deployment
 
-### Docker Deployment
+### Run with Docker Compose (local testing)
 
-To build and run using Docker:
+Only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed. Node and Postgres are not. For a step-by-step guide in Persian for non-developers, see [docs/run-with-docker.fa.md](docs/run-with-docker.fa.md).
 
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+docker compose up --build
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+Then open http://localhost:3000. Use `localhost` exactly: auth only trusts that origin, and the sign-up captcha needs a secure context.
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+The stack starts Postgres, syncs the schema with `drizzle-kit push`, then runs the production server. The secrets in `compose.yaml` are for local testing only.
+
+- `docker compose down` stops everything and keeps the data.
+- `docker compose down -v` also deletes the database.
+- After pulling changes, run `docker compose up --build` again to rebuild and re-sync the schema.
 
 ### DIY Deployment
 
