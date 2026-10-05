@@ -45,6 +45,7 @@ All tokens live in `app/app.css`. Use the Tailwind classes (`bg-primary`, `text-
 | `cream` / `cream-border` | `#FBF6E9` / `#F0E4C6` | Icon boxes, reminders, info notes |
 | `mint` / `mint-border` | `#EEF4F0` / `#D5E3DA` | Positive or safety notes |
 | `success` / `destructive` | `#267F4C` / `#C53B3B` | Status only, used sparingly |
+| `hero` / `hero-foreground` | `#0C3B2E` / `#F7F4EC` | Dark green hero cards. Same in both themes, because dark mode's `primary` is gold |
 
 Use green for structure and action and gold for value and accent. Keep gold off large surfaces.
 

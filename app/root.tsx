@@ -1,18 +1,35 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Provider as JotaiProvider } from "jotai";
 import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
+import { useState } from "react";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { THEME_INIT_SCRIPT } from "~/lib/theme";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  // One client per render tree (like the Jotai store): a module-level client on the server would
+  // share cached data between users' requests.
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        // Loader data seeds most queries, so don't refetch it the moment the page hydrates.
+        defaultOptions: { queries: { staleTime: 30_000 } },
+      }),
+  );
+
   return (
-    <html lang="fa" dir="rtl">
+    // The theme script changes <html>'s class and style before hydration, so React must not
+    // treat that as a mismatch.
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <head>
+        {/* First in <head>: applies the saved or system theme before anything paints. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
@@ -27,14 +44,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* nuqs skips loaders by default (`shallow: true`). Most URL state here filters loader data, so
             updates revalidate unless a param opts into `shallow: true` for UI-only state. */}
         <NuqsAdapter defaultOptions={{ shallow: false }}>
-          <JotaiProvider>
-            <DirectionProvider direction="rtl">
-              <TooltipProvider>
-                {children}
-                <Toaster />
-              </TooltipProvider>
-            </DirectionProvider>
-          </JotaiProvider>
+          <QueryClientProvider client={queryClient}>
+            <JotaiProvider>
+              <DirectionProvider direction="rtl">
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                </TooltipProvider>
+              </DirectionProvider>
+            </JotaiProvider>
+          </QueryClientProvider>
         </NuqsAdapter>
         <ScrollRestoration />
         <Scripts />

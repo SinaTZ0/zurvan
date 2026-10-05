@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test("home page renders", async ({ page }) => {
+test("signed-out visitors land on the auth page", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("New React Router App");
+  await expect(page).toHaveURL(/\/auth$/);
+  await expect(page).toHaveTitle("ورود به زروان");
 });

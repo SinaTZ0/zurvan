@@ -1,11 +1,12 @@
+import { redirect } from "react-router";
+
+import { auth } from "~/lib/auth.server";
+
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
 
-export const meta: Route.MetaFunction = () => [
-  { title: "New React Router App" },
-  { name: "description", content: "Welcome to React Router!" },
-];
-
-export default function Home() {
-  return <Welcome />;
+/*===== Entry Redirect =====*/
+// The app has no landing page yet: signed-in users go to their pets, everyone else to sign-in.
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  throw redirect(session ? "/pets" : "/auth");
 }

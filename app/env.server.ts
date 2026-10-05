@@ -12,6 +12,12 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   // Accept both URI schemes node-postgres understands; reject anything else early.
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+  // Signs session cookies and tokens. Rotating it signs every user out.
+  BETTER_AUTH_SECRET: z.string().min(32),
+  // Public origin of the app. Better-Auth uses it for callbacks and trusted-origin checks.
+  BETTER_AUTH_URL: z.url(),
+  // Signs Altcha challenges so the server can verify a solution without storing the challenge.
+  ALTCHA_HMAC_KEY: z.string().min(32),
 });
 
 /*===== Validation =====*/

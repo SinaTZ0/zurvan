@@ -61,6 +61,8 @@
   --color-mint: var(--mint);
   --color-mint-border: var(--mint-border);
   --color-success: var(--success);
+  --color-hero: var(--hero);
+  --color-hero-foreground: var(--hero-foreground);
 
   /* Radius: 8 small, 12 icon boxes, 14 buttons/inputs, 16 cards, 20+ hero/maps */
   --radius-sm: 0.5rem;
@@ -106,6 +108,10 @@
   --mint: #eef4f0;
   --mint-border: #d5e3da;
   --success: #267f4c; /* mockup #2e9e5b is 3.41:1 on white */
+
+  /* Hero cards stay brand green in both themes (dark mode's primary is gold), so .dark doesn't override these */
+  --hero: #0c3b2e;
+  --hero-foreground: #f7f4ec;
 
   --chart-1: #0c3b2e;
   --chart-2: #c8a85a;
