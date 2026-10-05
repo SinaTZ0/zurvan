@@ -36,7 +36,8 @@ All tokens live in `app/app.css`. Use the Tailwind classes (`bg-primary`, `text-
 | `card` / `popover` | `#FFFFFF` | Cards, inputs, popovers |
 | `muted` / `secondary` | `#F1EDE2` | Subtle fills, segmented controls, secondary buttons |
 | `accent` | `#FBF6E9` | Hover and selected rows |
-| `border` / `input` | `#EBE5D6` | Card and input borders |
+| `border` | `#EBE5D6` | Card borders and dividers |
+| `input` | `#8D897B` | Edges of inputs, selects, checkboxes and radios |
 | `gold` | `#C8A85A` | Accents on green only: stars, highlights, logo |
 | `gold-deep` | `#B98F3E` | Icons and decoration on light backgrounds, never text |
 | `gold-text` | `#8A6B2E` | Gold as readable text or links |
@@ -100,8 +101,7 @@ The mockups miss WCAG AA in a few places. The tokens above already fix these:
 | Gold text `#B98F3E` | 2.97:1 on white | `gold-text` `#8A6B2E` (4.76:1) |
 | Danger `#D64545` | 4.19:1 on background | `destructive` `#C53B3B` (4.95:1) |
 | Success `#2E9E5B` | 3.41:1 on white | `success` `#267F4C` (4.97:1) |
+| Input border `#EBE5D6` | 1.26:1, needs 3:1 for control edges | `input` `#8D897B` (3.5:1) |
 | 9.5–12.5px text | too small | 14px for body, 12px for captions |
 
 Gold on green already passes: `gold` is 5.48:1.
-
-**Still open:** the input border `#EBE5D6` is far below the 3:1 needed for control edges. Either darken `--input`, or give inputs another clear edge such as a filled background.

@@ -94,7 +94,7 @@
   --accent-foreground: #22352b;
   --destructive: #c53b3b; /* mockup #d64545 is 4.19:1 on background */
   --border: #ebe5d6;
-  --input: #ebe5d6;
+  --input: #8d897b; /* control edges need 3:1 (WCAG 1.4.11): 3.5:1 on card, 3.35:1 on background */
   --ring: #0c3b2e;
 
   --gold: #c8a85a; /* on green only */
@@ -141,7 +141,7 @@
   --accent-foreground: #f1ede2;
   --destructive: #e5655f;
   --border: rgb(241 237 226 / 0.1);
-  --input: rgb(241 237 226 / 0.15);
+  --input: rgb(241 237 226 / 0.45); /* 4:1 on background; also tints dark fills via bg-input/30 */
   --ring: #c8a85a;
 
   --gold: #c8a85a;
