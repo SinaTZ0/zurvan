@@ -59,6 +59,14 @@ Not every slice needs every file. Start with the route module alone and split it
 - URL state goes through nuqs, with one typed parser map per route shared by its loader and components. See
   [`nuqs.md`](./nuqs.md).
 
+## Navigation
+
+- Import `Link` from `~/components/link` and `NavLink` from `~/components/nav-link`, not from `react-router`. They fade
+  the page when the pathname changes, and a lint rule blocks the direct imports. See
+  [`view-transitions.md`](./view-transitions.md).
+- `<Form>` and `useNavigate()` aren't wrapped. Pass `viewTransition` yourself when the result is another page, and
+  leave it off for anything that stays on the same page.
+
 ## Forms
 
 - Each form has its own schema in its route's `schema.ts`, written for user experience (messages, when to validate).

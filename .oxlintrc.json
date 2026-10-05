@@ -24,6 +24,18 @@
       {
         "allow": ["**/*.css"]
       }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "react-router",
+            "importNames": ["Link", "NavLink"],
+            "message": "Import Link from ~/components/link or NavLink from ~/components/nav-link, which add page view transitions (docs/view-transitions.md)."
+          }
+        ]
+      }
     ]
   },
   "overrides": [
@@ -38,6 +50,12 @@
         "react/no-unstable-nested-components": "off",
         "eslint/no-shadow": "off",
         "eslint/no-underscore-dangle": "off"
+      }
+    },
+    {
+      "files": ["app/components/link.tsx", "app/components/nav-link.tsx"],
+      "rules": {
+        "no-restricted-imports": "off"
       }
     }
   ],
