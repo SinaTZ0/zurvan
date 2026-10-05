@@ -2,6 +2,10 @@
 # Run with `docker compose up --build`, then open http://localhost:3000.
 # No reverse proxy: react-router-serve already serves static assets with compression and caching.
 
+# Pinned so the DB volume survives re-downloading the repo: Compose otherwise derives the project
+# (and volume) name from the folder, which changes with ZIP names like `zurvan-main (1)`.
+name: zurvan
+
 # Hardcoded rather than `${...}` interpolated: Compose reads the root `.env` for interpolation, and a
 # developer's local `.env` points DATABASE_URL at localhost, which is unreachable inside the network.
 x-app-env: &app-env
