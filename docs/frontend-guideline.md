@@ -101,4 +101,4 @@ Not every slice needs every file. Start with the route module alone and split it
 ## Code Conventions
 
 General code conventions (imports without barrel files, object parameters, section dividers, comments, JSDoc) are
-defined in `claude.md` and apply to frontend code as well.
+defined in `CLAUDE.md` and apply to frontend code as well.
