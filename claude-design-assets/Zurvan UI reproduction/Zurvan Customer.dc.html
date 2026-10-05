@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; background: #ECE9E0; font-family: 'Vazirmatn', 'Tahoma', sans-serif; }
+a { color: #0C3B2E; text-decoration: none; }
+a:hover { color: #B98F3E; }
+* { box-sizing: border-box; }
+input, textarea, select, button { font-family: 'Vazirmatn', sans-serif; }
+input::placeholder, textarea::placeholder { color: #A5A092; }
+.zs::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+<div dir="rtl" style="min-height:100vh;display:flex;justify-content:center;align-items:flex-start;gap:28px;background:#ECE9E0;padding:28px 16px;font-family:'Vazirmatn',sans-serif;flex-wrap:wrap">
+  <div data-screen-label="Zurvan App" style="width:390px;height:844px;background:#FBFAF6;border-radius:46px;box-shadow:0 24px 60px rgba(20,30,20,0.18);overflow:hidden;display:flex;flex-direction:column;position:relative;border:1px solid #E3DFD2;flex:none">
+    <div dir="ltr" style="height:48px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 28px 0">
+      <div style="font-weight:700;font-size:15px;color:#1A1A18">9:41</div>
+      <div style="display:flex;align-items:center;gap:6px;color:#1A1A18">
+        <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="currentColor"></rect><rect x="4.5" y="5" width="3" height="7" rx="1" fill="currentColor"></rect><rect x="9" y="2.5" width="3" height="9.5" rx="1" fill="currentColor"></rect><rect x="13.5" y="0" width="3" height="12" rx="1" fill="currentColor"></rect></svg>
+        <svg width="16" height="12" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 6.5C8 1 16 1 22 6.5"></path><path d="M5.5 10.5c4-3.7 9-3.7 13 0"></path><path d="M9 14.5c2-1.8 4-1.8 6 0"></path></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor" opacity="0.4"></rect><rect x="2" y="2" width="18" height="8" rx="1.8" fill="currentColor"></rect><path d="M23 4v4a2 2 0 0 0 0-4z" fill="currentColor" opacity="0.4"></path></svg>
+      </div>
+    </div>
+    <div class="zs" style="flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;min-height:0">
+
+      <!-- ============ AUTH ============ -->
+      <sc-if value="{{ r_login }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:24px 24px 20px;display:flex;flex-direction:column;align-items:center;flex:1">
+          <img src="assets/logo-login.png" alt="Zurvan" style="width:150px;margin-top:16px">
+          <div style="font-size:26px;font-weight:800;color:#0C3B2E;margin-top:22px">به زروان خوش آمدید</div>
+          <div style="font-size:13.5px;color:#8D897B;text-align:center;line-height:2;margin-top:8px">خدمات مطمئن و حرفه‌ای برای سلامتی، رفاه<br>و همراهی بهتر حیوان خانگی شما.</div>
+          <div dir="ltr" style="display:flex;gap:10px;width:100%;margin-top:26px">
+            <div style="flex:none;display:flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #E7E2D4;border-radius:14px;padding:0 14px;height:54px;color:#3B4A3F;font-size:14px">+۹۸ {{ ic.chevD }}</div>
+            <input dir="rtl" value="{{ phone }}" onChange="{{ onPhone }}" placeholder="شماره موبایل خود را وارد کنید" style="flex:1;min-width:0;background:#FFFFFF;border:1px solid #E7E2D4;border-radius:14px;height:54px;padding:0 16px;font-size:14px;color:#22352B;outline:none">
+          </div>
+          <div onClick="{{ go.otp }}" style="width:100%;height:56px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:17px;font-weight:700;margin-top:18px;cursor:pointer">ادامه</div>
+          <div style="display:flex;gap:10px;width:100%;margin-top:18px;align-items:flex-start">
+            <div onClick="{{ toggleTerms }}" style="width:20px;height:20px;flex:none;border-radius:6px;background:{{ termsBg }};border:1.5px solid #0C3B2E;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:3px;color:#FFFFFF">{{ termsIcon }}</div>
+            <div style="font-size:12.5px;color:#5A6355;line-height:1.9">با ادامه، <a href="#" style="color:#B98F3E;font-weight:600">قوانین و شرایط استفاده</a> و <a href="#" style="color:#B98F3E;font-weight:600">سیاست حریم خصوصی</a> زروان را می پذیرم.</div>
+          </div>
+          <div style="width:100%;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center;margin-top:22px">
+            <div style="color:#C8A85A">{{ ic.shieldCheckL }}</div>
+            <div style="flex:1">
+              <div style="font-size:13.5px;font-weight:700;color:#22352B">اطلاعات شما امن و محرمانه است.</div>
+              <div style="font-size:11.5px;color:#8D897B;margin-top:4px">از داده‌های شما با استانداردهای روز دنیا محافظت می‌کنیم.</div>
+            </div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="display:flex;justify-content:space-around;width:100%;margin-top:24px;color:#8D897B">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ ic.lock }}<div style="font-size:11px">رمزنگاری شده</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ ic.shieldCheck }}<div style="font-size:11px">دسترسی محدود</div></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px">{{ ic.server }}<div style="font-size:11px">ذخیره امن</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_otp }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:12px 24px 24px;display:flex;flex-direction:column;flex:1">
+          <div onClick="{{ back }}" style="align-self:flex-start;cursor:pointer;color:#22352B;padding:8px 0">{{ ic.arrowL }}</div>
+          <div style="text-align:center;margin-top:64px">
+            <div style="font-size:23px;font-weight:800;color:#0C3B2E">تأیید شماره موبایل</div>
+            <div style="font-size:14px;color:#8D897B;margin-top:14px">کد شش‌رقمی ارسال شده به شماره</div>
+            <div dir="ltr" style="font-size:15px;color:#3B4A3F;font-weight:600;margin-top:8px">۰۹۱۲ ***** ۴۵</div>
+          </div>
+          <div dir="ltr" style="display:flex;gap:10px;justify-content:center;margin-top:34px">
+            <sc-for list="{{ otpBoxes }}" as="b" hint-placeholder-count="6">
+              <input value="{{ b.v }}" onChange="{{ b.on }}" maxLength="1" inputMode="numeric" style="{{ b.style }}">
+            </sc-for>
+          </div>
+          <div style="text-align:center;font-size:12.5px;color:#A19C8D;margin-top:26px">کد را وارد کنید</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:34px;color:#C8A85A">{{ ic.clockS }}<div style="font-size:13.5px;color:#4A5347">ارسال مجدد کد <span style="color:#B98F3E;font-weight:700">۰۰:۴۵</span></div></div>
+          <div onClick="{{ go.identity }}" style="width:100%;height:56px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:17px;font-weight:700;margin-top:44px;cursor:pointer">تأیید و ادامه</div>
+          <div onClick="{{ back }}" style="text-align:center;font-size:14px;font-weight:600;color:#0C3B2E;margin-top:26px;cursor:pointer">تغییر شماره موبایل</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_identity }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:12px 24px 24px;display:flex;flex-direction:column;flex:1">
+          <div onClick="{{ back }}" style="align-self:flex-start;cursor:pointer;color:#22352B;padding:8px 0">{{ ic.arrowL }}</div>
+          <div style="text-align:center">
+            <div style="font-size:23px;font-weight:800;color:#0C3B2E">تکمیل اطلاعات</div>
+            <div style="font-size:12.5px;color:#8D897B;margin-top:12px">مرحله ۱ از ۲</div>
+            <div dir="ltr" style="display:flex;align-items:center;justify-content:center;margin-top:12px">
+              <div style="width:13px;height:13px;border-radius:50%;background:#0C3B2E"></div>
+              <div style="width:96px;height:2px;background:#0C3B2E"></div>
+              <div style="width:15px;height:15px;border-radius:50%;background:#FBFAF6;border:2px solid #0C3B2E"></div>
+            </div>
+            <div style="font-size:13px;color:#6E6A5E;line-height:2;margin-top:14px">برای ارائه خدمات امن و شخصی‌سازی‌شده،<br>لطفاً اطلاعات خود را تکمیل کنید.</div>
+          </div>
+          <div style="align-self:center;width:118px;height:118px;border-radius:50%;background:#F4F0E4;border:1px solid #EAE4D3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-top:20px;cursor:pointer;color:#4A5347">{{ ic.camL }}<div style="font-size:12px;color:#6E6A5E">افزودن عکس</div></div>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <input placeholder="نام" style="flex:1;min-width:0;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:54px;padding:0 16px;font-size:13.5px;color:#22352B;outline:none;text-align:right">
+            <input placeholder="نام خانوادگی" style="flex:1;min-width:0;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:54px;padding:0 16px;font-size:13.5px;color:#22352B;outline:none;text-align:right">
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:54px;padding:0 16px;margin-top:14px;color:#8D897B">{{ ic.mail }}<input placeholder="ایمیل (اختیاری)" style="flex:1;min-width:0;border:none;background:transparent;font-size:13.5px;color:#22352B;outline:none;text-align:right"></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:54px;padding:0 16px;margin-top:14px;cursor:pointer;color:#8D897B">{{ ic.pin }}<div style="flex:1;font-size:13.5px;color:#8D897B">شهر</div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.addpet }}" style="width:100%;height:56px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:17px;font-weight:700;margin-top:26px;cursor:pointer">ذخیره اطلاعات</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:16px;color:#8D897B">{{ ic.lockS }}<div style="font-size:12px">این اطلاعات فقط برای ارائه خدمات استفاده می‌شود.</div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_addpet }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:12px 24px 24px;display:flex;flex-direction:column;flex:1">
+          <div onClick="{{ back }}" style="align-self:flex-start;cursor:pointer;color:#22352B;padding:8px 0">{{ ic.arrowL }}</div>
+          <div style="text-align:center">
+            <div style="font-size:23px;font-weight:800;color:#0C3B2E">حیوانت را اضافه کن</div>
+            <div style="font-size:12.5px;color:#8D897B;margin-top:12px">مرحله ۲ از ۲</div>
+            <div dir="ltr" style="display:flex;align-items:center;justify-content:center;margin-top:12px">
+              <div style="width:13px;height:13px;border-radius:50%;background:#0C3B2E"></div>
+              <div style="width:96px;height:2px;background:#0C3B2E"></div>
+              <div style="width:13px;height:13px;border-radius:50%;background:#0C3B2E"></div>
+            </div>
+          </div>
+          <div style="align-self:center;width:150px;height:110px;border-radius:20px;background:#FDFCF8;border:1.6px dashed #CFC7B2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin-top:18px;cursor:pointer;color:#4A5347">{{ ic.camL }}<div style="font-size:10.5px;color:#8D897B">برای افزودن عکس لمس کنید</div></div>
+          <div style="background:#FDFCF8;border:1px solid #EBE5D6;border-radius:16px;padding:12px;margin-top:18px">
+            <div style="font-size:12px;color:#6E6A5E;margin-bottom:10px">گونه حیوان</div>
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ species }}" as="s" hint-placeholder-count="5">
+                <div onClick="{{ s.on }}" style="{{ s.style }}">{{ s.icon }}<div style="font-size:11px">{{ s.label }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:52px;padding:0 16px;margin-top:14px;color:#8D897B">{{ ic.paw }}<input placeholder="نام حیوان" style="flex:1;min-width:0;border:none;background:transparent;font-size:13.5px;color:#22352B;outline:none;text-align:right"></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:52px;padding:0 16px;margin-top:12px;color:#8D897B">{{ ic.shield }}<input placeholder="نژاد (اختیاری)" style="flex:1;min-width:0;border:none;background:transparent;font-size:13.5px;color:#22352B;outline:none;text-align:right"></div>
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:52px;padding:0 12px;cursor:pointer;color:#8D897B">{{ ic.user }}<div style="flex:1;font-size:12.5px">جنسیت</div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+            <div style="flex:1.2;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:52px;padding:0 12px;color:#8D897B">{{ ic.cal }}<input placeholder="تاریخ تولد یا سن" style="flex:1;min-width:0;border:none;background:transparent;font-size:12px;color:#22352B;outline:none;text-align:right"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;height:56px;padding:0 12px 0 8px;margin-top:12px;color:#8D897B">{{ ic.info }}<div style="flex:1;font-size:12.5px;color:#4A5347">وضعیت عقیم‌سازی</div><div onClick="{{ pickNeuterYes }}" style="{{ neuterYes }}">بله</div><div onClick="{{ pickNeuterNo }}" style="{{ neuterNo }}">خیر</div></div>
+          <div style="display:flex;gap:10px;background:#F8F1DF;border:1px solid #EEE1C2;border-radius:14px;padding:12px 14px;margin-top:16px;align-items:flex-start;color:#B98F3E">{{ ic.info }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#4A4636">ثبت تمامی گونه‌ها امکان‌پذیر است.</div><div style="font-size:11.5px;color:#7A7258;margin-top:3px">در حال حاضر، صدور مدارک زروان K9 فقط برای سگ‌هاست.</div></div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.home }}" style="width:100%;height:56px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:17px;font-weight:700;margin-top:18px;cursor:pointer">ساخت پرونده</div>
+        </div>
+      </sc-if>
+
+      <!-- ============ HOME ============ -->
+      <sc-if value="{{ r_home }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <img src="assets/logo-h.png" alt="Zurvan" style="height:46px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:20px;padding:8px 12px;cursor:pointer;color:#B98F3E">{{ ic.pinS }}<div style="font-size:12.5px;color:#22352B;font-weight:600">تهران</div><div style="color:#4A5347">{{ ic.chevDS }}</div></div>
+              <div onClick="{{ go.notifs }}" style="position:relative;width:40px;height:40px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3B4A3F;cursor:pointer">{{ ic.bell }}<div style="position:absolute;top:3px;left:5px;width:8px;height:8px;border-radius:50%;background:#C8A85A;border:1.5px solid #FBFAF6"></div></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div><div style="font-size:22px;font-weight:800;color:#0C3B2E">سلام سارا جان 👋</div><div style="font-size:13.5px;color:#8D897B;margin-top:3px">خوش آمدی</div></div>
+            <div onClick="{{ go.pet }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:10px 12px;cursor:pointer">
+              <img src="assets/leo.png" alt="لئو" style="width:50px;height:50px;border-radius:50%;object-fit:cover">
+              <div><div style="display:flex;align-items:center;gap:4px;color:#0C3B2E"><div style="font-size:14px;font-weight:800;color:#22352B">لئو</div>{{ ic.badge }}</div><div style="font-size:10.5px;color:#8D897B">گلدن رتریور • ۳ ساله</div><div style="display:flex;align-items:center;gap:4px;margin-top:3px;color:#0C3B2E;font-size:11px;font-weight:700">{{ ic.docS }}پرونده لئو</div></div>
+              <div style="color:#4A5347">{{ ic.chevDS }}</div>
+            </div>
+          </div>
+          <div onClick="{{ go.wizard }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:22px;padding:10px 12px;cursor:pointer">
+            <div style="color:#B9B29C">{{ ic.sparkle }}</div>
+            <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:#22352B">امروز برای لئو چه کاری انجام بدیم؟</div>
+            <div style="display:flex;align-items:center;gap:5px;border:1px solid #E4D9BC;border-radius:16px;padding:5px 10px;background:#FDFBF4;color:#B98F3E;flex:none">{{ ic.sparkleS }}<div style="font-size:10.5px;color:#7A6A42;font-weight:600;white-space:nowrap">کمک می‌خوام</div></div>
+            <div style="width:34px;height:34px;flex:none;border-radius:50%;background:#F3E7CB;display:flex;align-items:center;justify-content:center;color:#B98F3E">{{ ic.paw }}</div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15.5px;font-weight:800;color:#22352B">خدمات فعال</div><div onClick="{{ go.services }}" style="display:flex;align-items:center;gap:3px;color:#B98F3E;font-size:12px;font-weight:600;cursor:pointer">مشاهده همه {{ ic.chevLS }}</div></div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <sc-for list="{{ homeServices }}" as="s" hint-placeholder-count="5">
+                <div onClick="{{ s.on }}" style="flex:1;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:14px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;color:#B98F3E">{{ s.icon }}<div style="font-size:11px;color:#3B4A3F;font-weight:600">{{ s.label }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:#0C3B2E;border-radius:22px;padding:18px;color:#F7F4EC;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;gap:14px;align-items:flex-start">
+              <div style="flex:1;border-left:1px solid rgba(255,255,255,0.15);padding-left:12px">
+                <div style="font-size:16px;font-weight:800">سفارش در جریان</div>
+                <div style="font-size:11px;color:#C9CDBF;margin-top:12px">زمان رسیدن</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:2px;color:#E4C376">{{ ic.clock }}<div style="font-size:22px;font-weight:800">۱۲ دقیقه</div></div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:6px"><div style="width:7px;height:7px;border-radius:50%;background:#E4C376"></div><div style="font-size:11.5px;color:#DDE0D2">به‌زودی می‌رسیم</div></div>
+              </div>
+              <div style="flex:1.3;display:flex;gap:10px;align-items:flex-start">
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px;color:#E4C376">{{ ic.car }}<div style="font-size:15px;font-weight:800;color:#F7F4EC">پت تاکسی</div></div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap"><div style="font-size:12.5px;font-weight:600">آرش محمدی</div><div style="display:flex;align-items:center;gap:4px;background:rgba(255,255,255,0.12);border-radius:10px;padding:2px 8px;color:#7FBF9E">{{ ic.checkC }}<div style="font-size:10.5px;color:#CFE3D6">تأییدشده</div></div></div>
+                  <div dir="ltr" style="display:inline-flex;align-items:center;gap:7px;background:#FFFFFF;border-radius:8px;padding:4px 9px;margin-top:9px"><div style="width:12px;height:8px;border-radius:1.5px;overflow:hidden;display:flex;flex-direction:column"><div style="flex:1;background:#2E9E5B"></div><div style="flex:1;background:#F4F4F2"></div><div style="flex:1;background:#D64545"></div></div><div style="width:1px;height:13px;background:#D8D4C6"></div><div style="font-size:12px;font-weight:800;color:#1A1A18;white-space:nowrap">۱۲۳ الف ۵۶</div></div>
+                </div>
+                <div style="position:relative;flex:none"><img src="assets/driver.png" alt="آرش محمدی" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2.5px solid rgba(255,255,255,0.85)"><div style="position:absolute;left:-2px;bottom:0;width:22px;height:22px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;color:#2E9E5B">{{ ic.checkC }}</div></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="flex:1;display:flex;align-items:flex-start">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#FFFFFF">{{ ic.checkC }}<div style="font-size:9.5px;color:#DDE0D2;white-space:nowrap">سفارش ثبت شد</div></div>
+                <div style="flex:1;height:2.5px;background:#E4C376;margin:8px 4px 0"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#E4C376">{{ ic.car }}<div style="font-size:9.5px;color:#DDE0D2;white-space:nowrap">در راه به سمت شما</div></div>
+                <div style="flex:1;height:2.5px;background:rgba(255,255,255,0.25);margin:8px 4px 0"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,0.5)"></div><div style="font-size:9.5px;color:#DDE0D2">تکمیل</div></div>
+              </div>
+              <div onClick="{{ go.taxiTrip }}" style="flex:none;border:1.4px solid #C8A85A;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;color:#EFD9A8;cursor:pointer;white-space:nowrap">مشاهده سفارش</div>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:20px;padding:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:14px;background:#FBF6E9;border:1px solid #F0E4C6;display:flex;align-items:center;justify-content:center;color:#B98F3E">{{ ic.cal }}</div><div style="font-size:15px;font-weight:800;color:#22352B">یادآوری‌های لئو</div></div>
+              <div onClick="{{ go.pet }}" style="border:1px solid #DED8C6;border-radius:16px;padding:6px 13px;font-size:11.5px;font-weight:600;color:#4A5347;cursor:pointer">مشاهده پرونده</div>
+            </div>
+            <div style="margin-top:14px">
+              <div style="display:inline-flex;align-items:center;gap:5px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:12px;padding:4px 10px;color:#B98F3E">{{ ic.calS }}<div style="font-size:11px;font-weight:700">۵ روز دیگر</div></div>
+              <div style="font-size:13.5px;font-weight:700;color:#22352B;margin-top:7px">واکسن سالانه (چندگانه)</div>
+              <div style="font-size:11.5px;color:#8D897B;margin-top:3px">سه‌شنبه ۲۹ اردیبهشت ۱۴۰۴</div>
+            </div>
+            <div style="display:flex;align-items:center;margin-top:16px;border-top:1px dashed #EBE5D6;padding-top:14px">
+              <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                <sc-for list="{{ reminders }}" as="m" hint-placeholder-count="4">
+                  <div style="text-align:center;min-width:0"><div style="font-size:9.5px;color:#A19C8D">{{ m.ago }}</div><div style="display:flex;align-items:center;justify-content:center;gap:3px;margin-top:3px;color:#8D897B">{{ m.icon }}<div style="font-size:10px;font-weight:700;color:#3B4A3F;white-space:nowrap">{{ m.title }}</div></div><div style="font-size:9px;color:#A19C8D;margin-top:3px;white-space:nowrap">{{ m.date }}</div></div>
+                </sc-for>
+              </div>
+              <div style="color:#A19C8D">{{ ic.chevLS }}</div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15.5px;font-weight:800;color:#22352B">متخصصان تأییدشده نزدیک شما</div><div style="display:flex;align-items:center;gap:3px;color:#B98F3E;font-size:12px;font-weight:600;cursor:pointer">مشاهده همه {{ ic.chevLS }}</div></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px">
+              <sc-for list="{{ pros }}" as="p" hint-placeholder-count="3">
+                <div onClick="{{ go.specialist }}" style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:12px 10px;cursor:pointer;min-width:0">
+                  <div style="position:relative;width:56px;height:56px;margin:0 auto"><img src="{{ p.img }}" alt="{{ p.name }}" style="width:56px;height:56px;border-radius:50%;object-fit:cover"><div style="position:absolute;left:-2px;bottom:-2px;width:18px;height:18px;border-radius:50%;background:#0C3B2E;border:2px solid #FFFFFF;display:flex;align-items:center;justify-content:center;color:#FFFFFF">{{ ic.checkXS }}</div></div>
+                  <div style="font-size:12px;font-weight:800;color:#22352B;text-align:center;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</div>
+                  <div style="font-size:10px;color:#8D897B;text-align:center;margin-top:2px">{{ p.role }}</div>
+                  <div style="display:flex;justify-content:center;margin-top:6px"><div style="{{ p.badgeStyle }}">{{ p.badge }}</div></div>
+                  <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:8px;color:#C8A85A">{{ ic.starF }}<div style="font-size:10.5px;font-weight:700;color:#3B4A3F">{{ p.rating }} <span style="color:#A19C8D;font-weight:500">({{ p.count }})</span></div></div>
+                  <div style="font-size:10px;color:#8D897B;text-align:center;margin-top:3px">{{ p.jobs }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#22352B">به‌زودی</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px">
+              <div style="display:flex;align-items:center;gap:6px;background:#F7F5EC;border:1px solid #E9E4D4;border-radius:14px;padding:10px;color:#8D897B">{{ ic.trainerS }}<div style="flex:1;font-size:10.5px;font-weight:600;color:#6E6A5E;text-align:center">پت واکر</div>{{ ic.lockS }}</div>
+              <div style="display:flex;align-items:center;gap:6px;background:#F7F5EC;border:1px solid #E9E4D4;border-radius:14px;padding:10px;color:#8D897B">{{ ic.houseS }}<div style="flex:1;font-size:10.5px;font-weight:600;color:#6E6A5E;text-align:center">مراقبت در منزل</div>{{ ic.lockS }}</div>
+              <div style="display:flex;align-items:center;gap:6px;background:#F7F5EC;border:1px solid #E9E4D4;border-radius:14px;padding:10px;color:#8D897B">{{ ic.scissorsS }}<div style="flex:1;font-size:10.5px;font-weight:600;color:#6E6A5E;text-align:center">آرایشگاه</div>{{ ic.lockS }}</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ SERVICES HUB ============ -->
+      <sc-if value="{{ r_services }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <img src="assets/logo-h.png" alt="Zurvan" style="height:42px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="display:flex;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:20px;padding:8px 12px;color:#B98F3E">{{ ic.pinS }}<div style="font-size:12.5px;color:#22352B;font-weight:600">تهران</div><div style="color:#4A5347">{{ ic.chevDS }}</div></div>
+              <div onClick="{{ go.notifs }}" style="position:relative;width:40px;height:40px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#3B4A3F;cursor:pointer">{{ ic.bell }}<div style="position:absolute;top:3px;left:5px;width:8px;height:8px;border-radius:50%;background:#C8A85A;border:1.5px solid #FBFAF6"></div></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;color:#B98F3E">{{ ic.paw }}<div style="font-size:20px;font-weight:800;color:#0C3B2E">خدمات</div></div>
+          <div onClick="{{ go.wizard }}" style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:14px;cursor:pointer">
+            <div style="width:44px;height:44px;border-radius:50%;background:#F3E7CB;display:flex;align-items:center;justify-content:center;color:#B98F3E;flex:none">{{ ic.paw }}</div>
+            <div style="flex:1"><div style="display:flex;align-items:center;gap:6px;color:#B98F3E">{{ ic.sparkleS }}<div style="font-size:13.5px;font-weight:800;color:#22352B">برای انتخاب کمک می‌خوام</div></div><div style="font-size:11.5px;color:#8D897B;margin-top:3px">بهترین خدمت مناسب پت‌تان را پیدا کنید</div></div>
+            <div style="color:#4A5347">{{ ic.chevL }}</div>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#22352B">خدمات فعال</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+              <sc-for list="{{ hubServices }}" as="s" hint-placeholder-count="5">
+                <div onClick="{{ s.on }}" style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;color:#B98F3E">{{ s.iconL }}<div style="font-size:12.5px;color:#22352B;font-weight:700">{{ s.label }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="height:1px;background:#EBE5D6"></div>
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#22352B">به‌زودی</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px">
+              <sc-for list="{{ soonServices }}" as="s" hint-placeholder-count="5">
+                <div style="background:#F7F5EC;border:1px solid #E9E4D4;border-radius:18px;height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#8D897B;position:relative">{{ s.icon }}<div style="font-size:11.5px;color:#6E6A5E;font-weight:600">{{ s.label }}</div><div style="position:absolute;right:8px;bottom:8px;color:#A19C8D">{{ ic.lockXS }}</div></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ WIZARD ============ -->
+      <sc-if value="{{ r_wizard }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center"><div style="font-size:17px;font-weight:800;color:#22352B">درخواست خدمت</div><div style="font-size:11px;color:#8D897B;margin-top:2px">مرحله ۲ از ۴</div></div><div style="width:36px"></div></div>
+          <div dir="ltr" style="display:flex;align-items:center;justify-content:center;padding:0 40px"><div style="width:12px;height:12px;border-radius:50%;border:2px solid #C9C4B4;background:#FBFAF6"></div><div style="flex:1;height:2px;background:#C9C4B4"></div><div style="width:14px;height:14px;border-radius:50%;background:#0C3B2E"></div><div style="flex:1;height:2px;background:#C9C4B4"></div><div style="width:12px;height:12px;border-radius:50%;border:2px solid #C9C4B4;background:#FBFAF6"></div><div style="flex:1;height:2px;background:#C9C4B4"></div><div style="width:12px;height:12px;border-radius:50%;border:2px solid #C9C4B4;background:#FBFAF6"></div></div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:12px 14px"><img src="assets/leo.png" alt="لئو" style="width:54px;height:54px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="display:flex;align-items:center;gap:4px;color:#0C3B2E"><div style="font-size:15px;font-weight:800;color:#22352B">لئو</div>{{ ic.badge }}</div><div style="font-size:11px;color:#8D897B;margin-top:2px">گلدن رتریور • ۳ ساله</div></div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="font-size:15px;font-weight:800;color:#22352B">چه کمکی نیاز دارید؟</div>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ wizardServices }}" as="s" hint-placeholder-count="4">
+              <div onClick="{{ s.on }}" style="{{ s.style }}">{{ s.iconL }}<div style="font-size:11px;font-weight:600">{{ s.label }}</div></div>
+            </sc-for>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">بازه زمانی مورد نظر</div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px;color:#8D897B">{{ ic.cal }}<div><div style="font-size:10px">از تاریخ</div><div style="font-size:12.5px;color:#22352B;font-weight:600">۱۴۰۴/۰۲/۲۵</div></div></div>
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px;color:#8D897B">{{ ic.cal }}<div><div style="font-size:10px">تا تاریخ</div><div style="font-size:12.5px;color:#22352B;font-weight:600">۱۴۰۴/۰۳/۰۲</div></div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#5A6355"><div style="width:16px;height:16px;border-radius:4px;border:1.5px solid #A19C8D"></div>تاریخ من انعطاف‌پذیر است</div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">مکان ارائه خدمت</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.pin }}<div style="flex:1;font-size:12.5px;color:#22352B">تهران، سعادت‌آباد، خیابان سرو شرقی، پلاک ۲۱</div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">شرح کوتاه مشکل یا درخواست</div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;min-height:66px;position:relative"><div style="font-size:12px;color:#A5A092">مثال: آموزش دستورات پایه، کنترل پارس، اجتماعی شدن...</div><div style="position:absolute;left:12px;bottom:8px;font-size:10px;color:#A19C8D">۰/۳۰۰</div></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#EEF4F0;border:1px solid #D5E3DA;border-radius:14px;padding:12px 14px;color:#0C3B2E">{{ ic.shieldCheck }}<div style="font-size:12px;color:#2F4A3D">فقط متخصصان تأییدشده زروان می‌توانند درخواست شما را بپذیرند.</div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.specialist }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">مشاهده متخصصان پیشنهادی</div>
+        </div>
+      </sc-if>
+
+      <!-- ============ SPECIALIST PROFILE ============ -->
+      <sc-if value="{{ r_specialist }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;flex:1">
+          <div style="background:#0C3B2E;border-radius:0 0 28px 28px;padding:12px 20px 22px;color:#F7F4EC">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div onClick="{{ back }}" style="cursor:pointer">{{ ic.arrowR }}</div><div>{{ ic.heart }}</div></div>
+            <div style="display:flex;gap:16px;align-items:center;margin-top:10px">
+              <div style="flex:1"><div style="font-size:19px;font-weight:800">دکتر فرهاد کیانی</div><div style="font-size:12.5px;color:#C9CDBF;margin-top:4px">دامپزشک عمومی</div><div style="display:inline-flex;align-items:center;gap:5px;background:#C8A85A;color:#FFFFFF;border-radius:12px;padding:3px 12px;font-size:11.5px;font-weight:700;margin-top:8px">{{ ic.starXS }}ممتاز</div><div style="display:flex;align-items:center;gap:5px;margin-top:8px;color:#E4C376">{{ ic.starF }}<div style="font-size:12.5px;color:#F7F4EC;font-weight:700">۴.۹ <span style="color:#C9CDBF;font-weight:500">(۳۲۸)</span></div></div><div style="font-size:11.5px;color:#C9CDBF;margin-top:6px">۲.۱ هزار خدمت تکمیل‌شده</div><div style="font-size:11.5px;color:#C9CDBF;margin-top:2px">۲.۸ سال سابقه فعالیت</div></div>
+              <img src="assets/kiani.png" alt="دکتر فرهاد کیانی" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,0.85)">
+            </div>
+          </div>
+          <div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:14px;flex:1">
+            <div style="font-size:15px;font-weight:800;color:#22352B">تأییدات و اعتبار</div>
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ verifs }}" as="v" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:8px;color:#0C3B2E">{{ ic.checkC }}<div style="font-size:11.5px;color:#3B4A3F">{{ v }}</div></div></sc-for>
+              </div>
+              <div style="width:86px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#C8A85A">{{ ic.shieldCheckL }}<div style="font-size:12px;font-weight:800;color:#B98F3E">ممتاز</div><div style="font-size:9.5px;color:#8D897B">سطح اعتماد</div></div>
+            </div>
+            <div style="font-size:15px;font-weight:800;color:#22352B">نمونه کار</div>
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;height:110px;border-radius:16px;background:#DCD8CB;display:flex;align-items:center;justify-content:center;color:#FFFFFF;position:relative"><div style="width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center">{{ ic.playF }}</div><div style="position:absolute;left:8px;bottom:8px;font-size:10px;background:rgba(0,0,0,0.5);border-radius:6px;padding:1px 6px">۰۱:۱۲</div></div>
+              <div style="width:130px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px"><div><div style="font-size:11.5px;font-weight:700;color:#22352B">منطقه فعالیت</div><div style="font-size:10.5px;color:#8D897B">تهران و حومه</div></div><div><div style="font-size:11.5px;font-weight:700;color:#22352B">هزینه تقریبی</div><div style="font-size:10.5px;color:#8D897B">از ۷۵۰ هزار تومان</div></div></div>
+            </div>
+            <div style="font-size:15px;font-weight:800;color:#22352B">نظرات کاربران</div>
+            <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px">
+              <div style="display:flex;align-items:center;gap:8px"><img src="assets/arezoo.png" alt="آرزو محمدی" style="width:30px;height:30px;border-radius:50%;object-fit:cover"><div style="flex:1;font-size:12px;font-weight:700;color:#22352B">آرزو محمدی</div><div style="display:flex;align-items:center;gap:3px;color:#C8A85A">{{ ic.starXS }}<div style="font-size:11px;color:#3B4A3F;font-weight:700">۵.۰</div></div><div style="font-size:10px;color:#A19C8D">۱۴۰۴/۰۲/۱۸</div></div>
+              <div style="font-size:11.5px;color:#4A5347;line-height:1.8;margin-top:8px">بسیار حرفه‌ای و صبور. لئو بعد از چند جلسه پیشرفت فوق‌العاده‌ای داشت. ممنون از راهنمایی‌های خوبتون.</div>
+              <div style="background:#F4F2EA;border-radius:10px;padding:8px 10px;margin-top:8px"><div style="font-size:11px;font-weight:700;color:#22352B">پاسخ متخصص</div><div style="font-size:10.5px;color:#6E6A5E;margin-top:2px">ممنون از اعتمادتون. خوشحالیم از پیشرفت لئو.</div></div>
+            </div>
+            <div style="flex:1"></div>
+            <div style="display:flex;gap:10px"><div onClick="{{ go.chat }}" style="width:54px;height:54px;border-radius:15px;background:#FFFFFF;border:1px solid #EBE5D6;display:flex;align-items:center;justify-content:center;color:#0C3B2E;cursor:pointer">{{ ic.chat }}</div><div onClick="{{ go.vetBook }}" style="flex:1;height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">درخواست رزرو</div></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ PET RECORD ============ -->
+      <sc-if value="{{ r_pet }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">پرونده لئو</div><div style="width:36px"></div></div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:12px 14px">
+            <img src="assets/leo.png" alt="لئو" style="width:60px;height:60px;border-radius:50%;object-fit:cover">
+            <div style="flex:1"><div style="display:flex;align-items:center;gap:4px;color:#0C3B2E"><div style="font-size:16px;font-weight:800;color:#22352B">لئو</div>{{ ic.badge }}</div><div style="font-size:11px;color:#8D897B;margin-top:2px">گلدن رتریور • نر • ۳ ساله</div><div dir="ltr" style="font-size:12px;color:#3B4A3F;font-weight:600;margin-top:3px;text-align:right">ZRV-۱۴۰۵-۰۰۲۸</div></div>
+            <div onClick="{{ go.k9id }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid #EBE5D6;border-radius:12px;padding:8px;color:#22352B;cursor:pointer">{{ ic.qr }}<div style="font-size:9.5px">نمایش QR</div></div>
+          </div>
+          <div style="display:flex;border-bottom:1px solid #EBE5D6">
+            <sc-for list="{{ petTabs }}" as="t" hint-placeholder-count="4"><div onClick="{{ t.on }}" style="{{ t.style }}">{{ t.label }}</div></sc-for>
+          </div>
+          <sc-if value="{{ petTabTimeline }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12.5px;color:#6E6A5E">همه رویدادها</div><div style="color:#B98F3E">{{ ic.filter }}</div></div>
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ timeline }}" as="e" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px"><div style="color:#B98F3E">{{ e.icon }}</div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">{{ e.title }}</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">{{ e.sub }}</div></div><div style="text-align:left"><div style="font-size:10px;color:#3B4A3F">{{ e.date }}</div><div style="font-size:9.5px;color:#A19C8D">{{ e.ago }}</div></div></div>
+                </sc-for>
+              </div>
+              <div style="width:2px;background:#E4DECD;border-radius:2px;margin:6px 0"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:16px;padding:14px;color:#B98F3E">{{ ic.calL }}<div style="flex:1"><div style="font-size:13px;font-weight:800;color:#22352B">یادآوری پیش رو</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><div style="font-size:12px;color:#3B4A3F">واکسن هاری</div><div style="font-size:10.5px;color:#B98F3E">• ۳۰ روز دیگر</div></div></div><div style="font-size:11px;color:#6E6A5E">۱۴۰۴/۰۳/۲۵</div></div>
+          </sc-if>
+          <sc-if value="{{ petTabHealth }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ health }}" as="h" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px"><div style="color:#B98F3E">{{ h.icon }}</div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">{{ h.title }}</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">{{ h.sub }}</div></div><div style="{{ h.tagStyle }}">{{ h.tag }}</div></div></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ petTabTraining }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ go.logbook }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;cursor:pointer;color:#B98F3E">{{ ic.trainer }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">لاگ‌بوک آموزشی</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">دوره پایه اطاعت • ۷ از ۱۰ جلسه</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+            <div onClick="{{ go.jsbs }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;cursor:pointer;color:#B98F3E">{{ ic.target }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">ارزیابی رفتاری JSBS</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">سطح رفتاری: پایدار</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+            <div onClick="{{ go.cert }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;cursor:pointer;color:#B98F3E">{{ ic.award }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">گواهی پایان دوره</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">CTC-۱۴۰۴-۰۰۷۵</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+          </sc-if>
+          <sc-if value="{{ petTabDocs }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ go.k9id }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;cursor:pointer;color:#B98F3E">{{ ic.idcard }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">شناسنامه دیجیتال لئو</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">ZRV-۱۴۰۵-۰۰۲۸</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+            <div onClick="{{ go.docs }}" style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;cursor:pointer;color:#B98F3E">{{ ic.doc }}<div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">اسناد و قراردادها</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">۳ سند</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+          </sc-if>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:11px 6px;color:#22352B;font-size:11px;font-weight:600;cursor:pointer">{{ ic.plusS }}افزودن یادداشت</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:11px 6px;color:#22352B;font-size:11px;font-weight:600;cursor:pointer">{{ ic.shareS }}اشتراک‌گذاری</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:11px 6px;color:#22352B;font-size:11px;font-weight:600;cursor:pointer">{{ ic.docS }}خروجی PDF</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ VET BOOKING ============ -->
+      <sc-if value="{{ r_vetBook }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">رزرو دامپزشکی</div><div style="width:36px"></div></div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:12px 14px"><img src="assets/leo.png" alt="لئو" style="width:50px;height:50px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="display:flex;align-items:center;gap:4px;color:#0C3B2E"><div style="font-size:15px;font-weight:800;color:#22352B">لئو</div>{{ ic.badge }}</div><div style="font-size:11px;color:#8D897B">گلدن رتریور • ۳ ساله</div></div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">نوع ویزیت</div>
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ pickVisit0 }}" style="{{ visit0 }}"><div style="flex:1"><div style="font-size:12.5px;font-weight:700">ویزیت در محل</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">در منزل شما</div></div>{{ visitRadio0 }}</div>
+            <div onClick="{{ pickVisit1 }}" style="{{ visit1 }}"><div style="flex:1"><div style="font-size:12.5px;font-weight:700">ویزیت حضوری</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">در کلینیک</div></div>{{ visitRadio1 }}</div>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">دلیل مراجعه / دسته‌بندی</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.pill }}<div style="flex:1;font-size:12.5px;color:#22352B">مشکلات گوارشی</div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">توضیح مشکل</div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;min-height:66px;position:relative"><div style="font-size:12px;color:#4A5347;line-height:1.8">طی دو روز اخیر اشتهاش کم شده و چند بار استفراغ داشته.</div><div style="position:absolute;left:12px;bottom:8px;font-size:10px;color:#A19C8D">۰/۲۰۰</div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">بارگذاری عکس یا مدرک (اختیاری)</div>
+          <div style="display:flex;align-items:center;gap:10px;border:1.5px dashed #CFC7B2;border-radius:14px;padding:12px;color:#4A5347">{{ ic.cam }}<div><div style="font-size:12px;font-weight:600;color:#22352B">افزودن عکس یا ویدئو</div><div style="font-size:10.5px;color:#8D897B">برای بررسی بهتر توسط دامپزشک</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.shieldCheck }}<div style="font-size:11.5px;color:#4A4636;line-height:1.7">فقط دامپزشکان تأییدشده و دارای مجوز در زروان نمایش می‌شوند. اطلاعات شما و پت شما امن و محرمانه است.</div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.vetTime }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">انتخاب متخصص</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_vetTime }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">انتخاب زمان</div><div style="width:36px"></div></div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:18px;padding:12px 14px"><img src="assets/kiani.png" alt="دکتر فرهاد کیانی" style="width:56px;height:56px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:14px;font-weight:800;color:#22352B">دکتر فرهاد کیانی</div><div style="font-size:11px;color:#8D897B">دامپزشک عمومی</div><div style="display:flex;align-items:center;gap:6px;margin-top:5px"><div style="background:#C8A85A;color:#FFFFFF;font-size:9.5px;font-weight:700;border-radius:10px;padding:2px 9px">ممتاز</div><div style="display:flex;align-items:center;gap:3px;color:#C8A85A">{{ ic.starXS }}<div style="font-size:10.5px;color:#3B4A3F;font-weight:700">۴.۹ (۳۲۸)</div></div></div></div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">انتخاب تاریخ</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <sc-for list="{{ days }}" as="d" hint-placeholder-count="5"><div onClick="{{ d.on }}" style="{{ d.style }}"><div style="font-size:10px">{{ d.name }}</div><div style="font-size:18px;font-weight:800;margin:3px 0">{{ d.num }}</div><div style="font-size:9.5px">اردیبهشت</div></div></sc-for>
+            <div style="color:#8D897B">{{ ic.chevL }}</div>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">انتخاب ساعت</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ slots }}" as="t" hint-placeholder-count="12"><div onClick="{{ t.on }}" style="{{ t.style }}">{{ t.label }}</div></sc-for>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">مکان و آدرس</div>
+          <div style="display:flex;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px">
+            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:#22352B">کلینیک دکتر کیانی</div><div style="font-size:11px;color:#8D897B;margin-top:3px">تهران، سعادت‌آباد، پلاک ۲۱</div><div style="display:inline-block;border:1px solid #DED8C6;border-radius:12px;padding:4px 12px;font-size:11px;color:#4A5347;margin-top:10px">تغییر مکان</div></div>
+            <div style="width:110px;height:76px;border-radius:12px;background:#E9EBE3;position:relative;overflow:hidden"><div style="position:absolute;inset:0;background-image:linear-gradient(#DDE0D5 1px,transparent 1px),linear-gradient(90deg,#DDE0D5 1px,transparent 1px);background-size:14px 14px"></div><div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-70%);color:#0C3B2E">{{ ic.pinF }}</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.cal }}<div style="flex:1"><div style="font-size:11px;color:#8D897B">خلاصه انتخاب شما:</div><div style="font-size:12.5px;font-weight:700;color:#22352B;margin-top:2px">{{ pickedDay }} اردیبهشت ۱۴۰۴ • ساعت {{ pickedSlot }}</div></div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.vetReview }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">ادامه</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_vetReview }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">بررسی و تأیید</div><div style="width:36px"></div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">خلاصه سفارش</div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F1EDE2"><img src="assets/leo.png" alt="لئو" style="width:32px;height:32px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#22352B">لئو</div><div style="font-size:10px;color:#8D897B">گلدن رتریور • ۳ ساله</div></div><div style="font-size:11px;color:#8D897B">پت</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F1EDE2;color:#B98F3E">{{ ic.steth }}<div style="flex:1;font-size:12px;font-weight:700;color:#22352B">{{ visitLabel }}</div><div style="font-size:11px;color:#8D897B">نوع ویزیت</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F1EDE2"><img src="assets/kiani.png" alt="" style="width:32px;height:32px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#22352B">دکتر فرهاد کیانی</div><div style="font-size:10px;color:#8D897B">دامپزشک عمومی</div></div><div style="font-size:11px;color:#8D897B">متخصص</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F1EDE2;color:#B98F3E">{{ ic.cal }}<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#22352B">{{ pickedDay }} اردیبهشت ۱۴۰۴</div><div style="font-size:10px;color:#8D897B">ساعت {{ pickedSlot }}</div></div><div style="font-size:11px;color:#8D897B">زمان</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;color:#B98F3E">{{ ic.pin }}<div style="flex:1"><div style="font-size:12px;font-weight:700;color:#22352B">کلینیک دکتر کیانی</div><div style="font-size:10px;color:#8D897B">تهران، سعادت‌آباد، پلاک ۲۱</div></div><div style="font-size:11px;color:#8D897B">مکان</div></div>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">جزئیات هزینه</div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:4px 12px">
+            <sc-for list="{{ costs }}" as="c" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F1EDE2;font-size:12px;color:#4A5347"><div>{{ c.label }}</div><div>{{ c.value }}</div></div></sc-for>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:13.5px;font-weight:800;color:#22352B"><div>جمع کل (تقریبی)</div><div>۱,۱۳۰,۰۰۰ تومان</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px"><div style="width:18px;height:18px;border-radius:50%;background:#0C3B2E;display:flex;align-items:center;justify-content:center;color:#FFFFFF;flex:none;margin-top:2px">{{ ic.checkXS }}</div><div style="font-size:11.5px;color:#4A5347;line-height:1.7">قوانین و شرایط خدمات و لغو نوبت را خوانده‌ام و می‌پذیرم. <a href="#" style="text-decoration:underline">مشاهده قوانین و شرایط</a></div></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.lock }}<div style="font-size:11.5px;color:#4A4636;line-height:1.7">اطلاعات تماس مستقیم متخصص تا تکمیل رزرو محفوظ است. پس از تأیید، امکان تماس و پیام مستقیم فعال می‌شود.</div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.vetPaid }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">تأیید و پرداخت</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_vetPaid }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ go.home }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">پرداخت موفق</div><div style="width:36px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px"><div style="width:56px;height:56px;border-radius:50%;border:2px solid #0C3B2E;display:flex;align-items:center;justify-content:center;color:#0C3B2E">{{ ic.checkL }}</div><div style="font-size:16px;font-weight:800;color:#22352B">پرداخت شما با موفقیت انجام شد</div><div style="font-size:12px;color:#8D897B">از اعتماد شما سپاسگزاریم.</div></div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:4px 14px">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F1EDE2;color:#B98F3E">{{ ic.wallet }}<div style="flex:1"><div style="font-size:11px;color:#8D897B">مبلغ پرداختی</div><div style="font-size:15px;font-weight:800;color:#22352B">۱,۱۳۰,۰۰۰ تومان</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 0;color:#B98F3E">{{ ic.copy }}<div style="flex:1"><div style="font-size:11px;color:#8D897B">شماره پیگیری</div><div style="font-size:13px;font-weight:700;color:#22352B">۱۴۰۴۰۲۰۳۱۰۲۵۶۷۸</div></div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FBF6E9;border:1px solid #E4C376;border-radius:16px;padding:14px;color:#B98F3E">{{ ic.qr }}<div style="flex:1"><div style="font-size:11px;color:#8D897B">کد رزرو شما</div><div dir="ltr" style="font-size:18px;font-weight:800;color:#0C3B2E;text-align:right">ZRV-۱۴۰۴-۰۳-۰۰۲۸</div><div style="font-size:10.5px;color:#6E6A5E">این کد را برای پیگیری نزد خود نگه دارید.</div></div></div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:4px 14px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EDE2"><img src="assets/leo.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover"><div><div style="font-size:12.5px;font-weight:700;color:#22352B">لئو</div><div style="font-size:10.5px;color:#8D897B">گلدن رتریور • ۳ ساله</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EDE2"><img src="assets/kiani.png" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover"><div><div style="font-size:12.5px;font-weight:700;color:#22352B">دکتر فرهاد کیانی</div><div style="font-size:10.5px;color:#8D897B">دامپزشک عمومی</div></div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EDE2;color:#B98F3E">{{ ic.cal }}<div style="font-size:12px;color:#3B4A3F">{{ pickedDay }} اردیبهشت ۱۴۰۴ • ساعت {{ pickedSlot }}</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#B98F3E">{{ ic.pin }}<div style="font-size:12px;color:#3B4A3F">کلینیک دکتر کیانی، سعادت‌آباد، پلاک ۲۱</div></div>
+          </div>
+          <div onClick="{{ go.orders }}" style="height:50px;border:1.5px solid #0C3B2E;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#0C3B2E;font-size:14px;font-weight:700;cursor:pointer">{{ ic.list }}مشاهده سفارش</div>
+          <div style="height:50px;border:1px solid #DED8C6;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#22352B;font-size:14px;font-weight:700;cursor:pointer">{{ ic.cal }}افزودن به تقویم</div>
+          <div style="display:flex;align-items:flex-start;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px;color:#B98F3E">{{ ic.cal }}<div style="font-size:11.5px;color:#4A5347;line-height:1.7">این نوبت در خط زمانی پت شما ثبت شد. همه اطلاعات در پرونده لئو قابل دسترسی است.</div></div>
+        </div>
+      </sc-if>
+
+      <!-- ============ PET TAXI ============ -->
+      <sc-if value="{{ r_taxi }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:14px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">پت تاکسی</div><div style="width:36px"></div></div>
+          <div style="height:210px;border-radius:20px;background:#E9EBE3;position:relative;overflow:hidden;border:1px solid #DDE0D5">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(#DDE0D5 1px,transparent 1px),linear-gradient(90deg,#DDE0D5 1px,transparent 1px);background-size:22px 22px"></div>
+            <svg viewBox="0 0 350 210" style="position:absolute;inset:0;width:100%;height:100%" fill="none"><path d="M60 150 L120 150 L150 100 L270 100 L290 50" stroke="#0C3B2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div style="position:absolute;left:44px;top:132px;color:#0C3B2E">{{ ic.pawF }}</div>
+            <div style="position:absolute;left:278px;top:24px;color:#0C3B2E">{{ ic.pinF }}</div>
+            <div style="position:absolute;left:290px;top:6px;font-size:10px;font-weight:700;color:#22352B;background:#FFFFFF;border-radius:6px;padding:1px 6px">مبدأ</div>
+            <div style="position:absolute;left:66px;top:158px;font-size:10px;font-weight:700;color:#22352B;background:#FFFFFF;border-radius:6px;padding:1px 6px">مقصد</div>
+            <div style="position:absolute;left:12px;bottom:12px;width:32px;height:32px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;color:#22352B">{{ ic.target }}</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:4px 12px">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F1EDE2;color:#B98F3E">{{ ic.pin }}<div style="font-size:11.5px;font-weight:700;color:#22352B;width:36px">مبدأ</div><div style="flex:1;font-size:11px;color:#6E6A5E;background:#F7F5EC;border-radius:10px;padding:8px 10px">تهران، سعادت‌آباد، بلوار پاک‌نژاد، پلاک ۲۱</div></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#0C3B2E">{{ ic.pin }}<div style="font-size:11.5px;font-weight:700;color:#22352B;width:36px">مقصد</div><div style="flex:1;font-size:11px;color:#6E6A5E;background:#F7F5EC;border-radius:10px;padding:8px 10px">تهران، ونک، خیابان ملاصدرا، پلاک ۶۷</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:10px 12px"><img src="assets/leo.png" alt="لئو" style="width:44px;height:44px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="display:flex;align-items:center;gap:4px;color:#0C3B2E"><div style="font-size:14px;font-weight:800;color:#22352B">لئو</div>{{ ic.badge }}</div><div style="font-size:10.5px;color:#8D897B">گلدن رتریور • ۳ ساله</div></div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">همراهی در سفر</div>
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ pickComp0 }}" style="{{ comp0 }}">{{ ic.user }}<div style="flex:1;font-size:11.5px;font-weight:700">من همراه لئو هستم</div>{{ compRadio0 }}</div>
+            <div onClick="{{ pickComp1 }}" style="{{ comp1 }}">{{ ic.paw }}<div style="flex:1;font-size:11.5px;font-weight:700">لئو تنها سفر می‌کند</div>{{ compRadio1 }}</div>
+          </div>
+          <div style="font-size:13.5px;font-weight:700;color:#22352B">زمان سفر</div>
+          <div style="display:flex;gap:10px">
+            <div onClick="{{ pickWhen0 }}" style="{{ when0 }}">{{ ic.cal }}<div style="flex:1"><div style="font-size:12px;font-weight:700">زمان‌بندی</div><div style="font-size:10px;color:#8D897B">انتخاب زمان دلخواه</div></div></div>
+            <div onClick="{{ pickWhen1 }}" style="{{ when1 }}"><div style="flex:1"><div style="font-size:12px;font-weight:700">اکنون</div><div style="font-size:10px;color:#8D897B">هرچه سریع‌تر</div></div>{{ whenRadio1 }}</div>
+          </div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.taxiVehicle }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">مشاهده گزینه‌ها</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_taxiVehicle }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">انتخاب خودرو</div><div style="width:36px"></div></div>
+          <div style="font-size:12.5px;color:#6E6A5E">خودروهای مناسب لئو</div>
+          <sc-for list="{{ vehicles }}" as="v" hint-placeholder-count="3">
+            <div onClick="{{ v.on }}" style="{{ v.style }}">
+              <div style="width:90px;height:60px;border-radius:12px;background:#EEECE4;display:flex;align-items:center;justify-content:center;color:#8D897B">{{ ic.carL }}</div>
+              <div style="flex:1"><div style="font-size:14px;font-weight:800;color:#22352B">{{ v.name }}</div><div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#8D897B;margin-top:4px">{{ ic.pawXS }}{{ v.cap }}</div><div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#8D897B;margin-top:2px">{{ ic.boxXS }}{{ v.gear }}</div></div>
+              <div style="text-align:left"><div style="font-size:14px;font-weight:800;color:#22352B">{{ v.price }}</div><div style="font-size:10px;color:#8D897B">تومان</div><div style="font-size:13px;font-weight:700;color:#22352B;margin-top:6px">{{ v.eta }}</div><div style="font-size:10px;color:#8D897B">زمان رسیدن</div></div>
+              <div style="{{ v.radio }}">{{ v.check }}</div>
+            </div>
+          </sc-for>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px 14px">
+            <div style="font-size:13px;font-weight:800;color:#22352B;margin-bottom:8px">استانداردهای ایمنی در تمام گزینه‌ها</div>
+            <sc-for list="{{ safety }}" as="s" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:8px;padding:4px 0;color:#0C3B2E">{{ ic.checkC }}<div style="font-size:11.5px;color:#4A5347">{{ s }}</div></div></sc-for>
+          </div>
+          <div style="flex:1"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px"><div style="font-size:12px;color:#6E6A5E">مبلغ تقریبی</div><div style="font-size:16px;font-weight:800;color:#22352B">{{ vehiclePrice }} تومان</div></div>
+          <div onClick="{{ go.taxiDriver }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">تأیید درخواست</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_taxiDriver }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">راننده پیدا شد</div><div style="width:36px"></div></div>
+          <div style="height:170px;border-radius:20px;background:#E9EBE3;position:relative;overflow:hidden;border:1px solid #DDE0D5">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(#DDE0D5 1px,transparent 1px),linear-gradient(90deg,#DDE0D5 1px,transparent 1px);background-size:22px 22px"></div>
+            <svg viewBox="0 0 350 170" style="position:absolute;inset:0;width:100%;height:100%" fill="none"><path d="M70 130 L140 130 L170 70 L280 70" stroke="#0C3B2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div style="position:absolute;left:54px;top:112px;color:#22352B">{{ ic.car }}</div>
+            <div style="position:absolute;right:12px;top:12px;background:#FFFFFF;border-radius:12px;padding:6px 12px;font-size:11.5px;font-weight:700;color:#22352B;box-shadow:0 2px 8px rgba(0,0,0,0.08)">۱۲ دقیقه تا رسیدن</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px 14px">
+            <div style="display:flex;align-items:center;gap:12px"><img src="assets/driver.png" alt="آرش محمدی" style="width:56px;height:56px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="display:flex;align-items:center;gap:6px"><div style="font-size:14px;font-weight:800;color:#22352B">آرش محمدی</div><div style="display:flex;align-items:center;gap:3px;background:#EEF4F0;border-radius:10px;padding:2px 8px;color:#0C3B2E;font-size:10px">{{ ic.shieldXS }}تأییدشده</div></div><div style="display:flex;align-items:center;gap:6px;margin-top:4px;color:#C8A85A">{{ ic.starXS }}<div style="font-size:11px;color:#3B4A3F;font-weight:700">۴.۹ <span style="color:#A19C8D;font-weight:500">(۱۹۴)</span></div><div style="font-size:10.5px;color:#8D897B">• سفر حیوان خانگی</div></div></div></div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid #F1EDE2"><div style="width:64px;height:44px;border-radius:10px;background:#EEECE4;display:flex;align-items:center;justify-content:center;color:#8D897B">{{ ic.car }}</div><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">ون پت استاندارد</div><div dir="ltr" style="display:inline-flex;align-items:center;gap:6px;border:1px solid #DED8C6;border-radius:6px;padding:3px 8px;margin-top:5px"><div style="width:12px;height:8px;border-radius:1.5px;overflow:hidden;display:flex;flex-direction:column"><div style="flex:1;background:#2E9E5B"></div><div style="flex:1;background:#F4F4F2"></div><div style="flex:1;background:#D64545"></div></div><div style="font-size:11.5px;font-weight:800;color:#1A1A18">۱۲۳ الف ۵۶</div></div></div></div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px 14px"><div style="font-size:13px;font-weight:800;color:#22352B">تأییدهای امنیتی</div><div style="display:flex;gap:20px;margin-top:8px"><div style="display:flex;align-items:center;gap:6px;color:#8D897B;font-size:11.5px">{{ ic.userS }}<span style="color:#0C3B2E;font-weight:600">تأیید شد</span></div><div style="display:flex;align-items:center;gap:6px;color:#8D897B;font-size:11.5px">{{ ic.carS }}<span style="color:#0C3B2E;font-weight:600">تأیید شد</span></div></div></div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:14px;text-align:center"><div style="font-size:13px;font-weight:800;color:#22352B">کد تحویل لئو</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">این کد را هنگام تحویل به راننده اعلام کنید.</div><div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;color:#C8A85A">{{ ic.shield }}<div dir="ltr" style="border:1.5px solid #0C3B2E;border-radius:10px;padding:6px 18px;font-size:22px;font-weight:800;letter-spacing:6px;color:#0C3B2E">۷۲۹۱</div></div><div style="font-size:10px;color:#A19C8D;margin-top:8px">کد هر ۱۰ دقیقه تغییر می‌کند.</div></div>
+          <div style="display:flex;gap:10px"><div onClick="{{ go.chat }}" style="flex:1;height:48px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#22352B;font-size:12.5px;font-weight:700;cursor:pointer">{{ ic.chat }}تماس درون‌برنامه</div><div onClick="{{ go.chat }}" style="flex:1;height:48px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;color:#22352B;font-size:12.5px;font-weight:700;cursor:pointer">{{ ic.phone }}پیام درون‌برنامه</div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.taxiTrip }}" style="height:54px;border:1.5px solid #0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:10px;color:#0C3B2E;font-size:15px;font-weight:700;cursor:pointer">{{ ic.car }}در حال حرکت به سمت شما</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_taxiTrip }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.more }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">سفر لئو</div><div style="width:36px;color:#22352B;display:flex;justify-content:flex-end">{{ ic.chevD }}</div></div>
+          <div style="height:200px;border-radius:20px;background:#E9EBE3;position:relative;overflow:hidden;border:1px solid #DDE0D5">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(#DDE0D5 1px,transparent 1px),linear-gradient(90deg,#DDE0D5 1px,transparent 1px);background-size:22px 22px"></div>
+            <svg viewBox="0 0 350 200" style="position:absolute;inset:0;width:100%;height:100%" fill="none"><path d="M80 150 L150 150 L190 90 L290 60" stroke="#0C3B2E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <div style="position:absolute;left:135px;top:130px;color:#22352B">{{ ic.car }}</div>
+            <div style="position:absolute;left:278px;top:36px;width:30px;height:30px;border-radius:50%;background:#0C3B2E;display:flex;align-items:center;justify-content:center;color:#FFFFFF">{{ ic.pawXS }}</div>
+            <div style="position:absolute;left:12px;bottom:12px;width:32px;height:32px;border-radius:50%;background:#FFFFFF;display:flex;align-items:center;justify-content:center;color:#22352B">{{ ic.target }}</div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px 14px">
+            <div style="display:flex;align-items:center;gap:12px"><img src="assets/driver.png" alt="آرش محمدی" style="width:52px;height:52px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:14px;font-weight:800;color:#22352B">آرش محمدی</div><div style="display:inline-flex;align-items:center;gap:3px;background:#EEF4F0;border-radius:10px;padding:2px 8px;color:#0C3B2E;font-size:10px;margin-top:3px">{{ ic.shieldXS }}تأییدشده</div><div style="display:flex;align-items:center;gap:4px;font-size:10.5px;color:#8D897B;margin-top:3px">{{ ic.carS }}ون پت استاندارد</div></div><div style="background:#F7F5EC;border-radius:12px;padding:8px 14px;text-align:center"><div style="font-size:16px;font-weight:800;color:#0C3B2E">۱۲ دقیقه</div><div style="font-size:10px;color:#8D897B">تا مقصد</div></div></div>
+            <div style="display:flex;align-items:flex-start;margin-top:16px;padding-top:14px;border-top:1px solid #F1EDE2">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:none"><div style="width:22px;height:22px;border-radius:50%;background:#0C3B2E;display:flex;align-items:center;justify-content:center;color:#FFFFFF">{{ ic.checkXS }}</div><div style="font-size:10px;color:#3B4A3F">تحویل گرفته شد</div><div style="font-size:9.5px;color:#A19C8D">۱۰:۰۲</div></div>
+              <div style="flex:1;height:2px;background:#0C3B2E;margin-top:10px"></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:none"><div style="width:22px;height:22px;border-radius:50%;background:#0C3B2E;display:flex;align-items:center;justify-content:center;color:#FFFFFF">{{ ic.checkXS }}</div><div style="font-size:10px;color:#3B4A3F">در مسیر</div><div style="font-size:9.5px;color:#A19C8D">۱۰:۰۵</div></div>
+              <div style="flex:1;height:2px;border-top:2px dashed #C9C4B4;margin-top:10px"></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:none"><div style="width:22px;height:22px;border-radius:50%;border:2px solid #C9C4B4;background:#FFFFFF"></div><div style="font-size:10px;color:#3B4A3F">رسیدن</div><div style="font-size:9.5px;color:#A19C8D">۱۰:۱۷</div></div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;background:#FFF3F1;border:1px solid #F0C9C2;border-radius:14px;padding:12px 6px;color:#C0392B;font-size:11px;font-weight:700">{{ ic.alert }}گزارش یا اضطراری</div>
+            <div onClick="{{ go.support }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px 6px;color:#22352B;font-size:11px;font-weight:700;cursor:pointer">{{ ic.headset }}پشتیبانی</div>
+            <div onClick="{{ go.chat }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:12px 6px;color:#22352B;font-size:11px;font-weight:700;cursor:pointer">{{ ic.chat }}پیام درون‌برنامه</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:16px;padding:14px;color:#B98F3E">{{ ic.shieldCheckL }}<div><div style="font-size:13px;font-weight:800;color:#22352B">سفر در حال ثبت خودکار است</div><div style="font-size:11px;color:#6E6A5E;line-height:1.7;margin-top:3px">جزئیات این سفر به‌صورت خودکار در خط زمانی لئو در بخش فعالیت‌ها ثبت می‌شود.</div></div></div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.orders }}" style="display:flex;align-items:center;justify-content:space-between;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:14px;cursor:pointer;color:#22352B"><div style="font-size:13px;font-weight:700">جزئیات سفر</div>{{ ic.chevU }}</div>
+        </div>
+      </sc-if>
+
+      <!-- ============ PET SHOP ============ -->
+      <sc-if value="{{ r_shop }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">پت شاپ</div><div onClick="{{ go.cart }}" style="width:36px;position:relative;cursor:pointer;color:#22352B;display:flex;justify-content:flex-end">{{ ic.cartI }}<div style="position:absolute;top:-6px;left:2px;background:#C8A85A;color:#FFFFFF;font-size:9px;font-weight:700;border-radius:8px;padding:0 5px">{{ cartCount }}</div></div></div>
+          <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:0 14px;height:46px;color:#8D897B">{{ ic.search }}<input placeholder="جستجو در محصولات پت شاپ" style="flex:1;min-width:0;border:none;background:transparent;font-size:12.5px;outline:none;text-align:right;color:#22352B"></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:8px 12px"><img src="assets/leo.png" alt="لئو" style="width:38px;height:38px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">مناسب برای لئو</div><div style="font-size:10.5px;color:#8D897B">گلدن رتریور • ۳ ساله</div></div><div style="color:#4A5347">{{ ic.chevD }}</div></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ shopCats }}" as="c" hint-placeholder-count="4"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer"><div style="width:52px;height:52px;border-radius:50%;background:#FFFFFF;border:1px solid #EBE5D6;display:flex;align-items:center;justify-content:center;color:#B98F3E">{{ c.icon }}</div><div style="font-size:10.5px;color:#3B4A3F;font-weight:600">{{ c.label }}</div></div></sc-for>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div style="width:40px;height:40px;border:1px solid #EBE5D6;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;color:#22352B">{{ ic.grid }}</div>
+            <div style="flex:1;height:40px;border:1px solid #EBE5D6;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;color:#22352B">محبوب‌ترین {{ ic.chevDS }}</div>
+            <div style="height:40px;border:1px solid #EBE5D6;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:12px;color:#22352B">{{ ic.filter }}فیلتر</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <sc-for list="{{ products }}" as="p" hint-placeholder-count="4">
+              <div onClick="{{ go.product }}" style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:10px;cursor:pointer;position:relative">
+                <div style="height:96px;border-radius:12px;background:{{ p.bg }};display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7)">{{ p.icon }}</div>
+                <div style="position:absolute;top:16px;left:16px;color:#8D897B">{{ ic.heartS }}</div>
+                <div style="font-size:12px;font-weight:700;color:#22352B;margin-top:8px">{{ p.name }}</div>
+                <div style="font-size:10px;color:#8D897B;margin-top:2px">{{ p.sub }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px"><div style="font-size:12.5px;font-weight:800;color:#22352B">{{ p.price }}</div><div style="display:flex;align-items:center;gap:3px;color:#C8A85A">{{ ic.starXS }}<div style="font-size:10px;color:#3B4A3F">{{ p.rating }}</div></div></div>
+                <div style="display:inline-block;background:#EEF4F0;color:#0C3B2E;font-size:9.5px;border-radius:8px;padding:2px 8px;margin-top:6px">مناسب برای لئو</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:14px;font-weight:800;color:#22352B">پیشنهادهای ویژه برای لئو</div><div style="display:flex;align-items:center;gap:3px;color:#B98F3E;font-size:12px;font-weight:600">مشاهده همه {{ ic.chevLS }}</div></div>
+          <div style="display:flex;gap:10px"><div style="flex:1;height:90px;border-radius:14px;background:#D8CFB8"></div><div style="flex:1;height:90px;border-radius:14px;background:#C9B99A"></div><div style="flex:1;height:90px;border-radius:14px;background:#B8AB8C"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_product }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1"></div><div style="display:flex;gap:14px;color:#22352B">{{ ic.heart }}{{ ic.share }}</div></div>
+          <div style="height:230px;border-radius:20px;background:#5E6E5A;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);position:relative">{{ ic.bagXL }}<div style="position:absolute;bottom:10px;left:12px;font-size:10px;background:rgba(0,0,0,0.4);color:#FFFFFF;border-radius:6px;padding:1px 6px">۱/۶</div><div dir="ltr" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:4px"><div style="width:6px;height:6px;border-radius:50%;background:#FFFFFF"></div><div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)"></div><div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)"></div><div style="width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.4)"></div></div></div>
+          <div><div style="font-size:18px;font-weight:800;color:#22352B">قلاده هارنس پرمیوم</div><div style="font-size:12px;color:#8D897B;margin-top:3px">قابل تنظیم، ضد کشش، با دسته کنترل</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div style="font-size:19px;font-weight:800;color:#22352B">۲,۱۵۰,۰۰۰</div><div style="display:flex;align-items:center;gap:4px;color:#C8A85A">{{ ic.starF }}<div style="font-size:11.5px;color:#3B4A3F;font-weight:700">۴.۷ <span style="color:#A19C8D;font-weight:500">(۱۲)</span></div></div></div></div>
+          <div style="display:inline-flex;align-items:center;gap:5px;background:#EEF4F0;border-radius:10px;padding:4px 10px;color:#0C3B2E;font-size:11px;font-weight:600;align-self:flex-start">{{ ic.checkC }}موجود در انبار</div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px">
+            <div style="font-size:12px;color:#6E6A5E">سایز (براساس جثه لئو)</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <sc-for list="{{ sizes }}" as="s" hint-placeholder-count="6"><div onClick="{{ s.on }}" style="{{ s.style }}">{{ s.label }}</div></sc-for>
+            </div>
+            <div style="font-size:12px;color:#6E6A5E;margin-top:12px">رنگ: سبز جنگلی</div>
+            <div style="display:flex;gap:10px;margin-top:8px"><div style="width:26px;height:26px;border-radius:50%;background:#1F1F1F"></div><div style="width:26px;height:26px;border-radius:50%;background:#2F5D46;outline:2px solid #0C3B2E;outline-offset:2px"></div><div style="width:26px;height:26px;border-radius:50%;background:#E8D6B8"></div><div style="width:26px;height:26px;border-radius:50%;background:#D8A0A0"></div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:14px;padding:10px 12px"><img src="assets/leo.png" alt="لئو" style="width:38px;height:38px;border-radius:50%;object-fit:cover"><div style="flex:1"><div style="font-size:12px;font-weight:700;color:#22352B">مناسب برای لئو</div><div style="font-size:10.5px;color:#6E6A5E">گلدن رتریور • ۳۰ کیلوگرم • دور گردن ۵۲ سانتی‌متر</div><div style="font-size:10.5px;color:#B98F3E;margin-top:2px">راهنمای اندازه‌گیری</div></div><div style="color:#4A5347">{{ ic.chevL }}</div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+            <div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:10.5px;color:#4A5347;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:12px;padding:8px 4px">{{ ic.shieldXS }}ضدکشش با کیفیت</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:10.5px;color:#4A5347;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:12px;padding:8px 4px">{{ ic.targetXS }}دسته کنترل راحت</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:10.5px;color:#4A5347;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:12px;padding:8px 4px">{{ ic.checkXS }}قابل شستشو</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px;color:#0C3B2E">{{ ic.badge }}<div><div style="font-size:11.5px;font-weight:700;color:#22352B">فروشنده معتبر</div><div style="font-size:10px;color:#8D897B">Zurvan Pet Store</div></div></div>
+            <div style="flex:1;display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px;color:#B98F3E">{{ ic.refresh }}<div><div style="font-size:11.5px;font-weight:700;color:#22352B">۷ روز ضمانت بازگشت</div><div style="font-size:10px;color:#8D897B">در صورت عدم استفاده</div></div></div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:12.5px;color:#4A5347">تعداد:</div><div style="display:flex;align-items:center;gap:14px;border:1px solid #EBE5D6;border-radius:12px;padding:6px 12px;background:#FFFFFF;color:#22352B"><div onClick="{{ qtyUp }}" style="cursor:pointer">{{ ic.plusS }}</div><div style="font-size:14px;font-weight:700;min-width:16px;text-align:center">{{ qty }}</div><div onClick="{{ qtyDown }}" style="cursor:pointer">{{ ic.minusS }}</div></div></div>
+          <div onClick="{{ addToCart }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:10px;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">{{ ic.bag }}افزودن به سبد</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_cart }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ back }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">سبد خرید</div><div style="width:36px"></div></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FBF6E9;border:1px solid #F0E4C6;border-radius:14px;padding:8px 12px"><img src="assets/leo.png" alt="" style="width:30px;height:30px;border-radius:50%;object-fit:cover"><div style="font-size:11.5px;color:#4A4636">ارسال این سفارش برای لئو محاسبه می‌شود.</div></div>
+          <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:10px 12px">
+              <div style="width:64px;height:64px;border-radius:12px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7)">{{ c.icon }}</div>
+              <div style="flex:1"><div style="font-size:12.5px;font-weight:700;color:#22352B">{{ c.name }}</div><div style="font-size:10.5px;color:#8D897B;margin-top:2px">{{ c.sub }}</div><div style="font-size:12px;font-weight:700;color:#22352B;margin-top:4px">{{ c.price }} تومان</div></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><div style="display:flex;align-items:center;gap:10px;border:1px solid #EBE5D6;border-radius:10px;padding:3px 8px;color:#22352B">{{ ic.plusXS }}<div style="font-size:12px;font-weight:700">{{ c.qty }}</div>{{ ic.minusXS }}</div><div style="color:#A19C8D">{{ ic.trashS }}</div></div>
+            </div>
+          </sc-for>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px"><div style="display:flex;align-items:center;gap:8px;color:#B98F3E"><div style="flex:1;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#22352B">{{ ic.pinS }}آدرس ارسال</div><div style="font-size:11px;color:#B98F3E">تغییر</div></div><div style="font-size:11.5px;color:#6E6A5E;margin-top:6px;line-height:1.7">تهران، سعادت‌آباد، بلوار ۲۱، پلاک ۲۱، واحد ۴، زورون</div></div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:12px"><div style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#22352B">{{ ic.calS }}زمان ارسال</div><div style="display:flex;gap:8px;margin-top:10px"><div style="flex:1;border:1.6px solid #0C3B2E;border-radius:12px;padding:8px;text-align:center"><div style="font-size:12px;font-weight:700;color:#0C3B2E">امروز</div><div style="font-size:10px;color:#8D897B">۱۸ تا ۲۱</div></div><div style="flex:1;border:1px solid #EBE5D6;border-radius:12px;padding:8px;text-align:center"><div style="font-size:12px;font-weight:700;color:#22352B">فردا</div><div style="font-size:10px;color:#8D897B">۱۰ تا ۱۴</div></div><div style="flex:1;border:1px solid #EBE5D6;border-radius:12px;padding:8px;text-align:center"><div style="font-size:12px;font-weight:700;color:#22352B">فردا</div><div style="font-size:10px;color:#8D897B">۱۸ تا ۲۱</div></div></div></div>
+          <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #EBE5D6;border-radius:14px;padding:10px 12px;color:#0C3B2E">{{ ic.checkC }}<div style="flex:1;font-size:12px;color:#22352B">اعتبار زورون (قابل استفاده)</div><div style="font-size:12px;font-weight:700;color:#22352B">۱,۲۳۰,۰۰۰ تومان</div></div>
+          <div style="background:#FFFFFF;border:1px solid #EBE5D6;border-radius:16px;padding:4px 12px">
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F1EDE2;font-size:12px;color:#4A5347"><div>جمع کالاها</div><div>۶,۰۹۰,۰۰۰ تومان</div></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F1EDE2;font-size:12px;color:#4A5347"><div>هزینه ارسال</div><div>۲۸,۰۰۰ تومان</div></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F1EDE2;font-size:12px;color:#4A5347"><div>اعتبار زورون</div><div>-۱,۲۳۰,۰۰۰ تومان</div></div>
+            <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:800;color:#22352B"><div>مبلغ قابل پرداخت</div><div>۴,۸۸۸,۰۰۰ تومان</div></div>
+          </div>
+          <div style="flex:1"></div>
+          <div onClick="{{ go.tracking }}" style="height:54px;background:#0C3B2E;border-radius:15px;display:flex;align-items:center;justify-content:center;color:#F7F4EC;font-size:15px;font-weight:700;cursor:pointer">ادامه و پرداخت</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ r_tracking }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:8px 20px 24px;display:flex;flex-direction:column;gap:12px;flex:1">
+          <div style="display:flex;align-items:center"><div onClick="{{ go.shop }}" style="width:36px;cursor:pointer;color:#22352B">{{ ic.arrowR }}</div><div style="flex:1;text-align:center;font-size:17px;font-weight:800;color:#22352B">پیگیری سفارش</div><div style="width:36px"></div></div>
+          <div style="display:flex;justify-content:space-between;padding:0 4px"><div><div style="font-size:10.5px;color:#8D897B">سفارش شماره</div><div dir="ltr" style="font-size:13px;font-weight:800;color:#22352B;text-align:right">ZRVP-۱۴۰۴-۰۳-۰
+</x-dc>
+</body>
+</html>

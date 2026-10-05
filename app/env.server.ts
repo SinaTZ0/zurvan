@@ -9,9 +9,9 @@ dotenv.config({ quiet: true });
 /*===== Schema =====*/
 // Single source of truth for server env vars. Add new variables here and to `.env.example`.
 const envSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  // Accept both URI schemes node-postgres understands; reject anything else early.
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 });
 
 /*===== Validation =====*/
@@ -19,9 +19,7 @@ const parsed = envSchema.safeParse(process.env);
 
 // Fail fast at startup instead of crashing later on first use of a missing variable.
 if (!parsed.success) {
-  throw new Error(
-    `Invalid environment variables:\n${z.prettifyError(parsed.error)}`,
-  );
+  throw new Error(`Invalid environment variables:\n${z.prettifyError(parsed.error)}`);
 }
 
 /**
