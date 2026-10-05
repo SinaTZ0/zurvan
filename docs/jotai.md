@@ -9,7 +9,7 @@ Jotai. Check the next section before creating an atom.
 | State                                                                    | Owner                                                     |
 | ------------------------------------------------------------------------ | --------------------------------------------------------- |
 | Server data                                                              | Route `loader`, or TanStack Query through the oRPC client |
-| Shareable or bookmarkable state (filters, tabs, pagination, selected id) | URL search params                                         |
+| Shareable or bookmarkable state (filters, tabs, pagination, selected id) | URL search params through nuqs ([`nuqs.md`](./nuqs.md))   |
 | Form input                                                               | The form and its `schema.ts`                              |
 | State used by one component, or passed one or two levels down            | `useState` and props                                      |
 | Client state shared across distant parts of the tree                     | **Jotai**                                                 |

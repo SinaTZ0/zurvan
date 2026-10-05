@@ -56,6 +56,8 @@ Not every slice needs every file. Start with the route module alone and split it
   belongs to the form.
 - Local state uses `useState` and props. Use Jotai only for client state shared across distant parts of the tree.
 - See [`jotai.md`](./jotai.md) for how to define, place, and use atoms.
+- URL state goes through nuqs, with one typed parser map per route shared by its loader and components. See
+  [`nuqs.md`](./nuqs.md).
 
 ## Forms
 

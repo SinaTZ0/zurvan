@@ -1,4 +1,5 @@
 import { Provider as JotaiProvider } from "jotai";
+import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
 import { DirectionProvider } from "~/components/ui/direction";
@@ -23,14 +24,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             menus need the provider to position and navigate correctly in RTL. */}
         {/* Without a Provider, Jotai uses a module-level default store that the server would
             share across requests, so each render tree gets its own store instead. */}
-        <JotaiProvider>
-          <DirectionProvider direction="rtl">
-            <TooltipProvider>
-              {children}
-              <Toaster />
-            </TooltipProvider>
-          </DirectionProvider>
-        </JotaiProvider>
+        {/* nuqs skips loaders by default (`shallow: true`). Most URL state here filters loader data, so
+            updates revalidate unless a param opts into `shallow: true` for UI-only state. */}
+        <NuqsAdapter defaultOptions={{ shallow: false }}>
+          <JotaiProvider>
+            <DirectionProvider direction="rtl">
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </DirectionProvider>
+          </JotaiProvider>
+        </NuqsAdapter>
         <ScrollRestoration />
         <Scripts />
       </body>
