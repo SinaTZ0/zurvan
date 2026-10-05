@@ -40,7 +40,7 @@ All tokens live in `app/app.css`. Use the Tailwind classes (`bg-primary`, `text-
 | `gold` | `#C8A85A` | Accents on green only: stars, highlights, logo |
 | `gold-deep` | `#B98F3E` | Icons and decoration on light backgrounds, never text |
 | `gold-text` | `#8A6B2E` | Gold as readable text or links |
-| `placeholder` | `#8D897B` | Placeholders and disabled items only |
+| `faint` | `#8D897B` | Disabled items and decoration, never text. Placeholders use `muted-foreground` |
 | `cream` / `cream-border` | `#FBF6E9` / `#F0E4C6` | Icon boxes, reminders, info notes |
 | `mint` / `mint-border` | `#EEF4F0` / `#D5E3DA` | Positive or safety notes |
 | `success` / `destructive` | `#267F4C` / `#C53B3B` | Status only, used sparingly |

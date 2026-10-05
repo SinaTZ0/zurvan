@@ -55,7 +55,7 @@
   --color-gold: var(--gold);
   --color-gold-deep: var(--gold-deep);
   --color-gold-text: var(--gold-text);
-  --color-placeholder: var(--placeholder);
+  --color-faint: var(--faint);
   --color-cream: var(--cream);
   --color-cream-border: var(--cream-border);
   --color-mint: var(--mint);
@@ -100,7 +100,7 @@
   --gold: #c8a85a; /* on green only */
   --gold-deep: #b98f3e; /* icons and decoration, not text */
   --gold-text: #8a6b2e; /* gold as readable text, 4.76:1 */
-  --placeholder: #8d897b; /* placeholders and disabled only */
+  --faint: #8d897b; /* disabled and decoration, never text (3.5:1) */
   --cream: #fbf6e9;
   --cream-border: #f0e4c6;
   --mint: #eef4f0;
@@ -147,7 +147,7 @@
   --gold: #c8a85a;
   --gold-deep: #c8a85a;
   --gold-text: #e4c376;
-  --placeholder: #7d7a6e;
+  --faint: #7d7a6e;
   --cream: #231f14;
   --cream-border: #3a3220;
   --mint: #15271f;
