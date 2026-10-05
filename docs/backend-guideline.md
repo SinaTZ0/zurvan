@@ -101,6 +101,17 @@ return { id: result.id };
 - A global error middleware normalizes every failure. Server errors (5xx) never expose internal messages; they carry an
   ID that correlates with the full error in the server logs.
 - Field messages are user-facing; diagnostics are for developers.
+- Schema validation failures do not arrive in the shared shape. oRPC throws `BAD_REQUEST` (cause: `ValidationError`)
+  for invalid input and `INTERNAL_SERVER_ERROR` (cause: `ValidationError`) for invalid output. The global error
+  middleware converts input failures into the shared shape with per-field messages, and treats output failures as
+  server errors whose details never reach the client.
+- Failures raised by the handler before the procedure runs (e.g. a request body that cannot be decoded) never reach
+  middleware. `handler.server.ts` logs them with an interceptor so they are not lost.
+- `*.errors.ts` files are plain error maps (codes, default messages, and Zod data schemas). Do not build them with
+  oRPC's `error()` factory: it comes from `@orpc/server` and would pull the server package into the browser bundle.
+- A thrown error only counts as a declared error when its `code` matches and its `data` passes the declared schema.
+  Anything else reaches the client as an unknown error and loses its types, so always build `data` in the shared shape.
+  Prefer the typed `errors.X()` constructors; `new ORPCError(...)` is for code without access to them.
 
 ### Middleware
 
