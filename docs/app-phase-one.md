@@ -12,12 +12,12 @@ An e-commerce platform for selling training courses tailored to customers' pets.
 - **Authentication:** All users register and log in via Phone Number using SMS OTP (One-Time Password).
 - Each phone number has **exactly one role** in phase one.
 
-| Role         | Main capabilities                                                                                                                                         |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Role         | Main capabilities                                                                                                                                              |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Admin**    | Super admin. Manages everything: users, courses, runs, approvals, orders, refunds, discounts, wallets, withdrawals, earnings, commissions, comments, settings. |
-| **Trainer**  | Creates own courses and submits them for approval, schedules runs, sees reservations, records each pet's result, replies to comments, sees own earnings.  |
-| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                       |
-| **Customer** | Manages own pets, reserves and pays for course runs, follows each pet's progress, asks questions, reviews courses and trainers.                          |
+| **Trainer**  | Creates own courses and submits them for approval, schedules runs, sees reservations, records each pet's result, replies to comments, sees own earnings.       |
+| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                             |
+| **Customer** | Manages own pets, reserves and pays for course runs, follows each pet's progress, asks questions, reviews courses and trainers.                                |
 
 **OTP rules:**
 
@@ -149,8 +149,9 @@ The Admin defines a few **Refund Policy** presets, and each course uses one. Exa
 - If the **platform cancels** a run (minimum not reached, or Admin cancellation), every customer gets a full refund.
 - Refund percentages apply to what the customer **actually paid** for that pet's seat, after any discount.
 - The policy is **copied onto each order item** at purchase time, so later changes to the course don't affect existing reservations.
-- Refunds go to the customer's **wallet** instantly. The customer can then withdraw them to a bank account (see 3.9).
-- The Admin can issue a manual refund of any amount, with a reason.
+- A refund is a **mirror** of the seat's purchase transaction (see 3.9): every wallet that received a share gives it back, and the money lands in the customer's **wallet** instantly. The customer can spend it on another course or withdraw it (see 3.10).
+- How a partial refund (e.g. 50%) is split between the wallets is an open business question (see 5).
+- The Admin can issue a manual refund of any amount by creating a transaction, optionally starting from the mirror of the purchase.
 
 #### 3.7 Discount Codes
 
@@ -168,47 +169,94 @@ The Admin creates discount codes. Each code has:
 - One code per order.
 - A fixed-amount discount is split across the order's items in proportion to their price, so each pet's seat has a known paid amount for refunds.
 - A use is counted when the order is paid. If the order is fully refunded, the use is given back.
-- Discounts are funded by the platform: they don't reduce the trainer's earning (see 3.8). Partner commission is calculated on what the customer actually paid (see 3.11).
+- Which share absorbs a discount (trainer, admin or partner) is an open business question (see 5).
 
-#### 3.8 Trainer Earnings
+#### 3.8 Revenue Split
 
-- Each course has a **Trainer Share** percentage. The trainer who teaches a run earns that share of the run's sales.
-- The share is calculated on the run's **price**, not the discounted amount, because discounts are the platform's cost.
-- If part of a seat's payment is refunded, the trainer's earning for that seat is reduced by the same proportion.
-- The share is copied onto each order item at purchase time, so later changes to the course don't affect existing reservations.
-- When a run is **Completed**, the system creates a **run settlement** for the trainer: the seats sold, the refund deductions, and the earning. The Admin reviews it, can adjust the amount with a note, and approves it. The approved amount is credited to the trainer's **wallet**.
-- The trainer dashboard shows the estimated earning of each upcoming and running run, and the history of settlements.
-- Partner commissions are paid from the platform's part, not the trainer's.
+- Every **purchased unit** (one pet's seat in one run) creates one **purchase transaction** when its order is paid (see 3.9). It sends the unit's paid amount from the customer's wallet to the wallets of the run's **trainer**, the **Admin**, and the customer's **partner** (if they have one).
+- How the amount is divided is an open business question (see 5). The current draft is the course's **Trainer Share** percentage.
+- The transaction's lines are the permanent record of the split. Changing a course's share or the commission formula **never changes past transactions**. If the Admin wants the change to apply to past sales, they work out the difference themselves and create transactions for it (e.g. `Trainer −X, Partner +X`), or leave the past as it is.
+- If the Admin reassigns a run to another trainer, past purchases stay with the original trainer. The Admin moves money between them by hand if needed.
+- The trainer dashboard shows each run's earning (their lines in that run's purchase transactions, minus refunds) and their wallet history.
 
-#### 3.9 Wallet
+**Example:** a course costs 100, the Admin takes 20%, and the partner gets 10 per sale. A referred customer buys one seat:
 
-Every user (customer, trainer and partner) has an in-app wallet holding real money in **Rial** (not points or app credit).
+| Wallet   | Purchase | Refund (mirror) |
+| -------- | -------: | --------------: |
+| Customer |     −100 |            +100 |
+| Trainer  |      +70 |             −70 |
+| Admin    |      +20 |             −20 |
+| Partner  |      +10 |             −10 |
+| **Sum**  |    **0** |           **0** |
 
-- **Money in:** top-up through the payment gateway, refunds, trainer earnings, partner commissions, and Admin adjustments.
-- **Money out:** paying for orders and withdrawals.
-- **History:** every credit and debit is kept as its own entry, and entries are never edited or removed. A mistake is fixed with a new, correcting entry. The user can see their full history.
-- **Paying with the wallet:** at checkout, the wallet balance is used first and the rest is paid through the gateway. The wallet part is taken when the order is created and returned if the order fails or expires.
-- **Where the balance comes from:** spending always uses the oldest credits first, and each spending records which credits it used and how much of each. That way, the balance can always be explained as a list of credits (e.g. "۲۰۰ هزار تومان از بازگشت وجه دوره X، ۵۹۰ هزار تومان از کمیسیون مهر") without ever editing a past entry.
-- **Reversed spending:** when a wallet payment is returned (e.g. the order failed), the money goes back to the credits it came from, so it keeps its original source.
-- The balance can never go negative.
-- Admin adjustments always require a reason.
+If 10 referred customers buy, that's 10 purchase transactions like this. If one of them later cancels, only their transaction is mirrored.
 
-**Withdrawal:**
+#### 3.9 Wallets & Transactions
 
-1. The user requests to withdraw their balance to a bank account (Sheba number and account holder name).
-2. The request enters the Admin's **withdrawal queue**. While it's waiting, the amount is held and can't be spent.
-3. When the Admin opens the request, they see the **itemized list of credits** that make up the balance (type, date, source and remaining amount).
-4. The Admin can **deselect** specific items (e.g. a top-up that was never spent). Deselected items stay in the user's wallet and can be spent again.
-5. The Admin approves the adjusted payout amount, which is the total of the selected items, and it's taken from the wallet. Then the Admin pays it manually and records the bank tracking code.
-6. Or the Admin rejects the whole request with a reason, and the held amount is released.
+All money in the app is tracked as **transactions between wallets**. The app never moves real money by itself: card payments come in through the payment gateway, and the owner pays people from their own bank app and records it here.
 
-The user is notified at each step, including which items were left out and why.
+**Wallets:**
 
-#### 3.10 Partner (Affiliate) System
+- **User wallets:** every customer, trainer and partner has one, created with the account.
+- **System wallets:**
+  - **Admin:** the owner's wallet. It receives the platform's share of each sale.
+  - **Gateway:** where online card payments come from. Its balance is minus the total received online.
+  - **Bank:** where payouts go. Its balance is the total paid out from the owner's bank account.
+  - **Withdrawal Hold:** money of withdrawal requests waiting for the Admin (see 3.10).
+- A wallet's **balance** is the sum of its lines.
+- **Any wallet can be negative.** Example: a trainer was paid out, then a customer cancelled and the trainer's share was mirrored back. The Admin has a list of negative balances, and the owner settles them with the user outside the app.
+
+**Transactions:**
+
+- A transaction is a list of **lines**. Each line is one wallet and a signed amount: negative lines are the **senders**, positive lines are the **receivers**. A transaction can have any number of senders and receivers.
+- **The lines of a transaction always add up to 0.** Money is never created or lost inside the app, only moved, so all wallets together always add up to 0.
+- A transaction's **sum** is the total of its positive lines (e.g. 100 in the example in 3.8).
+- Each wallet appears at most once in a transaction.
+- Transactions are created in only two ways: by the **system** (payment, purchase, automatic refund, withdrawal steps) or by the **Admin**.
+- **Transactions are never edited or deleted.** A mistake is fixed with a new transaction, usually its mirror.
+
+**Mirror:**
+
+- Any transaction can be **mirrored**. Mirroring opens a new transaction prefilled with every line's sign flipped. The Admin can change any field before saving.
+- The new transaction stores which transaction it mirrors, so the history reads "بازگشت تراکنش #۱۲۳". If a transaction was already mirrored, the Admin sees a warning but can still go ahead.
+- Automatic refunds (customer cancels, run cancelled) are exact mirrors created by the system.
+
+**Admin transactions:**
+
+- The Admin can create a transaction between **any wallets**, user or system, with any senders and receivers and a description.
+- Examples: adjusting past sales after a formula change (`Trainer −X, Partner +X`), recording money a user paid the owner directly (`Bank −X, Customer +X`), or paying a user in parts after declining their withdrawal (`User −X, Bank +X` per transfer).
+
+**What users see:**
+
+- Each user sees their **balance** and **their own lines**, with each transaction's description and date. They never see the other lines (e.g. a customer doesn't see how their payment was split).
+- That's all users can do with the wallet, apart from paying with it at checkout and requesting a withdrawal.
+
+**Paying for an order:**
+
+- At checkout, a positive wallet balance is used first and the rest is paid through the gateway.
+- Nothing moves until payment succeeds. Then, in **one database transaction**:
+  1. If part was paid online: `Gateway −g, Customer +g`, linked to the Payment.
+  2. For each purchased unit: its purchase transaction (see 3.8).
+- An order paid fully from the wallet skips step 1 and is paid immediately.
+- So the same balance can't be spent twice, a customer can have only **one pending order that uses wallet balance** at a time.
+- Gateway payments are also logged separately as **Payments**, which are immutable (see entity 15).
+
+#### 3.10 Withdrawal
+
+1. Any user with a positive balance can request a withdrawal of an amount up to their balance, with a Sheba number and account holder name. The user is told it will be handled **within 72 hours**. Only one request can be pending at a time.
+2. The system immediately moves the amount to the hold: `User −X, Withdrawal Hold +X`. The user sees it as "در انتظار برداشت" and can't spend it.
+3. The Admin sees pending requests in a **withdrawal queue**, oldest first, with requests older than 72 hours highlighted.
+4. **Approve:** the Admin pays the amount from their bank app, enters the bank tracking code, and approves: `Withdrawal Hold −X, Bank +X`.
+5. **Decline** (with a note shown to the user), or the **user cancels** while it's pending: the hold transaction is mirrored and the money returns to the user's wallet. After declining, the owner can still pay the user in parts with Admin transactions (see 3.9).
+
+The user is notified by SMS when their request is approved or declined.
+
+#### 3.11 Partner (Affiliate) System
 
 - Partners have a dedicated dashboard with a unique **Referral Link** and **QR Code**.
-- **Dashboard Metrics:** Partners can view referred customers and the total revenue generated from their purchases, filterable by date range. Each referred customer shows signup date, number of paid orders, and total spend. The dashboard also shows this month's estimated commission, the current tier, how much more revenue is needed to reach the next tier, and past commission statements.
+- **Dashboard Metrics:** Partners can view referred customers and the total revenue generated from their purchases, filterable by date range. Each referred customer shows signup date, number of paid orders, and total spend. The dashboard also shows the commission earned (their lines in purchase transactions, minus refunds) and their wallet.
 - **Pre-registration Attribution:** Partners can enter a customer's phone number before the customer signs up. If that customer later registers without a referral link, they are automatically credited to that Partner.
+- **Commission:** the partner's commission is **their line in each purchase transaction** of a referred customer (see 3.8). How it's calculated is an open business question (see 5).
 
 **Attribution rules:**
 
@@ -218,35 +266,6 @@ The user is notified at each step, including which items were left out and why.
 - A lead can't be added for a phone number that is already registered.
 - Each order stores the partner it was attributed to at purchase time, so dashboard numbers don't change retroactively.
 - Only **paid** orders count toward revenue. Refunded amounts are subtracted.
-
-#### 3.11 Partner Commission
-
-The exact numbers aren't decided yet, so the formula is **configurable by the Admin** through **Commission Plans**. One plan is the global **default**. The Admin can create other plans and assign one to a specific partner, which overrides the default for that partner.
-
-**Inputs** (calculated by the system for each partner and each Jalali month):
-
-- **Net referred revenue:** total of paid orders from the partner's customers in the month (after discounts), minus refunds made in the month. Only orders inside the attribution window count.
-- **New customers:** referred customers whose first paid order is in this month.
-
-**Parameters** (set by the Admin on each plan):
-
-- **Rate tiers:** a list of "from this monthly revenue → this percentage". The first tier starts at 0 and is the base rate. The tier reached by the month's net revenue applies to **all** of that month's revenue.
-- **First-order bonus:** an optional fixed amount for each new customer.
-- **Attribution window:** optional number of months after signup during which a customer's orders earn commission. Empty means forever.
-
-**Formula:**
-
-```text
-commission = net referred revenue × rate of the tier reached
-           + new customers × first-order bonus
-```
-
-Example plan: 0 → 5%, from 500,000,000 Rial → 7%, from 2,000,000,000 Rial → 10%, plus a 1,000,000 Rial first-order bonus. A partner with 800,000,000 Rial net revenue and 3 new customers earns `800,000,000 × 7% + 3 × 1,000,000 = 59,000,000` Rial.
-
-**Settlement:**
-
-- At the start of each Jalali month, the system creates a draft **commission statement** for each partner for the previous month. It copies the plan values it used, so later plan changes don't alter it.
-- The Admin reviews it, can adjust the amount with a note, and approves it. The approved amount is credited to the partner's **wallet**, from where they can withdraw it (see 3.9).
 
 #### 3.12 Reviews, Comments & Questions
 
@@ -278,7 +297,8 @@ These apply to every entity and are not repeated in each table:
 - **Timestamps:** `Created At` and `Updated At` on every table, stored in UTC and shown in the Jalali calendar.
 - **Soft delete:** entities with history (User, Pet, Course, Course Run) use `Deleted At` instead of being removed.
 - **Money:** stored as integers in **Rial**. No floating-point amounts. The UI shows toman (Rial ÷ 10), shortened as "هزار" or "میلیون".
-- **Snapshots:** values that can change later (price, partner, refund policy, trainer share, commission plan) are copied at the moment they're used.
+- **Snapshots:** values that can change later (price, partner, refund policy) are copied at the moment they're used. The split of each sale is recorded by its purchase transaction.
+- **Append-only money:** Payments, Transactions and Transaction Lines are never edited or deleted. Corrections are new transactions.
 
 #### Relationship overview
 
@@ -286,7 +306,7 @@ These apply to every entity and are not repeated in each table:
 erDiagram
   USER ||--o| TRAINER_PROFILE : has
   USER ||--o| PARTNER_PROFILE : has
-  USER ||--|| WALLET : has
+  USER ||--o| WALLET : has
   USER ||--o{ PET : owns
   USER }o--o| USER : "referred by (partner)"
   USER ||--o{ COURSE : "creates / owns"
@@ -297,7 +317,6 @@ erDiagram
   COURSE_RUN ||--o{ COURSE_SESSION : "split into"
   COURSE_RUN ||--o{ ENROLLMENT : has
   COURSE_RUN ||--o{ WAITLIST_ENTRY : has
-  COURSE_RUN ||--o| TRAINER_SETTLEMENT : "settled by"
   PET ||--o{ ENROLLMENT : "enrolled in"
   PET ||--o{ WAITLIST_ENTRY : waits
   ENROLLMENT ||--o| REVIEW : "reviewed by"
@@ -309,15 +328,14 @@ erDiagram
   ORDER ||--|{ ORDER_ITEM : contains
   ORDER_ITEM ||--|| ENROLLMENT : creates
   ORDER ||--o{ PAYMENT : "paid by"
-  WALLET ||--o{ WALLET_TRANSACTION : records
+  PAYMENT ||--o| TRANSACTION : "recorded as"
+  ORDER_ITEM ||--o{ TRANSACTION : "purchase / refund"
+  TRANSACTION ||--|{ TRANSACTION_LINE : "made of"
+  WALLET ||--o{ TRANSACTION_LINE : "appears in"
+  TRANSACTION |o--o{ TRANSACTION : "mirrored by"
   USER ||--o{ WITHDRAWAL_REQUEST : requests
-  WITHDRAWAL_REQUEST ||--|{ WITHDRAWAL_REQUEST_ITEM : lists
-  WALLET_TRANSACTION ||--o{ WALLET_CREDIT_USAGE : "used by / uses"
-  WALLET_TRANSACTION ||--o{ WITHDRAWAL_REQUEST_ITEM : "listed in"
+  WITHDRAWAL_REQUEST ||--|{ TRANSACTION : "hold / payout / release"
   USER ||--o{ PARTNER_LEAD : "adds (partner)"
-  COMMISSION_PLAN ||--|{ COMMISSION_TIER : has
-  COMMISSION_PLAN ||--o{ PARTNER_PROFILE : "assigned to"
-  PARTNER_PROFILE ||--o{ COMMISSION_STATEMENT : earns
 ```
 
 #### **1. User**
@@ -335,7 +353,7 @@ erDiagram
 | Referred At              | When attribution happened.                     |
 | Last Login At            |                                                |
 
-- **Relations:** Has one **Wallet**. Has one **Trainer Profile** or **Partner Profile** depending on role. A Customer has many **Pets** and **Orders**.
+- **Relations:** Customers, trainers and partners have one **Wallet**. Has one **Trainer Profile** or **Partner Profile** depending on role. A Customer has many **Pets** and **Orders**.
 
 #### **2. Trainer Profile**
 
@@ -352,15 +370,14 @@ erDiagram
 
 #### **3. Partner Profile**
 
-| Field              | Notes                                                    |
-| ------------------ | -------------------------------------------------------- |
-| User ID            | One-to-one with a `Partner` user.                        |
-| Business Name      | e.g. the pet shop's name.                                |
-| Business Type      | `Pet Shop`, `Veterinary Clinic`, `Groomer`, `Other`.     |
-| Referral Code      | Unique, short, used in the referral link and QR code.    |
-| Commission Plan ID | Optional. Empty means the default plan.                  |
-| City, Address      |                                                          |
-| Is Active          | Inactive partners' links stop attributing new customers. |
+| Field         | Notes                                                    |
+| ------------- | -------------------------------------------------------- |
+| User ID       | One-to-one with a `Partner` user.                        |
+| Business Name | e.g. the pet shop's name.                                |
+| Business Type | `Pet Shop`, `Veterinary Clinic`, `Groomer`, `Other`.     |
+| Referral Code | Unique, short, used in the referral link and QR code.    |
+| City, Address |                                                          |
+| Is Active     | Inactive partners' links stop attributing new customers. |
 
 #### **4. Pet**
 
@@ -453,7 +470,7 @@ erDiagram
 
 Reserved Count can be cached on the run row for fast listing, but it must be updated in the same transaction as the enrollment.
 
-- **Relations:** Belongs to a **Course** and a **Trainer**; Has many **Course Sessions**, **Enrollments** and **Waitlist Entries**; has one **Trainer Settlement** once completed.
+- **Relations:** Belongs to a **Course** and a **Trainer**; Has many **Course Sessions**, **Enrollments** and **Waitlist Entries**.
 
 #### **8. Course Session**
 
@@ -490,14 +507,14 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 
 #### **10. Waitlist Entry**
 
-| Field                 | Notes                                                              |
-| --------------------- | ------------------------------------------------------------------ |
-| Course Run ID, Pet ID | Unique together.                                                   |
-| Customer ID           |                                                                    |
-| Status                | `Waiting`, `Offered`, `Enrolled`, `Expired`, `Left`, `Closed`.     |
-| Offered At            |                                                                    |
+| Field                 | Notes                                                             |
+| --------------------- | ----------------------------------------------------------------- |
+| Course Run ID, Pet ID | Unique together.                                                  |
+| Customer ID           |                                                                   |
+| Status                | `Waiting`, `Offered`, `Enrolled`, `Expired`, `Left`, `Closed`.    |
+| Offered At            |                                                                   |
 | Offer Expires At      | The held seat is released and offered to the next pet after this. |
-| Enrollment ID         | Set when the customer pays for the offered seat.                   |
+| Enrollment ID         | Set when the customer pays for the offered seat.                  |
 
 - Order in line is by `Created At`.
 
@@ -516,22 +533,22 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 
 #### **12. Discount Code**
 
-| Field                       | Notes                                                 |
-| --------------------------- | ----------------------------------------------------- |
-| Code                        | Unique, case-insensitive (e.g. `NOROOZ1405`).         |
-| Description                 | Internal note for the Admin.                          |
-| Type                        | `Percentage`, `Fixed Amount`.                         |
-| Value                       | Percentage, or amount in Rial.                        |
-| Max Discount Amount         | Optional cap for percentage codes.                    |
-| Min Order Amount            | Optional.                                             |
-| Starts At, Ends At          |                                                       |
-| Total Usage Limit           | Optional.                                             |
-| Per Customer Limit          | Optional.                                             |
-| First Order Only            |                                                       |
-| Scope                       | `All Courses`, `Selected Courses`.                    |
-| Course IDs                  | When the scope is `Selected Courses`.                 |
-| Used Count                  | Paid orders that used it, minus fully refunded ones.  |
-| Is Active                   | The Admin can turn a code off at any time.            |
+| Field               | Notes                                                |
+| ------------------- | ---------------------------------------------------- |
+| Code                | Unique, case-insensitive (e.g. `NOROOZ1405`).        |
+| Description         | Internal note for the Admin.                         |
+| Type                | `Percentage`, `Fixed Amount`.                        |
+| Value               | Percentage, or amount in Rial.                       |
+| Max Discount Amount | Optional cap for percentage codes.                   |
+| Min Order Amount    | Optional.                                            |
+| Starts At, Ends At  |                                                      |
+| Total Usage Limit   | Optional.                                            |
+| Per Customer Limit  | Optional.                                            |
+| First Order Only    |                                                      |
+| Scope               | `All Courses`, `Selected Courses`.                   |
+| Course IDs          | When the scope is `Selected Courses`.                |
+| Used Count          | Paid orders that used it, minus fully refunded ones. |
+| Is Active           | The Admin can turn a code off at any time.           |
 
 #### **13. Order**
 
@@ -550,7 +567,7 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 | Payment Status      | `Pending`, `Paid`, `Failed`, `Cancelled`, `Refunded`, `Partially Refunded`. |
 | Order Date, Paid At |                                                                             |
 
-- _(Note: Used to calculate partner revenue and commission: `Total Amount − Refunded Amount` of paid orders.)_
+- _(Note: Used to calculate partner revenue: `Total Amount − Refunded Amount` of paid orders.)_
 
 #### **14. Order Item**
 
@@ -563,18 +580,19 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 | Discount Amount        | This item's part of the order discount.                  |
 | Paid Amount            | Unit Price − Discount Amount. Refunds are based on this. |
 | Refund Policy Snapshot | The policy's day and percentage values at purchase time. |
-| Trainer Share Snapshot | The course's Trainer Share (%) at purchase time.         |
 | Refunded Amount        |                                                          |
 
 - One item per pet per run. An order can reserve several pets or several runs at once.
+- Each paid item has one `Purchase` transaction holding its split (see 3.8).
 
 #### **15. Payment (Gateway)**
+
+The log of money actually received through the payment gateway. It is kept separate from wallets and is **immutable**.
 
 | Field                | Notes                                      |
 | -------------------- | ------------------------------------------ |
 | User ID              |                                            |
-| Purpose              | `Order`, `Wallet Top-up`.                  |
-| Order ID             | When the purpose is `Order`.               |
+| Order ID             |                                            |
 | Amount               |                                            |
 | Gateway              | Name of the payment gateway.               |
 | Gateway Authority    | The token used to start the payment.       |
@@ -584,90 +602,69 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 | Failure Reason       |                                            |
 | Paid At              |                                            |
 
-- Records only gateway payments. Wallet movements live in Wallet Transaction.
+- A row is created as `Pending` and moves to `Succeeded` or `Failed` exactly once, from the verified gateway callback. After that it is never edited or deleted, by anyone. The admin panel has no edit or delete action for it.
+- A successful payment creates its `Gateway Payment` transaction (see 3.9).
 - An order can have several payment attempts. Only one can succeed.
-- Gateway callbacks must be verified server-side and handled idempotently (a repeated callback must not reserve or top up twice).
+- Gateway callbacks must be verified server-side and handled idempotently (a repeated callback must not reserve or create transactions twice).
 
 #### **16. Wallet**
 
-| Field          | Notes                                                                           |
-| -------------- | ------------------------------------------------------------------------------- |
-| User ID        | One-to-one. Created at signup.                                                  |
-| Balance        | Rial. Always equals the total of the wallet's transactions. Never negative.     |
-| Held Amount    | Part of the balance held by a pending withdrawal request. Can't be spent.       |
+| Field         | Notes                                                                           |
+| ------------- | ------------------------------------------------------------------------------- |
+| Owner User ID | For user wallets. One-to-one, created with the account.                         |
+| System Kind   | For system wallets: `Admin`, `Gateway`, `Bank`, `Withdrawal Hold`. One of each. |
+| Balance       | Rial. Cached sum of the wallet's transaction lines. Can be negative.            |
 
-#### **17. Wallet Transaction**
+- Exactly one of Owner User ID and System Kind is set.
+- Balance is updated in the same database transaction as the lines that change it.
 
-| Field            | Notes                                                                                                                       |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Wallet ID        |                                                                                                                             |
-| Type             | `Top-up`, `Order Payment`, `Order Payment Reversal`, `Refund`, `Trainer Earning`, `Commission`, `Withdrawal`, `Admin Adjustment`. |
-| Amount           | Positive for credits, negative for debits.                                                                                  |
-| Balance After    |                                                                                                                             |
-| Reference        | The related Order, Payment, Withdrawal Request, Trainer Settlement or Commission Statement.                                  |
-| Description      | Shown to the user (e.g. "بازگشت وجه دوره اطاعت‌پذیری مقدماتی").                                                             |
-| Created By       | The Admin, for adjustments.                                                                                                 |
-| Reason           | Required for Admin adjustments.                                                                                             |
+#### **17. Transaction**
 
-- Entries are never edited or deleted. Mistakes are fixed with a new entry.
-- How much of a credit is still in the balance isn't stored on the entry. It's the credit's amount minus what its Credit Usages have taken from it.
+| Field                 | Notes                                                                                                            |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Number                | Human-readable, unique (e.g. `TX-140507-0042`).                                                                  |
+| Type                  | `Gateway Payment`, `Purchase`, `Refund`, `Withdrawal Hold`, `Withdrawal Payout`, `Withdrawal Release`, `Manual`. |
+| Sum                   | Total of the positive lines. Cached for listing.                                                                 |
+| Description           | Shown to every user who has a line in it (e.g. "خرید دوره اطاعت‌پذیری مقدماتی برای لئو").                        |
+| Created By            | Empty for system transactions. The Admin, for `Manual` ones.                                                     |
+| Mirror Of             | Optional. The transaction this one mirrors.                                                                      |
+| Order Item ID         | For `Purchase` and `Refund`.                                                                                     |
+| Payment ID            | For `Gateway Payment`.                                                                                           |
+| Withdrawal Request ID | For the three withdrawal types.                                                                                  |
 
-#### **18. Wallet Credit Usage**
+- Never edited or deleted, including its lines.
+- At most one `Purchase` per order item.
+- `Refund` and `Withdrawal Release` are always mirrors. A `Manual` transaction can be one too.
 
-Records which credits each debit used, so the balance can be explained as a list of credits without ever editing an entry.
+#### **18. Transaction Line**
 
-| Field          | Notes                                                                 |
-| -------------- | --------------------------------------------------------------------- |
-| Debit ID       | The spending entry (order payment, withdrawal, negative adjustment).  |
-| Credit ID      | The credit it used.                                                   |
-| Amount         | How much of that credit this debit used.                              |
+| Field          | Notes                                                    |
+| -------------- | -------------------------------------------------------- |
+| Transaction ID |                                                          |
+| Wallet ID      |                                                          |
+| Amount         | Signed, never 0. Negative = sender, positive = receiver. |
 
-- One debit can use several credits (oldest first).
-- When a debit is reversed (e.g. a failed order returns its wallet part), the reversal is linked to the same credits, so the returned money keeps its original source.
-- Like Wallet Transactions, these rows are never edited or deleted.
+- A transaction has at least two lines, and its lines add up to 0.
+- Unique on (Transaction ID, Wallet ID).
+- A user's wallet history is their own lines, joined with each transaction's number, type, description and date.
 
 #### **19. Withdrawal Request**
 
-| Field                      | Notes                                                   |
-| -------------------------- | ------------------------------------------------------- |
-| User ID                    |                                                         |
-| Requested Amount           | The balance at the time of the request.                 |
-| Approved Amount            | Total of the items the Admin kept selected.             |
-| Sheba Number               | `IR` + 24 digits.                                       |
-| Account Holder Name        |                                                         |
-| Status                     | `Pending`, `Approved`, `Paid`, `Rejected`.              |
-| Admin Note                 | Shown to the user (e.g. why some items were left out).  |
-| Rejection Reason           |                                                         |
-| Reviewed By, Reviewed At   |                                                         |
-| Paid At                    |                                                         |
-| Bank Tracking Code         | Entered by the Admin after paying.                      |
+| Field                    | Notes                                                     |
+| ------------------------ | --------------------------------------------------------- |
+| User ID                  |                                                           |
+| Amount                   | Up to the user's balance at the time of the request.      |
+| Sheba Number             | `IR` + 24 digits.                                         |
+| Account Holder Name      |                                                           |
+| Status                   | `Pending`, `Paid`, `Declined`, `Cancelled` (by the user). |
+| Admin Note               | Shown to the user (e.g. why it was declined).             |
+| Bank Tracking Code       | Entered by the Admin when approving.                      |
+| Reviewed By, Reviewed At |                                                           |
 
-#### **20. Withdrawal Request Item**
+- At most one `Pending` request per user.
+- Creating it creates the `Withdrawal Hold` transaction. Approving creates the `Withdrawal Payout`. Declining or cancelling creates the `Withdrawal Release` (the mirror of the hold).
 
-| Field                  | Notes                                                    |
-| ---------------------- | -------------------------------------------------------- |
-| Withdrawal Request ID  |                                                          |
-| Wallet Transaction ID  | A credit that makes up part of the balance.              |
-| Amount                 | How much of the credit was still in the balance at the time of the request. |
-| Is Selected            | Deselected items stay in the user's wallet.              |
-
-#### **21. Trainer Settlement**
-
-| Field                    | Notes                                                    |
-| ------------------------ | -------------------------------------------------------- |
-| Course Run ID            | Unique. One settlement per run.                          |
-| Trainer ID               |                                                          |
-| Seats Sold               |                                                          |
-| Gross Sales              | Total of the seats' run prices.                          |
-| Refund Deduction         | Trainer's share of the refunded proportions.             |
-| Trainer Earning          | Calculated from each item's Trainer Share Snapshot.      |
-| Admin Adjustment, Note   | Optional.                                                |
-| Total Amount             |                                                          |
-| Status                   | `Draft`, `Approved`, `Credited`.                         |
-| Approved By, Approved At |                                                          |
-| Wallet Transaction ID    | Set when credited.                                       |
-
-#### **22. Partner Lead (Pre-registration)**
+#### **20. Partner Lead (Pre-registration)**
 
 | Field                 | Notes                                                                 |
 | --------------------- | --------------------------------------------------------------------- |
@@ -681,48 +678,7 @@ Records which credits each debit used, so the balance can be explained as a list
 
 - _(Note: Used to match a new customer's phone number upon registration if they didn't use a referral link.)_
 
-#### **23. Commission Plan**
-
-| Field                       | Notes                                         |
-| --------------------------- | --------------------------------------------- |
-| Name                        | e.g. "پیش‌فرض", "همکاران ویژه".               |
-| Is Default                  | Exactly one plan is the default.              |
-| First-order Bonus           | Fixed Rial amount per new customer. Optional. |
-| Attribution Window (months) | Optional. Empty means forever.                |
-| Is Active                   |                                               |
-
-#### **24. Commission Tier**
-
-| Field              | Notes                                                         |
-| ------------------ | ------------------------------------------------------------- |
-| Commission Plan ID |                                                               |
-| From Revenue       | Monthly net referred revenue, in Rial. The first tier is `0`. |
-| Rate (%)           |                                                               |
-
-- Unique on (Commission Plan ID, From Revenue).
-
-#### **25. Commission Statement**
-
-| Field                    | Notes                                                       |
-| ------------------------ | ----------------------------------------------------------- |
-| Partner ID               |                                                             |
-| Period                   | Jalali year and month (e.g. `1405-07`).                     |
-| Commission Plan Snapshot | The plan's tiers, bonus and window used for this statement. |
-| Net Referred Revenue     |                                                             |
-| Paid Orders Count        |                                                             |
-| New Customers Count      |                                                             |
-| Applied Rate (%)         |                                                             |
-| Revenue Commission       | Net revenue × applied rate.                                 |
-| Bonus Amount             | New customers × first-order bonus.                          |
-| Admin Adjustment, Note   | Optional.                                                   |
-| Total Amount             |                                                             |
-| Status                   | `Draft`, `Approved`, `Credited`.                            |
-| Approved By, Approved At |                                                             |
-| Wallet Transaction ID    | Set when credited.                                          |
-
-- Unique on (Partner ID, Period).
-
-#### **26. Review**
+#### **21. Review**
 
 | Field                    | Notes                              |
 | ------------------------ | ---------------------------------- |
@@ -734,22 +690,22 @@ Records which credits each debit used, so the balance can be explained as a list
 | Trainer Rating           | 1–5.                               |
 | Comment ID               | Optional. The review's comment.    |
 
-#### **27. Comment**
+#### **22. Comment**
 
-| Field                    | Notes                                                                    |
-| ------------------------ | ------------------------------------------------------------------------ |
-| Course ID                |                                                                          |
-| Author (User ID)         | Customer, Trainer or Admin.                                              |
-| Pet ID                   | Optional, shown next to the customer's name.                             |
-| Parent Comment ID        | Set for replies. Replies can't have replies.                             |
-| Body                     |                                                                          |
-| Status                   | `Pending`, `Approved`, `Rejected`, `Hidden`. Replies start as `Approved`. |
-| Rejection / Hide Reason  |                                                                          |
-| Moderated By, Moderated At |                                                                        |
+| Field                      | Notes                                                                     |
+| -------------------------- | ------------------------------------------------------------------------- |
+| Course ID                  |                                                                           |
+| Author (User ID)           | Customer, Trainer or Admin.                                               |
+| Pet ID                     | Optional, shown next to the customer's name.                              |
+| Parent Comment ID          | Set for replies. Replies can't have replies.                              |
+| Body                       |                                                                           |
+| Status                     | `Pending`, `Approved`, `Rejected`, `Hidden`. Replies start as `Approved`. |
+| Rejection / Hide Reason    |                                                                           |
+| Moderated By, Moderated At |                                                                           |
 
 - A hidden comment hides all its replies, without changing the replies' own status, so restoring the comment brings them back.
 
-#### **28. OTP Code**
+#### **23. OTP Code**
 
 | Field        | Notes                                   |
 | ------------ | --------------------------------------- |
@@ -760,15 +716,28 @@ Records which credits each debit used, so the balance can be explained as a list
 | Consumed At  | A code can be used only once.           |
 | IP Address   | For rate limiting.                      |
 
-#### **29. Platform Setting**
+#### **24. Platform Setting**
 
 Global values the Admin can change without a code release. Defaults:
 
-| Setting                    | Default        |
-| -------------------------- | -------------- |
-| Default trainer share      | To be decided  |
-| Seat hold during payment   | 15 minutes     |
-| Waitlist offer duration    | 12 hours       |
-| OTP validity / resend wait | 2 min / 60 sec |
-| OTP max attempts           | 5              |
-| Minimum withdrawal amount  | To be decided  |
+| Setting                    | Default               |
+| -------------------------- | --------------------- |
+| Default trainer share      | To be decided (see 5) |
+| Seat hold during payment   | 15 minutes            |
+| Waitlist offer duration    | 12 hours              |
+| OTP validity / resend wait | 2 min / 60 sec        |
+| OTP max attempts           | 5                     |
+| Minimum withdrawal amount  | To be decided         |
+| Withdrawal response time   | 72 hours              |
+
+---
+
+### 5. Open Business Logic
+
+The money **system** above (wallets, transactions, mirrors, withdrawals) is settled. These **business rules** decide the numbers that go into it, and are still open:
+
+1. **Who pays the partner?** In the example in 3.8, the Admin keeps a fixed 20% and the partner's 10 comes out of the trainer's part. Is the trainer always the remainder (e.g. 80 when the customer has no partner)?
+2. **Where is the split configured?** Is the Admin's (or trainer's) percentage set per course, as the current Trainer Share field is, or globally?
+3. **How is partner commission calculated?** A fixed amount or a percentage per sale? On every purchase of a referred customer, or only the first? Is there an attribution window? The earlier design with monthly tiers and monthly statements (commit `1f62a76`) doesn't fit a per-sale split, so its Commission Plan, Commission Tier and Commission Statement entities were removed until this is decided.
+4. **Who absorbs discounts?** If a 100 course is sold for 80, which shares shrink? Can the Admin's line be negative on a heavily discounted sale?
+5. **How are partial refunds split?** When the refund policy gives back e.g. 50%, is the refund a proportional mirror (every line × 50%)?

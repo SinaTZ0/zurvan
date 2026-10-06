@@ -76,25 +76,7 @@ Make sure to deploy the output of `npm run build`
 
 ## Entity Diagrams
 
-[docs/entities.d2](docs/entities.d2) maps every Phase One entity with [D2](https://d2lang.com/): an index board, plus one board per entity with its fields, relationships, status lifecycle and business rules.
-
-Install the D2 CLI (needs Go, or see the [other install options](https://d2lang.com/tour/install)):
-
-```bash
-go install oss.terrastruct.com/d2@latest
-```
-
-Live preview in the browser, with clickable links between boards:
-
-```bash
-d2 --watch docs/entities.d2
-```
-
-Render one linked SVG per board into `docs/entities/` (open `docs/entities/index.svg`):
-
-```bash
-d2 docs/entities.d2 docs/entities.svg
-```
+The Phase One entity-relationship diagram lives in [docs/app-phase-one.md](docs/app-phase-one.md) (section 4) as a [Mermaid](https://mermaid.js.org/) `erDiagram`. It renders on GitHub and in most Markdown previews, so there's nothing to install or render.
 
 ## Styling
 
