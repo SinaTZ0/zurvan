@@ -90,10 +90,10 @@ Live preview in the browser, with clickable links between boards:
 d2 --watch docs/entities.d2
 ```
 
-Render one linked SVG per board into `entities/` (open `entities/index.svg`):
+Render one linked SVG per board into `docs/entities/` (open `docs/entities/index.svg`):
 
 ```bash
-d2 docs/entities.d2 entities.svg
+d2 docs/entities.d2 docs/entities.svg
 ```
 
 ## Styling
