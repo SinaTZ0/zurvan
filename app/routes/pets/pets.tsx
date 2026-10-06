@@ -59,11 +59,11 @@ export default function PetsPage({ loaderData }: Route.ComponentProps) {
     <div className="min-h-svh">
       <PetsHeader onSignOut={() => signOut.mutate()} isSigningOut={signOut.isPending} />
 
-      <main className="mx-auto grid w-full max-w-5xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-10">
+      <main className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-10 lg:px-8 lg:py-10">
         {/*===== Family =====*/}
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="text-2xl">سلام {firstName} جان 👋</h1>
+            <h1 className="text-2xl lg:text-3xl">سلام {firstName} جان 👋</h1>
             <p className="text-muted-foreground">امروز برای خانواده‌ات چه کاری انجام بدیم؟</p>
           </div>
           <FamilyHero pets={pets} />
@@ -71,7 +71,7 @@ export default function PetsPage({ loaderData }: Route.ComponentProps) {
         </div>
 
         {/*===== Add Pet =====*/}
-        <AddPetForm className="lg:sticky lg:top-6" />
+        <AddPetForm className="lg:sticky lg:top-10" />
       </main>
     </div>
   );

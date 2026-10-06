@@ -26,7 +26,7 @@ export function PetList({ pets }: { pets: Pet[] }) {
       <h2 id="pet-list-title" className="text-lg">
         حیوان‌های من
       </h2>
-      <ul className="flex flex-col gap-3">
+      <ul className="grid gap-3 sm:grid-cols-2">
         {pets.map((pet) => (
           <PetRow key={pet.id} pet={pet} highlighted={pet.id === lastAddedPetId} />
         ))}
