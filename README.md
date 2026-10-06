@@ -74,6 +74,28 @@ Make sure to deploy the output of `npm run build`
 │   └── server/    # Server-side code
 ```
 
+## Entity Diagrams
+
+[docs/entities.d2](docs/entities.d2) maps every Phase One entity with [D2](https://d2lang.com/): an index board, plus one board per entity with its fields, relationships, status lifecycle and business rules.
+
+Install the D2 CLI (needs Go, or see the [other install options](https://d2lang.com/tour/install)):
+
+```bash
+go install oss.terrastruct.com/d2@latest
+```
+
+Live preview in the browser, with clickable links between boards:
+
+```bash
+d2 --watch docs/entities.d2
+```
+
+Render one linked SVG per board into `entities/` (open `entities/index.svg`):
+
+```bash
+d2 docs/entities.d2 entities.svg
+```
+
 ## Styling
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
