@@ -99,3 +99,5 @@ Document relevant parameters, return behavior, thrown errors, side effects, and 
 ### Agent Skills
 
 don't use any Agent Skills until i specifically tell you.
+
+Exception: use the `frontend-design` skill (`.agents/skills/frontend-design/`) whenever you design a page or reshape an existing page's UI.
