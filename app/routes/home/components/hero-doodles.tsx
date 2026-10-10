@@ -290,24 +290,35 @@ const REVIEW_SCENES: Scene[] = [
  * A saffron scribble frieze for the hero's empty space: a training class walking in single file, after the
  * figure-and-tower doodles of old Persian scroll art. Purely decorative, so it is hidden from assistive tech.
  *
- * The SVG keeps its own aspect ratio at the given height and is pinned to the end side (left, in RTL), so a narrower
- * box crops the tail of the procession instead of squashing it. The figures draw themselves in once on load; reduced
- * motion shows them finished.
+ * The procession marches endlessly from left to right, facing the way it walks. It is a track of three identical
+ * copies sliding one copy's width, so the loop has no seam; the parent clips and fades it, and must be no wider than
+ * two copies. Size the track by height (`className` goes on it); each copy keeps its aspect ratio. Reduced motion
+ * leaves it standing still.
  */
 export function HeroDoodles({ className }: { className?: string }) {
-  return <DoodleScene scene={FRIEZE} className={className} />;
+  return (
+    // Laid out left to right whatever the page direction, so the copies and the slide agree on which way is forward.
+    <div dir="ltr" className={cn("flex w-max animate-doodle-march motion-reduce:animate-none", className)}>
+      {[0, 1, 2].map((copy) => (
+        <DoodleScene key={copy} scene={FRIEZE} className="h-full w-auto shrink-0 -scale-x-100" />
+      ))}
+    </div>
+  );
 }
 
 /**
- * The tall scene for one of the empty margins beside the page, drawn in after the frieze has started. Its groups
- * float, each on its own slow beat. Size it by width; it keeps its aspect ratio.
+ * The tall scene for one of the empty margins beside the page. Its figures rise one by one from the bottom of the
+ * screen, the two sides taking turns, and then each group floats on its own slow beat. Size it by width; it keeps its
+ * aspect ratio.
  */
 export function HeroSideDoodles({ side, className }: { side: "left" | "right"; className?: string }) {
   return (
     <DoodleScene
       scene={side === "left" ? LEFT_SCENE : RIGHT_SCENE}
-      delay={400}
-      stagger={45}
+      // The right side starts half a step after the left, so the figures arrive alternately, ~350ms apart.
+      delay={side === "left" ? 400 : 750}
+      stagger={700}
+      rise
       float
       className={className}
     />
@@ -334,8 +345,9 @@ export function HeroReviewDoodle({ index, className }: { index: number; classNam
 /*===== Doodle Scene =====*/
 /**
  * Draws a scene in saffron with wobbly, hand-drawn strokes. Figures draw in one after another, `stagger` ms apart
- * from `delay`; each group's strings follow once its figures are partly down. With `float`, each group bobs and tilts
- * gently, out of step with the others. Reduced motion turns off both.
+ * from `delay`; each group's strings follow once its figures are partly down. With `rise`, figures instead come up from
+ * below the scene one after another, and strings fade in once the group's last figure has arrived. With `float`, each
+ * group bobs and tilts gently, out of step with the others. Reduced motion turns all of it off.
  *
  * Sized by CSS; `--scene-width` holds the viewBox width, to size it in pixels per unit. `onPhoto` adds the night-time glow
  * in both themes, over a soft dark shadow that lifts the lines off bright parts of the photo.
@@ -344,6 +356,7 @@ function DoodleScene({
   scene,
   delay = 0,
   stagger = 70,
+  rise = false,
   float = false,
   onPhoto = false,
   className,
@@ -351,6 +364,7 @@ function DoodleScene({
   scene: Scene;
   delay?: number;
   stagger?: number;
+  rise?: boolean;
   float?: boolean;
   onPhoto?: boolean;
   className?: string;
@@ -410,18 +424,35 @@ function DoodleScene({
             )}
           >
             {/*------ Figures ------*/}
-            {group.placements.map(({ figure, x, y, scale = 1, flip }, index) => (
-              <g
-                key={`${figure}-${x}-${y}`}
-                transform={`translate(${x} ${y}) scale(${flip ? -scale : scale} ${scale})`}
-                // Thinner strokes on scaled-down figures would look fainter, so the width is held constant.
-                strokeWidth={1.6 / scale}
-                style={{ animationDelay: `${delay + (firstIndex[groupIndex] + index) * stagger}ms` }}
-                className="animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none"
-              >
-                {withPathLength(FIGURES[figure])}
-              </g>
-            ))}
+            {group.placements.map(({ figure, x, y, scale = 1, flip }, index) => {
+              const strokes = (
+                <g
+                  transform={`translate(${x} ${y}) scale(${flip ? -scale : scale} ${scale})`}
+                  // Thinner strokes on scaled-down figures would look fainter, so the width is held constant.
+                  strokeWidth={1.6 / scale}
+                  style={
+                    rise ? undefined : { animationDelay: `${delay + (firstIndex[groupIndex] + index) * stagger}ms` }
+                  }
+                  className={cn(!rise && "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none")}
+                >
+                  {withPathLength(FIGURES[figure])}
+                </g>
+              );
+
+              // The placement already uses the `transform` attribute, which a CSS animation would override, so the
+              // rise goes on a wrapper.
+              return rise ? (
+                <g
+                  key={`${figure}-${x}-${y}`}
+                  style={{ animationDelay: `${delay + (firstIndex[groupIndex] + index) * stagger}ms` }}
+                  className="animate-doodle-rise motion-reduce:animate-none"
+                >
+                  {strokes}
+                </g>
+              ) : (
+                <g key={`${figure}-${x}-${y}`}>{strokes}</g>
+              );
+            })}
 
             {/*------ Leashes and strings ------*/}
             {group.strings?.map((d, index) => (
@@ -430,9 +461,16 @@ function DoodleScene({
                 d={d}
                 pathLength={1}
                 style={{
-                  animationDelay: `${delay + (firstIndex[groupIndex] + group.placements.length * 0.4) * stagger + index * 200}ms`,
+                  animationDelay: rise
+                    ? // A rising figure is not at its leash's end until it lands, so the line waits for the last one.
+                      `${delay + (firstIndex[groupIndex] + group.placements.length) * stagger}ms`
+                    : `${delay + (firstIndex[groupIndex] + group.placements.length * 0.4) * stagger + index * 200}ms`,
                 }}
-                className="animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none"
+                className={
+                  rise
+                    ? "animate-doodle-fade motion-reduce:animate-none"
+                    : "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none"
+                }
               />
             ))}
           </g>

@@ -131,46 +131,83 @@ export function HomeHero() {
           }}
           className="site-container origin-top pt-8 lg:pt-14"
         >
-          <div className="grid gap-x-gutter gap-y-5 lg:grid-cols-[1.25fr_1fr] lg:items-end">
-            <h1 id="hero-title" className="text-display text-balance">
-              آموزش سگ و گربه، با مربیان تأییدشده
+          <div className="grid gap-y-6 lg:grid-cols-[auto_minmax(0,22rem)] lg:items-stretch lg:justify-start lg:gap-x-12 xl:grid-cols-[auto_26rem] xl:gap-x-16">
+            {/* Big and heavy, in two fixed lines on desktop so the highlighted phrase always ends the first. */}
+            <h1
+              id="hero-title"
+              className="text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.2] font-black text-balance dark:font-extrabold dark:text-foreground/90"
+            >
+              <span className="lg:block">
+                آموزش{" "}
+                {/* A saffron marker stroke wipes in behind the words, in the same hand as the doodles. By day it
+                    sits low behind the dark letters; by night light letters would not hold on saffron, so it grows into
+                    a full highlighter block and the phrase turns dark ink. */}
+                <span className="relative isolate whitespace-nowrap dark:text-saffron-foreground">
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 200 40"
+                    preserveAspectRatio="none"
+                    className="absolute inset-x-[-0.12em] top-[44%] -bottom-[2%] -z-10 h-[54%] w-[calc(100%+0.24em)] animate-marker-swipe fill-saffron opacity-90 motion-reduce:animate-none dark:top-[-8%] dark:h-[108%] dark:opacity-100"
+                  >
+                    <path d="M3 10 C28 3 66 12 108 6 S178 3 197 9 L199 29 C172 37 132 28 92 34 S26 37 2 32 Z" />
+                  </svg>
+                  سگ و گربه
+                </span>
+                ،
+              </span>{" "}
+              <span className="lg:block">با مربیان تأییدشده</span>
             </h1>
 
-            <div className="lg:pb-3">
-              <p className="max-w-xl text-lead text-muted-foreground">
+            {/*------ Pitch ------*/}
+            {/* On desktop the pitch is as tall as the headline: the sentence starts level with its first line and the
+                buttons end level with its last, so the two columns read as one block. */}
+            <div className="flex flex-col gap-6 lg:justify-between lg:py-3">
+              <p className="max-w-[28rem] text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.9] font-medium text-balance text-foreground/85">
                 کلاس حضوری در تهران و کرج، یا آنلاین از خانه. جای حیوانت را رزرو کن و آنلاین پرداخت کن.
               </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link to="/courses" className={buttonVariants({ size: "lg" })}>
+              {/* One main action and one quieter way in, so the choice is never a coin toss. */}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+                <Link
+                  to="/courses"
+                  className={buttonVariants({
+                    size: "lg",
+                    className: "px-9 text-lg font-extrabold shadow-md max-sm:flex-1",
+                  })}
+                >
                   کلاس‌ها را ببین
                 </Link>
-                <Link to="/#trainers" className={buttonVariants({ size: "lg", variant: "outline" })}>
+                <Link
+                  to="/#trainers"
+                  className={buttonVariants({ size: "lg", variant: "ghost", className: "text-primary" })}
+                >
                   مربیان را بشناس
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-5 flex items-end gap-x-8 sm:mt-8">
-            {/*------ Guarantees ------*/}
-            <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground sm:flex">
-              <li className="flex items-center gap-2">
-                <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
+          {/*===== Ground Row =====*/}
+          {/* The guarantees stand on the same ground as the marching frieze. From `sm` they sit at the start of the
+              row and the frieze fills the rest; the cropped ends fade out rather than ending in a half-drawn figure,
+              and `mask-no-clip` lets that fade reach the part of the frieze above and below its box. */}
+          <div className="mt-4 flex items-center gap-x-8 sm:mt-6">
+            <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm font-medium sm:flex">
+              <li className="flex items-center gap-2.5">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
+                  <BadgeCheckIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
+                </span>
                 ۴۲ مربی تأییدشده
               </li>
-              <li className="flex items-center gap-2">
-                <UndoDotIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
+              <li className="flex items-center gap-2.5">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
+                  <UndoDotIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
+                </span>
                 کلاس شروع نشد؟ کل مبلغ برمی‌گردد
               </li>
             </ul>
 
-            {/*------ Doodles ------*/}
-            {/* Fills the rest of the row. From `sm` the frieze rises out of the short guarantees row into the empty
-                space beside the buttons, and dips into the gap above the photo, instead of making the heading taller.
-                The cropped tail fades out at the start edge rather than ending in a half-drawn figure; `mask-no-clip`
-                lets that fade reach the part of the frieze above and below this box. */}
-            <div className="relative h-16 min-w-0 flex-1 self-stretch overflow-x-clip mask-r-from-[calc(100%-3rem)] mask-no-clip sm:h-auto">
-              <HeroDoodles className="absolute end-0 bottom-0 h-16 w-auto sm:-bottom-4 sm:h-20" />
+            <div className="relative h-12 min-w-0 flex-1 overflow-x-clip mask-r-from-[calc(100%-3rem)] mask-l-from-[calc(100%-3rem)] mask-no-clip sm:h-14">
+              <HeroDoodles className="absolute bottom-0 left-0 h-full" />
             </div>
           </div>
         </div>
@@ -209,13 +246,12 @@ export function HomeHero() {
         </div>
 
         {/*===== Photo =====*/}
-        {/* Covers the whole panel and is clipped back to the frame; `--expand` opens the clip to the screen's edges. */}
+        {/* Covers the whole panel and is clipped back to the frame; `--expand` opens the clip to the screen's edges.
+            Once measured, the framed photo rises from the bottom of the screen: the clip moves with it, so the frame
+            arrives whole, and the panel's overflow hides it until it is in. */}
         <div
           style={{ clipPath: FRAME_CLIP }}
-          className={cn(
-            "absolute inset-0 z-10 transition-opacity duration-700 ease-silk motion-reduce:transition-none",
-            measured ? "opacity-100" : "opacity-0",
-          )}
+          className={cn("absolute inset-0 z-10", measured ? "animate-rise-in motion-reduce:animate-none" : "opacity-0")}
         >
           <img
             src={PHOTO.src}

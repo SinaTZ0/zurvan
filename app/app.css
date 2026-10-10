@@ -66,6 +66,63 @@
     }
   }
 
+  /* Wipes a marker stroke across a phrase, from the side Persian starts reading on. Lands just after the page does */
+  --animate-marker-swipe: marker-swipe 0.7s var(--ease-silk-in-out) 0.5s both;
+  @keyframes marker-swipe {
+    from {
+      clip-path: inset(0 0 0 100%);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+
+  /* Slides a full-size layer up from beyond its own bottom edge: fast at first, then a long, soft landing */
+  --animate-rise-in: rise-in 1.4s var(--ease-silk) both;
+  @keyframes rise-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Lifts a figure up from far below its place and settles it there. The distance is in the SVG's own units, so it must
+     clear the tallest hero on screen */
+  --animate-doodle-rise: doodle-rise 1.1s var(--ease-silk) both;
+  @keyframes doodle-rise {
+    from {
+      transform: translateY(1400px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Slides a track of three identical copies one copy to the right, ending exactly where a copy began, so a loop of
+     it never shows a seam. The percentage is of the track's own width, which is three copies */
+  --animate-doodle-march: doodle-march 50s linear infinite;
+  @keyframes doodle-march {
+    from {
+      transform: translateX(-33.3333%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  /* Fades a stroke in once, for lines that join figures arriving separately */
+  --animate-doodle-fade: doodle-fade 0.6s ease-out both;
+  @keyframes doodle-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
   /* A slow bob and tilt, there and back. Give each user its own duration and a negative delay to break the unison */
   --animate-doodle-float: doodle-float 6s ease-in-out infinite alternate;
   @keyframes doodle-float {
