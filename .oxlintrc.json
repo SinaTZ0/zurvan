@@ -64,7 +64,6 @@
     "build/",
     "playwright-report/",
     "test-results/",
-    "storybook-static/",
-    "claude-design-assets/"
+    "storybook-static/"
   ]
 }
