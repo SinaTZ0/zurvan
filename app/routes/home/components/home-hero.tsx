@@ -194,10 +194,18 @@ export function HomeHero() {
         </div>
 
         {/*===== Frame =====*/}
-        {/* An empty box that only marks where the photo starts. The bottom padding adds the header's height, so the
-            frame's lower edge is on screen at the top of the page, before the header has scrolled away. */}
+        {/* Marks where the photo starts. The bottom padding adds the header's height, so the frame's lower edge is on
+            screen at the top of the page, before the header has scrolled away. Until the photo is measured into place
+            (it needs the heading's final height, which isn't known on the server), the frame is a soft placeholder in
+            exactly its spot, so the page never has a hole and the photo fades in over it without moving. */}
         <div className="site-container flex flex-1 flex-col pt-gutter pb-[calc(var(--spacing-gutter)+4rem)] lg:pb-[calc(var(--spacing-gutter)+5rem)]">
-          <div ref={frameRef} className="flex-1" />
+          <div
+            ref={frameRef}
+            className={cn(
+              "flex-1 rounded-[1.75rem] transition-colors duration-700 ease-silk",
+              measured ? "bg-transparent" : "bg-sunken",
+            )}
+          />
         </div>
 
         {/*===== Photo =====*/}
@@ -205,7 +213,7 @@ export function HomeHero() {
         <div
           style={{ clipPath: FRAME_CLIP }}
           className={cn(
-            "absolute inset-0 z-10 transition-opacity duration-500",
+            "absolute inset-0 z-10 transition-opacity duration-700 ease-silk motion-reduce:transition-none",
             measured ? "opacity-100" : "opacity-0",
           )}
         >

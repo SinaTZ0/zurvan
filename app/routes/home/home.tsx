@@ -2,6 +2,7 @@ import { data } from "react-router";
 
 import { referralCookieFromUrl } from "~/lib/referral.server";
 import { BrowseSection } from "~/routes/home/components/browse-section";
+import { ClosingBanner } from "~/routes/home/components/closing-banner";
 import { DealsShelf } from "~/routes/home/components/deals-shelf";
 import { FeaturedCourses } from "~/routes/home/components/featured-courses";
 import { HomeHero } from "~/routes/home/components/home-hero";
@@ -34,13 +35,14 @@ export default function HomePage() {
   return (
     <>
       <HomeHero />
+      <TrustNotes />
       <BrowseSection />
       <FeaturedCourses />
       <UpcomingRuns />
       <DealsShelf />
       <HowItWorks />
       <TrainersSection />
-      <TrustNotes />
+      <ClosingBanner />
     </>
   );
 }

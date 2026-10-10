@@ -1,3 +1,5 @@
+import { cn } from "cn";
+
 import { formatNumberFa } from "~/lib/digits";
 import { SectionHeading } from "~/routes/home/components/section-heading";
 
@@ -15,46 +17,78 @@ const STEPS = [
     title: "جایش را رزرو کن",
     body: "جای حیوانت ۱۵ دقیقه برایت نگه داشته می‌شود تا با کارت یا کیف پول پرداخت کنی. کد تخفیف هم همین‌جا وارد می‌شود.",
   },
-  {
-    title: "کلاس با حد نصاب شروع می‌شود",
-    body: "وقتی تعداد رزروها به حد نصاب برسد، کلاس قطعی می‌شود و پیامک می‌گیری. اگر نرسد، کل مبلغ به کیف پولت برمی‌گردد.",
-  },
 ];
+
+// The last step forks on whether enough people booked, so it's laid out as two outcomes instead of one paragraph.
+const FINAL_STEP = {
+  title: "کلاس با حد نصاب شروع می‌شود",
+  outcomes: [
+    { lead: "اگر به حد نصاب برسد:", body: "کلاس قطعی می‌شود و پیامک می‌گیری." },
+    { lead: "اگر نرسد:", body: "کل مبلغ به کیف پولت برمی‌گردد." },
+  ],
+};
 
 /*===== How It Works =====*/
 /**
- * The reservation flow in four steps, joined by a line: across on desktop, down the start edge on phones. It's the page's
- * one deep firuzeh band, the pause between shopping and meeting the trainers.
+ * The reservation flow in four numbered panels, under a frieze of the doodled people and animals the hero draws. It's
+ * the page's one deep firuzeh band, the pause between shopping and meeting the trainers. The last step is the payoff,
+ * so it alone is a light panel and carries both outcomes.
  */
 export function HowItWorks() {
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="mt-section-md surface-inverse py-section-md">
       <div className="site-container">
-        <SectionHeading id="how-title" title="رزرو کلاس در زروان چطور است؟" />
+        {/*------ Heading and Frieze ------*/}
+        <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6">
+          <div className="min-w-0 flex-1 basis-96">
+            <SectionHeading
+              id="how-title"
+              title="رزرو کلاس در زروان چطور است؟"
+              description="چهار قدم تا جای تو در کلاس؛ و اگر کلاس برگزار نشود، پولت سر جایش برمی‌گردد."
+            />
+          </div>
+          <img
+            src="/photo/doodle-frieze.png"
+            alt=""
+            width={1718}
+            height={160}
+            loading="lazy"
+            className="h-auto w-full max-w-lg min-w-0 flex-[0_1_32rem]"
+          />
+        </div>
 
-        <ol className="mt-10 grid gap-8 lg:grid-cols-4 lg:gap-gutter">
+        {/*------ Steps ------*/}
+        <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="relative flex gap-4 lg:flex-col lg:gap-5">
-              {/*------ Marker and Connector ------*/}
-              <span className="relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full border bg-inverse text-base font-extrabold text-saffron">
-                {formatNumberFa(index + 1)}
-              </span>
-              {/* Runs from this marker to the next one: down through the gap on phones, across it on desktop. */}
-              {index < STEPS.length - 1 && (
-                <span
-                  aria-hidden
-                  className="absolute start-5.5 top-11 -bottom-8 w-px bg-border lg:start-11 lg:-end-gutter lg:top-5.5 lg:bottom-auto lg:h-px lg:w-auto"
-                />
-              )}
-
-              <div className="pb-1">
-                <h3 className="text-h4">{step.title}</h3>
-                <p className="mt-2 max-w-prose text-sm text-pretty text-muted-foreground">{step.body}</p>
-              </div>
+            <li key={step.title} className="flex flex-col gap-2.5 rounded-3xl border bg-foreground/6 p-6">
+              <StepNumber>{index + 1}</StepNumber>
+              <h3 className="mt-1.5 text-h4">{step.title}</h3>
+              <p className="text-sm text-pretty text-muted-foreground">{step.body}</p>
             </li>
           ))}
+
+          {/* Light on the dark band whichever theme is on, so it resets the band's re-pointed text colours. */}
+          <li className="flex flex-col gap-2.5 rounded-3xl bg-white p-6 text-foreground [--foreground:#13201f] [--muted-foreground:#3f4b49] [--primary:#0e6466]">
+            <StepNumber className="text-primary">{STEPS.length + 1}</StepNumber>
+            <h3 className="mt-1.5 text-h4">{FINAL_STEP.title}</h3>
+            {FINAL_STEP.outcomes.map(({ lead, body }) => (
+              <p key={lead} className="text-sm text-pretty text-muted-foreground">
+                <strong className="font-bold text-foreground">{lead}</strong> {body}
+              </p>
+            ))}
+          </li>
         </ol>
       </div>
     </section>
+  );
+}
+
+/*===== Step Number =====*/
+/** The big count at the top of a step panel: saffron on the dark panels, firuzeh on the light one. */
+function StepNumber({ children, className }: { children: number; className?: string }) {
+  return (
+    <span aria-hidden className={cn("text-6xl leading-none font-black", className ?? "text-saffron")}>
+      {formatNumberFa(children)}
+    </span>
   );
 }

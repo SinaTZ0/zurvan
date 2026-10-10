@@ -5,11 +5,19 @@ import { formatNumberFa } from "~/lib/digits";
 import { SectionHeading } from "~/routes/home/components/section-heading";
 
 // Sample data until trainer profiles come from the database (docs/foundations-plan.md).
+const PHOTO_ALT_NEGAR = "نگار رحیمی در حال تمرین «بزن قدش» با یک سگ";
+const PHOTO_ALT_SAMANEH = "سمانه کریمی روبه‌روی سگی که به او نگاه می‌کند ایستاده است";
+const PHOTO_ALT_ELHAM = "الهام شریفی گربه‌ای را در آغوش گرفته است";
+const PHOTO_ALT_MAHSA = "مهسا نوری در زمینی باز کنار دو سگ زانو زده است";
+
 const TRAINERS = [
   {
     id: "negar-rahimi",
     name: "نگار رحیمی",
-    photo: "/demo/trainer-1.jpg",
+    photo: "/photo/trainer-negar.jpg",
+    photoAlt: PHOTO_ALT_NEGAR,
+    /** Where the crop is anchored, so the trainer and the animal both stay in frame. */
+    photoPosition: "50% 20%",
     focus: "اطاعت‌پذیری و آمدن با صدا زدن",
     city: "تهران",
     rating: 4.9,
@@ -19,7 +27,9 @@ const TRAINERS = [
   {
     id: "samaneh-karimi",
     name: "سمانه کریمی",
-    photo: "/demo/trainer-2.jpg",
+    photo: "/photo/trainer-samaneh.jpg",
+    photoAlt: PHOTO_ALT_SAMANEH,
+    photoPosition: "50% 50%",
     focus: "توله‌سگ‌ها و اضطراب جدایی",
     city: "تهران",
     rating: 4.8,
@@ -29,7 +39,9 @@ const TRAINERS = [
   {
     id: "elham-sharifi",
     name: "الهام شریفی",
-    photo: "/demo/trainer-3.jpg",
+    photo: "/photo/trainer-elham.jpg",
+    photoAlt: PHOTO_ALT_ELHAM,
+    photoPosition: "50% 50%",
     focus: "رفتار گربه",
     city: "آنلاین",
     rating: 4.9,
@@ -39,7 +51,9 @@ const TRAINERS = [
   {
     id: "mahsa-nouri",
     name: "مهسا نوری",
-    photo: "/demo/trainer-4.jpg",
+    photo: "/photo/trainer-mahsa.jpg",
+    photoAlt: PHOTO_ALT_MAHSA,
+    photoPosition: "50% 70%",
     focus: "قلاده و آداب شهری",
     city: "تهران و کرج",
     rating: 4.7,
@@ -62,39 +76,40 @@ export function TrainersSection() {
         link={{ label: "همه‌ی مربیان", to: "/trainers" }}
       />
 
-      <ul className="mt-8 grid grid-cols-2 gap-gutter lg:grid-cols-4">
+      <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-gutter">
         {TRAINERS.map((trainer) => (
           <li key={trainer.id}>
-            <Link
-              to={`/trainers/${trainer.id}`}
-              className="group/trainer flex h-full flex-col items-center rounded-xl p-2 text-center sm:p-4"
-            >
-              {/*------ Avatar ------*/}
-              <span className="relative">
+            <Link to={`/trainers/${trainer.id}`} className="group/trainer flex h-full flex-col gap-3.5 rounded-3xl">
+              {/*------ Photo and Rating ------*/}
+              <span className="relative block h-64 overflow-hidden rounded-3xl bg-sunken sm:h-96">
                 <img
                   src={trainer.photo}
-                  alt=""
-                  width={320}
-                  height={320}
+                  alt={trainer.photoAlt}
+                  width={720}
+                  height={960}
                   loading="lazy"
-                  className="size-24 rounded-full object-cover object-top ring-1 ring-border transition duration-500 group-hover/trainer:ring-4 group-hover/trainer:ring-primary/25 sm:size-32"
+                  style={{ objectPosition: trainer.photoPosition }}
+                  className="size-full object-cover transition-transform duration-700 ease-silk motion-safe:group-hover/trainer:scale-105"
                 />
-                <span className="absolute end-0.5 bottom-0.5 flex size-8 items-center justify-center rounded-full bg-card shadow-xs">
-                  <BadgeCheckIcon strokeWidth={1.7} className="size-6 text-success" aria-label="تأییدشده" />
+                <span className="absolute start-3.5 bottom-3.5 flex items-center gap-1.5 rounded-full bg-card px-3 py-1 text-xs font-bold">
+                  <StarIcon strokeWidth={1.7} fill="currentColor" className="size-3.5 text-saffron" aria-hidden />
+                  {ratingFormat.format(trainer.rating)}
+                  <span className="font-medium text-muted-foreground">({formatNumberFa(trainer.reviews)} نظر)</span>
                 </span>
               </span>
 
               {/*------ Details ------*/}
-              <span className="mt-4 text-base font-extrabold sm:text-lg">{trainer.name}</span>
-              <span className="mt-1 text-sm text-balance text-muted-foreground">{trainer.focus}</span>
-              <span className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <StarIcon strokeWidth={1.7} fill="currentColor" className="size-3.5 text-saffron" aria-hidden />
-                  <span className="font-bold text-foreground">{ratingFormat.format(trainer.rating)}</span>
-                  <span>({formatNumberFa(trainer.reviews)} نظر)</span>
+              <span className="flex flex-col gap-0.5">
+                <span className="flex items-center gap-2">
+                  <span className="text-lg font-extrabold group-hover/trainer:underline group-hover/trainer:decoration-saffron group-hover/trainer:decoration-2 group-hover/trainer:underline-offset-8 sm:text-xl">
+                    {trainer.name}
+                  </span>
+                  <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-label="تأییدشده" />
                 </span>
-                <span>{trainer.city}</span>
-                <span>{formatNumberFa(trainer.years)} سال سابقه</span>
+                <span className="text-sm text-balance text-muted-foreground">{trainer.focus}</span>
+                <span className="text-xs text-muted-foreground">
+                  {trainer.city} · {formatNumberFa(trainer.years)} سال سابقه
+                </span>
               </span>
             </Link>
           </li>

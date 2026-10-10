@@ -7,6 +7,8 @@ type TrustNote = {
   body: string;
   Icon: LucideIcon;
   link?: { label: string; to: string };
+  /** The refund note is saffron-tinted so money reads differently from safety. */
+  tone?: "saffron";
 };
 
 const NOTES: TrustNote[] = [
@@ -20,6 +22,7 @@ const NOTES: TrustNote[] = [
     body: "اگر کلاس به حد نصاب نرسد یا لغو شود، کل مبلغ برمی‌گردد. بعد از قطعی شدن، طبق سیاست لغو همان دوره که پیش از پرداخت می‌بینی.",
     Icon: UndoDotIcon,
     link: { label: "قوانین لغو و بازپرداخت", to: "/help/refunds" },
+    tone: "saffron",
   },
   {
     title: "پرداخت امن، با کیف پول",
@@ -29,26 +32,42 @@ const NOTES: TrustNote[] = [
 ];
 
 /*===== Trust Notes =====*/
-/** What's protected before anyone pays. Polite and concrete, the tone for anything about money and safety. */
+/**
+ * What's protected before anyone pays. Polite and concrete, the tone for anything about money and safety. One bordered
+ * panel split by dividers rather than three separate cards, so it reads as a single promise right under the hero.
+ */
 export function TrustNotes() {
   return (
-    <section aria-labelledby="trust-title" className="site-container pt-section-md">
+    <section aria-labelledby="trust-title" className="site-container pt-6">
       <h2 id="trust-title" className="sr-only">
         اطمینان از خرید
       </h2>
-      <ul className="grid gap-4 md:grid-cols-3 md:gap-gutter">
-        {NOTES.map(({ title, body, Icon, link }) => (
-          <li key={title} className="flex flex-col gap-3 rounded-xl border bg-card p-6 shadow-sm">
-            <span className="flex size-12 items-center justify-center rounded-md bg-primary/10 text-primary">
+      <ul className="grid divide-y overflow-hidden rounded-3xl border bg-card md:grid-cols-3 md:divide-x md:divide-y-0">
+        {NOTES.map(({ title, body, Icon, link, tone }) => (
+          <li key={title} className="flex items-start gap-4 p-6 md:px-7">
+            <span
+              className={
+                tone === "saffron"
+                  ? "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-saffron/15 text-saffron-text"
+                  : "flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+              }
+            >
               <Icon strokeWidth={1.7} className="size-6" aria-hidden />
             </span>
-            <h3 className="text-h4">{title}</h3>
-            <p className="text-sm text-pretty text-muted-foreground">{body}</p>
-            {link && (
-              <Link to={link.to} className="mt-auto self-start text-sm font-bold text-primary hover:underline">
-                {link.label}
-              </Link>
-            )}
+            <div className="flex flex-col gap-1">
+              <h3 className="text-h4">{title}</h3>
+              <p className="text-sm text-pretty text-muted-foreground">
+                {body}
+                {link && (
+                  <>
+                    {" "}
+                    <Link to={link.to} className="font-bold whitespace-nowrap text-primary hover:underline">
+                      {link.label}
+                    </Link>
+                  </>
+                )}
+              </p>
+            </div>
           </li>
         ))}
       </ul>

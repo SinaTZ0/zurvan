@@ -121,6 +121,7 @@
   --color-inverse-foreground: var(--inverse-foreground);
   --color-saffron: var(--saffron);
   --color-saffron-text: var(--saffron-text);
+  --color-saffron-foreground: var(--saffron-foreground);
   --color-success: var(--success);
   --color-faint: var(--faint);
 
@@ -189,6 +190,7 @@
   /*------ Accents and status ------*/
   --saffron: #d99a22; /* star fills and icons beside a value; 2.4:1 on white, so never text */
   --saffron-text: #87590a; /* saffron as words: 6.1:1 on card, 4.8:1 on sunken */
+  --saffron-foreground: #1a1300; /* text on a saffron fill: 7.5:1 */
   --success: #1d7346; /* 5.8:1 on card */
   --destructive: #b8344a; /* pomegranate, 5.2:1 on background */
 
@@ -256,6 +258,7 @@
   /*------ Accents and status ------*/
   --saffron: #e6ae45;
   --saffron-text: #edbd62; /* 9.4:1 on card */
+  --saffron-foreground: #1a1300; /* 8.9:1 on the night saffron */
   --success: #4cc386;
   --destructive: #ec6a7c;
 

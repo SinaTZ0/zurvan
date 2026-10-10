@@ -1,5 +1,4 @@
 import { cn } from "cn";
-import { TicketPercentIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { formatNumberFa } from "~/lib/digits";
@@ -28,8 +27,8 @@ const DEALS: Deal[] = [
     id: "d1",
     courseSlug: "city-manners",
     title: "آداب شهری: کافه، مترو، خیابان",
-    photo: "/demo/course-city.jpg",
-    photoAlt: "یک گلدن رتریور خوشحال در کافه",
+    photo: "/photo/deal-city.jpg",
+    photoAlt: "مردی در خیابان با سگش تمرین می‌کند",
     trainer: "مهسا نوری",
     startsAt: new Date("2026-10-22T17:00:00+03:30"),
     price: 1_520_000,
@@ -41,8 +40,8 @@ const DEALS: Deal[] = [
     id: "d2",
     courseSlug: "agility-games",
     title: "چابکی و بازی‌های ذهنی",
-    photo: "/demo/course-agility.jpg",
-    photoAlt: "یک بوردر کالی روی سکوی تمرین",
+    photo: "/photo/deal-agility.jpg",
+    photoAlt: "مربی و سگ بوردر کالی در زمین تمرین چابکی می‌دوند",
     trainer: "نگار رحیمی",
     startsAt: new Date("2026-10-19T09:00:00+03:30"),
     price: 2_100_000,
@@ -52,8 +51,8 @@ const DEALS: Deal[] = [
     id: "d3",
     courseSlug: "separation-anxiety",
     title: "آرامش در تنهایی، برای سگ‌های مضطرب",
-    photo: "/demo/course-anxiety.jpg",
-    photoAlt: "زنی کنار پنجره سگش را در آغوش گرفته است",
+    photo: "/photo/deal-anxiety.jpg",
+    photoAlt: "سگ پامرانین روی مبل به دست صاحبش دست می‌دهد",
     trainer: "سمانه کریمی",
     startsAt: new Date("2026-10-24T18:00:00+03:30"),
     price: 1_700_000,
@@ -65,8 +64,8 @@ const DEALS: Deal[] = [
     id: "d4",
     courseSlug: "kitten-at-home",
     title: "بچه‌گربه در خانه‌ی جدید",
-    photo: "/demo/course-kitten.jpg",
-    photoAlt: "یک بچه‌گربه‌ی کنجکاو روی مبل",
+    photo: "/photo/deal-kitten.jpg",
+    photoAlt: "بچه‌گربه‌ای راه‌راه که به دوربین نگاه می‌کند",
     trainer: "الهام شریفی",
     startsAt: new Date("2026-10-21T19:00:00+03:30"),
     price: 750_000,
@@ -106,6 +105,7 @@ export function DealsShelf() {
 }
 
 /*===== Deal Tile =====*/
+/** One run as a shop card. The whole card links to the course; the reserve button and code box are only for show. */
 function DealTile({ deal }: { deal: Deal }) {
   const isLastSeats = deal.seatsLeft <= LAST_SEATS_THRESHOLD;
   const discount = deal.fullPrice ? Math.round((1 - deal.price / deal.fullPrice) * 100) : null;
@@ -114,24 +114,23 @@ function DealTile({ deal }: { deal: Deal }) {
     : discount && `${formatNumberFa(discount)}٪ تخفیف`;
 
   return (
-    <article className="group/deal relative flex h-full flex-col">
+    <article className="group/deal relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card">
       {/*------ Photo and Tag ------*/}
-      <div className="relative overflow-hidden rounded-2xl">
+      <div className="relative h-52 overflow-hidden">
         <img
           src={deal.photo}
           alt={deal.photoAlt}
-          width={960}
-          height={540}
+          width={800}
+          height={600}
           loading="lazy"
-          className="aspect-square w-full object-cover transition-transform duration-700 motion-safe:group-hover/deal:scale-103"
+          className="size-full object-cover transition-transform duration-700 motion-safe:group-hover/deal:scale-105"
         />
         {tag && (
           <span
             className={cn(
-              "absolute start-3 top-3 rounded-full px-3 py-1 text-xs font-extrabold",
-              isLastSeats
-                ? "bg-primary text-primary-foreground"
-                : "bg-card/90 text-foreground shadow-xs backdrop-blur-sm",
+              "absolute start-3.5 top-3.5 rounded-full px-3 py-1 text-xs font-extrabold",
+              // Last seats outrank a discount, so they get the page's deep colour instead of saffron.
+              isLastSeats ? "bg-inverse text-inverse-foreground" : "bg-saffron text-saffron-foreground",
             )}
           >
             {tag}
@@ -140,18 +139,18 @@ function DealTile({ deal }: { deal: Deal }) {
       </div>
 
       {/*------ Details ------*/}
-      <div className="flex flex-1 flex-col gap-1 pt-4">
-        <h3 className="text-base leading-snug font-extrabold">
-          <Link to={`/courses/${deal.courseSlug}`} className="after:absolute after:inset-0 after:rounded-2xl">
+      <div className="flex flex-1 flex-col gap-1.5 p-5">
+        <h3 className="text-base leading-relaxed font-extrabold sm:text-lg">
+          <Link to={`/courses/${deal.courseSlug}`} className="after:absolute after:inset-0">
             {deal.title}
           </Link>
         </h3>
         <p className="text-sm text-muted-foreground">
-          {deal.trainer}، شروع {formatDayMonth(deal.startsAt)}
+          {deal.trainer} · شروع {formatDayMonth(deal.startsAt)}
         </p>
 
-        <div className="mt-auto flex flex-wrap items-baseline gap-x-3 pt-3">
-          <p className="font-extrabold">{formatToman(deal.price)}</p>
+        <div className="mt-auto flex flex-wrap items-baseline gap-x-2.5 pt-3">
+          <p className="text-base font-extrabold sm:text-lg">{formatToman(deal.price)}</p>
           {deal.fullPrice && (
             <p className="text-sm text-muted-foreground line-through">
               <span className="sr-only">قیمت قبل: </span>
@@ -159,15 +158,20 @@ function DealTile({ deal }: { deal: Deal }) {
             </p>
           )}
         </div>
-        {deal.code && (
-          <p className="mt-2 flex items-center gap-1.5 self-start rounded-md border border-dashed border-saffron/60 bg-card px-2.5 py-1 text-xs">
-            <TicketPercentIcon strokeWidth={1.7} className="size-4 text-saffron-text" aria-hidden />
-            کد
+
+        {/*------ Code or Reserve ------*/}
+        {deal.code ? (
+          <p className="mt-2 flex h-11 items-center justify-between rounded-xl border-[1.5px] border-dashed border-saffron bg-saffron/10 px-3.5 text-sm">
+            <span className="text-muted-foreground">کد تخفیف</span>
             {/* Codes are Latin and typed as they appear, so they keep their own direction. */}
-            <span dir="ltr" className="font-extrabold tracking-wider">
+            <span dir="ltr" className="font-extrabold tracking-wider text-saffron-text">
               {deal.code}
             </span>
           </p>
+        ) : (
+          <span className="mt-2 flex h-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-colors group-hover/deal:bg-primary/90">
+            رزرو جا
+          </span>
         )}
       </div>
     </article>

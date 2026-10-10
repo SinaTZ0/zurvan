@@ -33,26 +33,26 @@ const FOOTER_GROUPS = [
 /*===== Site Footer =====*/
 export function SiteFooter() {
   return (
-    <footer className="mt-section-md border-t bg-sunken">
+    <footer className="surface-inverse mt-section-md bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
           <img
-            src="/logo-h.png"
+            src="/photo/logo-h-light.png"
             alt="زروان"
-            width={316}
-            height={106}
+            width={280}
+            height={96}
             loading="lazy"
-            className="h-10 w-auto self-start brightness-0 dark:opacity-90 dark:invert"
+            className="h-12 w-auto self-start"
           />
           <p className="text-sm text-pretty text-muted-foreground">
             دوره‌های آموزشی سگ و گربه با مربیان تأییدشده، در کلاس‌های حضوری و آنلاین.
           </p>
           <a
             href="tel:02191000000"
-            className="flex items-center gap-2 self-start text-sm font-bold transition-colors hover:text-primary"
+            className="flex items-center gap-2.5 self-start py-2 text-base font-bold text-foreground transition-colors hover:text-saffron"
           >
-            <PhoneIcon strokeWidth={1.7} className="size-4 text-primary" aria-hidden />
+            <PhoneIcon strokeWidth={1.7} className="size-5 text-saffron" aria-hidden />
             {/* Phone numbers read left to right even in Persian text. */}
             <span dir="ltr">۰۲۱-۹۱۰۰۰۰۰۰</span>
           </a>
@@ -61,7 +61,7 @@ export function SiteFooter() {
         {/*------ Link Groups ------*/}
         {FOOTER_GROUPS.map((group) => (
           <nav key={group.title} aria-label={group.title}>
-            <h2 className="text-base">{group.title}</h2>
+            <h2 className="text-base text-foreground">{group.title}</h2>
             <ul className="mt-4 flex flex-col gap-3">
               {group.links.map((link) => (
                 <li key={link.to}>
@@ -78,8 +78,8 @@ export function SiteFooter() {
         ))}
       </div>
 
-      <div className="site-container border-t py-6">
-        <p className="text-xs text-muted-foreground">© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
+      <div className="border-t">
+        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
       </div>
     </footer>
   );
