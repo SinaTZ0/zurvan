@@ -1,21 +1,23 @@
 /*===== Theme =====*/
-// The theme lives on <html> (`.dark` class + `color-scheme`). With no saved choice it follows the
-// system setting, live. Once the user picks one with the toggle, that choice wins from then on.
+// The theme lives on <html> (`.dark` class + `color-scheme`). With no saved choice the site is dark,
+// whatever the system setting: dark is the brand's default look. Once the user picks a theme with the
+// toggle, that choice wins from then on.
 // Browser-only except `THEME_INIT_SCRIPT`, which root.tsx inlines into the server-rendered <head>.
 
 export type Theme = "light" | "dark";
 
 const STORAGE_KEY = "zurvan-theme";
-const DARK_QUERY = "(prefers-color-scheme: dark)";
+const DEFAULT_THEME: Theme = "dark";
 // Notifies other components in this tab; the `storage` event only fires in other tabs.
 const CHANGE_EVENT = "zurvan:theme-change";
 
 /*===== First Paint =====*/
 /**
- * Runs before the page paints, so neither theme flashes. The server can't know the system
- * preference, so this has to happen in the browser. Mirrors `resolveTheme` and `applyTheme`.
+ * Runs before the page paints, so neither theme flashes. The server can't read the saved choice
+ * (it's in localStorage), so this has to happen in the browser. Mirrors `resolveTheme` and
+ * `applyTheme`; if storage is blocked, the page still gets the default.
  */
-export const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});var d=s==="dark"||(s!=="light"&&matchMedia(${JSON.stringify(DARK_QUERY)}).matches);var r=document.documentElement;r.classList.toggle("dark",d);r.style.colorScheme=d?"dark":"light"}catch(e){}})()`;
+export const THEME_INIT_SCRIPT = `(function(){var d=${JSON.stringify(DEFAULT_THEME === "dark")};try{var s=localStorage.getItem(${JSON.stringify(STORAGE_KEY)});if(s==="dark"||s==="light")d=s==="dark"}catch(e){}var r=document.documentElement;r.classList.toggle("dark",d);r.style.colorScheme=d?"dark":"light"})()`;
 
 /*===== Helpers =====*/
 function readSavedTheme(): Theme | null {
@@ -23,13 +25,13 @@ function readSavedTheme(): Theme | null {
     const value = localStorage.getItem(STORAGE_KEY);
     return value === "light" || value === "dark" ? value : null;
   } catch {
-    // Storage can be blocked (privacy modes); fall back to the system theme.
+    // Storage can be blocked (privacy modes); fall back to the default theme.
     return null;
   }
 }
 
 function resolveTheme(): Theme {
-  return readSavedTheme() ?? (matchMedia(DARK_QUERY).matches ? "dark" : "light");
+  return readSavedTheme() ?? DEFAULT_THEME;
 }
 
 function applyTheme(theme: Theme) {
@@ -45,7 +47,7 @@ export function getTheme(): Theme {
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
-/** Applies and saves the user's choice; from now on it overrides the system setting. */
+/** Applies and saves the user's choice; from now on it overrides the default. */
 export function setTheme(theme: Theme) {
   try {
     localStorage.setItem(STORAGE_KEY, theme);
@@ -57,29 +59,20 @@ export function setTheme(theme: Theme) {
 }
 
 /**
- * Subscribes to theme changes: the toggle, a system change (only while no choice is saved), and
- * a choice made in another tab. Shaped for `useSyncExternalStore`.
+ * Subscribes to theme changes: the toggle and a choice made in another tab. Shaped for
+ * `useSyncExternalStore`.
  */
 export function subscribeToTheme(onChange: () => void): () => void {
-  const media = matchMedia(DARK_QUERY);
-
-  const handleSystemChange = () => {
-    if (readSavedTheme()) return;
-    applyTheme(resolveTheme());
-    onChange();
-  };
   const handleStorage = (event: StorageEvent) => {
     if (event.key !== STORAGE_KEY) return;
     applyTheme(resolveTheme());
     onChange();
   };
 
-  media.addEventListener("change", handleSystemChange);
   window.addEventListener("storage", handleStorage);
   window.addEventListener(CHANGE_EVENT, onChange);
 
   return () => {
-    media.removeEventListener("change", handleSystemChange);
     window.removeEventListener("storage", handleStorage);
     window.removeEventListener(CHANGE_EVENT, onChange);
   };
