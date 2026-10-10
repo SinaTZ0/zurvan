@@ -4,6 +4,11 @@ These instructions apply to the entire repository unless overridden by a more sp
 
 This is a React Router v8 application using Framework Mode. The application's user-facing content is in Persian.
 
+## Naming
+
+- The brand is **Zurvann** (two `n`s) in Latin script and **زروان** in Persian. Use these in user-facing text and docs.
+- Internal identifiers still use `zurvan` (one `n`): the npm package, the Docker Compose project and database name, the theme storage key, the GitHub repo and the `claude-design-assets/Zurvan UI reproduction/` folder. Leave them as they are; renaming the database or Compose project would lose existing data.
+
 ## Working Directory
 
 - Run project commands from the repository root.
