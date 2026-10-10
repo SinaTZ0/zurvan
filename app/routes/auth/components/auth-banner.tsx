@@ -19,7 +19,7 @@ const SERVICES = [
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a dark green hero card that says what Zurvann
+ * Desktop-only brand panel beside the auth forms: a dark ink hero card that says what Zurvann
  * offers. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {
@@ -39,7 +39,7 @@ export function AuthBanner({ className }: { className?: string }) {
       />
 
       {/*------ Logo ------*/}
-      {/* The logo is dark green artwork, so it's turned light on the green card. */}
+      {/* The logo is dark artwork, so it's turned light on the ink card. */}
       <img
         src="/logo-stack.png"
         alt=""

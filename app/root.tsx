@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
 import { useState } from "react";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
+import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
@@ -48,7 +49,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <JotaiProvider>
               <DirectionProvider direction="rtl">
                 <TooltipProvider>
-                  {children}
+                  <SmoothScroll>{children}</SmoothScroll>
                   <Toaster />
                 </TooltipProvider>
               </DirectionProvider>

@@ -102,6 +102,15 @@ Not every slice needs every file. Start with the route module alone and split it
 - Style with Tailwind utilities. Put design tokens (colors, fonts, spacing scale) in `app.css` instead of hard-coding
   values in components.
 - Extract a component when a pattern repeats, not a utility class.
+- The look (colour, type, layout, motion) is defined in [`app-identity.md`](./app-identity.md); design new pages with
+  [`design-flow.md`](./design-flow.md).
+- Storefront headings and section spacing use the fluid `clamp()` tokens (`text-h1`, `px-site`, `py-section-md`,
+  `site-container`). Component internals and dashboards use Tailwind's static scale.
+- Animate only `transform` and `opacity`, and put movement behind `motion-safe:`. Bare `transition` utilities already
+  use the app's easing and duration.
+- Page scrolling is eased by Lenis (`~/components/smooth-scroll`). Inner scroll areas scroll natively; if one scrolls
+  the page instead, add `data-lenis-prevent` to it. Scroll the page with `useLenis()` from `lenis/react`, not
+  `window.scrollTo`, so the two don't fight.
 
 ## Testing
 

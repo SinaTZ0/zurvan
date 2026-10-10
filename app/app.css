@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/vazirmatn";
+@import "lenis/dist/lenis.css";
 
 /* Tokens follow docs/app-identity.md */
 
@@ -12,6 +13,46 @@
   --text-xs--line-height: 1.7;
   --text-sm--line-height: 1.75;
   --text-base--line-height: 1.8;
+
+  /* Fluid scale (the Lumos approach): each value grows linearly from a 360px to a 1440px viewport and stays put
+     outside that range. The rem part keeps browser zoom working. Regenerate a value with
+     min + (max - min) * (100vw - 360px) / (1440 - 360) instead of guessing. Fixed-size UI (body text, buttons,
+     inputs) stays on Tailwind's static scale, so dashboards don't swell on wide screens. */
+
+  /*------ Fluid type (px at 360 → 1440) ------*/
+  /* Persian needs more line height than Latin display type, and never negative tracking: it breaks letter joins */
+  --text-display: clamp(2.5rem, 1.8333rem + 2.963vw, 4.5rem); /* 40 → 72 */
+  --text-display--line-height: 1.3;
+  --text-display--font-weight: 800;
+  --text-h1: clamp(1.875rem, 1.5rem + 1.6667vw, 3rem); /* 30 → 48 */
+  --text-h1--line-height: 1.35;
+  --text-h1--font-weight: 800;
+  --text-h2: clamp(1.5rem, 1.25rem + 1.1111vw, 2.25rem); /* 24 → 36 */
+  --text-h2--line-height: 1.45;
+  --text-h2--font-weight: 800;
+  --text-h3: clamp(1.25rem, 1.125rem + 0.5556vw, 1.625rem); /* 20 → 26 */
+  --text-h3--line-height: 1.55;
+  --text-h3--font-weight: 800;
+  --text-h4: clamp(1.125rem, 1.0833rem + 0.1852vw, 1.25rem); /* 18 → 20 */
+  --text-h4--line-height: 1.6;
+  --text-h4--font-weight: 800;
+  --text-lead: clamp(1.0625rem, 1rem + 0.2778vw, 1.25rem); /* 17 → 20, intro paragraphs */
+  --text-lead--line-height: 1.9;
+
+  /*------ Fluid layout spacing (px at 360 → 1440) ------*/
+  --spacing-site: clamp(1rem, 0.3333rem + 2.963vw, 3rem); /* 16 → 48, page side margin */
+  --spacing-gutter: clamp(1rem, 0.6667rem + 1.4815vw, 2rem); /* 16 → 32, grid gaps */
+  --spacing-section-sm: clamp(3rem, 2.3333rem + 2.963vw, 5rem); /* 48 → 80 */
+  --spacing-section-md: clamp(4rem, 3rem + 4.4444vw, 7rem); /* 64 → 112 */
+  --spacing-section-lg: clamp(5.5rem, 4rem + 6.6667vw, 10rem); /* 88 → 160 */
+  --container-page: 80rem; /* 1280px of content; the side margin sits outside it */
+
+  /* Motion: "silk" means a quick start and a long, soft landing, never a bounce (docs/app-identity.md) */
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-silk-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Every bare `transition*` utility uses these, so hovers across the app share one feel */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: var(--ease-silk);
 }
 
 @theme inline {
@@ -80,100 +121,101 @@
 :root {
   --radius: 0.875rem;
 
-  --background: #fbfaf6;
-  --foreground: #22352b;
+  /* Ivory & Ink with rich gold (docs/app-identity.md). Ratios are WCAG contrast on `background` unless noted. */
+  --background: #f8f6f1;
+  --foreground: #1b2030; /* 15:1 */
   --card: #ffffff;
-  --card-foreground: #22352b;
+  --card-foreground: #1b2030;
   --popover: #ffffff;
-  --popover-foreground: #22352b;
-  --primary: #0c3b2e;
-  --primary-foreground: #f7f4ec;
-  --secondary: #f1ede2;
-  --secondary-foreground: #22352b;
-  --muted: #f1ede2;
-  --muted-foreground: #6e6a5e; /* 5.4:1, not the mockup's #8d897b */
-  --accent: #fbf6e9;
-  --accent-foreground: #22352b;
-  --destructive: #c53b3b; /* mockup #d64545 is 4.19:1 on background */
-  --border: #ebe5d6;
-  --input: #8d897b; /* control edges need 3:1 (WCAG 1.4.11): 3.5:1 on card, 3.35:1 on background */
-  --ring: #0c3b2e;
+  --popover-foreground: #1b2030;
+  --primary: #1f2940;
+  --primary-foreground: #f6f3ec; /* 13:1 on primary */
+  --secondary: #efece5;
+  --secondary-foreground: #1b2030;
+  --muted: #efece5;
+  --muted-foreground: #66625a; /* 5.6:1, 5.1:1 on muted */
+  --accent: #f8f2e4;
+  --accent-foreground: #1b2030;
+  --destructive: #c53b3b; /* 4.8:1 */
+  --border: #e7e3da;
+  --input: #8c887f; /* control edges need 3:1 (WCAG 1.4.11): 3.3:1, 3.5:1 on card */
+  --ring: #1f2940;
 
-  --gold: #c8a85a; /* on green only */
-  --gold-deep: #b98f3e; /* icons and decoration, not text */
-  --gold-text: #8a6b2e; /* gold as readable text, 4.76:1 */
-  --faint: #8d897b; /* disabled and decoration, never text (3.5:1) */
-  --cream: #fbf6e9;
-  --cream-border: #f0e4c6;
-  --mint: #eef4f0;
-  --mint-border: #d5e3da;
-  --success: #267f4c; /* mockup #2e9e5b is 3.41:1 on white */
+  --gold: #d6ad4f; /* on ink only (6.9:1 on primary); 1.9:1 on light surfaces */
+  --gold-deep: #a9842f; /* icons and decoration on light surfaces (3.2:1), not text */
+  --gold-text: #80621c; /* gold as readable text: 5.3:1, 5.1:1 on cream */
+  --faint: #8c887f; /* disabled and decoration, never text */
+  --cream: #f8f2e4;
+  --cream-border: #eedfbf;
+  --mint: #eef3ef;
+  --mint-border: #d5e1d8;
+  --success: #237548; /* 5:1 on mint */
 
-  /* Hero cards stay brand green in both themes (dark mode's primary is gold), so .dark doesn't override these */
-  --hero: #0c3b2e;
-  --hero-foreground: #f7f4ec;
+  /* Hero cards stay ink in both themes (dark mode's primary is gold), so .dark doesn't override these */
+  --hero: #1a2236;
+  --hero-foreground: #f6f3ec;
 
-  --chart-1: #0c3b2e;
-  --chart-2: #c8a85a;
-  --chart-3: #4a7a63;
-  --chart-4: #e4c376;
-  --chart-5: #8d897b;
+  --chart-1: #1f2940;
+  --chart-2: #d6ad4f;
+  --chart-3: #5a6b8c;
+  --chart-4: #e6cb86;
+  --chart-5: #8c887f;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #22352b;
-  --sidebar-primary: #0c3b2e;
-  --sidebar-primary-foreground: #f7f4ec;
-  --sidebar-accent: #fbf6e9;
-  --sidebar-accent-foreground: #22352b;
-  --sidebar-border: #ebe5d6;
-  --sidebar-ring: #0c3b2e;
+  --sidebar-foreground: #1b2030;
+  --sidebar-primary: #1f2940;
+  --sidebar-primary-foreground: #f6f3ec;
+  --sidebar-accent: #f8f2e4;
+  --sidebar-accent-foreground: #1b2030;
+  --sidebar-border: #e7e3da;
+  --sidebar-ring: #1f2940;
 }
 
-/* Not in the design assets: derived night version of the same palette */
+/* Night version of the same palette: deep ink surfaces, ivory text, gold as primary */
 .dark {
-  --background: #0e1a15;
-  --foreground: #f1ede2;
-  --card: #15241d;
-  --card-foreground: #f1ede2;
-  --popover: #15241d;
-  --popover-foreground: #f1ede2;
-  --primary: #c8a85a;
-  --primary-foreground: #0c3b2e;
-  --secondary: #1c2c24;
-  --secondary-foreground: #f1ede2;
-  --muted: #1c2c24;
-  --muted-foreground: #a9a596;
-  --accent: #1c2c24;
-  --accent-foreground: #f1ede2;
+  --background: #0f1320;
+  --foreground: #efece5; /* 15.7:1 */
+  --card: #161b2b;
+  --card-foreground: #efece5;
+  --popover: #161b2b;
+  --popover-foreground: #efece5;
+  --primary: #d6ad4f; /* 8.8:1 */
+  --primary-foreground: #1a2236; /* 7.5:1 on primary */
+  --secondary: #1e2436;
+  --secondary-foreground: #efece5;
+  --muted: #1e2436;
+  --muted-foreground: #a8a49b; /* 7.5:1, 6.2:1 on muted */
+  --accent: #1e2436;
+  --accent-foreground: #efece5;
   --destructive: #e5655f;
-  --border: rgb(241 237 226 / 0.1);
-  --input: rgb(241 237 226 / 0.45); /* 4:1 on background; also tints dark fills via bg-input/30 */
-  --ring: #c8a85a;
+  --border: rgb(239 236 229 / 0.1);
+  --input: rgb(239 236 229 / 0.45); /* 4:1 on background; also tints dark fills via bg-input/30 */
+  --ring: #d6ad4f;
 
-  --gold: #c8a85a;
-  --gold-deep: #c8a85a;
-  --gold-text: #e4c376;
-  --faint: #7d7a6e;
-  --cream: #231f14;
-  --cream-border: #3a3220;
-  --mint: #15271f;
-  --mint-border: #23392e;
+  --gold: #d6ad4f;
+  --gold-deep: #d6ad4f;
+  --gold-text: #e2bc5c; /* 10:1 */
+  --faint: #7a7870;
+  --cream: #241f14;
+  --cream-border: #3b3220;
+  --mint: #142420;
+  --mint-border: #21362e;
   --success: #4cbf7c;
 
-  --chart-1: #c8a85a;
-  --chart-2: #4a7a63;
-  --chart-3: #e4c376;
-  --chart-4: #8fb5a0;
-  --chart-5: #a9a596;
+  --chart-1: #d6ad4f;
+  --chart-2: #7d8fb3;
+  --chart-3: #e6cb86;
+  --chart-4: #a9b6cf;
+  --chart-5: #a8a49b;
 
-  --sidebar: #15241d;
-  --sidebar-foreground: #f1ede2;
-  --sidebar-primary: #c8a85a;
-  --sidebar-primary-foreground: #0c3b2e;
-  --sidebar-accent: #1c2c24;
-  --sidebar-accent-foreground: #f1ede2;
-  --sidebar-border: rgb(241 237 226 / 0.1);
-  --sidebar-ring: #c8a85a;
+  --sidebar: #161b2b;
+  --sidebar-foreground: #efece5;
+  --sidebar-primary: #d6ad4f;
+  --sidebar-primary-foreground: #1a2236;
+  --sidebar-accent: #1e2436;
+  --sidebar-accent-foreground: #efece5;
+  --sidebar-border: rgb(239 236 229 / 0.1);
+  --sidebar-ring: #d6ad4f;
 }
 
 @layer base {
@@ -193,6 +235,15 @@
   h4 {
     @apply font-heading font-extrabold;
   }
+}
+
+/* The page column: centered, at most `container-page` wide, with the fluid side margin. Full-bleed bands (hero photos,
+   coloured sections) sit outside it and put their content back inside one. */
+@utility site-container {
+  width: 100%;
+  max-width: calc(var(--container-page) + var(--spacing-site) * 2);
+  margin-inline: auto;
+  padding-inline: var(--spacing-site);
 }
 
 /* Page fade on client navigations. Links opt in through ~/components/link (docs/view-transitions.md); without these
