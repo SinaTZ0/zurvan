@@ -1,5 +1,6 @@
 import { cn } from "cn";
 
+import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { ThemeToggle } from "~/components/theme-toggle";
 import { buttonVariants } from "~/components/ui/button";
@@ -18,14 +19,7 @@ export function SiteHeader() {
       <div className="site-container flex h-16 items-center gap-6 lg:h-20">
         {/*------ Logo ------*/}
         <Link to="/" className="shrink-0 rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
-          {/* Single-colour artwork until a version in the site's palette exists. */}
-          <img
-            src="/logo-h.png"
-            alt=""
-            width={316}
-            height={106}
-            className="h-9 w-auto brightness-0 lg:h-11 dark:opacity-90 dark:invert"
-          />
+          <BrandLogo className="text-[1.625rem] lg:text-[1.875rem]" />
         </Link>
 
         {/*------ Desktop Nav ------*/}

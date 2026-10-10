@@ -104,7 +104,7 @@ export function TrainersSection() {
                   <span className="text-lg font-extrabold group-hover/trainer:underline group-hover/trainer:decoration-saffron group-hover/trainer:decoration-2 group-hover/trainer:underline-offset-8 sm:text-xl">
                     {trainer.name}
                   </span>
-                  <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-label="تأییدشده" />
+                  <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-label="تأییدشده‌ی زروان" />
                 </span>
                 <span className="text-sm text-balance text-muted-foreground">{trainer.focus}</span>
                 <span className="text-xs text-muted-foreground">

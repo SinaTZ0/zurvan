@@ -1,5 +1,6 @@
 import { PhoneIcon } from "lucide-react";
 
+import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 
 // The pages behind these links come later in phase one; the structure is what matters for now.
@@ -37,14 +38,9 @@ export function SiteFooter() {
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
-          <img
-            src="/photo/logo-h-light.png"
-            alt="زروان"
-            width={280}
-            height={96}
-            loading="lazy"
-            className="h-12 w-auto self-start"
-          />
+          <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
+            <BrandLogo className="text-[1.875rem]" />
+          </Link>
           <p className="text-sm text-pretty text-muted-foreground">
             دوره‌های آموزشی سگ و گربه با مربیان تأییدشده، در کلاس‌های حضوری و آنلاین.
           </p>
@@ -76,6 +72,21 @@ export function SiteFooter() {
             </ul>
           </nav>
         ))}
+      </div>
+
+      {/*===== Name =====*/}
+      {/* The name as big as the page allows, standing on the bottom rule with its tails cut off, beside where it comes
+          from. A name with a story is easier to remember than one that is only repeated. */}
+      <div className="site-container -mt-6 flex flex-col gap-6 overflow-hidden lg:-mt-16 lg:flex-row-reverse lg:items-end lg:justify-between">
+        <p className="max-w-xs text-sm leading-[1.9] text-pretty text-muted-foreground lg:mb-10">
+          زروان در اسطوره‌های ایرانی خدای زمان است. آموزش حیوان هم با زمان و حوصله جواب می‌دهد، و اسم ما از همین‌جا آمده.
+        </p>
+        <p
+          aria-hidden
+          className="-mb-[0.32em] text-[clamp(7rem,40vw,28rem)] leading-[0.9] font-black text-inverse-foreground/[0.08] select-none"
+        >
+          زروان
+        </p>
       </div>
 
       <div className="border-t">

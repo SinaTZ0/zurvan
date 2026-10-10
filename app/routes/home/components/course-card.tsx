@@ -68,7 +68,7 @@ export function CourseCard({ course, className }: { course: CourseCardData; clas
                 className="size-7 shrink-0 rounded-full object-cover object-top"
               />
               <span className="truncate font-bold">{course.trainer.name}</span>
-              <BadgeCheckIcon strokeWidth={1.7} className="size-4 shrink-0 text-success" aria-label="تأییدشده" />
+              <BadgeCheckIcon strokeWidth={1.7} className="size-4 shrink-0 text-success" aria-label="تأییدشده‌ی زروان" />
             </span>
             <span className="flex shrink-0 items-center gap-1">
               <StarIcon strokeWidth={1.7} fill="currentColor" className="size-4 text-saffron" aria-hidden />

@@ -196,7 +196,7 @@ export function HomeHero() {
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
                   <BadgeCheckIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
-                ۴۲ مربی تأییدشده
+                ۴۲ مربی تأییدشده‌ی زروان
               </li>
               <li className="flex items-center gap-2.5">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
