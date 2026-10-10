@@ -16,10 +16,10 @@ export function PetRow({ pet, highlighted }: PetRowProps) {
     <li
       className={cn(
         "flex items-center gap-4 rounded-xl border bg-card p-4 transition-[background-color,border-color,box-shadow] duration-700 motion-reduce:transition-none",
-        highlighted && "border-cream-border bg-cream ring-2 ring-gold",
+        highlighted && "border-primary/30 bg-accent ring-2 ring-primary/40",
       )}
     >
-      <span className="flex size-12 shrink-0 items-center justify-center rounded-md border border-cream-border bg-cream text-gold-deep">
+      <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
         <SpeciesIcon species={pet.species} className="size-6" />
       </span>
       <div className="flex min-w-0 flex-col">

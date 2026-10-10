@@ -4,7 +4,8 @@
 @import "@fontsource-variable/vazirmatn";
 @import "lenis/dist/lenis.css";
 
-/* Tokens follow docs/app-identity.md */
+/* Use the tokens below through their Tailwind classes (`bg-sunken`, `text-saffron-text`, `shadow-md`…), never raw
+   hex in components. Contrast ratios are noted next to the colours; keep text at 4.5:1 and control edges at 3:1. */
 
 @custom-variant dark (&:is(.dark *));
 
@@ -47,7 +48,7 @@
   --spacing-section-lg: clamp(5.5rem, 4rem + 6.6667vw, 10rem); /* 88 → 160 */
   --container-page: 80rem; /* 1280px of content; the side margin sits outside it */
 
-  /* Motion: "silk" means a quick start and a long, soft landing, never a bounce (docs/app-identity.md) */
+  /* Motion: a quick start and a long, soft landing, never a bounce */
   --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-silk-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   /* Every bare `transition*` utility uses these, so hovers across the app share one feel */
@@ -93,19 +94,15 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Brand colors */
-  --color-gold: var(--gold);
-  --color-gold-deep: var(--gold-deep);
-  --color-gold-text: var(--gold-text);
-  --color-faint: var(--faint);
-  --color-cream: var(--cream);
-  --color-cream-border: var(--cream-border);
-  --color-mint: var(--mint);
-  --color-mint-border: var(--mint-border);
+  --color-sunken: var(--sunken);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-saffron: var(--saffron);
+  --color-saffron-text: var(--saffron-text);
   --color-success: var(--success);
-  --color-hero: var(--hero);
-  --color-hero-foreground: var(--hero-foreground);
+  --color-faint: var(--faint);
 
-  /* Radius: 8 small, 12 icon boxes, 14 buttons/inputs, 16 cards, 20+ hero/maps */
+  /* Radius: 8 small, 12 icon boxes, 14 buttons/inputs, 16 cards, 20+ photos and bands */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: var(--radius);
@@ -114,108 +111,158 @@
   --radius-3xl: 1.75rem;
   --radius-4xl: 2.25rem;
 
-  /* Borders over shadows; this is the one soft elevation */
-  --shadow-soft: 0 6px 18px rgb(20 40 30 / 0.06);
+  /* Elevation: Tailwind's shadow names mapped to the layers, so the shadcn components pick them up too.
+     `shadow-xs` controls · `shadow-sm` raised cards at rest · `shadow-md` a card lifted on hover ·
+     `shadow-lg` overlays (popovers, sheets, dialogs, toasts, cards floating over a photo) */
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
 }
+
+/*===== Palette: Firuzeh & Saffron =====*/
+/* Persian turquoise (firuzeh) leads: actions, links, the selected state. Saffron is the rare warm note: stars and
+   discount codes. Everything else is cool stone, so photos of pets and people carry the colour.
+
+   Layers, from back to front. Each step is a lighter surface plus a deeper shadow, so depth reads in both themes:
+     sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)
+     background  the page
+     card        raised content: cards, lists, panels                                   + shadow-sm
+     popover     overlays: menus, sheets, dialogs, things floating over a photo         + shadow-lg
+   `inverse` is the one emphasis band per page: deep firuzeh in both themes (see `surface-inverse` below). */
 
 :root {
   --radius: 0.875rem;
 
-  /* Ivory & Ink with rich gold (docs/app-identity.md). Ratios are WCAG contrast on `background` unless noted. */
-  --background: #f8f6f1;
-  --foreground: #1b2030; /* 15:1 */
+  /*------ Surfaces ------*/
+  --sunken: #e0e6e4;
+  --background: #f1f2f0;
   --card: #ffffff;
-  --card-foreground: #1b2030;
   --popover: #ffffff;
-  --popover-foreground: #1b2030;
-  --primary: #1f2940;
-  --primary-foreground: #f6f3ec; /* 13:1 on primary */
-  --secondary: #efece5;
-  --secondary-foreground: #1b2030;
-  --muted: #efece5;
-  --muted-foreground: #66625a; /* 5.6:1, 5.1:1 on muted */
-  --accent: #f8f2e4;
-  --accent-foreground: #1b2030;
-  --destructive: #c53b3b; /* 4.8:1 */
-  --border: #e7e3da;
-  --input: #8c887f; /* control edges need 3:1 (WCAG 1.4.11): 3.3:1, 3.5:1 on card */
-  --ring: #1f2940;
 
-  --gold: #d6ad4f; /* on ink only (6.9:1 on primary); 1.9:1 on light surfaces */
-  --gold-deep: #a9842f; /* icons and decoration on light surfaces (3.2:1), not text */
-  --gold-text: #80621c; /* gold as readable text: 5.3:1, 5.1:1 on cream */
-  --faint: #8c887f; /* disabled and decoration, never text */
-  --cream: #f8f2e4;
-  --cream-border: #eedfbf;
-  --mint: #eef3ef;
-  --mint-border: #d5e1d8;
-  --success: #237548; /* 5:1 on mint */
+  /*------ Text ------*/
+  --foreground: #13201f; /* 14.9:1 on background, 13.2:1 on sunken */
+  --card-foreground: #13201f;
+  --popover-foreground: #13201f;
+  --muted-foreground: #56625f; /* 5.7:1 on background, 5:1 on sunken, 5.4:1 on muted */
+  --faint: #9aa3a1; /* disabled items and decoration, never text */
 
-  /* Hero cards stay ink in both themes (dark mode's primary is gold), so .dark doesn't override these */
-  --hero: #1a2236;
-  --hero-foreground: #f6f3ec;
+  /*------ Action ------*/
+  --primary: #0e6466; /* 6.2:1 on background, 5.5:1 on sunken: also safe as link text */
+  --primary-foreground: #f2faf9; /* 6.5:1 on primary */
+  --ring: #0e6466;
 
-  --chart-1: #1f2940;
-  --chart-2: #d6ad4f;
-  --chart-3: #5a6b8c;
-  --chart-4: #e6cb86;
-  --chart-5: #8c887f;
+  /*------ Fills ------*/
+  --muted: #e9edec;
+  --secondary: #e9edec;
+  --secondary-foreground: #13201f;
+  --accent: #e3f0ef; /* hover and selected rows: a firuzeh tint */
+  --accent-foreground: #13201f;
+
+  /*------ Edges ------*/
+  --border: #d9dfdd;
+  --input: #7f8a88; /* control edges need 3:1 (WCAG 1.4.11): 3.6:1 on card, 3.2:1 on background */
+
+  /*------ Accents and status ------*/
+  --saffron: #d99a22; /* star fills and icons beside a value; 2.4:1 on white, so never text */
+  --saffron-text: #87590a; /* saffron as words: 6.1:1 on card, 4.8:1 on sunken */
+  --success: #1d7346; /* 5.8:1 on card */
+  --destructive: #b8344a; /* pomegranate, 5.2:1 on background */
+
+  /*------ Emphasis band ------*/
+  --inverse: #0b3b3d;
+  --inverse-foreground: #eaf3f1; /* 10.9:1 on inverse */
+  --inverse-muted: #a3c1be; /* 6.4:1 on inverse */
+  --inverse-border: rgb(234 243 241 / 0.14);
+
+  /*------ Elevation ------*/
+  /* Two layers each: a tight contact shadow for the edge, a wide soft one for the height. Tinted with the ink. */
+  --elevation-xs: 0 1px 2px rgb(19 32 31 / 0.06);
+  --elevation-sm: 0 1px 2px rgb(19 32 31 / 0.06), 0 3px 10px -2px rgb(19 32 31 / 0.08);
+  --elevation-md: 0 2px 4px rgb(19 32 31 / 0.05), 0 14px 28px -8px rgb(19 32 31 / 0.16);
+  --elevation-lg: 0 4px 10px rgb(19 32 31 / 0.06), 0 28px 56px -12px rgb(19 32 31 / 0.26);
+
+  --chart-1: #0e6466;
+  --chart-2: #d99a22;
+  --chart-3: #5f8f8c;
+  --chart-4: #e8c27a;
+  --chart-5: #9aa3a1;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #1b2030;
-  --sidebar-primary: #1f2940;
-  --sidebar-primary-foreground: #f6f3ec;
-  --sidebar-accent: #f8f2e4;
-  --sidebar-accent-foreground: #1b2030;
-  --sidebar-border: #e7e3da;
-  --sidebar-ring: #1f2940;
+  --sidebar-foreground: #13201f;
+  --sidebar-primary: #0e6466;
+  --sidebar-primary-foreground: #f2faf9;
+  --sidebar-accent: #e3f0ef;
+  --sidebar-accent-foreground: #13201f;
+  --sidebar-border: #d9dfdd;
+  --sidebar-ring: #0e6466;
 }
 
-/* Night version of the same palette: deep ink surfaces, ivory text, gold as primary */
+/* Night version of the same palette. Steps between surfaces are wider than by day, because dark surfaces read as
+   one; raised ones also get a faint top highlight in their shadow, the way light catches an edge. */
 .dark {
-  --background: #0f1320;
-  --foreground: #efece5; /* 15.7:1 */
-  --card: #161b2b;
-  --card-foreground: #efece5;
-  --popover: #161b2b;
-  --popover-foreground: #efece5;
-  --primary: #d6ad4f; /* 8.8:1 */
-  --primary-foreground: #1a2236; /* 7.5:1 on primary */
-  --secondary: #1e2436;
-  --secondary-foreground: #efece5;
-  --muted: #1e2436;
-  --muted-foreground: #a8a49b; /* 7.5:1, 6.2:1 on muted */
-  --accent: #1e2436;
-  --accent-foreground: #efece5;
-  --destructive: #e5655f;
-  --border: rgb(239 236 229 / 0.1);
-  --input: rgb(239 236 229 / 0.45); /* 4:1 on background; also tints dark fills via bg-input/30 */
-  --ring: #d6ad4f;
+  /*------ Surfaces ------*/
+  --sunken: #080f0f;
+  --background: #0f1918;
+  --card: #172423;
+  --popover: #1f302f;
 
-  --gold: #d6ad4f;
-  --gold-deep: #d6ad4f;
-  --gold-text: #e2bc5c; /* 10:1 */
-  --faint: #7a7870;
-  --cream: #241f14;
-  --cream-border: #3b3220;
-  --mint: #142420;
-  --mint-border: #21362e;
-  --success: #4cbf7c;
+  /*------ Text ------*/
+  --foreground: #e6eeec; /* 15:1 on background */
+  --card-foreground: #e6eeec;
+  --popover-foreground: #e6eeec;
+  --muted-foreground: #9daeab; /* 7.6:1 on background, 6.3:1 on muted */
+  --faint: #5f6e6c;
 
-  --chart-1: #d6ad4f;
-  --chart-2: #7d8fb3;
-  --chart-3: #e6cb86;
-  --chart-4: #a9b6cf;
-  --chart-5: #a8a49b;
+  /*------ Action ------*/
+  --primary: #4cb8b2; /* 7.4:1 on background */
+  --primary-foreground: #052221; /* 7:1 on primary */
+  --ring: #4cb8b2;
 
-  --sidebar: #161b2b;
-  --sidebar-foreground: #efece5;
-  --sidebar-primary: #d6ad4f;
-  --sidebar-primary-foreground: #1a2236;
-  --sidebar-accent: #1e2436;
-  --sidebar-accent-foreground: #efece5;
-  --sidebar-border: rgb(239 236 229 / 0.1);
-  --sidebar-ring: #d6ad4f;
+  /*------ Fills ------*/
+  --muted: #1f2e2d;
+  --secondary: #1f2e2d;
+  --secondary-foreground: #e6eeec;
+  --accent: #1a3534;
+  --accent-foreground: #e6eeec;
+
+  /*------ Edges ------*/
+  --border: rgb(230 238 236 / 0.1);
+  --input: rgb(230 238 236 / 0.4); /* 3.4:1 on card; also tints dark fills via bg-input/30 */
+
+  /*------ Accents and status ------*/
+  --saffron: #e6ae45;
+  --saffron-text: #edbd62; /* 9.4:1 on card */
+  --success: #4cc386;
+  --destructive: #ec6a7c;
+
+  /*------ Emphasis band ------*/
+  --inverse: #0f3537;
+  --inverse-foreground: #eaf3f1; /* 11.7:1 on inverse */
+  --inverse-muted: #a3c1be; /* 6.9:1 on inverse */
+  --inverse-border: rgb(234 243 241 / 0.12);
+
+  /*------ Elevation ------*/
+  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --elevation-sm: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 1px 2px rgb(0 0 0 / 0.45), 0 4px 12px -2px rgb(0 0 0 / 0.35);
+  --elevation-md: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 2px 4px rgb(0 0 0 / 0.4), 0 16px 32px -8px rgb(0 0 0 / 0.55);
+  --elevation-lg:
+    inset 0 1px 0 rgb(255 255 255 / 0.06), 0 4px 10px rgb(0 0 0 / 0.4), 0 32px 64px -12px rgb(0 0 0 / 0.7);
+
+  --chart-1: #4cb8b2;
+  --chart-2: #e6ae45;
+  --chart-3: #8fbcb8;
+  --chart-4: #f0cd8a;
+  --chart-5: #9daeab;
+
+  --sidebar: #172423;
+  --sidebar-foreground: #e6eeec;
+  --sidebar-primary: #4cb8b2;
+  --sidebar-primary-foreground: #052221;
+  --sidebar-accent: #1a3534;
+  --sidebar-accent-foreground: #e6eeec;
+  --sidebar-border: rgb(230 238 236 / 0.1);
+  --sidebar-ring: #4cb8b2;
 }
 
 @layer base {
@@ -244,6 +291,21 @@
   max-width: calc(var(--container-page) + var(--spacing-site) * 2);
   margin-inline: auto;
   padding-inline: var(--spacing-site);
+}
+
+/* The emphasis band. It re-points the semantic tokens for everything inside, so headings, muted text, borders and
+   buttons need no special classes there: a primary button turns ivory on firuzeh, a link stays readable. */
+@utility surface-inverse {
+  --background: var(--inverse);
+  --foreground: var(--inverse-foreground);
+  --muted-foreground: var(--inverse-muted);
+  --border: var(--inverse-border);
+  --primary: var(--inverse-foreground);
+  --primary-foreground: var(--inverse);
+  --ring: var(--inverse-foreground);
+  --saffron-text: var(--saffron);
+  background-color: var(--inverse);
+  color: var(--inverse-foreground);
 }
 
 /* Page fade on client navigations. Links opt in through ~/components/link (docs/view-transitions.md); without these

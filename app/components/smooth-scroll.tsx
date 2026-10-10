@@ -16,7 +16,7 @@ function hasLockedOverflow(element: Element) {
 
 /*===== Smooth Scroll =====*/
 /**
- * Eases mouse-wheel scrolling of the page (the "silk" feel in docs/app-identity.md). Touch keeps the device's native
+ * Eases mouse-wheel scrolling of the page (the site's "silk" feel). Touch keeps the device's native
  * scrolling, and Lenis turns smoothing off by itself for `prefers-reduced-motion`.
  *
  * Inner scroll areas (popovers, selects, tables, sheets) scroll natively through `allowNestedScroll`. Mark an element

@@ -138,7 +138,7 @@ export function AltchaWidget({ ref, onPayloadChange, invalid = false }: AltchaWi
       className={cn(
         "flex h-16 items-center justify-between gap-3 rounded-lg border bg-muted/50 ps-2 pe-4 transition-colors",
         invalid ? "border-destructive" : "border-border",
-        displayState === "verified" && "border-mint-border bg-mint",
+        displayState === "verified" && "border-success/30 bg-success/10",
       )}
     >
       {/*------ Checkbox ------*/}
@@ -179,7 +179,7 @@ export function AltchaWidget({ ref, onPayloadChange, invalid = false }: AltchaWi
           </span>
           <span className="text-xs">بدون کوکی و ردیابی</span>
         </div>
-        <ShieldCheckIcon className="size-7 text-gold-deep" strokeWidth={1.7} aria-hidden />
+        <ShieldCheckIcon className="size-7 text-primary" strokeWidth={1.7} aria-hidden />
       </div>
 
       {/* Announces progress and the result; a label's text change alone isn't re-read. */}

@@ -48,7 +48,7 @@ const tabsIndicatorVariants = cva(
     variants: {
       variant: {
         default:
-          "top-(--active-tab-top) left-(--active-tab-left) h-(--active-tab-height) w-(--active-tab-width) rounded-md border border-transparent bg-background dark:border-input dark:bg-input/30",
+          "top-(--active-tab-top) left-(--active-tab-left) h-(--active-tab-height) w-(--active-tab-width) rounded-md bg-card shadow-sm dark:bg-popover",
         line: "bg-foreground group-data-horizontal/tabs:-bottom-px group-data-horizontal/tabs:left-(--active-tab-left) group-data-horizontal/tabs:h-0.5 group-data-horizontal/tabs:w-(--active-tab-width) group-data-vertical/tabs:-end-px group-data-vertical/tabs:top-(--active-tab-top) group-data-vertical/tabs:h-(--active-tab-height) group-data-vertical/tabs:w-0.5",
       },
     },

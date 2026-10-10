@@ -102,8 +102,8 @@ Not every slice needs every file. Start with the route module alone and split it
 - Style with Tailwind utilities. Put design tokens (colors, fonts, spacing scale) in `app.css` instead of hard-coding
   values in components.
 - Extract a component when a pattern repeats, not a utility class.
-- The look (colour, type, layout, motion) is defined in [`app-identity.md`](./app-identity.md); design new pages with
-  [`design-flow.md`](./design-flow.md).
+- The look (colour, surface layers, elevation, type, motion) is defined by the tokens in `app/app.css`; design new
+  pages with [`design-flow.md`](./design-flow.md) and the `frontend-design` skill.
 - Storefront headings and section spacing use the fluid `clamp()` tokens (`text-h1`, `px-site`, `py-section-md`,
   `site-container`). Component internals and dashboards use Tailwind's static scale.
 - Animate only `transform` and `opacity`, and put movement behind `motion-safe:`. Bare `transition` utilities already

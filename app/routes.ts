@@ -1,7 +1,9 @@
-import { type RouteConfig, index, route } from "@react-router/dev/routes";
+import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
 
 export default [
-  index("routes/home.tsx"),
+  /*===== Storefront =====*/
+  layout("routes/layout_public/layout-public.tsx", [index("routes/home/home.tsx")]),
+
   route("auth", "routes/auth/auth.tsx"),
   route("pets", "routes/pets/pets.tsx"),
 

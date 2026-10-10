@@ -1,10 +1,10 @@
 import { ShieldCheckIcon } from "lucide-react";
 
 /*===== Trust Note =====*/
-/** Privacy reassurance under the auth forms (app-identity "mint note" pattern). */
+/** Privacy reassurance under the auth forms (a success-tinted note). */
 export function TrustNote() {
   return (
-    <aside className="flex items-start gap-3 rounded-xl border border-mint-border bg-mint p-4">
+    <aside className="flex items-start gap-3 rounded-xl border border-success/25 bg-success/10 p-4">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-card text-success">
         <ShieldCheckIcon className="size-5" strokeWidth={1.7} aria-hidden />
       </span>

@@ -1,13 +1,14 @@
 /*===== Theme =====*/
-// The theme lives on <html> (`.dark` class + `color-scheme`). With no saved choice the site is dark,
-// whatever the system setting: dark is the brand's default look. Once the user picks a theme with the
-// toggle, that choice wins from then on.
+// The theme lives on <html> (`.dark` class + `color-scheme`). With no saved choice the site is light,
+// whatever the system setting: the layered stone-and-white surfaces read clearest by day. Once the user
+// picks a theme with the toggle, that choice wins from then on.
 // Browser-only except `THEME_INIT_SCRIPT`, which root.tsx inlines into the server-rendered <head>.
 
 export type Theme = "light" | "dark";
 
 const STORAGE_KEY = "zurvan-theme";
-const DEFAULT_THEME: Theme = "dark";
+// Widened to `Theme` so the first-paint script below keeps both branches if the default changes again.
+const DEFAULT_THEME = "light" as Theme;
 // Notifies other components in this tab; the `storage` event only fires in other tabs.
 const CHANGE_EVENT = "zurvan:theme-change";
 
