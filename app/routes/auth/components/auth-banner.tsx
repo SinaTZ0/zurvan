@@ -19,7 +19,7 @@ const SERVICES = [
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a dark green hero card that says what Zurvan
+ * Desktop-only brand panel beside the auth forms: a dark green hero card that says what Zurvann
  * offers. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {

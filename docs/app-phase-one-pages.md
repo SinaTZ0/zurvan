@@ -2,6 +2,8 @@
 
 Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The section numbers in parentheses point to that spec.
 
+**Before building pages**, finish [foundations-plan.md](foundations-plan.md) (auth and roles, schema and money core, seat booking and jobs, shared helpers, seed data). Open business rules use the working defaults in [business-logic.md](business-logic.md), and images follow [media.md](media.md).
+
 ## Quick List
 
 **Public**
@@ -88,9 +90,10 @@ Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The secti
 
 ### Customer
 
+- **Pet Form:** every field of entity 4: name, species, breed, sex, birth date (approximate is fine), weight, neutered, photo, microchip number, vaccination status, behaviour notes and medical notes. Say that the two notes are shown to the trainer. The current `pets` page (name, species, breed, age in years) is replaced by this.
 - **Pet Detail:** passed courses, enrollments, trainer notes.
 - **Checkout:** pick pets, eligibility and retake notices, discount code, wallet use, 15-minute hold timer (3.3, 3.5, 3.7, 3.9). Also used for waitlist offers (3.4).
-- **Payment Result:** gateway callback page, success or failure with retry.
+- **Payment Result:** gateway callback page, success or failure with retry. For the showcase there is no gateway: "pay" always succeeds and lands here (see [foundations-plan.md](foundations-plan.md)).
 - **Reservation Detail:** run info, refund amount preview, cancel (3.6).
 - **My Waitlist:** entries, active offers with countdown, leave.
 

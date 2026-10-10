@@ -1,6 +1,6 @@
 # App Identity: Mood, Tone & Theme
 
-Source: `claude-design-assets/Zurvan UI reproduction/`. Zurvan is a premium pet-services app (vet, pet taxi, trainer, pet walker, boarding) for Persian-speaking pet owners. It's RTL and mobile-first.
+Source: `claude-design-assets/Zurvan UI reproduction/`. Zurvann is a premium pet-services app (vet, pet taxi, trainer, pet walker, boarding) for Persian-speaking pet owners. It's RTL and mobile-first.
 
 ## Mood
 
