@@ -16,6 +16,10 @@ This is a React Router v8 application using Framework Mode. The application's us
 - Put temporary scripts, diagnostics, experiments, and logs in `./.tmp-codex/`.
 - Create `./.tmp-claude/` as needed. It is gitignored and must never contain deliverable source files.
 
+## Git
+
+- Commit directly on `main`. Do not create, switch to, or merge other branches unless the user explicitly asks for a branch.
+
 ## Testing and Validation
 
 - Keep automated tests small and focused on consequential business behavior, security boundaries, and meaningful regressions. Do not add exhaustive input matrices, implementation-detail assertions, library behavior tests, logging/timing checks, or tests for routine styling changes.
