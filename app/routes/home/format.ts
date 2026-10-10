@@ -21,6 +21,12 @@ const dayMonthFormat = new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
 });
 const dayFormat = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { day: "numeric", timeZone: TIME_ZONE });
 const monthFormat = new Intl.DateTimeFormat("fa-IR-u-ca-persian", { month: "long", timeZone: TIME_ZONE });
+const timeFormat = new Intl.DateTimeFormat("fa-IR", {
+  hour: "numeric",
+  minute: "2-digit",
+  hourCycle: "h23",
+  timeZone: TIME_ZONE,
+});
 const weekdayFormat = new Intl.DateTimeFormat("fa-IR", { weekday: "long", timeZone: TIME_ZONE });
 
 /** "۲۵ مهر" */
@@ -31,4 +37,9 @@ export function formatDayMonth(date: Date): string {
 /** The parts of a date shown separately in a calendar block: "۲۵", "مهر", "شنبه". */
 export function dateParts(date: Date) {
   return { day: dayFormat.format(date), month: monthFormat.format(date), weekday: weekdayFormat.format(date) };
+}
+
+/** "۱۷:۳۰" */
+export function formatTime(date: Date): string {
+  return timeFormat.format(date);
 }

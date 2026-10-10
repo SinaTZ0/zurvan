@@ -26,6 +26,83 @@ export type Problem = {
   nextRun: { startsAt: Date; place: string; seats: Seats };
 };
 
+/*===== Course Details =====*/
+/** What the expanded row tells a visitor before they open the course page. */
+export type CourseDetail = {
+  /** One or two sentences on how the course approaches the problem. */
+  summary: string;
+  /** What the pet and owner can do by the end, in the owner's terms. */
+  outcomes: string[];
+  /** Length of the course, e.g. "۴ جلسه، هر جلسه ۹۰ دقیقه". */
+  duration: string;
+  /** Price in tomans. */
+  price: number;
+};
+
+// Sample data, keyed by course slug, until courses come from the database.
+export const COURSE_DETAILS: Record<string, CourseDetail> = {
+  "loose-leash-walking": {
+    summary:
+      "سگ یاد می‌گیرد کنار پای تو راه برود، نه جلوتر از تو. کار را از حیاط شروع می‌کنیم و کم‌کم به خیابان می‌بریم.",
+    outcomes: ["راه رفتن با قلاده‌ی شل", "نکشیدن هنگام دیدن سگ یا گربه‌ی دیگر", "ایستادن و نشستن سر چهارراه"],
+    duration: "۴ جلسه، هر جلسه ۹۰ دقیقه",
+    price: 1_900_000,
+  },
+  "reliable-recall": {
+    summary:
+      "برگشتن با یک بار صدا زدن، حتی وقتی چیز جذاب‌تری آن‌طرف باشد. با قلاده‌ی بلند شروع می‌کنیم و در پارک تمرین می‌کنیم.",
+    outcomes: ["آمدن با اولین صدا", "برگشتن از وسط بازی", "ماندن تا اجازه‌ی تو"],
+    duration: "۳ جلسه، هر جلسه ۹۰ دقیقه",
+    price: 1_700_000,
+  },
+  "separation-anxiety": {
+    summary:
+      "تنها ماندن را به‌تدریج و بدون ترس تمرین می‌کنیم. اول چند ثانیه، بعد چند دقیقه، تا سگ بدون پارس و بی‌قراری بماند.",
+    outcomes: ["آرام ماندن هنگام رفتنت", "کم شدن پارس و خرابکاری", "برنامه‌ی روزانه برای هفته‌های بعد"],
+    duration: "۵ جلسه، هر جلسه ۶۰ دقیقه",
+    price: 2_100_000,
+  },
+  "basic-obedience": {
+    summary:
+      "پایه‌ی همه‌ی آموزش‌ها: بنشین، بمان، بیا و بخواب، با تشویق و بدون تنبیه. مناسب سگ‌هایی که تا حالا آموزشی ندیده‌اند.",
+    outcomes: ["دستورهای پایه با اشاره و صدا", "توجه سگ در حضور حواس‌پرتی", "رفتار آرام در خانه"],
+    duration: "۶ جلسه، هر جلسه ۹۰ دقیقه",
+    price: 2_400_000,
+  },
+  "city-manners": {
+    summary: "تمرین در جای واقعی: کافه، مترو و پیاده‌رو. سگ یاد می‌گیرد به مهمان‌ها نپرد و در شلوغی آرام بماند.",
+    outcomes: ["نپریدن روی آدم‌ها", "آرام نشستن کنار میز", "رفتار درست در مترو و آسانسور"],
+    duration: "۴ جلسه، هر جلسه ۱۲۰ دقیقه",
+    price: 2_200_000,
+  },
+  "puppy-foundations": {
+    summary: "مهم‌ترین ماه‌های زندگی توله: اجتماعی شدن، عادت دستشویی و گاز نگرفتن. هر جلسه یک کار تازه و کلی بازی.",
+    outcomes: ["کنترل گاز گرفتن", "عادت دستشویی", "آشنایی امن با آدم‌ها و سگ‌های دیگر"],
+    duration: "۴ جلسه، هر جلسه ۶۰ دقیقه",
+    price: 1_600_000,
+  },
+  "calm-cat": {
+    summary: "دلیل رفتار گربه را پیدا می‌کنیم، بعد محیط خانه را طوری تغییر می‌دهیم که چنگ زدن و بی‌قراری شبانه کم شود.",
+    outcomes: ["خراشیدن در جای درست", "خواب شبانه‌ی آرام‌تر", "بازی و کاوش بدون استرس"],
+    duration: "۳ جلسه‌ی آنلاین، هر جلسه ۷۵ دقیقه",
+    price: 1_200_000,
+  },
+  "litter-and-habits": {
+    summary:
+      "اگر گربه از ظرف خاک استفاده نمی‌کند، معمولاً دلیلی دارد. با هم جنس خاک، جا و عادت‌ها را بررسی و اصلاح می‌کنیم.",
+    outcomes: ["پیدا کردن دلیل مشکل", "چیدن درست ظرف خاک", "برنامه‌ی تمیزکاری و پیگیری"],
+    duration: "۲ جلسه‌ی آنلاین، هر جلسه ۶۰ دقیقه",
+    price: 900_000,
+  },
+  "kitten-at-home": {
+    summary:
+      "هفته‌های اول خانه‌ی جدید را راحت‌تر می‌کنیم: آماده‌سازی خانه، غذا و بازی، و آشنایی آرام با اعضای خانواده.",
+    outcomes: ["آماده کردن خانه برای بچه‌گربه", "برنامه‌ی غذا و خواب", "بازی بی‌خطر بدون گاز و چنگ"],
+    duration: "۳ جلسه‌ی آنلاین، هر جلسه ۶۰ دقیقه",
+    price: 1_000_000,
+  },
+};
+
 // Sample data: once courses exist, each course lists the problems it solves and this comes from the database.
 export const PROBLEMS: Problem[] = [
   /*------ Dogs ------*/

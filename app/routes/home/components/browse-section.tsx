@@ -1,11 +1,14 @@
 import { cn } from "cn";
-import { ChevronLeftIcon } from "lucide-react";
+import { CalendarIcon, CheckIcon, ClockIcon, MapPinIcon, UserRoundIcon, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Link } from "~/components/link";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
+import { buttonVariants } from "~/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { formatDayMonth } from "~/routes/home/format";
-import { type Problem, PROBLEMS } from "~/routes/home/problems";
+import { describeSeats, SeatRoster } from "~/routes/home/components/seat-roster";
+import { dateParts, formatDayMonth, formatTime, formatToman } from "~/routes/home/format";
+import { COURSE_DETAILS, type Problem, PROBLEMS } from "~/routes/home/problems";
 
 type Species = Problem["species"];
 
@@ -18,12 +21,14 @@ const SPECIES_TABS: { value: Species; label: string }[] = [
 /**
  * Browsing by problem, in the owner's words, instead of by catalogue category: "قلاده را می‌کشد" leads to the leash
  * course. On desktop a photo of the course beside the list follows the row under the pointer or focus, so moving
- * through the list previews each course without leaving it.
+ * through the list previews each course without leaving it. A row opens in place with the course details and a visit
+ * button, so reading about a course doesn't cost a page change.
  */
 export function BrowseSection() {
   const [species, setSpecies] = useState<Species>("dog");
   const problems = PROBLEMS.filter((problem) => problem.species === species);
   const [activeId, setActiveId] = useState(problems[0]!.id);
+  const [openId, setOpenId] = useState<string | null>(null);
   const active = problems.find((problem) => problem.id === activeId) ?? problems[0]!;
 
   return (
@@ -33,6 +38,7 @@ export function BrowseSection() {
         onValueChange={(value: Species) => {
           setSpecies(value);
           setActiveId(PROBLEMS.find((problem) => problem.species === value)!.id);
+          setOpenId(null);
         }}
         className="gap-0"
       >
@@ -59,7 +65,16 @@ export function BrowseSection() {
           {/*------ Index ------*/}
           {SPECIES_TABS.map((tab) => (
             <TabsContent key={tab.value} value={tab.value}>
-              <ul className="border-t">
+              <Accordion
+                value={openId ? [openId] : []}
+                onValueChange={(value) => {
+                  const next = value[0] ?? null;
+                  setOpenId(next);
+                  // Opening a row also moves the preview to it, which matters on touch screens that never hover.
+                  if (next) setActiveId(next);
+                }}
+                className="border-t"
+              >
                 {PROBLEMS.filter((problem) => problem.species === tab.value).map((problem) => (
                   <ProblemRow
                     key={problem.id}
@@ -68,7 +83,7 @@ export function BrowseSection() {
                     onActivate={() => setActiveId(problem.id)}
                   />
                 ))}
-              </ul>
+              </Accordion>
             </TabsContent>
           ))}
 
@@ -90,13 +105,16 @@ function ProblemRow({
   isActive: boolean;
   onActivate: () => void;
 }) {
+  const detail = COURSE_DETAILS[problem.course.slug]!;
+  const seats = describeSeats(problem.nextRun.seats);
+  const { weekday, day, month } = dateParts(problem.nextRun.startsAt);
+
   return (
-    <li className="border-b">
-      <Link
-        to={`/courses/${problem.course.slug}`}
+    <AccordionItem value={problem.id} className="border-b transition-colors data-open:bg-primary/5">
+      <AccordionTrigger
         onPointerEnter={onActivate}
         onFocus={onActivate}
-        className="group/row flex items-center gap-4 py-5 outline-none focus-visible:bg-accent sm:gap-6 lg:py-6"
+        className="group/row items-center gap-4 rounded-none px-4 py-5 text-base font-normal transition-colors hover:bg-primary/5 hover:no-underline aria-expanded:hover:bg-transparent **:data-[slot=accordion-trigger-icon]:size-6 **:data-[slot=accordion-trigger-icon]:text-faint sm:gap-6 sm:px-6 lg:py-6"
       >
         <span className="min-w-0 flex-1">
           <span
@@ -123,16 +141,76 @@ function ProblemRow({
           loading="lazy"
           className="size-16 shrink-0 rounded-xl object-cover lg:hidden"
         />
-        <ChevronLeftIcon
-          strokeWidth={1.7}
-          aria-hidden
-          className={cn(
-            "hidden size-6 shrink-0 transition duration-300 motion-safe:group-hover/row:-translate-x-1 lg:block",
-            isActive ? "text-primary" : "text-faint",
-          )}
-        />
-      </Link>
-    </li>
+      </AccordionTrigger>
+
+      {/*------ Details ------*/}
+      {/* The accordion styles every link inside its panel as underlined text; the button must keep its own look. */}
+      <AccordionContent className="[&_a]:no-underline [&_a]:hover:text-primary-foreground">
+        <div className="grid gap-6 px-4 pb-6 sm:px-6">
+          {/*------ What the Course Does ------*/}
+          <div className="grid gap-4">
+            <p className="max-w-prose text-base leading-relaxed text-pretty">{detail.summary}</p>
+            <ul className="grid gap-2">
+              {detail.outcomes.map((outcome) => (
+                <li key={outcome} className="flex items-center gap-2.5">
+                  <CheckIcon aria-hidden strokeWidth={2.4} className="size-4 shrink-0 text-primary" />
+                  {outcome}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/*------ Next Class ------*/}
+          <dl className="grid gap-x-6 gap-y-4 border-t border-primary/15 pt-5 sm:grid-cols-2">
+            <Fact icon={CalendarIcon} label="کلاس بعدی">
+              {weekday} {day} {month}، ساعت {formatTime(problem.nextRun.startsAt)}
+            </Fact>
+            <Fact icon={MapPinIcon} label="مکان">
+              {problem.nextRun.place}
+            </Fact>
+            <Fact icon={ClockIcon} label="طول دوره">
+              {detail.duration}
+            </Fact>
+            <Fact icon={UserRoundIcon} label="مربی">
+              {problem.course.trainer}
+            </Fact>
+          </dl>
+
+          {/*------ Seats ------*/}
+          <div className="grid gap-2">
+            <SeatRoster seats={problem.nextRun.seats} />
+            <p className="flex flex-wrap gap-x-3 text-sm">
+              <span className="font-bold">{seats.status}</span>
+              <span className="text-muted-foreground">{seats.detail}</span>
+            </p>
+          </div>
+
+          {/*------ Price and Action ------*/}
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-primary/15 pt-5">
+            <p className="flex items-baseline gap-2">
+              <span className="text-h3 font-extrabold">{formatToman(detail.price)}</span>
+              <span className="text-sm text-muted-foreground">برای هر شرکت‌کننده</span>
+            </p>
+            <Link to={`/courses/${problem.course.slug}`} className={buttonVariants({ size: "lg" })}>
+              مشاهده‌ی دوره
+            </Link>
+          </div>
+        </div>
+      </AccordionContent>
+    </AccordionItem>
+  );
+}
+
+/*===== Fact =====*/
+function Fact({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <Icon aria-hidden strokeWidth={1.7} className="mt-0.5 size-5 shrink-0 text-primary" />
+      <div>
+        <dt className="text-sm text-muted-foreground">{label}</dt>
+        <dd className="font-bold">{children}</dd>
+      </div>
+    </div>
   );
 }
 
