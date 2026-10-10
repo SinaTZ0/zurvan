@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { HeroDoodles, HeroReviewDoodle, HeroSideDoodles } from "~/routes/home/components/hero-doodles";
 import { ReviewCard } from "~/routes/home/components/review-card";
 import { REVIEWS } from "~/routes/home/reviews";
 
@@ -24,13 +25,26 @@ const DESKTOP_PLACEMENT = [
   "lg:col-start-2 lg:row-[4/span_2]",
   "lg:col-start-1 lg:row-[5/span_2]",
 ];
-/** Degrees each card settles at on desktop, so the pile reads as notes rather than a grid. */
-const DESKTOP_TILT = [-2, 1.5, 1, -1.5, -1];
+/** Degrees each card settles at, so the pile reads as notes rather than a grid. */
+const TILT = [-2, 1.5, 1, -1.5, -1];
+// Where each card's doodle pops in on desktop, wherever the pile leaves the photo free: perched on the first card of
+// each column, off the outer side of the middle card, and under the last card of each column.
+const DESKTOP_DOODLE_PLACEMENT = [
+  "lg:bottom-full lg:end-8 lg:-mb-0.5 lg:origin-bottom",
+  "lg:bottom-full lg:start-10 lg:-mb-0.5 lg:origin-bottom",
+  "lg:-top-8 lg:-start-20 lg:origin-left",
+  "lg:top-full lg:end-10 lg:mt-3 lg:origin-top",
+  "lg:top-full lg:start-12 lg:mt-2 lg:origin-top",
+];
 
 // The photo's starting frame, as insets from the pinned panel. Measured from the layout once mounted; these fallbacks
 // only cover the moment before hydration, while the photo is still hidden.
 const FRAME_CLIP =
   "inset(calc(var(--frame-top, 40%) * (1 - var(--expand, 0))) calc(var(--frame-right, 1rem) * (1 - var(--expand, 0))) calc(var(--frame-bottom, 6rem) * (1 - var(--expand, 0))) calc(var(--frame-left, 1rem) * (1 - var(--expand, 0))) round calc(1.75rem * (1 - var(--expand, 0))))";
+
+/*===== Side Doodles =====*/
+/** Grows with the margin, from the frieze's stroke scale at the narrowest margin that shows it, up to a cap. */
+const SIDE_DOODLE_SIZE = "h-auto w-[clamp(15.625rem,calc((100vw-80rem)/2-4rem),22rem)] shrink-0";
 
 /*===== Photo =====*/
 const PHOTO = { src: "/demo/hero.webp", width: 2400, height: 1600 };
@@ -137,17 +151,46 @@ export function HomeHero() {
             </div>
           </div>
 
-          {/*------ Guarantees ------*/}
-          <ul className="mt-6 hidden flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground sm:flex">
-            <li className="flex items-center gap-2">
-              <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
-              ۴۲ مربی تأییدشده
-            </li>
-            <li className="flex items-center gap-2">
-              <UndoDotIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
-              کلاس شروع نشد؟ کل مبلغ برمی‌گردد
-            </li>
-          </ul>
+          <div className="mt-5 flex items-end gap-x-8 sm:mt-8">
+            {/*------ Guarantees ------*/}
+            <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground sm:flex">
+              <li className="flex items-center gap-2">
+                <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
+                ۴۲ مربی تأییدشده
+              </li>
+              <li className="flex items-center gap-2">
+                <UndoDotIcon strokeWidth={1.7} className="size-5 shrink-0 text-primary" aria-hidden />
+                کلاس شروع نشد؟ کل مبلغ برمی‌گردد
+              </li>
+            </ul>
+
+            {/*------ Doodles ------*/}
+            {/* Fills the rest of the row. From `sm` the frieze rises out of the short guarantees row into the empty
+                space beside the buttons, and dips into the gap above the photo, instead of making the heading taller.
+                The cropped tail fades out at the start edge rather than ending in a half-drawn figure; `mask-no-clip`
+                lets that fade reach the part of the frieze above and below this box. */}
+            <div className="relative h-16 min-w-0 flex-1 self-stretch overflow-x-clip mask-r-from-[calc(100%-3rem)] mask-no-clip sm:h-auto">
+              <HeroDoodles className="absolute end-0 bottom-0 h-16 w-auto sm:-bottom-4 sm:h-20" />
+            </div>
+          </div>
+        </div>
+
+        {/*===== Side Doodles =====*/}
+        {/* Wide screens leave empty margins beside the page, as tall as the hero. Each holds a scene pinned to the
+            page's edge; when the margin is narrower than the scene, it overflows toward the screen's edge, where it
+            is cropped and faded. Laid out left to right, so `justify-end` means the right edge in Persian too. They
+            fade with the heading, and the growing photo covers them. */}
+        <div
+          dir="ltr"
+          style={{ opacity: "calc(1 - var(--expand, 0) * 1.6)" }}
+          className="pointer-events-none absolute inset-0 hidden min-[100rem]:block"
+        >
+          <div className="absolute inset-y-0 left-0 flex w-[calc((100%-var(--container-page))/2)] items-start justify-end overflow-hidden mask-l-from-[calc(100%-6rem)] pt-10 pr-8">
+            <HeroSideDoodles side="left" className={SIDE_DOODLE_SIZE} />
+          </div>
+          <div className="absolute inset-y-0 right-0 flex w-[calc((100%-var(--container-page))/2)] items-start overflow-hidden mask-r-from-[calc(100%-6rem)] pt-10 pl-8">
+            <HeroSideDoodles side="right" className={SIDE_DOODLE_SIZE} />
+          </div>
         </div>
 
         {/*===== Frame =====*/}
@@ -196,37 +239,48 @@ export function HomeHero() {
           <h2 id="reviews-title" className="sr-only">
             نظر صاحبان حیوان‌ها
           </h2>
-          {/* Phones stack the cards at the bottom like a deck, newest in front. Desktop gives each its own place. */}
-          <ul className="absolute inset-x-site bottom-gutter sm:end-auto sm:w-md lg:static lg:grid lg:w-[40rem] lg:grid-cols-2 lg:gap-x-4 lg:gap-y-2">
-            {REVIEWS.map((review, index) => {
-              const shown = index < revealed;
-              // How many cards have landed in front of this one in the phone deck.
-              const depth = revealed - 1 - index;
-              return (
-                <li
-                  key={review.id}
-                  style={
-                    {
-                      "--depth": Math.max(depth, 0),
-                      "--tilt": `${DESKTOP_TILT[index]}deg`,
-                      zIndex: index,
-                    } as React.CSSProperties
-                  }
-                  className={cn(
-                    "absolute inset-x-0 bottom-0 origin-top transition-[opacity,translate,scale,rotate] duration-700 ease-silk motion-reduce:transition-opacity lg:static lg:self-center",
-                    DESKTOP_PLACEMENT[index],
-                    shown
-                      ? "max-lg:translate-y-[calc(var(--depth)*-0.875rem)] max-lg:scale-[calc(1-var(--depth)*0.05)] lg:rotate-(--tilt)"
-                      : "translate-y-10 scale-90 opacity-0",
-                    // Deeper than two cards back, a phone card is fully hidden behind the ones in front.
-                    shown && depth > 2 && "max-lg:opacity-0",
-                  )}
-                >
-                  <ReviewCard review={review} />
-                </li>
-              );
-            })}
-          </ul>
+          {/* Phones run the cards top to bottom in a zig-zag. The spacer below the list keeps it at the top while it
+              fits; once it outgrows the screen the spacer is gone and `justify-end` lets it overflow upward instead,
+              so the newest card stays in view. Desktop gives each card its own place in a two-column pile. */}
+          <div className="absolute inset-x-site top-gutter bottom-gutter flex flex-col justify-end sm:end-auto sm:w-md lg:contents">
+            <ul className="flex shrink-0 flex-col lg:grid lg:w-[40rem] lg:grid-cols-2 lg:gap-x-4 lg:gap-y-2">
+              {REVIEWS.map((review, index) => {
+                const shown = index < revealed;
+                return (
+                  <li
+                    key={review.id}
+                    style={{ "--tilt": `${TILT[index]}deg`, zIndex: index } as React.CSSProperties}
+                    className={cn(
+                      // On phones the row opens from nothing, so the list grows smoothly as each card lands.
+                      "grid-rows-[0fr] transition-[opacity,translate,scale,rotate,grid-template-rows] duration-700 ease-silk motion-reduce:transition-opacity max-lg:grid max-lg:w-[82%] max-lg:odd:self-start max-lg:even:self-end lg:self-center",
+                      DESKTOP_PLACEMENT[index],
+                      shown ? "rotate-(--tilt) grid-rows-[1fr]" : "translate-y-10 scale-90 opacity-0",
+                    )}
+                  >
+                    <div className="relative min-h-0 max-lg:pb-3">
+                      <ReviewCard review={review} />
+
+                      {/*------ Doodle ------*/}
+                      {/* Mounts with its card, so it pops and draws in as the card lands. On phones it sits in the gap
+                          the zig-zag leaves beside the card. */}
+                      {shown && (
+                        <div
+                          className={cn(
+                            "absolute animate-in duration-500 zoom-in-50 fade-in motion-reduce:animate-none max-lg:top-6",
+                            index % 2 === 0 ? "max-lg:start-full max-lg:ms-1" : "max-lg:end-full max-lg:me-1",
+                            DESKTOP_DOODLE_PLACEMENT[index],
+                          )}
+                        >
+                          <HeroReviewDoodle index={index} />
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="grow lg:hidden" />
+          </div>
         </section>
       </div>
     </section>

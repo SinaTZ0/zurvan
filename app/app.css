@@ -54,6 +54,28 @@
   /* Every bare `transition*` utility uses these, so hovers across the app share one feel */
   --default-transition-duration: 200ms;
   --default-transition-timing-function: var(--ease-silk);
+
+  /* Draws a stroke in once. Needs `pathLength="1"` on the stroke and `stroke-dasharray: 1` on it or a parent */
+  --animate-doodle-draw: doodle-draw 1.1s var(--ease-silk-in-out) both;
+  @keyframes doodle-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* A slow bob and tilt, there and back. Give each user its own duration and a negative delay to break the unison */
+  --animate-doodle-float: doodle-float 6s ease-in-out infinite alternate;
+  @keyframes doodle-float {
+    from {
+      transform: translateY(2px) rotate(-1.5deg);
+    }
+    to {
+      transform: translateY(-6px) rotate(1.5deg);
+    }
+  }
 }
 
 @theme inline {
@@ -121,8 +143,9 @@
 }
 
 /*===== Palette: Firuzeh & Saffron =====*/
-/* Persian turquoise (firuzeh) leads: actions, links, the selected state. Saffron is the rare warm note: stars and
-   discount codes. Everything else is cool stone, so photos of pets and people carry the colour.
+/* Persian turquoise (firuzeh) leads: actions, links, the selected state. Saffron is the rare warm note: stars,
+   discount codes and the hero's scribbles. Everything else is cool stone, so photos of pets and people carry the
+   colour.
 
    Layers, from back to front. Each step is a lighter surface plus a deeper shadow, so depth reads in both themes:
      sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)
