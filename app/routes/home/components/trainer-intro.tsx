@@ -34,7 +34,10 @@ export function TrainerIntro() {
 
       <div className="flex flex-col">
         {/*------ His Words ------*/}
-        <h2 id="trainer-title" className="text-[clamp(1.875rem,1.4rem+1.9vw,3rem)] leading-[1.35] text-balance">
+        <h2
+          id="trainer-title"
+          className="font-display text-[clamp(1.875rem,1.4rem+1.9vw,3rem)] leading-[1.35] font-bold text-balance"
+        >
           سگ را در جای زندگی خودش آموزش می‌دهم، نه در کلاسی شلوغ.
         </h2>
         <p className="mt-5 flex flex-col">

@@ -45,7 +45,9 @@ export default function AuthPage() {
         <header className="flex flex-col items-center text-center">
           {/* Desktop shows the logo in the banner instead. */}
           <BrandLogo className="text-[2.5rem] lg:hidden" />
-          <h1 className="mt-4 text-[2rem] leading-tight text-primary lg:mt-0">به آموزش K9 خوش آمدید</h1>
+          <h1 className="mt-4 font-display text-[2rem] leading-tight font-bold text-primary lg:mt-0">
+            به آموزش K9 خوش آمدید
+          </h1>
           <p className="mt-3 max-w-72 text-muted-foreground">
             وارد شو تا ارزیابی رایگان را رزرو کنی و آموزش سگت را دنبال کنی.
           </p>

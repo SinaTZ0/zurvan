@@ -24,7 +24,7 @@ export function BrowseSection() {
     <section aria-labelledby="browse-title" className="site-container pt-section-md">
       {/*------ Heading ------*/}
       <div className="max-w-2xl">
-        <h2 id="browse-title" className="text-h2 text-balance">
+        <h2 id="browse-title" className="font-display text-h2 font-bold text-balance">
           سگت چه کاری می‌کند؟
         </h2>
         <p className="mt-2 text-pretty text-muted-foreground">

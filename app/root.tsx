@@ -24,7 +24,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    // The site has one theme, onyx and gold. `dark` turns on the `dark:` variants the UI components are written with;
+    // The site has one theme, black lacquer and gold leaf. `dark` turns on the `dark:` variants the UI components are written with;
     // `color-scheme` (set in app.css) makes native controls and scrollbars dark too.
     <html lang="fa" dir="rtl" className="dark">
       <head>

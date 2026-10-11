@@ -72,8 +72,8 @@ export function SiteFooter() {
       </div>
 
       {/*===== Name =====*/}
-      {/* The stencil K9 as big as the page allows, standing on the bottom rule with its foot cut off, beside where the
-          name comes from. A name with a story is easier to remember than one that is only repeated. */}
+      {/* The stencil K9 as big as the page allows, engraved as a gold outline, standing on the bottom rule with its foot
+          cut off, beside where the name comes from. A name with a story is easier to remember than one that is only repeated. */}
       <div className="site-container -mt-6 flex flex-col gap-6 overflow-hidden lg:-mt-16 lg:flex-row-reverse lg:items-end lg:justify-between">
         <p className="max-w-xs text-sm leading-[1.9] text-pretty text-muted-foreground lg:mb-10">
           K9 در دنیای سگ‌ها نام سگ‌های کار و پلیس است. ما همه‌ی سگ‌ها را با همان جدیت آموزش می‌دهیم، از ادب خانگی تا
@@ -82,7 +82,7 @@ export function SiteFooter() {
         <p
           aria-hidden
           dir="ltr"
-          className="-mb-[0.12em] font-stencil text-[clamp(9rem,45vw,24rem)] leading-[0.8] font-black text-inverse-foreground/[0.08] select-none"
+          className="-mb-[0.12em] font-stencil text-[clamp(9rem,45vw,24rem)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)]"
         >
           K9
         </p>

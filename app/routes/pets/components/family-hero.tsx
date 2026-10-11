@@ -9,7 +9,7 @@ const MAX_AVATARS = 4;
 
 /*===== Family Hero =====*/
 /**
- * The page's one bold element: a bronze hero card that names the user's pets, with their species
+ * The page's one bold element: a charcoal hero card that names the user's pets, with their species
  * as an overlapping row of gold-ringed avatars, like a family portrait.
  */
 export function FamilyHero({ pets }: { pets: Pet[] }) {

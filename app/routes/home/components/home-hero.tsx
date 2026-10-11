@@ -120,17 +120,17 @@ export function HomeHero() {
   }, []);
 
   return (
-    <section ref={sectionRef} aria-labelledby="hero-title" className="h-[300svh] lg:h-[340svh]">
+    <section ref={sectionRef} aria-labelledby="hero-title" className="h-[300svh] bg-jet lg:h-[340svh]">
       <div ref={panelRef} className="sticky top-0 flex h-svh flex-col overflow-hidden">
         {/*===== Glow =====*/}
-        {/* Warm light behind the headline (the start side) and a fainter pool low on the far side, so the dark page has
-            a lit centre. It fades out with the headline as the photo takes over. */}
+        {/* Plain black, lit only by a faint ivory pool behind the headline, like a single lamp in a dark room. Tinted
+            light on black turns muddy, so it carries no gold or green. It fades out with the headline as the photo
+            takes over. */}
         <div
           aria-hidden
           style={{
             opacity: "calc(1 - var(--expand, 0) * 1.6)",
-            backgroundImage:
-              "radial-gradient(ellipse 46rem 24rem at 72% 20%, rgb(236 199 116 / 0.17), transparent), radial-gradient(ellipse 34rem 22rem at 12% 62%, rgb(212 175 97 / 0.08), transparent)",
+            backgroundImage: "radial-gradient(ellipse 48rem 26rem at 72% 20%, rgb(244 237 220 / 0.06), transparent)",
           }}
           className="pointer-events-none absolute inset-0"
         />
@@ -146,21 +146,23 @@ export function HomeHero() {
           className="site-container origin-top pt-8 lg:pt-14"
         >
           <div className="grid gap-y-6 lg:grid-cols-[auto_minmax(0,22rem)] lg:items-stretch lg:justify-start lg:gap-x-12 xl:grid-cols-[auto_26rem] xl:gap-x-16">
-            {/* Big and heavy, in two fixed lines on desktop so the promise sits on the first and its payoff on the second. */}
+            {/* The page's one loud thing: the promise in two fixed lines of the display face, in ivory. Naskh needs room
+                for its tall ascenders and deep descenders, hence the generous line height. */}
             <h1
               id="hero-title"
-              className="text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.2] font-extrabold text-balance text-foreground/90"
+              className="pb-[0.15em] font-display text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.25] font-bold text-balance text-foreground"
             >
               <span className="lg:block">
                 به سگت{" "}
-                {/* A gold marker stroke wipes in behind the words, in the same hand as the doodles. Light letters would
-                    not hold on gold, so it is a full highlighter block and the phrase turns dark ink. */}
-                <span className="relative isolate whitespace-nowrap text-saffron-foreground">
+                {/* A flat gold marker stroke wipes in behind the word, in the same hand as the doodles and the same gold
+                    as the button. Light letters would not hold on gold, so it is a full highlighter block and the word
+                    turns dark ink. */}
+                <span className="relative isolate whitespace-nowrap text-primary-foreground">
                   <svg
                     aria-hidden
                     viewBox="0 0 200 40"
                     preserveAspectRatio="none"
-                    className="absolute inset-x-[-0.12em] top-[-8%] -z-10 h-[108%] w-[calc(100%+0.24em)] animate-marker-swipe fill-saffron motion-reduce:animate-none"
+                    className="absolute inset-x-[-0.12em] top-[16%] -z-10 h-[74%] w-[calc(100%+0.24em)] animate-marker-swipe fill-primary motion-reduce:animate-none"
                   >
                     <path d="M3 10 C28 3 66 12 108 6 S178 3 197 9 L199 29 C172 37 132 28 92 34 S26 37 2 32 Z" />
                   </svg>
@@ -185,8 +187,9 @@ export function HomeHero() {
                 <Link
                   to="/assessment"
                   className={buttonVariants({
+                    variant: "solid",
                     size: "lg",
-                    className: "px-9 text-lg font-extrabold shadow-md max-sm:flex-1",
+                    className: "px-9 text-lg font-extrabold max-sm:flex-1",
                   })}
                 >
                   ارزیابی رایگان رزرو کن
@@ -208,13 +211,13 @@ export function HomeHero() {
           <div className="mt-4 flex items-center gap-x-8 sm:mt-6">
             <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm font-medium sm:flex">
               <li className="flex items-center gap-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-foreground/15 text-primary">
                   <HouseIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
                 جلسه‌ی خصوصی، فقط تو و سگت
               </li>
               <li className="flex items-center gap-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-foreground/15 text-primary">
                   <GiftIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
                 اولین ارزیابی رایگان است

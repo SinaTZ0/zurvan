@@ -33,15 +33,15 @@ const FINAL_STEP = {
 /*===== How It Works =====*/
 /**
  * Starting with the trainer in four numbered panels, under a frieze of the doodled people and animals the hero draws.
- * It's the page's one bronze band. The last step is the payoff, what having a record here is worth, so it alone is a
- * solid gold panel.
+ * It's the page's one charcoal band. The last step is the payoff, what having a record here is worth, so it alone is a
+ * gold-leaf panel.
  */
 export function HowItWorks() {
   return (
     <section
       id="how-it-works"
       aria-labelledby="how-title"
-      className="glow mt-section-md surface-inverse py-section-md [--glow-alpha:0.16] [--glow-at:100%_0%] [--glow-h:75%] [--glow-w:50%]"
+      className="glow mt-section-md surface-inverse py-section-md [--glow-alpha:0.05] [--glow-at:100%_0%] [--glow-h:75%] [--glow-w:50%]"
     >
       <div className="site-container">
         {/*------ Heading and Frieze ------*/}
@@ -65,15 +65,15 @@ export function HowItWorks() {
         {/*------ Steps ------*/}
         <ol className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((step, index) => (
-            <li key={step.title} className="flex flex-col gap-2.5 rounded-3xl border bg-foreground/6 p-6">
+            <li key={step.title} className="flex flex-col gap-2.5 rounded-3xl border bg-black/20 p-6">
               <StepNumber>{index + 1}</StepNumber>
               <h3 className="mt-1.5 text-h4">{step.title}</h3>
               <p className="text-sm text-pretty text-muted-foreground">{step.body}</p>
             </li>
           ))}
 
-          {/* The one solid gold panel, so it resets the band's re-pointed text colours to ink. */}
-          <li className="flex flex-col gap-2.5 rounded-3xl bg-primary p-6 text-primary-foreground [--foreground:var(--primary-foreground)] [--muted-foreground:#3d2f12]">
+          {/* The one gold-leaf panel, so it resets the band's re-pointed text colours to ink. */}
+          <li className="flex flex-col gap-2.5 rounded-3xl gold-leaf p-6 [--foreground:var(--primary-foreground)] [--muted-foreground:#3a2a0c]">
             <StepNumber className="text-primary-foreground">{STEPS.length + 1}</StepNumber>
             <h3 className="mt-1.5 text-h4">{FINAL_STEP.title}</h3>
             {FINAL_STEP.outcomes.map(({ lead, body }) => (
@@ -89,10 +89,10 @@ export function HowItWorks() {
 }
 
 /*===== Step Number =====*/
-/** The big count at the top of a step panel: gold on the dark panels, ink on the gold one. */
+/** The big count at the top of a step panel: gold leaf on the dark panels, ink on the gold one. */
 function StepNumber({ children, className }: { children: number; className?: string }) {
   return (
-    <span aria-hidden className={cn("text-6xl leading-none font-black", className ?? "text-saffron")}>
+    <span aria-hidden className={cn("text-6xl leading-none font-black", className ?? "text-gold-leaf")}>
       {formatNumberFa(children)}
     </span>
   );

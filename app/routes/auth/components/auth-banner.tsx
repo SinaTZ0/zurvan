@@ -25,7 +25,7 @@ const DISCIPLINES = [
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a bronze hero card that says who K9 Training is, the trainer, and
+ * Desktop-only brand panel beside the auth forms: a charcoal hero card that says who K9 Training is, the trainer, and
  * what he teaches. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {
@@ -46,7 +46,10 @@ export function AuthBanner({ className }: { className?: string }) {
 
       {/*------ Pitch ------*/}
       <div className="my-auto flex max-w-xl flex-col py-10">
-        <h2 id="auth-banner-title" className="max-w-md text-[2.75rem] leading-tight text-balance">
+        <h2
+          id="auth-banner-title"
+          className="max-w-md font-display text-[2.75rem] leading-tight font-bold text-balance"
+        >
           آموزش خصوصی سگ با {HEAD_TRAINER.name}
         </h2>
         <p className="mt-4 max-w-md text-muted-foreground">

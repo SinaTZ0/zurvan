@@ -19,7 +19,7 @@ export function SectionHeading({
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
       <div className="max-w-2xl">
-        <h2 id={id} className="text-h2 text-balance">
+        <h2 id={id} className="font-display text-h2 font-bold text-balance">
           {title}
         </h2>
         {description && <p className="mt-2 text-pretty text-muted-foreground">{description}</p>}
