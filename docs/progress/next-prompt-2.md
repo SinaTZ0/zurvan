@@ -51,9 +51,10 @@ docs/assessment-design.md, docs/media.md and docs/design-flow.md before anything
    frontend-design skill. Public pages follow storefront-design.md; account and trainer pages customer-area-design.md
    and the paper trail of the assessment and training docs.
 
-Delegation: you may hand well-defined pieces to Sonnet subagents at high effort (schema/oRPC from an agreed shape, a
-page from an agreed brief). Keep briefs, design decisions and final review yourself; check their work and screenshots
-before committing. Commit each finished piece on main.
+Delegation: you may hand well-defined pieces to subagents (schema/oRPC from an agreed shape, a page from an agreed
+brief). Don't pin their model or effort: leave both unset so each subagent runs with its own default. Keep briefs,
+design decisions and final review yourself; check their work and screenshots before committing. Commit each finished
+piece on main.
 
 Working notes from the last two sessions:
 
