@@ -184,7 +184,7 @@ function PathNotes({ course, lane }: { course: CourseDetail; lane: CourseLane })
         <>
           سگت این‌ها را جای دیگری یاد گرفته؟ به‌جای دوره، تستش را بده؛ قبولی در تست همان اعتبار دوره را دارد. هزینه‌ی
           تست <span className="font-bold text-foreground">{formatToman(course.testPrice)}</span> است.{" "}
-          <Link to="/pets" className="font-bold text-primary underline-offset-4 hover:underline">
+          <Link to="/account/dogs" className="font-bold text-primary underline-offset-4 hover:underline">
             رزرو تست
           </Link>
         </>

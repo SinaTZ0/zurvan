@@ -110,8 +110,8 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 
 ### Customer
 
-- **Dog Form:** every field of entity 4: name, breed, sex, birth date (approximate is fine), weight, neutered, photo, microchip number, vaccination status, behavior notes and medical notes. Say that the two notes are shown to the trainer. The current `pets` page (name, species, breed, age in years) is replaced by this.
-- **Dogs List:** replaces `/pets`. The home page's "book the next course" links here, since a dog's page is where a dog with a record books its next course.
+- **Dog Form:** every field of entity 4: name, breed, sex, birth date (approximate is fine), weight, neutered, photo, microchip number, vaccination status, behavior notes and medical notes. Say that the two notes are shown to the trainer. Built at `/account/dogs/new` and `/account/dogs/:dogId/edit` ([customer-area-design.md](customer-area-design.md)).
+- **Dogs List** (built, `/account/dogs`): The home page's "book the next course" links here, since a dog's page is where a dog with a record books its next course.
 - **Dog Detail and Record:** assessments with the trainer's notes and recommendations (each with "book"), enrollments with results, passed tests, trainer notes. This is where a dog with a record books its next course.
 - **Book a Course or Test:** dog (with eligibility and retake notices), boarding, address, preferred times, training goal (3.4, 3.8). Leads to checkout.
 - **Checkout:** items, discount code, wallet use (3.10, 3.12). Also used to pay a behavior plan (3.7).

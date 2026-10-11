@@ -8,10 +8,16 @@ export default [
   ]),
 
   /*===== Account (customers, trainers, partners) =====*/
-  route("account", "routes/layout_account/layout-account.tsx", [index("routes/account_home/account-home.tsx")]),
+  route("account", "routes/layout_account/layout-account.tsx", [
+    index("routes/account_home/account-home.tsx"),
+    route("dogs", "routes/account_dogs/account-dogs.tsx"),
+    route("dogs/:dogId", "routes/account_dog_detail/account-dog-detail.tsx"),
+    // One form module for adding and editing, so each route needs its own id.
+    route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
+    route("dogs/:dogId/edit", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-edit" }),
+  ]),
 
   route("auth", "routes/auth/auth.tsx"),
-  route("pets", "routes/pets/pets.tsx"),
 
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),

@@ -15,8 +15,8 @@ export type CourseActions = {
 /**
  * - Behavior modification starts from a request with a video, so that is its only action.
  * - Working and sport dogs have no list price yet; they can only start from the assessment.
- * - Every other course: a new dog books the free assessment, a dog with a record books the course from its page
- *   (`/pets` until the Dogs List replaces it).
+ * - Every other course: a new dog books the free assessment, a dog with a record books the course from its page,
+ *   reached through the Dogs List.
  */
 export function getCourseActions(course: Pick<CourseDetail, "bookingKind" | "price">): CourseActions {
   if (course.bookingKind === "behavior-request") {
@@ -24,5 +24,5 @@ export function getCourseActions(course: Pick<CourseDetail, "bookingKind" | "pri
   }
   const assessment = { label: "ارزیابی رایگان رزرو کن", to: "/assessment" };
   if (course.price === null) return { main: assessment, alternative: null };
-  return { main: assessment, alternative: { label: "سگت پرونده دارد؟ مستقیم رزرو کن", to: "/pets" } };
+  return { main: assessment, alternative: { label: "سگت پرونده دارد؟ مستقیم رزرو کن", to: "/account/dogs" } };
 }

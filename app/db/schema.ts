@@ -150,30 +150,9 @@ export const media = pgTable(
   (table) => [index("media_attached_at_created_at_idx").on(table.attachedAt, table.createdAt)],
 );
 
-/*===== Pets =====*/
-
-export const pet = pgTable(
-  "pet",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    ownerId: text("owner_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    // Plain text instead of a pg enum so adding a species is a code change, not a migration.
-    // Allowed values live in `app/orpc/pet/constants.ts`.
-    species: text("species").notNull(),
-    breed: text("breed"),
-    ageYears: integer("age_years"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [index("pet_owner_id_idx").on(table.ownerId)],
-);
-
 /*===== Dogs =====*/
-// A customer's dog (docs/app-phase-one.md, entity 4). Replaces `pet` once the Dogs List UI is built; until then both
-// exist. Assessments and enrollments will point at a dog, which is why its owner can't be deleted out from under it
-// (`restrict`) and why a removed dog is only marked deleted.
+// A customer's dog (docs/app-phase-one.md, entity 4). Assessments and enrollments will point at a dog, which is why its
+// owner can't be deleted out from under it (`restrict`) and why a removed dog is only marked deleted.
 
 export const dog = pgTable(
   "dog",

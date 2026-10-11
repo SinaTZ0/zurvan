@@ -13,5 +13,5 @@ const link = new RPCLink({ url: "/rpc" });
 export const client: RouterContractClient<typeof contract> = createORPCClient(link);
 
 /*===== TanStack Query =====*/
-/** Query and mutation option builders for every procedure, e.g. `orpc.pet.list.queryOptions()`. */
+/** Query and mutation option builders for every procedure, e.g. `orpc.dog.list.queryOptions()`. */
 export const orpc = createTanstackQueryUtils(client);

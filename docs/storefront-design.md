@@ -44,7 +44,7 @@ at these paths.
 | `/courses/working-dogs`, `/courses/sport` | Course Detail for the two advanced tracks (branches as tags) | course map                                                      |
 | `/behavior-modification`                  | Behavior Modification Request                                | nav, behavior row, course map, footer                           |
 | `/auth`                                   | Login / Register (built)                                     | header                                                          |
-| `/pets`                                   | the old pets demo, until Dogs List replaces it (loose ends)  | closing banner, "book the next course"                          |
+| `/account/dogs`                           | Dogs List (built; signed in, see [customer-area-design.md](customer-area-design.md)) | closing banner, "book the next course", Course Detail |
 | `/help`, `/help/refunds`, `/privacy`      | Help and FAQ, Cancellation and Refund Rules, Privacy         | footer                                                          |
 | `/join/partner`                           | Partner Enquiry                                              | footer                                                          |
 
@@ -194,7 +194,7 @@ were promoted to `app/components/` for Course Detail.
   soft at the hero's size.
 - **Cover shape:** the hero shows the cover at 4:5 on desktop and 16:10 on phones, but [media.md](media.md) plans a 21:9
   `hero` variant for this page. Change the variant when course uploads are built.
-- **Links to unbuilt pages:** «سگت پرونده دارد؟» and «رزرو تست» go to `/pets` until the Dogs List and booking exist;
+- **Links to unbuilt pages:** «سگت پرونده دارد؟» and «رزرو تست» go to the Dogs List (`/account/dogs`) until booking exists;
   «سؤالت را بپرس» goes to `/auth` until comments can be posted; the breadcrumb and 404 page link to `/courses`. The
   trainer line doesn't link anywhere until the Trainer Page exists.
 - **One trainer:** the hero, the replies and the copy name the head trainer, because there is no Owner Trainer on a
@@ -209,9 +209,7 @@ Known gaps, left on purpose until the page or data behind them exists:
 - **Sample data:** the head trainer's name, years and photo; the reviews; the course and problem photos
   (`public/demo/`, `public/photo/`); the footer phone number. They are placeholders until the owner sends the real
   ones.
-- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth`, `/pets` and the course pages (`/courses/:slug`).
-- **`/pets`** is the old pets demo. The closing banner's «رزرو دوره‌ی بعدی» should point at the Dogs List once it is
-  built (a dog's page is where a dog with a record books its next course).
+- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth`, `/account/dogs` and the course pages (`/courses/:slug`).
 - **`/join/partner`** is linked from the footer, but partners can't sign up themselves; the Admin creates them. The
   pages list now has it as Partner Enquiry, an information page with the center's phone number.
 - **The base-colour picker** in the header (`BaseColorPicker`, and the inline script in `root.tsx` that repaints its

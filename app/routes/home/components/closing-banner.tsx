@@ -41,7 +41,7 @@ export function ClosingBanner() {
               ارزیابی رایگان رزرو کن
             </Link>
             <Link
-              to="/pets"
+              to="/account/dogs"
               className="inline-flex h-13 items-center rounded-2xl border border-saffron/60 px-6 text-base font-bold text-saffron transition-colors hover:bg-saffron/10"
             >
               رزرو دوره‌ی بعدی
