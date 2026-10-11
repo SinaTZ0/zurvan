@@ -116,6 +116,6 @@ New dependencies: `pg-boss`, `sharp`, `@aws-sdk/client-s3`, `@tiptap/react` + `@
 
 ## 5. Seed Data
 
-`npm run db:seed` creates a believable demo: an Admin, the head trainer and his assistant, 2 partners with leads, ~8 customers with dogs, the real catalog from [zurvan-courses.md](zurvan-courses.md) (with sample prices), open and booked assessment slots, completed assessments with recommendations, enrollments in every status with held and upcoming sessions, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media pipeline.
+`npm run db:seed` creates a believable demo: an Admin, the head trainer and his assistant (one verified, one not), 2 partners with leads, ~8 customers with dogs, the real catalog from [zurvan-courses.md](zurvan-courses.md) (with sample prices) plus an assistant's courses in every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in every status with held and upcoming sessions, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media pipeline.
 
 Showcase-mode demo phone numbers are fixed, so the login hint always matches.

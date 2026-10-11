@@ -8,18 +8,27 @@ The website of **K9 Training** (آموزش K9), one dog trainer's private practi
 
 There are no group classes, seats or waitlists, and phase one is for dogs only.
 
+It launches as one trainer's site but is built as a training app: every trainer has their own page, and trainers can submit new courses that the Admin approves. An assistant can take over a course or a single dog's training.
+
 The site is in Persian. Everyone signs in with their **phone number and an SMS code**.
 
 ## Roles
 
-| Role         | Does                                                                                                         |
-| ------------ | ------------------------------------------------------------------------------------------------------------ |
-| **Admin**    | The owner. Manages everything: the catalog, bookings, money and withdrawals.                                 |
-| **Trainer**  | The head trainer and his assistant. Run assessments, schedule and record sessions, review behavior requests. |
-| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.                             |
-| **Customer** | Adds dogs, books assessments and courses, follows each dog's record, writes reviews and questions.           |
+| Role         | Does                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Admin**    | The owner. Manages everything: the catalog, bookings, money and withdrawals.                                                         |
+| **Trainer**  | The head trainer and his assistants. Have a public page, submit courses for approval, run assessments, schedule and record sessions. |
+| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.                                                     |
+| **Customer** | Adds dogs, books assessments and courses, follows each dog's record, writes reviews and questions.                                   |
 
 Only customers can sign up themselves. The Admin creates trainers and partners.
+
+## Courses and trainers
+
+- The launch catalog is the head trainer's ([zurvan-courses.md](zurvan-courses.md)).
+- Trainers can create courses too. A trainer's course needs **Admin approval**: the Admin approves, rejects with a reason, or edits it and sends it back (or force-approves). After approval, prices, ages, prerequisites, refund policy and trainer share are Admin-only.
+- Each course has an **owner trainer**, who gets its new bookings. The Admin can hand a course, or a single booking, to another trainer.
+- Every trainer has a **public page**; the head trainer is the one the home page features.
 
 ## How a dog starts
 

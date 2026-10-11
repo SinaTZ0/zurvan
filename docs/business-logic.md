@@ -1,6 +1,6 @@
 # Business Logic — Working Defaults
 
-The open business rules from section 5 of [app-phase-one.md](app-phase-one.md), plus the settings it leaves "to be decided". B1–B6 decide the numbers in each sale; B8 onwards fill the gaps of the private-training model. Each one has a **working default** so the app can be built now. None of them is final.
+The open business rules from section 5 of [app-phase-one.md](app-phase-one.md), plus the settings it leaves "to be decided". The app is a demo for the owner, so these defaults count as decided until the owner says otherwise. B1–B6 decide the numbers in each sale; B8 onwards fill the gaps of the private-training model. Each one has a **working default** so the app can be built now. None of them is final.
 
 In code, every default is marked with a comment that starts with `TODO(business-logic)` and names its section here, e.g. `TODO(business-logic): B1`. To list them all:
 
@@ -28,11 +28,11 @@ With a 70% trainer share and a 10% partner commission, a 100 enrollment splits l
 
 **Default:**
 
-- **Trainer Share** is per course (the existing field), pre-filled from the platform default of **70%**. The Admin sets it on the course form.
+- **Trainer Share** is per course (the existing field), pre-filled from the platform default of **70%**. The Admin can change it during review.
 - **Partner Commission** is one global platform setting of **10%**. There is no per-partner rate in phase one.
 - The Admin's part is never configured. It is always the remainder.
 
-**Why:** the head trainer and his assistant may earn differently from course to course; partners all get the same simple deal until there's a reason not to.
+**Why:** trainers (the head trainer, his assistants, and later others) earn differently from course to course; partners all get the same simple deal until there's a reason not to.
 
 ## B3. How is partner commission calculated?
 
@@ -141,9 +141,9 @@ All of these belong in Platform Settings (entity 25), so the Admin can change th
 
 ## B16. CGC and BMC "for every dog" (spec 5.14)
 
-**Default:** **recommendations, not prerequisites.** The site shows them on the dog's page and in the trainer's recommendations. BMC's age range is **6 to 7 months**, as on the course card, and is enforced.
+**Decided:** the site **never states** these as rules, and neither is a prerequisite. They are part of the process: after an assessment, the trainer's recommendations start pre-filled with **CGC** (if the dog hasn't passed it or its test) and **BMC** (if the dog is, or soon will be, 6–7 months old and hasn't taken it). The trainer can remove them. BMC's age range is **6 to 7 months**, as on the course card, and is enforced.
 
-**Why:** enforcing CGC before every course would block a customer who only wants house manners, which the owner hasn't asked for.
+**Why:** the owner steers every dog to them through the trainer instead of a rule on the page, which would read as pressure.
 
 ## B17. Not in phase one
 

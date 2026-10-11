@@ -47,41 +47,44 @@ Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The secti
 28. Enrollment Detail (sessions and result)
 29. Behavior Requests
 30. Behavior Request Detail
-31. Comments to Reply
-32. Earnings
+31. My Courses
+32. Course Form (create / edit / resubmit)
+33. Review Changes (Admin changes to confirm)
+34. Comments to Reply
+35. Earnings
 
 **Partner**
 
-33. Partner Dashboard
-34. Referral Link and QR Code
-35. Referred Customers
-36. Leads
+36. Partner Dashboard
+37. Referral Link and QR Code
+38. Referred Customers
+39. Leads
 
 **Admin**
 
-37. Admin Dashboard
-38. Users
-39. User Detail / Form
-40. Courses
-41. Course Form
-42. Assessments
-43. Enrollments
-44. Enrollment Detail
-45. Behavior Requests
-46. Orders
-47. Order Detail
-48. Payments
-49. Transactions
-50. Transaction Form (new / mirror)
-51. Wallets
-52. Withdrawal Queue
-53. Discount Codes
-54. Discount Code Form
-55. Refund Policies
-56. Comments Moderation
-57. Partners and Leads
-58. Platform Settings
-59. SMS Outbox (showcase mode)
+40. Admin Dashboard
+41. Users
+42. User Detail / Form
+43. Courses
+44. Course Review / Form
+45. Assessments
+46. Enrollments
+47. Enrollment Detail
+48. Behavior Requests
+49. Orders
+50. Order Detail
+51. Payments
+52. Transactions
+53. Transaction Form (new / mirror)
+54. Wallets
+55. Withdrawal Queue
+56. Discount Codes
+57. Discount Code Form
+58. Refund Policies
+59. Comments Moderation
+60. Partners and Leads
+61. Platform Settings
+62. SMS Outbox (showcase mode)
 
 ---
 
@@ -92,7 +95,7 @@ Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The secti
 - **Home:** built around the head trainer: who he is, problems in the owner's words leading to courses, the catalog on a ruler of the dog's age, how starting works. The main action is the free assessment. Stores the referral code from the link or QR (3.14).
 - **Course Catalogue:** courses by family (3.1), with age, sessions and place. Filters: family, the dog's age, place.
 - **Course Detail:** commands, age, sessions, place, prerequisites, price, refund policy, comments, questions and reviews (3.15). The action depends on the visitor: a new dog gets "book a free assessment", a dog with a record gets "book this course", a course with a test also offers the test, and behavior modification gets "send a request".
-- **Trainer Page:** the head trainer's bio, years, certificates, photos, rating and reviews. Mentions the assistant.
+- **Trainer Page:** any trainer's photo, bio, years, specialties, certificates, verified badge, the courses they own, rating and reviews (3.17). The head trainer's page is the one the home page links to.
 - **Book a Free Assessment:** pick or add a dog, training goal, what to change, place, then an open slot (3.3). Asks to sign in first.
 - **Behavior Modification Request:** dog, problem category, description, video upload (3.7). Asks to sign in first.
 - **Login / Register:** phone number, then 5-digit code with resend timer (2).
@@ -120,6 +123,8 @@ Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The secti
 - **Assessment Detail:** dog with its notes, customer's note and place, mark completed or no-show, write notes, pick recommended courses, mark a dog as already known (3.3).
 - **Enrollment Detail:** dog with its notes, customer's preferred times and address, schedule and reschedule sessions, mark held or missed, session notes, change the planned count, record the result (3.4, 3.5).
 - **Behavior Request Detail:** videos, description, propose a plan or decline (3.7).
+- **Course Form:** create, edit and resubmit; Admin-only fields are read-only after approval; shows the rejection reason (3.2).
+- **Review Changes:** old and new value per field, Admin note, accept or edit (3.2).
 - **Earnings:** earning per enrollment (3.11).
 
 ### Partner
@@ -129,8 +134,8 @@ Pages needed for phase one, from [app-phase-one.md](app-phase-one.md). The secti
 
 ### Admin
 
-- **Users:** create trainers and partners, change role, block. Pick the head trainer.
-- **Course Form:** every field of entity 5, prerequisites, publish and archive (3.2).
+- **Users:** create trainers and partners, change role, block. Pick the head trainer, verify trainers.
+- **Course Review / Form:** create a course directly, or review a trainer's: approve, reject, edit then send back or force approve. Archive, change the owner trainer (3.2).
 - **Enrollment Detail:** reassign trainer, cancel with reason and refund (3.9).
 - **Payments:** read-only log (entity 16).
 - **Transactions:** all transactions, mirror warning (3.12).

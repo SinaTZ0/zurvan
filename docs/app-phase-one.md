@@ -6,6 +6,8 @@ The website of **K9 Training** (آموزش K9), one dog trainer's private practi
 
 The course catalog and the owner's rules come from [zurvan-courses.md](zurvan-courses.md). Where this spec and that doc disagree about a course, the courses doc wins.
 
+**From one trainer's site to a training app.** The site launches as the head trainer's own, but it is built as an app for pet training: every trainer has their own page, and trainers (his assistants first) can submit new courses that the Admin approves. An assistant can also take over a course or a single dog's training. That is the step from the owner's website to a platform with more trainers.
+
 **Not in phase one:** group classes, seats, class minimums, waitlists and a training venue. Every course is private. Phase one is for **dogs only**.
 
 ---
@@ -16,12 +18,12 @@ The course catalog and the owner's rules come from [zurvan-courses.md](zurvan-co
 - **Authentication:** All users register and log in via Phone Number using SMS OTP (One-Time Password).
 - Each phone number has **exactly one role** in phase one.
 
-| Role         | Main capabilities                                                                                                                                                                |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Admin**    | Super admin. Manages everything: users, the course catalog, assessments, enrollments, orders, refunds, discounts, wallets, withdrawals, commissions, comments, settings.         |
-| **Trainer**  | The head trainer and his assistant. Opens assessment slots, runs assessments, schedules and records sessions, reviews behavior requests, replies to comments, sees own earnings. |
-| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                                               |
-| **Customer** | Manages own dogs, books assessments, buys courses and tests, sends behavior requests, follows each dog's record, asks questions, reviews courses and trainers.                   |
+| Role         | Main capabilities                                                                                                                                                                                                                  |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Admin**    | Super admin. Manages everything: users, the course catalog, assessments, enrollments, orders, refunds, discounts, wallets, withdrawals, commissions, comments, settings.                                                           |
+| **Trainer**  | The head trainer and his assistants. Has a public page, submits courses for approval, opens assessment slots, runs assessments, schedules and records sessions, reviews behavior requests, replies to comments, sees own earnings. |
+| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                                                                                                 |
+| **Customer** | Manages own dogs, books assessments, buys courses and tests, sends behavior requests, follows each dog's record, asks questions, reviews courses and trainers.                                                                     |
 
 **OTP rules:**
 
@@ -38,26 +40,54 @@ The course catalog and the owner's rules come from [zurvan-courses.md](zurvan-co
 
 #### 3.1 The Catalog
 
-The catalog is the trainer's own, listed in [zurvan-courses.md](zurvan-courses.md). It has these families:
+The launch catalog is the head trainer's own, listed in [zurvan-courses.md](zurvan-courses.md). It has these families:
 
 | Family       | Courses                                                           | Notes                                                                                  |
 | ------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Basics       | سگ خونگی (House manner), سگ اجتماعی (CGC)                         | The owner wants every dog to have CGC.                                                 |
+| Basics       | سگ خونگی (House manner), سگ اجتماعی (CGC)                         | The owner wants every dog to have CGC. The site never says so; see 3.3.                |
 | Obedience    | فرمان‌پذیری مقدماتی (Elementary) → فرمان‌پذیری حرفه‌ای (Advanced) | Two equivalent paths with the same outcome and different prices. A customer picks one. |
 | Companion    | سگ همدم ۱ → ۲ → ۳ → ۴ (Companion dog 1–4)                         |                                                                                        |
-| Six-month    | دوره‌ی مخصوص سگ‌های شش‌ماهه (BMC)                                 | For dogs between 6 and 7 months. The owner wants almost every dog to take it.          |
+| Six-month    | دوره‌ی مخصوص سگ‌های شش‌ماهه (BMC)                                 | For dogs between 6 and 7 months. The owner wants almost every dog to take it; see 3.3. |
 | Working dogs | نگهبان محل، بادی‌گارد، سگ سرویس، سگ آلارم، ردیاب                  | Details still open (see 5).                                                            |
 | Sport dogs   | BH، IGP 1–3، FH، WUSV                                             | Details still open (see 5).                                                            |
 | Behavior     | اصلاح رفتار (Behavior modification)                               | For any age and breed. Starts from a request with a video (see 3.7).                   |
 
 Every course has a minimum age (and BMC a maximum), an approximate number of sessions, where it is taught (**at home**, **outside**, or **mostly outside**), and its prerequisites. **Boarding is optional for every course:** the customer can choose to leave the dog at a boarding kennel, where the training continues.
 
-#### 3.2 Managing the Catalog
+#### 3.2 Course Creation & Approval
 
-- The **Admin** creates and edits courses. Trainers don't submit courses; the catalog is the head trainer's, and the Admin keeps it.
-- Each course has a **default trainer** (normally the head trainer), who gets its new enrollments. The Admin can assign a different trainer to any enrollment.
-- **Course status:** `Draft → Published → Archived`. Only published courses can be booked. Archived courses can't be booked, but existing enrollments continue and passing them still counts as a prerequisite.
-- Changing a course's price, refund policy or trainer share applies to **new** bookings only. Each order item keeps a snapshot of what the customer was promised (see 4).
+- Courses can be created by both **Admins** and **Trainers**. Courses created by an Admin are approved directly.
+- Courses submitted by Trainers require **Admin approval** before they can be booked. This is how an assistant releases a new course.
+- The trainer proposes the course's price (and boarding and test prices) and picks its **Refund Policy** from the presets the Admin has defined (see 3.9).
+- The course's **Trainer Share** is pre-filled from the platform default (see 3.11). The trainer sees it when submitting; the Admin can change it during review like any other field.
+
+**Reviewing a submitted course.** The Admin can:
+
+- **Approve** it as is.
+- **Reject** it with a written reason. The trainer sees the reason, edits the course, and resubmits it.
+- **Edit** any field (including prices, refund policy and trainer share) and then either:
+  - **Send it back to the trainer for confirmation.** The trainer sees each changed field with its old and new value, plus the Admin's note. Accepting approves the course; editing it again resubmits it for approval.
+  - **Force approve** it with the changes. The trainer is notified of what changed.
+
+**After approval:**
+
+- Trainers can still edit text and images.
+- Prerequisites, age range, prices, refund policy and trainer share are Admin-only, because they change which dogs can book, what customers are promised, or what the trainer earns. Admin edits on an approved course apply immediately, apply to **new** bookings only, and the trainer is notified.
+- Each course has an **owner trainer**, who gets its new enrollments. The Admin can change the owner (e.g. an assistant **takes over** the course) and can reassign any single enrollment to another trainer.
+- An Admin can **archive** a course. Archived courses can't be booked, but existing enrollments continue and passing them still counts as a prerequisite.
+
+**Course status flow:**
+
+```text
+Draft → Pending Approval → Approved → Archived
+
+Pending Approval → Rejected                       → (trainer edits) → Pending Approval
+Pending Approval → Awaiting Trainer Confirmation → (trainer accepts) → Approved
+                                                 → (trainer edits)   → Pending Approval
+Pending Approval → (Admin edits + force approve)  → Approved
+```
+
+Only **Approved** courses are shown and can be booked.
 
 #### 3.3 Free Assessment
 
@@ -80,6 +110,8 @@ Every new dog starts with a free assessment, where the trainer meets the dog and
 - notes about the dog, shown to the customer;
 - one or more **recommended courses**, in the order to take them.
 
+The recommendations start **pre-filled** with the owner's standing rules, which the site never states as rules: **CGC** for a dog that hasn't passed it or its test, and **BMC** for a dog that will be 6–7 months old soon and hasn't taken it. The trainer adds the rest and can remove these when they don't fit.
+
 The customer sees the recommendations on the dog's page, each with a "book" button.
 
 **Who needs one:** a dog needs a completed assessment before its first course, unless it already has a **record**. A dog has a record if it has a completed assessment, or an enrollment with at least one held session, or a trainer or Admin has marked it as known (for dogs they trained before the site existed). Tests (3.6) and behavior requests (3.7) don't need an assessment.
@@ -88,11 +120,11 @@ The customer sees the recommendations on the dog's page, each with a "book" butt
 
 #### 3.4 Booking a Course
 
-A dog with a record can book any published course it is eligible for (see 3.8), not only the recommended ones.
+A dog with a record can book any approved course it is eligible for (see 3.8), not only the recommended ones.
 
 1. The customer picks the course and the dog, chooses **boarding** or not, gives the address (for courses at home or outside), and writes the days and times that suit them.
 2. Checkout: discount code, wallet balance, then the gateway (see 3.12).
-3. When payment succeeds, the **enrollment** is created with the course's default trainer and the status `Scheduling`. Both sides are notified.
+3. When payment succeeds, the **enrollment** is created with the course's owner trainer and the status `Scheduling`. Both sides are notified.
 
 There are no seats: the only limit is the trainer's time. If the trainer can't take a paid enrollment, the Admin cancels it and the customer gets a full refund (see 3.9).
 
@@ -150,7 +182,7 @@ Behavior modification is for any age and breed, and starts from a request instea
 - A course can limit eligible dogs by **age** (minimum and maximum, in months). Age is checked at booking.
 - If the dog doesn't meet the rules, booking is disabled for it with an explanation written by the Admin (e.g. "لئو اول باید «سگ همدم ۱» یا تست آن را بگذراند").
 - Prerequisites can't form a cycle (course A requires B, B requires A).
-- The owner's advice that every dog should take CGC and BMC is shown as a recommendation, not enforced (see 5).
+- CGC and BMC are not prerequisites of anything. They reach every dog through the trainer's recommendations (3.3), not through rules shown on the site.
 
 #### 3.9 Cancellation & Refunds
 
@@ -294,7 +326,7 @@ The user is notified by SMS when their request is approved or declined.
 - After an enrollment is **Passed** or **Failed**, the customer can review it once.
 - A review has a **course rating** (1–5), a **trainer rating** (1–5), and an optional **comment**.
 - Ratings count toward the averages immediately. The comment follows the comment rules below.
-- Course and trainer averages and counts are shown on the course page and the trainer's page.
+- Course and trainer averages and counts are shown on the course page and the trainer's page (3.17).
 
 **Comments and questions:**
 
@@ -308,6 +340,13 @@ The user is notified by SMS when their request is approved or declined.
 #### 3.16 Notifications
 
 SMS goes to the customer for: assessment booked, cancelled or reminder (the day before); enrollment paid; a session scheduled, changed, or reminder (the day before); a result recorded; a behavior plan proposed or declined; a refund; a comment reply; a withdrawal approved or declined. Trainers get an SMS for a new assessment booking, a new paid enrollment and a new behavior request.
+
+#### 3.17 Trainer Pages
+
+- Every trainer has a **public page**: photo, bio, years of experience, specialties, certificates, the approved courses they own, their rating and reviews.
+- Course pages show the owner trainer with a link to their page. An enrollment shows its trainer, so a customer whose dog moved to an assistant can see who that is.
+- The **head trainer** is featured on the home page and in the site's copy. The other trainers appear on their own pages and on the courses they own.
+- The Admin creates trainer accounts and can mark a trainer as **verified**, which shows a badge on their page.
 
 ---
 
@@ -333,6 +372,7 @@ erDiagram
   USER ||--o| WALLET : has
   USER ||--o{ PET : owns
   USER }o--o| USER : "referred by (partner)"
+  USER ||--o{ COURSE : "creates / owns"
   REFUND_POLICY ||--o{ COURSE : "applies to"
   COURSE ||--o{ COURSE_PREREQUISITE : requires
   USER ||--o{ ASSESSMENT_SLOT : "opens (trainer)"
@@ -383,16 +423,18 @@ erDiagram
 
 #### **2. Trainer Profile**
 
-| Field                        | Notes                                                      |
-| ---------------------------- | ---------------------------------------------------------- |
-| User ID                      | One-to-one with a `Trainer` user.                          |
-| Is Head Trainer              | Exactly one. His profile is the one the public site shows. |
-| Bio                          | Shown on the trainer page and course pages.                |
-| Specialties                  | e.g. obedience, behavior, IGP.                             |
-| Years of Experience          |                                                            |
-| Certificates                 | Uploaded files or titles.                                  |
-| Photo                        | Portrait for the public site.                              |
-| Rating Average, Rating Count | From reviews.                                              |
+| Field                        | Notes                                        |
+| ---------------------------- | -------------------------------------------- |
+| User ID                      | One-to-one with a `Trainer` user.            |
+| Slug                         | Unique, used in the trainer page's URL.      |
+| Is Head Trainer              | Exactly one. The home page features him.     |
+| Bio                          | Shown on the trainer page and course pages.  |
+| Specialties                  | e.g. obedience, behavior, IGP.               |
+| Years of Experience          |                                              |
+| Certificates                 | Uploaded files or titles.                    |
+| Photo                        | Portrait for the public site.                |
+| Verified At                  | Set by an Admin. Shows the "تأییدشده" badge. |
+| Rating Average, Rating Count | From reviews.                                |
 
 #### **3. Partner Profile**
 
@@ -429,29 +471,35 @@ erDiagram
 
 #### **5. Course**
 
-| Field                        | Notes                                                                                |
-| ---------------------------- | ------------------------------------------------------------------------------------ |
-| Title, Slug                  | Slug is unique and used in the URL.                                                  |
-| Latin Name                   | The owner's name for it, e.g. `House manner`, `CGC`.                                 |
-| Family                       | `Basics`, `Obedience`, `Companion`, `Six-month`, `Working`, `Sport`, `Behavior`.     |
-| Short Description            | Shown on course cards.                                                               |
-| Description                  | Full rich-text content.                                                              |
-| Commands                     | The list of what is taught, as on the owner's course card.                           |
-| Cover Image                  |                                                                                      |
-| Min / Max Dog Age (months)   | Optional eligibility range.                                                          |
-| Session Count                | Approximate, e.g. 7. Copied to each new enrollment, where the trainer can change it. |
-| Session Duration (minutes)   | e.g. 60.                                                                             |
-| Place                        | `Home`, `Outside`, `Mostly Outside`.                                                 |
-| Price                        | Rial. For behavior modification, each plan sets its own price instead (see 3.7).     |
-| Boarding Price               | Optional. Added when the customer chooses boarding (see 5).                          |
-| Test Price                   | Optional. When set, the course offers a test (see 3.6).                              |
-| Booking Kind                 | `Standard`, or `Behavior Request` for behavior modification.                         |
-| Default Trainer ID           | Gets new enrollments.                                                                |
-| Refund Policy ID             |                                                                                      |
-| Trainer Share (%)            | Pre-filled from the platform default.                                                |
-| Ineligibility Message        | Custom text shown when a dog fails prerequisites or eligibility.                     |
-| Status                       | `Draft`, `Published`, `Archived`.                                                    |
-| Rating Average, Rating Count | From reviews.                                                                        |
+| Field                        | Notes                                                                                             |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Title, Slug                  | Slug is unique and used in the URL.                                                               |
+| Latin Name                   | The owner's name for it, e.g. `House manner`, `CGC`.                                              |
+| Family                       | `Basics`, `Obedience`, `Companion`, `Six-month`, `Working`, `Sport`, `Behavior`.                  |
+| Short Description            | Shown on course cards.                                                                            |
+| Description                  | Full rich-text content.                                                                           |
+| Commands                     | The list of what is taught, as on the owner's course card.                                        |
+| Cover Image                  |                                                                                                   |
+| Min / Max Dog Age (months)   | Optional eligibility range.                                                                       |
+| Session Count                | Approximate, e.g. 7. Copied to each new enrollment, where the trainer can change it.              |
+| Session Duration (minutes)   | e.g. 60.                                                                                          |
+| Place                        | `Home`, `Outside`, `Mostly Outside`.                                                              |
+| Price                        | Rial. For behavior modification, each plan sets its own price instead (see 3.7).                  |
+| Boarding Price               | Optional. Added when the customer chooses boarding (see 5).                                       |
+| Test Price                   | Optional. When set, the course offers a test (see 3.6).                                           |
+| Booking Kind                 | `Standard`, or `Behavior Request` for behavior modification.                                      |
+| Created By (User ID)         | Admin or Trainer.                                                                                 |
+| Owner Trainer ID             | Gets new enrollments. Changeable by Admin only (e.g. an assistant takes over).                    |
+| Refund Policy ID             |                                                                                                   |
+| Trainer Share (%)            | Pre-filled from the platform default.                                                             |
+| Ineligibility Message        | Custom text shown when a dog fails prerequisites or eligibility.                                  |
+| Status                       | `Draft`, `Pending Approval`, `Awaiting Trainer Confirmation`, `Rejected`, `Approved`, `Archived`. |
+| Rejection Reason             | Set when an Admin rejects it.                                                                     |
+| Admin Changes                | Fields the Admin changed during review, each with old and new value.                              |
+| Admin Note                   | Shown to the trainer with the changes.                                                            |
+| Approved By, Approved At     |                                                                                                   |
+| Archived At                  |                                                                                                   |
+| Rating Average, Rating Count | From reviews.                                                                                     |
 
 - **Relations:** Has many **Prerequisites**, **Enrollments** and **Comments**; uses one **Refund Policy**.
 
@@ -511,7 +559,7 @@ erDiagram
 | Field                             | Notes                                                                        |
 | --------------------------------- | ---------------------------------------------------------------------------- |
 | Course ID, Pet ID, Customer ID    |                                                                              |
-| Trainer ID                        | From the course's default trainer; the Admin can reassign.                   |
+| Trainer ID                        | From the course's owner trainer; the Admin can reassign.                     |
 | Kind                              | `Course`, `Test`.                                                            |
 | Order Item ID                     |                                                                              |
 | Behavior Request ID               | For behavior plans.                                                          |
@@ -761,7 +809,7 @@ Global values the Admin can change without a code release. Defaults:
 
 ### 5. Open Business Logic
 
-The money **system** above (wallets, transactions, mirrors, withdrawals) is settled. These **business rules** are still open. [business-logic.md](business-logic.md) gives each one a working default so the app can be built now.
+The money **system** above (wallets, transactions, mirrors, withdrawals) is settled. These **business rules** are still open with the owner. [business-logic.md](business-logic.md) gives each one a default; for the demo, those defaults count as decided.
 
 **The split of each sale:**
 
@@ -781,7 +829,7 @@ The money **system** above (wallets, transactions, mirrors, withdrawals) is sett
 11. **Behavior modification:** does the trainer propose sessions and price per request (as this spec assumes), or does it have a fixed length and price? How long is a plan valid?
 12. **Boarding:** how is it priced: a fixed add-on per course, per day, or quoted per booking?
 13. **Paid assessments:** which paid assessment types exist, and how do they differ from the free one?
-14. **CGC and BMC "for every dog":** recommendations, or enforced prerequisites? Can a dog older than 7 months still take BMC?
+14. **Decided:** CGC and BMC are never stated as rules on the site; they are built into the trainer's recommendations (3.3). Still open: can a dog older than 7 months take BMC?
 15. **Catalog gaps** from the courses doc: Advanced's prerequisite, BMC's age range (card: 6–7 months; conversation: 6–10), session length, and every detail of working and sport dogs.
 16. **Installments:** pay in installments (e.g. Snapp Pay), if possible.
 17. **Videos:** size and length limits for behavior request videos.
