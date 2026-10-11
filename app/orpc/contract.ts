@@ -3,6 +3,8 @@ import { courseContract } from "~/orpc/course/contract";
 import { dogContract } from "~/orpc/dog/contract";
 import { enrollmentContract } from "~/orpc/enrollment/contract";
 import { mediaContract } from "~/orpc/media/contract";
+import { orderContract } from "~/orpc/order/contract";
+import { walletContract } from "~/orpc/wallet/contract";
 
 /*===== API Contract =====*/
 // Source of truth for the API. The browser client is typed from this, never from the router.
@@ -12,4 +14,6 @@ export const contract = {
   dog: dogContract,
   enrollment: enrollmentContract,
   media: mediaContract,
+  order: orderContract,
+  wallet: walletContract,
 };

@@ -1,4 +1,4 @@
-import type { Database } from "~/db/client.server";
+import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import type { Dog } from "~/orpc/dog/contract";
 import { toPublicDog } from "~/orpc/dog/mapper";
@@ -59,7 +59,7 @@ function requestedPhoto(photoMediaId: string | null | undefined): string | null 
 
 /*===== List =====*/
 /** Returns the owner's dogs, oldest first. */
-export async function listDogs({ db, ownerId }: Owned): Promise<Dog[]> {
+export async function listDogs({ db, ownerId }: { db: DatabaseOrTransaction; ownerId: string }): Promise<Dog[]> {
   const records = await findDogsByOwner({ db, ownerId });
   return records.map(toPublicDog);
 }

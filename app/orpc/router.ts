@@ -35,6 +35,16 @@ import {
 } from "~/orpc/enrollment/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
+import {
+  applyDiscountProcedure,
+  bookingOptionsProcedure,
+  bookProcedure,
+  cancelEnrollmentProcedure,
+  getOrderProcedure,
+  payProcedure,
+  removeDiscountProcedure,
+} from "~/orpc/order/procedure";
+import { myWalletProcedure } from "~/orpc/wallet/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
@@ -83,5 +93,17 @@ export const router = implementer.router({
   },
   media: {
     upload: uploadMediaProcedure,
+  },
+  order: {
+    bookingOptions: bookingOptionsProcedure,
+    book: bookProcedure,
+    get: getOrderProcedure,
+    applyDiscount: applyDiscountProcedure,
+    removeDiscount: removeDiscountProcedure,
+    pay: payProcedure,
+    cancelEnrollment: cancelEnrollmentProcedure,
+  },
+  wallet: {
+    mine: myWalletProcedure,
   },
 });

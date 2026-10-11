@@ -30,4 +30,5 @@ export default [
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),
   route("rpc/*", "routes/rpc/rpc.ts"),
+  route("payment/callback", "routes/payment_callback/payment-callback.ts"),
 ] satisfies RouteConfig;

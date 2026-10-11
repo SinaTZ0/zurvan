@@ -83,7 +83,7 @@ export async function findDogWithPhoto({
 // Every query is scoped to the owner and skips removed dogs, so a service cannot forget either.
 
 /** Lists one owner's dogs, oldest first, so a family's first dog stays first. */
-export function findDogsByOwner({ db, ownerId }: { db: Database; ownerId: string }): Promise<DogRecord[]> {
+export function findDogsByOwner({ db, ownerId }: { db: DatabaseOrTransaction; ownerId: string }): Promise<DogRecord[]> {
   return (
     db
       .select(dogSelection(db))

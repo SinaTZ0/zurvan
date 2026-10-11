@@ -1,11 +1,14 @@
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { formatRecordNumber } from "~/lib/record-number";
 import type { SystemWalletKind, TransactionType } from "~/orpc/wallet/constants";
+import type { MyWallet } from "~/orpc/wallet/contract";
 import {
   addToBalance,
   ensureSystemWallet,
   ensureUserWallet,
   findTransactionWithLines,
+  findUserWallet,
+  findWalletHistory,
   insertLines,
   insertTransaction,
   lockWallets,
@@ -191,4 +194,27 @@ export async function systemWalletIds({
 /** The user's wallet id, made on first use. */
 export async function userWalletId({ db, userId }: { db: DatabaseOrTransaction; userId: string }): Promise<string> {
   return (await ensureUserWallet({ db, userId })).id;
+}
+
+/*===== My Wallet =====*/
+/** How many of a user's latest lines their wallet shows. */
+const WALLET_HISTORY_LIMIT = 50;
+
+/** The user's balance and latest lines. A user without a wallet yet has a balance of 0 and no lines. */
+export async function getMyWallet({ db, userId }: { db: DatabaseOrTransaction; userId: string }): Promise<MyWallet> {
+  const wallet = await findUserWallet({ db, userId });
+  if (!wallet) return { balance: 0, lines: [] };
+
+  const history = await findWalletHistory({ db, walletId: wallet.id, limit: WALLET_HISTORY_LIMIT });
+  return {
+    balance: wallet.balance,
+    lines: history.map((row) => ({
+      id: row.lineId,
+      amount: row.amount,
+      transactionNumber: row.number,
+      type: row.type,
+      description: row.description,
+      createdAt: row.createdAt,
+    })),
+  };
 }
