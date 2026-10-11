@@ -14,7 +14,7 @@ import { PetsHeader } from "~/routes/pets/components/pets-header";
 import type { Route } from "./+types/pets";
 
 /*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "حیوان‌های من | زروان" }];
+export const meta: Route.MetaFunction = () => [{ title: "حیوان‌های من | آموزش K9" }];
 
 /*===== Loader =====*/
 // Render-critical: the list renders on the server, then TanStack Query takes over for updates.

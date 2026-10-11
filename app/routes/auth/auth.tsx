@@ -14,8 +14,8 @@ import type { Route } from "./+types/auth";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
-  { title: "ورود به زروان" },
-  { name: "description", content: "ورود یا ساخت حساب در زروان، خدمات مطمئن برای حیوان خانگی شما." },
+  { title: "ورود به آموزش K9" },
+  { name: "description", content: "ورود یا ساخت حساب در آموزش K9، خدمات مطمئن برای حیوان خانگی شما." },
 ];
 
 /*===== Loader =====*/
@@ -45,7 +45,7 @@ export default function AuthPage() {
         <header className="flex flex-col items-center text-center">
           {/* Desktop shows the logo in the banner instead. */}
           <BrandLogo className="text-[2.5rem] lg:hidden" />
-          <h1 className="mt-4 text-[2rem] leading-tight text-primary lg:mt-0">به زروان خوش آمدید</h1>
+          <h1 className="mt-4 text-[2rem] leading-tight text-primary lg:mt-0">به آموزش K9 خوش آمدید</h1>
           <p className="mt-3 max-w-72 text-muted-foreground">
             خدمات مطمئن و حرفه‌ای برای سلامتی، رفاه و همراهی بهتر حیوان خانگی شما.
           </p>

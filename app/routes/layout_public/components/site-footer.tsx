@@ -14,7 +14,7 @@ const FOOTER_GROUPS = [
     ],
   },
   {
-    title: "همراه زروان",
+    title: "همراه آموزش K9",
     links: [{ label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" }],
   },
   {
@@ -34,7 +34,7 @@ export function SiteFooter() {
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
-          <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
+          <Link to="/" className="self-start rounded-sm" aria-label="آموزش K9، صفحه‌ی اصلی">
             <BrandLogo className="text-[1.875rem]" />
           </Link>
           <p className="text-sm text-pretty text-muted-foreground">
@@ -71,23 +71,24 @@ export function SiteFooter() {
       </div>
 
       {/*===== Name =====*/}
-      {/* The name as big as the page allows, standing on the bottom rule with its tails cut off, beside where it comes
-          from. A name with a story is easier to remember than one that is only repeated. */}
+      {/* The stencil K9 as big as the page allows, standing on the bottom rule with its foot cut off, beside where the
+          name comes from. A name with a story is easier to remember than one that is only repeated. */}
       <div className="site-container -mt-6 flex flex-col gap-6 overflow-hidden lg:-mt-16 lg:flex-row-reverse lg:items-end lg:justify-between">
         <p className="max-w-xs text-sm leading-[1.9] text-pretty text-muted-foreground lg:mb-10">
-          زروان در اسطوره‌های ایرانی خدای زمان است. آموزش حیوان هم با زمان و حوصله جواب می‌دهد، و اسم ما از همین‌جا
-          آمده.
+          K9 در دنیای سگ‌ها نام سگ‌های کار و پلیس است. ما همه‌ی سگ‌ها را با همان جدیت آموزش می‌دهیم، از ادب خانگی تا
+          آمادگی آزمون IGP.
         </p>
         <p
           aria-hidden
-          className="-mb-[0.32em] text-[clamp(7rem,40vw,28rem)] leading-[0.9] font-black text-inverse-foreground/[0.08] select-none"
+          dir="ltr"
+          className="-mb-[0.12em] font-stencil text-[clamp(9rem,45vw,24rem)] leading-[0.8] font-black text-inverse-foreground/[0.08] select-none"
         >
-          زروان
+          K9
         </p>
       </div>
 
       <div className="border-t">
-        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
+        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ آموزش K9. همه‌ی حقوق محفوظ است.</p>
       </div>
     </footer>
   );

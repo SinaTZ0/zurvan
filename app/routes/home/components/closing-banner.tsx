@@ -26,7 +26,7 @@ export function ClosingBanner() {
         />
         <div className="relative flex max-w-xl flex-col gap-4 p-8 sm:p-14">
           <h2 id="closing-title" className="text-h2 text-balance">
-            اولین کلاس حیوانت را همین هفته در زروان رزرو کن
+            اولین کلاس حیوانت را همین هفته در آموزش K9 رزرو کن
           </h2>
           <p className="text-lead text-pretty text-inverse-foreground/90">
             تا قطعی شدن کلاس، لغو رزرو همیشه با بازپرداخت کامل است.

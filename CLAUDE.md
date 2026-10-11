@@ -6,8 +6,13 @@ This is a React Router v8 application using Framework Mode. The application's us
 
 ## Naming
 
-- The brand is **Zurvann** (two `n`s) in Latin script and **زروان** in Persian. Use these in user-facing text and docs.
-- Internal identifiers still use `zurvan` (one `n`): the npm package, the Docker Compose project and database name, the theme storage key, and the GitHub repo. Leave them as they are; renaming the database or Compose project would lose existing data.
+- The brand is **K9 Training** in Latin script and **آموزش K9** in Persian text. Use these in user-facing text and docs. In the logo, "K9" is set in the stencil face (`font-stencil`).
+- The brand was previously Zurvann / زروان. Internal identifiers still use `zurvan` (the npm package, the Docker Compose project and database name, the theme storage key, the GitHub repo) and `zurvann` (the media bucket). Leave them as they are; renaming the database, Compose project or bucket would lose existing data.
+
+## Product Scope
+
+- [docs/zurvan-courses.md](docs/zurvan-courses.md) is the source of truth for the course catalog and the business rules the owner has given. Where it conflicts with the phase-one docs, it wins.
+- This is a dog-training center, not a multi-service pet marketplace. Courses are taught by the head trainer, sometimes with an assistant. The site's job is to sell him and his personal brand: copy and design should build trust in him, not in an anonymous pool of "verified trainers".
 
 ## Working Directory
 

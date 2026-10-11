@@ -64,7 +64,7 @@ export function TrainersSection() {
       <SectionHeading
         id="trainers-title"
         title="مربیانی که کنارت هستند"
-        description="همه‌ی مربیان از خود مرکز زروان‌اند و مدارک و سابقه‌ی هر کدام پیش از اولین کلاس بررسی شده است."
+        description="همه‌ی مربیان از خود مرکز آموزش K9 هستند و مدارک و سابقه‌ی هر کدام پیش از اولین کلاس بررسی شده است."
       />
 
       <ul className="-mx-site mt-8 flex snap-x snap-mandatory scroll-px-site gap-4 overflow-x-auto px-site pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-gutter sm:overflow-visible sm:px-0 sm:pb-0">
@@ -98,12 +98,12 @@ export function TrainersSection() {
                   <BadgeCheckIcon
                     strokeWidth={1.7}
                     className="size-5 shrink-0 text-primary"
-                    aria-label="تأییدشده‌ی زروان"
+                    aria-label="تأییدشده‌ی آموزش K9"
                   />
                 </span>
                 <span className="text-sm text-balance text-muted-foreground">{trainer.focus}</span>
                 <span className="text-xs text-muted-foreground">
-                  مربی مرکز زروان · {formatNumberFa(trainer.years)} سال سابقه
+                  مربی مرکز آموزش K9 · {formatNumberFa(trainer.years)} سال سابقه
                 </span>
               </span>
             </Link>

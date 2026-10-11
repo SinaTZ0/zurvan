@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/vazirmatn";
+/* Only the black Latin cut: the stencil face sets the "K9" in the brand name and nothing else. */
+@import "@fontsource/big-shoulders-stencil/latin-900.css";
 @import "lenis/dist/lenis.css";
 
 /* Use the tokens below through their Tailwind classes (`bg-sunken`, `text-saffron-text`, `shadow-md`…), never raw
@@ -138,6 +140,7 @@
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: "Vazirmatn Variable", Tahoma, sans-serif;
+  --font-stencil: "Big Shoulders Stencil", Impact, sans-serif;
 
   /* shadcn semantic colors */
   --color-background: var(--background);

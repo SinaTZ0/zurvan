@@ -32,7 +32,7 @@ export function describeSeats({ capacity, reserved, minToStart }: Seats) {
 /*===== Seat Roster =====*/
 /**
  * A run's seats drawn one by one, filled for reserved seats, with a notch after the minimum to start. This is the
- * homepage's signature: it shows at a glance the rule that makes Zurvann runs different (a class starts only once
+ * homepage's signature: it shows at a glance the rule that makes K9 Training runs different (a class starts only once
  * enough pets join).
  *
  * `paws` is the large hero version, whose seats fill in one after another. `bar` is the slim one for lists.

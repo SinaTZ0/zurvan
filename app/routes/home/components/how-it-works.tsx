@@ -48,7 +48,7 @@ export function HowItWorks() {
           <div className="min-w-0 flex-1 basis-96">
             <SectionHeading
               id="how-title"
-              title="رزرو کلاس در زروان چطور است؟"
+              title="رزرو کلاس در آموزش K9 چطور است؟"
               description="چهار قدم تا جای تو در کلاس؛ و اگر کلاس برگزار نشود، پولت سر جایش برمی‌گردد."
             />
           </div>

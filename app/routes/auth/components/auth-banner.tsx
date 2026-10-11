@@ -21,7 +21,7 @@ const SERVICES = [
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a bronze hero card that says what Zurvann
+ * Desktop-only brand panel beside the auth forms: a bronze hero card that says what K9 Training
  * offers. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {
@@ -47,7 +47,7 @@ export function AuthBanner({ className }: { className?: string }) {
           هر چیزی که حیوانت نیاز دارد، یک‌جا
         </h2>
         <p className="mt-4 max-w-md text-muted-foreground">
-          از دامپزشک و پت تاکسی تا مربی و پانسیون، همه با متخصصان تأییدشده‌ی زروان.
+          از دامپزشک و پت تاکسی تا مربی و پانسیون، همه با متخصصان تأییدشده‌ی آموزش K9.
         </p>
 
         {/*------ Services ------*/}
@@ -67,7 +67,7 @@ export function AuthBanner({ className }: { className?: string }) {
       {/*------ Verification ------*/}
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-saffron" aria-hidden />
-        فقط متخصصان تأییدشده‌ی زروان به حیوان شما خدمت می‌دهند.
+        فقط متخصصان تأییدشده‌ی آموزش K9 به حیوان شما خدمت می‌دهند.
       </p>
     </aside>
   );

@@ -15,7 +15,7 @@ import type { Route } from "./+types/home";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
-  { title: "زروان | دوره‌های آموزش سگ با مربیان تأییدشده" },
+  { title: "آموزش K9 | دوره‌های آموزش سگ با مربیان تأییدشده" },
   {
     name: "description",
     content: "کلاس‌های حضوری و آنلاین آموزش سگ با مربیان تأییدشده. جای حیوانت را رزرو کن و آنلاین پرداخت کن.",

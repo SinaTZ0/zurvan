@@ -2,29 +2,37 @@ import { cn } from "cn";
 
 /*===== Brand Mark =====*/
 /**
- * The dog-and-Z emblem, cut from the original logo into two masks so each part takes a palette colour: the dog in
- * gold, the Z stroke in the brighter champagne.
+ * The dog emblem, kept from the original logo as a mask so it takes the palette's gold. The original also carried a Z
+ * stroke for the old name; that mask is no longer used.
  * Size it by height; the width follows the emblem's shape.
  */
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <span aria-hidden className={cn("relative inline-block aspect-[61/74] h-10 shrink-0", className)}>
-      <span className="absolute inset-0 bg-primary [mask:url(/logo-mark-ink.png)_center/contain_no-repeat]" />
-      <span className="absolute inset-0 bg-saffron [mask:url(/logo-mark-gold.png)_center/contain_no-repeat]" />
-    </span>
+    <span
+      aria-hidden
+      className={cn(
+        "inline-block aspect-[61/74] h-10 shrink-0 bg-primary [mask:url(/logo-mark-ink.png)_center/contain_no-repeat]",
+        className,
+      )}
+    />
   );
 }
 
 /*===== Brand Logo =====*/
 /**
- * The emblem beside the name set in Persian. The old artwork spelled the name in Latin letters only, which Persian
- * readers would not say or remember, so the wordmark is live text in the site's own typeface.
+ * The emblem beside the name as Persian readers say it, «آموزش K9». The "K9" is set in a condensed stencil, the
+ * lettering of working-dog crates and K9 unit gear, and drawn larger so its cap height stands level with the emblem.
  */
 export function BrandLogo({ className }: { className?: string }) {
   return (
     <span className={cn("flex items-center gap-2 text-[1.625rem] text-primary", className)}>
       <BrandMark className="h-[1.5em]" />
-      <span className="text-[1em] leading-none font-black">زروان</span>
+      <span className="flex items-center gap-[0.3em] leading-none">
+        <span className="text-[1em] font-black">آموزش</span>
+        <span dir="ltr" className="font-stencil text-[1.55em] font-black tracking-[0.02em] text-saffron">
+          K9
+        </span>
+      </span>
     </span>
   );
 }
