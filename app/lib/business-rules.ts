@@ -24,6 +24,12 @@ export const DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR = 5;
 // TODO(business-logic): B7
 export const DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR = 20;
 
+// TODO(business-logic): B11 — a session the customer cancels later than this before it starts counts as missed.
+export const DEFAULT_LATE_SESSION_CANCELLATION_HOURS = 24;
+
+// TODO(business-logic): B12 — a test is refunded in full until this long before its session, and not after.
+export const DEFAULT_TEST_REFUND_CUTOFF_HOURS = 24;
+
 /*===== Purchase Split =====*/
 
 /** The signed lines of one enrollment's purchase transaction, by wallet role. They add up to 0. */
@@ -125,6 +131,79 @@ export function splitRefund({
     trainer: -trainer,
     admin: -(refundAmount - trainer - partner),
     partner: -partner,
+  };
+}
+
+/*===== Enrollment Refunds =====*/
+
+/** Which rule decided an enrollment's refund, so the screens can explain the amount. */
+export type EnrollmentRefundRule =
+  /** Cancelled before the first session was held: everything comes back (B11). */
+  | "before-first-session"
+  /** Cancelled by the customer after that: the policy's share of the unheld sessions (B11). */
+  | "policy"
+  /** Cancelled by the trainer or the Admin: the whole share of the unheld sessions (B11). */
+  | "staff"
+  /** A test, more than the cut-off before its session (B12). */
+  | "test-before-cutoff"
+  /** A test inside the cut-off, or already held (B12). */
+  | "test-after-cutoff";
+
+export type EnrollmentRefund = { amount: number; rule: EnrollmentRefundRule };
+
+/**
+ * What cancelling an enrollment now gives back, in Rial. One function for the server and the customer's preview, so
+ * the amount on the button is the amount refunded.
+ *
+ * - A course cancelled by the customer: everything until a session is used, then
+ *   `paid × unheld ÷ planned × policy %`.
+ * - A course cancelled by the trainer or the Admin: `paid × unheld ÷ planned`, ignoring the policy.
+ * - A test: everything until the cut-off before its session, nothing after (a used session is past the cut-off). The
+ *   trainer or the Admin cancelling a test that hasn't been used gives everything back.
+ *
+ * `usedSessions` are held plus missed ones. More used than planned leaves nothing unheld.
+ */
+// TODO(business-logic): B11, B12
+export function calculateEnrollmentRefund({
+  kind,
+  paidAmount,
+  plannedSessions,
+  usedSessions,
+  policyPercent,
+  cancelledBy,
+  nextSessionStartsAt,
+  now,
+}: {
+  kind: "course" | "test";
+  paidAmount: number;
+  plannedSessions: number;
+  usedSessions: number;
+  /** The refund policy's share of the unheld sessions, from the order item's snapshot. */
+  policyPercent: number;
+  cancelledBy: "customer" | "staff";
+  /** The earliest scheduled session, which the test cut-off is measured from. */
+  nextSessionStartsAt: Date | null;
+  now: Date;
+}): EnrollmentRefund {
+  /*------ Tests ------*/
+  if (kind === "test") {
+    const cutoff = DEFAULT_TEST_REFUND_CUTOFF_HOURS * 3_600_000;
+    const pastCutoff =
+      usedSessions > 0 ||
+      (cancelledBy === "customer" &&
+        nextSessionStartsAt !== null &&
+        nextSessionStartsAt.getTime() - now.getTime() < cutoff);
+    return pastCutoff ? { amount: 0, rule: "test-after-cutoff" } : { amount: paidAmount, rule: "test-before-cutoff" };
+  }
+
+  /*------ Courses ------*/
+  if (usedSessions === 0) return { amount: paidAmount, rule: "before-first-session" };
+
+  const unheld = Math.max(plannedSessions - usedSessions, 0);
+  const percent = cancelledBy === "staff" ? 100 : policyPercent;
+  return {
+    amount: Math.floor((paidAmount * unheld * percent) / (plannedSessions * 100)),
+    rule: cancelledBy === "staff" ? "staff" : "policy",
   };
 }
 

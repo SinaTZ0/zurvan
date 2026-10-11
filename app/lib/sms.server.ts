@@ -8,7 +8,16 @@ import { smsOutbox } from "~/db/schema";
 // mode until a provider is wired) every message is written to `sms_outbox` instead. The outbox is also the send log
 // the sign-in rate limits count, so a real provider must keep writing it.
 
-export type SmsKind = "sign-in-code" | "assessment-booked" | "assessment-cancelled";
+export type SmsKind =
+  | "sign-in-code"
+  | "assessment-booked"
+  | "assessment-cancelled"
+  | "enrollment-created"
+  | "enrollment-cancelled"
+  | "enrollment-result"
+  | "session-scheduled"
+  | "session-rescheduled"
+  | "session-cancelled";
 
 /** Queues one SMS. In showcase mode it only lands in the outbox. */
 export async function sendSms({ phoneNumber, kind, body }: { phoneNumber: string; kind: SmsKind; body: string }) {
