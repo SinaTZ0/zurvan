@@ -1,3 +1,5 @@
+import { HEAD_TRAINER } from "~/lib/head-trainer";
+
 /*===== Reviews =====*/
 // Two shapes on purpose: some owners just leave a comment, others rate the course they took. Shown over the hero
 // photo in this order.
@@ -14,7 +16,7 @@ export type Review =
       pet: string;
     };
 
-// Sample data until owners can review the runs they attended.
+// Sample data until owners can review the courses their dogs took.
 export const REVIEWS: Review[] = [
   {
     kind: "comment",
@@ -26,9 +28,9 @@ export const REVIEWS: Review[] = [
   {
     kind: "course",
     id: "cookie",
-    course: { title: "اطاعت‌پذیری مقدماتی سگ", photo: "/demo/course-obedience.jpg" },
+    course: { title: "فرمان‌پذیری مقدماتی", photo: "/demo/course-obedience.jpg" },
     rating: 5,
-    quote: "جلسه‌ها کوتاه و دقیق بود و مربی تمرین‌های خانه را هر هفته پیگیری می‌کرد.",
+    quote: `جلسه‌ها کوتاه و دقیق بود و ${HEAD_TRAINER.firstName} تمرین‌های خانه را هر هفته پیگیری می‌کرد.`,
     author: "مریم کاظمی",
     pet: "صاحب کوکی",
   },
@@ -42,18 +44,18 @@ export const REVIEWS: Review[] = [
   {
     kind: "course",
     id: "buddy",
-    course: { title: "راه رفتن با قلاده، بدون کشیدن", photo: "/demo/course-leash.jpg" },
+    course: { title: "سگ همدم ۱", photo: "/demo/course-leash.jpg" },
     rating: 4,
-    quote: "پیاده‌روی عصر دیگر کشتی گرفتن نیست. فقط کاش ساعت کلاس کمی دیرتر بود.",
+    quote: "پیاده‌روی عصر دیگر کشتی گرفتن نیست. فقط کاش ساعت جلسه‌ها کمی دیرتر بود.",
     author: "رضا توکلی",
     pet: "صاحب بادی",
   },
   {
     kind: "course",
     id: "pesteh",
-    course: { title: "آموزش توله‌سگ، ۲ تا ۶ ماهگی", photo: "/demo/course-puppy.jpg" },
+    course: { title: "سگ خونگی", photo: "/demo/course-puppy.jpg" },
     rating: 5,
-    quote: "از هفته‌ی اول جای دستشویی‌اش را یاد گرفت. مربی صبور بود و همه‌ی سؤال‌هایم را جواب داد.",
+    quote: `از هفته‌ی اول جای دستشویی‌اش را یاد گرفت. ${HEAD_TRAINER.firstName} صبور بود و همه‌ی سؤال‌هایم را جواب داد.`,
     author: "نیلوفر احمدی",
     pet: "صاحب پسته",
   },

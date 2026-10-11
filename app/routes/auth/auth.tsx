@@ -15,7 +15,7 @@ import type { Route } from "./+types/auth";
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
   { title: "ورود به آموزش K9" },
-  { name: "description", content: "ورود یا ساخت حساب در آموزش K9، خدمات مطمئن برای حیوان خانگی شما." },
+  { name: "description", content: "ورود یا ساخت حساب در آموزش K9، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
 ];
 
 /*===== Loader =====*/
@@ -47,7 +47,7 @@ export default function AuthPage() {
           <BrandLogo className="text-[2.5rem] lg:hidden" />
           <h1 className="mt-4 text-[2rem] leading-tight text-primary lg:mt-0">به آموزش K9 خوش آمدید</h1>
           <p className="mt-3 max-w-72 text-muted-foreground">
-            خدمات مطمئن و حرفه‌ای برای سلامتی، رفاه و همراهی بهتر حیوان خانگی شما.
+            وارد شو تا ارزیابی رایگان را رزرو کنی و آموزش سگت را دنبال کنی.
           </p>
         </header>
 

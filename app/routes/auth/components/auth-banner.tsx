@@ -1,28 +1,32 @@
 import { cn } from "cn";
 import {
   BadgeCheckIcon,
-  CarIcon,
-  DogIcon,
-  FootprintsIcon,
+  HeartIcon,
   HouseIcon,
+  ListChecksIcon,
   PawPrintIcon,
-  StethoscopeIcon,
+  ShieldIcon,
+  TrophyIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
-const SERVICES = [
-  { label: "دامپزشکی", Icon: StethoscopeIcon },
-  { label: "پت تاکسی", Icon: CarIcon },
-  { label: "مربی", Icon: DogIcon },
-  { label: "پت واکر", Icon: FootprintsIcon },
-  { label: "پانسیون", Icon: HouseIcon },
+// The catalog's families, as the owner names them on the course cards.
+const DISCIPLINES = [
+  { label: "سگ خونگی", Icon: HouseIcon },
+  { label: "سگ اجتماعی", Icon: UsersIcon },
+  { label: "فرمان‌پذیری", Icon: ListChecksIcon },
+  { label: "سگ همدم", Icon: HeartIcon },
+  { label: "سگ‌های کار", Icon: ShieldIcon },
+  { label: "سگ‌های ورزشی", Icon: TrophyIcon },
 ] as const;
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a bronze hero card that says what K9 Training
- * offers. Phones skip it, so it must not hold anything the forms depend on.
+ * Desktop-only brand panel beside the auth forms: a bronze hero card that says who K9 Training is, the trainer, and
+ * what he teaches. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {
   return (
@@ -42,17 +46,17 @@ export function AuthBanner({ className }: { className?: string }) {
 
       {/*------ Pitch ------*/}
       <div className="my-auto flex max-w-xl flex-col py-10">
-        <p className="text-sm font-bold text-saffron">خدمات ممتاز حیوانات خانگی</p>
-        <h2 id="auth-banner-title" className="mt-3 max-w-md text-[2.75rem] leading-tight text-balance">
-          هر چیزی که حیوانت نیاز دارد، یک‌جا
+        <h2 id="auth-banner-title" className="max-w-md text-[2.75rem] leading-tight text-balance">
+          آموزش خصوصی سگ با {HEAD_TRAINER.name}
         </h2>
         <p className="mt-4 max-w-md text-muted-foreground">
-          از دامپزشک و پت تاکسی تا مربی و پانسیون، همه با متخصصان تأییدشده‌ی آموزش K9.
+          ارزیابی اول رایگان است. بعد از آن، جلسه‌ها و پیشرفت سگت را همین‌جا دنبال می‌کنی و دوره‌ی بعدی را مستقیم رزرو
+          می‌کنی.
         </p>
 
-        {/*------ Services ------*/}
+        {/*------ Disciplines ------*/}
         <ul className="mt-8 flex flex-wrap gap-2">
-          {SERVICES.map(({ label, Icon }) => (
+          {DISCIPLINES.map(({ label, Icon }) => (
             <li
               key={label}
               className="flex items-center gap-2 rounded-full bg-foreground/5 py-2 ps-3 pe-4 text-sm font-bold ring-1 ring-border"
@@ -67,7 +71,7 @@ export function AuthBanner({ className }: { className?: string }) {
       {/*------ Verification ------*/}
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <BadgeCheckIcon strokeWidth={1.7} className="size-5 shrink-0 text-saffron" aria-hidden />
-        فقط متخصصان تأییدشده‌ی آموزش K9 به حیوان شما خدمت می‌دهند.
+        همه‌ی جلسه‌ها را خود {HEAD_TRAINER.firstName} برگزار می‌کند، گاهی با کمک دستیارش.
       </p>
     </aside>
   );

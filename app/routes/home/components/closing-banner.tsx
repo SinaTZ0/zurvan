@@ -1,9 +1,11 @@
 import { Link } from "~/components/link";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Closing Banner =====*/
 /**
  * The last ask on the page: a park photo with a deep bronze fade from the text side, so the headline stays readable
- * while the dogs stay visible. Reassurance on cancelling sits right under the headline, where hesitation happens.
+ * while the dogs stay visible. It asks the two kinds of visitor for their own next step: a new dog books the free
+ * assessment, and a dog with a record here books its next course straight from its page.
  */
 export function ClosingBanner() {
   return (
@@ -26,23 +28,23 @@ export function ClosingBanner() {
         />
         <div className="relative flex max-w-xl flex-col gap-4 p-8 sm:p-14">
           <h2 id="closing-title" className="text-h2 text-balance">
-            اولین کلاس حیوانت را همین هفته در آموزش K9 رزرو کن
+            قبل از هر دوره، {HEAD_TRAINER.firstName} سگت را می‌بیند
           </h2>
           <p className="text-lead text-pretty text-inverse-foreground/90">
-            تا قطعی شدن کلاس، لغو رزرو همیشه با بازپرداخت کامل است.
+            ارزیابی اول رایگان است. سگت قبلاً این‌جا دوره دیده؟ دوره‌ی بعدی‌اش را مستقیم رزرو کن.
           </p>
           <div className="mt-2 flex flex-wrap gap-3">
             <Link
-              to="/courses"
+              to="/assessment"
               className="inline-flex h-13 items-center rounded-2xl bg-saffron px-7 text-base font-extrabold text-saffron-foreground transition-colors hover:bg-saffron/90"
             >
-              کلاس‌ها را ببین
+              ارزیابی رایگان رزرو کن
             </Link>
             <Link
-              to="/trainers"
+              to="/pets"
               className="inline-flex h-13 items-center rounded-2xl border border-inverse-foreground px-6 text-base font-bold text-inverse-foreground transition-colors hover:bg-inverse-foreground/10"
             >
-              مربیان را بشناس
+              رزرو دوره‌ی بعدی
             </Link>
           </div>
         </div>

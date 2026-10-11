@@ -3,22 +3,20 @@ import { data } from "react-router";
 import { referralCookieFromUrl } from "~/lib/referral.server";
 import { BrowseSection } from "~/routes/home/components/browse-section";
 import { ClosingBanner } from "~/routes/home/components/closing-banner";
-import { DealsShelf } from "~/routes/home/components/deals-shelf";
-import { FeaturedCourses } from "~/routes/home/components/featured-courses";
+import { CourseMap } from "~/routes/home/components/course-map";
 import { HomeHero } from "~/routes/home/components/home-hero";
 import { HowItWorks } from "~/routes/home/components/how-it-works";
-import { TrainersSection } from "~/routes/home/components/trainers-section";
-import { TrustNotes } from "~/routes/home/components/trust-notes";
-import { UpcomingRuns } from "~/routes/home/components/upcoming-runs";
+import { TrainerIntro } from "~/routes/home/components/trainer-intro";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 import type { Route } from "./+types/home";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
-  { title: "آموزش K9 | دوره‌های آموزش سگ با مربیان تأییدشده" },
+  { title: `آموزش K9 | آموزش خصوصی سگ با ${HEAD_TRAINER.name}` },
   {
     name: "description",
-    content: "کلاس‌های حضوری و آنلاین آموزش سگ با مربیان تأییدشده. جای حیوانت را رزرو کن و آنلاین پرداخت کن.",
+    content: `آموزش خصوصی سگ با ${HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون. از سگ خونگی و CGC تا سگ همدم، سگ‌های کار و ورزشی. ارزیابی اول رایگان است.`,
   },
 ];
 
@@ -35,13 +33,10 @@ export default function HomePage() {
   return (
     <>
       <HomeHero />
-      <TrustNotes />
+      <TrainerIntro />
       <BrowseSection />
-      <FeaturedCourses />
-      <UpcomingRuns />
-      <DealsShelf />
+      <CourseMap />
       <HowItWorks />
-      <TrainersSection />
       <ClosingBanner />
     </>
   );

@@ -2,6 +2,7 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 // The pages behind these links come later in phase one; the structure is what matters for now.
 const FOOTER_GROUPS = [
@@ -9,8 +10,8 @@ const FOOTER_GROUPS = [
     title: "دوره‌ها",
     links: [
       { label: "همه‌ی دوره‌ها", to: "/courses" },
-      { label: "کلاس‌های پیش رو", to: "/#upcoming-runs" },
-      { label: "دوره‌های آنلاین", to: "/courses?format=online" },
+      { label: "ارزیابی رایگان", to: "/assessment" },
+      { label: "اصلاح رفتار", to: "/behavior-modification" },
     ],
   },
   {
@@ -38,7 +39,7 @@ export function SiteFooter() {
             <BrandLogo className="text-[1.875rem]" />
           </Link>
           <p className="text-sm text-pretty text-muted-foreground">
-            دوره‌های آموزشی سگ با مربیان تأییدشده، در کلاس‌های حضوری و آنلاین.
+            آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون.
           </p>
           <a
             href="tel:02191000000"

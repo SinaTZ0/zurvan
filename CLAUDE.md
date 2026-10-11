@@ -13,6 +13,9 @@ This is a React Router v8 application using Framework Mode. The application's us
 
 - [docs/zurvan-courses.md](docs/zurvan-courses.md) is the source of truth for the course catalog and the business rules the owner has given. Where it conflicts with the phase-one docs, it wins.
 - This is a dog-training center, not a multi-service pet marketplace. Courses are taught by the head trainer, sometimes with an assistant. The site's job is to sell him and his personal brand: copy and design should build trust in him, not in an anonymous pool of "verified trainers".
+- Training works like hiring a private tutor: sessions are with one dog, at the owner's home or outside, and boarding is optional. Don't design around group classes, seats, class minimums or a training venue. The phase-one docs (`docs/app-phase-one*.md`, `docs/foundations-plan.md`, `docs/business-logic.md`) describe this model.
+- A new dog starts with a free assessment. A dog that already has a record on the site can book its next course directly. Behavior modification starts from a request with a problem category, a description and a video.
+- The head trainer's details live in `app/lib/head-trainer.ts`; the name, years and photo there are placeholders until the owner sends the real ones.
 
 ## Working Directory
 

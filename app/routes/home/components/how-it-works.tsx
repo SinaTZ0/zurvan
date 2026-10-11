@@ -1,39 +1,40 @@
 import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { DoodleFrieze } from "~/routes/home/components/hero-doodles";
 import { SectionHeading } from "~/routes/home/components/section-heading";
 
-// The real order of a reservation (spec 3.3–3.6), so the numbering carries meaning.
+// The real order of starting with the trainer, so the numbering carries meaning.
 const STEPS = [
   {
-    title: "دوره و کلاس را انتخاب کن",
-    body: "دوره‌ها را بر اساس حیوان، سطح و شهر ببین و از بین کلاس‌های پیش رو، زمان و مکان مناسب را پیدا کن.",
+    title: "ارزیابی رایگان رزرو کن",
+    body: "یک زمان انتخاب کن و از سگت بگو: سن، نژاد و کاری که می‌خواهی تغییر کند.",
   },
   {
-    title: "حیوانت را انتخاب کن",
-    body: "سن و دوره‌های پیش‌نیاز حیوانت را بررسی می‌کنیم تا کلاس واقعاً برایش مناسب باشد.",
+    title: `${HEAD_TRAINER.firstName} سگت را می‌بیند`,
+    body: "در اولین دیدار رفتار سگت را می‌سنجد و دوره‌ای را که بهتر است از آن شروع کنید پیشنهاد می‌دهد.",
   },
   {
-    title: "جایش را رزرو کن",
-    body: "جای حیوانت ۱۵ دقیقه برایت نگه داشته می‌شود تا با کارت یا کیف پول پرداخت کنی. کد تخفیف هم همین‌جا وارد می‌شود.",
+    title: "جلسه‌های خصوصی شروع می‌شود",
+    body: "در خانه‌ی خودت یا بیرون، بسته به دوره. اگر بخواهی، سگت در پانسیون می‌ماند و آموزش همان‌جا پیش می‌رود.",
   },
 ];
 
-// The last step forks on whether enough people booked, so it's laid out as two outcomes instead of one paragraph.
+// The last step is what a returning dog skips to, so it's laid out as what the record lets the owner do next.
 const FINAL_STEP = {
-  title: "کلاس با حد نصاب شروع می‌شود",
+  title: "پرونده‌ی سگت می‌ماند",
   outcomes: [
-    { lead: "اگر به حد نصاب برسد:", body: "کلاس قطعی می‌شود و پیامک می‌گیری." },
-    { lead: "اگر نرسد:", body: "کل مبلغ به کیف پولت برمی‌گردد." },
+    { lead: "دوره‌ی بعدی:", body: "مستقیم رزرو می‌کنی، بدون ارزیابی دوباره." },
+    { lead: "لول بعدی سگ همدم:", body: "به‌جای گذراندن دوره‌ی قبلی، می‌شود تستش را داد." },
   ],
 };
 
 /*===== How It Works =====*/
 /**
- * The reservation flow in four numbered panels, under a frieze of the doodled people and animals the hero draws. It's
- * the page's one bronze band, the pause between shopping and meeting the trainers. The last step is the payoff,
- * so it alone is a solid gold panel and carries both outcomes.
+ * Starting with the trainer in four numbered panels, under a frieze of the doodled people and animals the hero draws.
+ * It's the page's one bronze band. The last step is the payoff, what having a record here is worth, so it alone is a
+ * solid gold panel.
  */
 export function HowItWorks() {
   return (
@@ -48,8 +49,8 @@ export function HowItWorks() {
           <div className="min-w-0 flex-1 basis-96">
             <SectionHeading
               id="how-title"
-              title="رزرو کلاس در آموزش K9 چطور است؟"
-              description="چهار قدم تا جای تو در کلاس؛ و اگر کلاس برگزار نشود، پولت سر جایش برمی‌گردد."
+              title={`شروع کار با ${HEAD_TRAINER.firstName} چطور است؟`}
+              description="قدم اول رایگان است. سگ‌هایی که قبلاً این‌جا دوره دیده‌اند از قدم آخر شروع می‌کنند."
             />
           </div>
           {/* Laid out left to right so the procession's front is at the near edge; the far end fades out. */}

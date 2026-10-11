@@ -1,20 +1,19 @@
 import { cn } from "cn";
-import { CalendarIcon, CheckIcon, ClockIcon, MapPinIcon, UserRoundIcon, type LucideIcon } from "lucide-react";
+import { CakeIcon, CheckIcon, ClockIcon, KeyRoundIcon, MapPinIcon, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Link } from "~/components/link";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 import { buttonVariants } from "~/components/ui/button";
-import { describeSeats, SeatRoster } from "~/routes/home/components/seat-roster";
-import { dateParts, formatDayMonth, formatTime, formatToman } from "~/routes/home/format";
-import { COURSE_DETAILS, type Problem, PROBLEMS } from "~/routes/home/problems";
+import { describeAge, describePlace, describeSessions } from "~/routes/home/courses";
+import { type Problem, PROBLEMS } from "~/routes/home/problems";
 
 /*===== Browse Section =====*/
 /**
  * Browsing by problem, in the owner's words, instead of by catalogue category: "قلاده را می‌کشد" leads to the leash
  * course. On desktop a photo of the course beside the list follows the row under the pointer or focus, so moving
- * through the list previews each course without leaving it. A row opens in place with the course details and a visit
- * button, so reading about a course doesn't cost a page change.
+ * through the list previews each course without leaving it. A row opens in place with the course details and the
+ * next step, so reading about a course doesn't cost a page change.
  */
 export function BrowseSection() {
   const [activeId, setActiveId] = useState(PROBLEMS[0]!.id);
@@ -29,7 +28,8 @@ export function BrowseSection() {
           سگت چه کاری می‌کند؟
         </h2>
         <p className="mt-2 text-pretty text-muted-foreground">
-          کاری را که می‌خواهی تغییر کند پیدا کن. دوره‌ای که برایش ساخته شده و نزدیک‌ترین کلاسش را نشانت می‌دهیم.
+          کاری را که می‌خواهی تغییر کند پیدا کن تا دوره‌ای را که برایش ساخته شده ببینی. مطمئن نیستی کدام؟ در ارزیابی
+          رایگان با هم انتخابش می‌کنیم.
         </p>
       </div>
 
@@ -72,9 +72,7 @@ function ProblemRow({
   isActive: boolean;
   onActivate: () => void;
 }) {
-  const detail = COURSE_DETAILS[problem.course.slug]!;
-  const seats = describeSeats(problem.nextRun.seats);
-  const { weekday, day, month } = dateParts(problem.nextRun.startsAt);
+  const { course } = problem;
 
   return (
     <AccordionItem value={problem.id} className="border-b transition-colors data-open:bg-primary/5">
@@ -94,14 +92,15 @@ function ProblemRow({
             {problem.title}
           </span>
           <span className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
-            <span>دوره‌ی {problem.course.title}</span>
-            <span>کلاس بعدی {formatDayMonth(problem.nextRun.startsAt)}</span>
+            <span>دوره‌ی {course.title}</span>
+            {/* Behavior modification has no fixed length, so its line says who it is for instead. */}
+            <span>{course.kind === "behavior" ? "برای هر سن و هر نژاد" : describeSessions(course)}</span>
           </span>
         </span>
 
         {/* Phones get a thumbnail in place of the desktop preview. */}
         <img
-          src={problem.course.photo}
+          src={problem.photo}
           alt=""
           width={960}
           height={540}
@@ -111,56 +110,72 @@ function ProblemRow({
       </AccordionTrigger>
 
       {/*------ Details ------*/}
-      {/* The accordion styles every link inside its panel as underlined text; the button must keep its own look. */}
-      <AccordionContent className="[&_a]:no-underline [&_a]:hover:text-primary-foreground">
+      {/* The accordion styles every link inside its panel as underlined text that turns light on hover; the buttons
+          keep their own look, so each one restates its hover colour. */}
+      <AccordionContent className="[&_a]:no-underline">
         <div className="grid gap-6 px-4 pb-6 sm:px-6">
           {/*------ What the Course Does ------*/}
           <div className="grid gap-4">
-            <p className="max-w-prose text-base leading-relaxed text-pretty">{detail.summary}</p>
+            <p className="max-w-prose text-base leading-relaxed text-pretty">{course.summary}</p>
             <ul className="grid gap-2">
-              {detail.outcomes.map((outcome) => (
-                <li key={outcome} className="flex items-center gap-2.5">
+              {course.highlights.map((highlight) => (
+                <li key={highlight} className="flex items-center gap-2.5">
                   <CheckIcon aria-hidden strokeWidth={2.4} className="size-4 shrink-0 text-primary" />
-                  {outcome}
+                  {highlight}
                 </li>
               ))}
             </ul>
           </div>
 
-          {/*------ Next Class ------*/}
+          {/*------ Course Facts ------*/}
           <dl className="grid gap-x-6 gap-y-4 border-t border-primary/15 pt-5 sm:grid-cols-2">
-            <Fact icon={CalendarIcon} label="کلاس بعدی">
-              {weekday} {day} {month}، ساعت {formatTime(problem.nextRun.startsAt)}
+            <Fact icon={ClockIcon} label="تعداد جلسه‌ها">
+              {describeSessions(course)}
             </Fact>
-            <Fact icon={MapPinIcon} label="مکان">
-              {problem.nextRun.place}
+            <Fact icon={CakeIcon} label="سن سگ">
+              {describeAge(course)}
             </Fact>
-            <Fact icon={ClockIcon} label="طول دوره">
-              {detail.duration}
+            <Fact icon={MapPinIcon} label="محل آموزش">
+              {describePlace(course)}
             </Fact>
-            <Fact icon={UserRoundIcon} label="مربی">
-              {problem.course.trainer}
-            </Fact>
+            {course.prerequisite && (
+              <Fact icon={KeyRoundIcon} label="پیش‌نیاز">
+                {course.prerequisite}
+              </Fact>
+            )}
           </dl>
 
-          {/*------ Seats ------*/}
-          <div className="grid gap-2">
-            <SeatRoster seats={problem.nextRun.seats} />
-            <p className="flex flex-wrap gap-x-3 text-sm">
-              <span className="font-bold">{seats.status}</span>
-              <span className="text-muted-foreground">{seats.detail}</span>
-            </p>
-          </div>
-
-          {/*------ Price and Action ------*/}
-          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-primary/15 pt-5">
-            <p className="flex items-baseline gap-2">
-              <span className="text-h3 font-extrabold">{formatToman(detail.price)}</span>
-              <span className="text-sm text-muted-foreground">برای هر شرکت‌کننده</span>
-            </p>
-            <Link to={`/courses/${problem.course.slug}`} className={buttonVariants({ size: "lg" })}>
-              مشاهده‌ی دوره
-            </Link>
+          {/*------ Next Step ------*/}
+          {/* A new dog starts with the free assessment; behavior problems start from a request with a video, so the
+              trainer has seen the behavior before the first session. */}
+          <div className="flex flex-wrap items-center gap-3 border-t border-primary/15 pt-5">
+            {course.kind === "behavior" ? (
+              <Link
+                to="/behavior-modification"
+                className={buttonVariants({ size: "lg", className: "hover:text-primary-foreground!" })}
+              >
+                درخواست اصلاح رفتار
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/assessment"
+                  className={buttonVariants({ size: "lg", className: "hover:text-primary-foreground!" })}
+                >
+                  ارزیابی رایگان رزرو کن
+                </Link>
+                <Link
+                  to={`/courses/${course.slug}`}
+                  className={buttonVariants({
+                    size: "lg",
+                    variant: "ghost",
+                    className: "text-primary hover:text-primary!",
+                  })}
+                >
+                  جزئیات دوره
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </AccordionContent>
@@ -195,7 +210,7 @@ function CoursePreview({ problems, active }: { problems: Problem[]; active: Prob
         {problems.map((problem) => (
           <img
             key={problem.id}
-            src={problem.course.photo}
+            src={problem.photo}
             alt=""
             width={960}
             height={540}
@@ -209,7 +224,9 @@ function CoursePreview({ problems, active }: { problems: Problem[]; active: Prob
       </div>
       <figcaption className="mt-4 flex items-baseline justify-between gap-4">
         <span className="font-extrabold">{active.course.title}</span>
-        <span className="shrink-0 text-sm text-muted-foreground">با {active.course.trainer}</span>
+        <span dir="ltr" className="shrink-0 text-sm text-muted-foreground">
+          {active.course.latinName}
+        </span>
       </figcaption>
     </figure>
   );

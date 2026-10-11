@@ -2,7 +2,11 @@
 
 ### 1. Project Objective
 
-An e-commerce platform for selling training courses tailored to customers' pets. Customers browse courses, reserve a seat for a specific pet in a scheduled run of a course, and pay online or from their in-app wallet. A run only starts once it has enough reservations. Trainers publish their own courses (after admin approval), relaunch them as new runs whenever they like, and earn a share of each run's sales. Partners (pet shops, clinics, groomers) bring in customers through referral links and earn a commission on their purchases.
+The website of **K9 Training** (آموزش K9), one dog trainer's private practice. The site sells him and his courses: customers meet him on the site, book a **free assessment** for their dog, and then buy **private courses** that he (or sometimes his assistant) teaches one dog at a time, at the customer's home or outside. A dog that already has a record on the site books its next course directly. Customers pay online or from their in-app wallet. Partners (pet shops, clinics, groomers) bring in customers through referral links and earn a commission on their purchases.
+
+The course catalog and the owner's rules come from [zurvan-courses.md](zurvan-courses.md). Where this spec and that doc disagree about a course, the courses doc wins.
+
+**Not in phase one:** group classes, seats, class minimums, waitlists and a training venue. Every course is private. Phase one is for **dogs only**.
 
 ---
 
@@ -12,12 +16,12 @@ An e-commerce platform for selling training courses tailored to customers' pets.
 - **Authentication:** All users register and log in via Phone Number using SMS OTP (One-Time Password).
 - Each phone number has **exactly one role** in phase one.
 
-| Role         | Main capabilities                                                                                                                                              |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Admin**    | Super admin. Manages everything: users, courses, runs, approvals, orders, refunds, discounts, wallets, withdrawals, earnings, commissions, comments, settings. |
-| **Trainer**  | Creates own courses and submits them for approval, schedules runs, sees reservations, records each pet's result, replies to comments, sees own earnings.       |
-| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                             |
-| **Customer** | Manages own pets, reserves and pays for course runs, follows each pet's progress, asks questions, reviews courses and trainers.                                |
+| Role         | Main capabilities                                                                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Admin**    | Super admin. Manages everything: users, the course catalog, assessments, enrollments, orders, refunds, discounts, wallets, withdrawals, commissions, comments, settings.         |
+| **Trainer**  | The head trainer and his assistant. Opens assessment slots, runs assessments, schedules and records sessions, reviews behavior requests, replies to comments, sees own earnings. |
+| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                                               |
+| **Customer** | Manages own dogs, books assessments, buys courses and tests, sends behavior requests, follows each dog's record, asks questions, reviews courses and trainers.                   |
 
 **OTP rules:**
 
@@ -32,128 +36,143 @@ An e-commerce platform for selling training courses tailored to customers' pets.
 
 ### 3. Core Features & Business Logic
 
-#### 3.1 Courses and Course Runs
+#### 3.1 The Catalog
 
-The catalogue is split into two levels:
+The catalog is the trainer's own, listed in [zurvan-courses.md](zurvan-courses.md). It has these families:
 
-- **Course** is the curriculum: what is taught, to which pets, what they must have passed first, the refund policy, and the trainer's share. It is approved once.
-- **Course Run** is one scheduled class of that course: who teaches it, when and where, how many seats, and at what price. A course can have many runs over time, including several at once (e.g. one in Tehran and one online).
+| Family       | Courses                                                           | Notes                                                                                  |
+| ------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Basics       | سگ خونگی (House manner), سگ اجتماعی (CGC)                         | The owner wants every dog to have CGC.                                                 |
+| Obedience    | فرمان‌پذیری مقدماتی (Elementary) → فرمان‌پذیری حرفه‌ای (Advanced) | Two equivalent paths with the same outcome and different prices. A customer picks one. |
+| Companion    | سگ همدم ۱ → ۲ → ۳ → ۴ (Companion dog 1–4)                         |                                                                                        |
+| Six-month    | دوره‌ی مخصوص سگ‌های شش‌ماهه (BMC)                                 | For dogs between 6 and 7 months. The owner wants almost every dog to take it.          |
+| Working dogs | نگهبان محل، بادی‌گارد، سگ سرویس، سگ آلارم، ردیاب                  | Details still open (see 5).                                                            |
+| Sport dogs   | BH، IGP 1–3، FH، WUSV                                             | Details still open (see 5).                                                            |
+| Behavior     | اصلاح رفتار (Behavior modification)                               | For any age and breed. Starts from a request with a video (see 3.7).                   |
 
-Pets enroll in a **run**, but they pass a **course**. Prerequisites always point to a course, so passing any run of "اطاعت‌پذیری مقدماتی" satisfies a prerequisite on that course, no matter which run, trainer or season it was.
+Every course has a minimum age (and BMC a maximum), an approximate number of sessions, where it is taught (**at home**, **outside**, or **mostly outside**), and its prerequisites. **Boarding is optional for every course:** the customer can choose to leave the dog at a boarding kennel, where the training continues.
 
-#### 3.2 Course Creation & Approval
+#### 3.2 Managing the Catalog
 
-- Courses can be created by both **Admins** and **Trainers**.
-- Courses submitted by Trainers require **Admin approval** before they can have public runs.
-- The trainer picks the course's **Refund Policy** from the presets the Admin has defined (see 3.6).
-- The course's **Trainer Share** is pre-filled from the platform default (see 3.8). The trainer sees it when submitting; the Admin can change it during review like any other field.
-- Courses created by an Admin are approved directly.
+- The **Admin** creates and edits courses. Trainers don't submit courses; the catalog is the head trainer's, and the Admin keeps it.
+- Each course has a **default trainer** (normally the head trainer), who gets its new enrollments. The Admin can assign a different trainer to any enrollment.
+- **Course status:** `Draft → Published → Archived`. Only published courses can be booked. Archived courses can't be booked, but existing enrollments continue and passing them still counts as a prerequisite.
+- Changing a course's price, refund policy or trainer share applies to **new** bookings only. Each order item keeps a snapshot of what the customer was promised (see 4).
 
-**Reviewing a submitted course.** The Admin can:
+#### 3.3 Free Assessment
 
-- **Approve** it as is.
-- **Reject** it with a written reason. The trainer sees the reason, edits the course, and resubmits it.
-- **Edit** any field (including the refund policy and trainer share) and then either:
-  - **Send it back to the trainer for confirmation.** The trainer sees each changed field with its old and new value, plus the Admin's note. Accepting approves the course; editing it again resubmits it for approval.
-  - **Force approve** it with the changes. The trainer is notified of what changed.
+Every new dog starts with a free assessment, where the trainer meets the dog and recommends where to start.
 
-**After approval:**
+**Slots:**
 
-- Trainers can still edit text and images.
-- Prerequisites, target species, age range, refund policy and trainer share are Admin-only, because they change which pets can enroll, what customers are promised, or what the trainer earns. Admin edits on an approved course apply immediately, and the trainer is notified.
-- An Admin can **archive** a course. Archived courses can't get new runs, but existing runs continue and passing them still counts as a prerequisite.
+- A trainer opens **assessment slots**: a start time and a duration (default 60 minutes). They can open several at once (e.g. "every Saturday at 10 and 17 for the next four weeks").
+- A slot can be booked **once**. If two customers race for the same slot, exactly one gets it and the other is told it was just taken.
+- The trainer can close an open slot, or cancel a booked one with a reason (the customer is notified and can pick another slot).
 
-**Course status flow:**
+**Booking:**
 
-```text
-Draft → Pending Approval → Approved → Archived
+1. The customer picks one of their dogs (or adds one), the **training goal** (`Home`, `Sport` or `Work`), what they want to change, and where to meet (their address or a meeting point).
+2. They pick an open slot. The assessment is `Booked`, and both sides are notified.
+3. The customer can cancel until the slot starts; the slot opens again.
 
-Pending Approval → Rejected                       → (trainer edits) → Pending Approval
-Pending Approval → Awaiting Trainer Confirmation → (trainer accepts) → Approved
-                                                 → (trainer edits)   → Pending Approval
-Pending Approval → (Admin edits + force approve)  → Approved
-```
+**After the meeting**, the trainer marks the assessment `Completed` (or `No Show`) and records:
 
-#### 3.3 Course Runs & Reservations
+- notes about the dog, shown to the customer;
+- one or more **recommended courses**, in the order to take them.
 
-- A run can be created only for an **Approved** course.
-- A trainer can create runs only for courses they own. The Admin can create a run for any course and assign any trainer, and can change a course's owner trainer (e.g. when a trainer leaves).
-- Runs **don't need Admin approval**. A trainer can relaunch a course with one click: the new run copies the previous run's price, capacity, location and schedule note, and starts as a Draft with empty dates.
-- Each run has:
-  - **Capacity:** the maximum number of pets that can reserve it.
-  - **Minimum to start:** the number of reservations needed for the run to go ahead.
-  - **Enrollment deadline:** the last moment a seat can be reserved (defaults to the start date).
-- Once a run has reservations, its price, start date, capacity and location are locked for trainers. Only an Admin can change them, and affected customers are notified by SMS.
+The customer sees the recommendations on the dog's page, each with a "book" button.
 
-The course page shows the course content, its rating, approved reviews and questions, and a list of upcoming runs. For each run, customers see:
+**Who needs one:** a dog needs a completed assessment before its first course, unless it already has a **record**. A dog has a record if it has a completed assessment, or an enrollment with at least one held session, or a trainer or Admin has marked it as known (for dogs they trained before the site existed). Tests (3.6) and behavior requests (3.7) don't need an assessment.
 
-- Trainer (with rating), format and location.
-- Start date, estimated duration (e.g. "۶ هفته · ۱۲ جلسه") and schedule.
-- Price and refund policy summary.
-- How many pets have reserved.
-- How many more reservations are needed for the run to start (if the minimum isn't reached yet).
-- How many seats are left, or "تکمیل ظرفیت" with a "join waitlist" option when full.
+**Paid assessments.** The owner mentioned several paid assessment types beside the free one. They are not in phase one until they are defined (see 5).
 
-**Run status flow:**
+#### 3.4 Booking a Course
+
+A dog with a record can book any published course it is eligible for (see 3.8), not only the recommended ones.
+
+1. The customer picks the course and the dog, chooses **boarding** or not, gives the address (for courses at home or outside), and writes the days and times that suit them.
+2. Checkout: discount code, wallet balance, then the gateway (see 3.12).
+3. When payment succeeds, the **enrollment** is created with the course's default trainer and the status `Scheduling`. Both sides are notified.
+
+There are no seats: the only limit is the trainer's time. If the trainer can't take a paid enrollment, the Admin cancels it and the customer gets a full refund (see 3.9).
+
+**Enrollment status flow:**
 
 ```text
-Draft → Published → Confirmed → In Progress → Completed
-            ↓           ↓
-        Cancelled   Cancelled
+Scheduling → Active → Passed
+                    → Failed
+     ↓          ↓
+ Cancelled  Cancelled
 ```
 
-- **Published:** visible to the public and open for reservations until the deadline or until full.
-- **Confirmed:** the minimum number of reservations is reached. The run will definitely happen, and customers are notified. It stays open for reservations until full or until the deadline.
-- **In Progress / Completed:** set automatically from the start and end dates, or manually by the trainer.
-- **Cancelled:** if the minimum isn't reached by the enrollment deadline, the run is cancelled automatically. All paid reservations are refunded in full to the customers' wallets and customers are notified. An Admin can also cancel a run manually with a reason.
+- **Scheduling:** paid; the trainer is arranging the first session with the customer.
+- **Active:** the first session is scheduled. Set automatically.
+- **Passed / Failed:** the trainer records the result and a note at the end. Passing a course satisfies prerequisites on it.
+- **Cancelled:** by the customer (with a refund by policy), or by a trainer or Admin (full refund of what's left, see 3.9).
 
-**Reservation rules:**
+A dog can't have two active (`Scheduling` or `Active`) enrollments in the same course. **Retakes are allowed:** if the dog has already passed the course, the customer sees a notice (e.g. "لئو این دوره را قبلاً با موفقیت گذرانده است") and must confirm.
 
-- A seat is held for **15 minutes** while the customer pays. If payment isn't completed, the seat is released.
-- **A run must never be overbooked**, even when many customers try to reserve the last seats at the same moment (e.g. right after a popular trainer announces a run). Paid reservations, checkout holds and waitlist offers all take a seat, and taking a seat must be all-or-nothing: if two customers race for the last seat, exactly one gets it and the other is told the run is full.
-- Expired checkout holds and waitlist offers free their seat automatically, without anyone having to visit the page.
-- A pet can't hold active reservations in two runs of the same course at the same time.
-- Cancellations and refunds follow the rules in 3.6.
+#### 3.5 Sessions
 
-#### 3.4 Waitlist
+- The trainer schedules each session of an enrollment: date, time, duration, and place (the customer's address, an outside location, or the boarding kennel). The customer is notified, and gets a reminder the day before.
+- The number of sessions on a course is approximate ("حدوداً ۷ جلسه"). The trainer can add or remove sessions on an enrollment; the price doesn't change.
+- Either side can ask to reschedule. The trainer changes the time; the customer is notified.
+- After each session the trainer marks it `Held` or `Missed` and can write a note for the customer. A session the customer cancels too late (see 5) is marked `Missed` and counts as held for refunds.
+- The trainer warns themselves of overlaps: scheduling a session over another session or a booked assessment shows a warning, but isn't blocked (the assistant may take one of them).
 
-- A customer can put an eligible pet on a run's waitlist **only while the run is full and its seats are still held by `Reserved` customers who could cancel**, i.e. the run is `Published` or `Confirmed`, it hasn't started, and the enrollment deadline hasn't passed.
-- Joining is free. One entry per pet per run. The customer can leave at any time.
-- When a seat frees up, the first pet in line gets an **offer** by SMS. The seat is held for them for **12 hours** (or until the enrollment deadline, if sooner). If they don't pay in time, the offer moves to the next pet in line.
-- Accepting an offer goes through the **normal checkout**: an order is created, discount codes and the wallet can be used, the partner is attributed, and the pet's enrollment is reserved once payment succeeds. The only difference is that the seat is already held for them. If a payment attempt fails, they can retry until the offer expires.
-- When the run starts, passes its deadline, or is cancelled, all remaining entries are closed and the customers are notified.
+#### 3.6 Level Tests
 
-#### 3.5 Course Prerequisites & Eligibility
+A dog can skip a course by passing its **test** instead. The courses doc names these:
 
-- Customers enroll their specific **Pets** into course runs (not the human customer).
-- A course can require passing one or more other courses as prerequisites. A prerequisite is met when the pet has **Passed** any run of the required course.
-- A course can also limit eligible pets by **species** and **age range**. Age is checked against the run's start date.
-- If a selected pet has not completed the prerequisite(s) or doesn't meet the eligibility rules, enrollment is disabled for that pet, and a custom explanation is displayed (written by the course creator, e.g. "لئو اول باید دوره «اطاعت‌پذیری مقدماتی» را بگذراند").
-- **Retakes are allowed.** If the selected pet has already passed this course, the customer sees a notice (e.g. "لئو این دوره را قبلاً با موفقیت گذرانده است") and must confirm before continuing.
+- **Companion 1, 2 and 3 tests:** passing one counts as having passed that level, so the dog can start the next level (and dogs trained elsewhere can join the path midway).
+- **CGC test:** the owner said it is paid.
+
+How it works:
+
+- A course offers a test when it has a **test price**. The test is bought like a course and becomes an enrollment of kind `Test`, with a single session.
+- The trainer records `Passed` or `Failed`. A passed test satisfies prerequisites on its course, exactly like passing the course.
+- Tests don't need an assessment first, since they are an assessment themselves.
+
+#### 3.7 Behavior Modification Requests
+
+Behavior modification is for any age and breed, and starts from a request instead of an assessment:
+
+1. The customer picks the dog, a **problem category**, writes a description, and uploads one or more **videos** of the behavior. Categories: پرخاشگری به انسان، پرخاشگری به حیوان، پرخاشگری به صاحب، گاز گرفتن بی‌مورد، گاز گرفتن بازیگوشانه، اضطراب جدایی، خطای دستشویی، مدفوع‌خواری، آشغال‌خواری، سایر.
+2. The trainer reviews it and either **proposes a plan** (number of sessions, price, a note) or **declines** with a reason (e.g. "first a free assessment, in person").
+3. The customer accepts the plan and pays, or lets it expire. Paying creates an enrollment of the behavior modification course with the plan's sessions and price, and the rest works like any course (3.4, 3.5).
+
+**Request status flow:** `Submitted → Proposed → Paid`, or `Declined`, `Withdrawn` (by the customer), `Expired` (the plan wasn't paid in time).
+
+#### 3.8 Prerequisites & Eligibility
+
+- Customers enroll their **dogs** (not themselves).
+- A course can require one or more other courses. A requirement is met when the dog has **passed** that course or **passed its test**. For the Companion path the courses doc says exactly this: "level 1, or passing the level 1 test".
+- A course can limit eligible dogs by **age** (minimum and maximum, in months). Age is checked at booking.
+- If the dog doesn't meet the rules, booking is disabled for it with an explanation written by the Admin (e.g. "لئو اول باید «سگ همدم ۱» یا تست آن را بگذراند").
 - Prerequisites can't form a cycle (course A requires B, B requires A).
+- The owner's advice that every dog should take CGC and BMC is shown as a recommendation, not enforced (see 5).
 
-#### 3.6 Cancellation & Refunds
+#### 3.9 Cancellation & Refunds
 
-The Admin defines a few **Refund Policy** presets, and each course uses one. Example presets:
+There's no start date to count days from: a private course starts when its first session is held. So refunds depend on the sessions.
 
-| Preset              | Full refund until    | Then, until start | After start |
-| ------------------- | -------------------- | ----------------- | ----------- |
-| منعطف (Flexible)    | 3 days before start  | 50%               | 0%          |
-| متوسط (Moderate)    | 7 days before start  | 50%               | 0%          |
-| سخت‌گیرانه (Strict) | 14 days before start | 0%                | 0%          |
+- **Before the first session is held,** a customer who cancels always gets a **full refund**.
+- **After that,** the course's **Refund Policy** decides what share of the **unheld** sessions comes back. The Admin defines a few presets, and each course uses one. Example presets:
 
-**Rules:**
+| Preset              | Refund of the unheld sessions' share |
+| ------------------- | ------------------------------------ |
+| منعطف (Flexible)    | 100%                                 |
+| متوسط (Moderate)    | 50%                                  |
+| سخت‌گیرانه (Strict) | 0%                                   |
 
-- A customer who cancels **before the run is Confirmed** always gets a full refund, whatever the policy.
-- After confirmation, the course's refund policy decides the amount, based on how many days are left until the start date.
-- If the **platform cancels** a run (minimum not reached, or Admin cancellation), every customer gets a full refund.
-- Refund percentages apply to what the customer **actually paid** for that pet's seat, after any discount.
-- The policy is **copied onto each order item** at purchase time, so later changes to the course don't affect existing reservations.
-- A refund is a **mirror** of the seat's purchase transaction (see 3.9): every wallet that received a share gives it back, and the money lands in the customer's **wallet** instantly. The customer can spend it on another course or withdraw it (see 3.10).
-- How a partial refund (e.g. 50%) is split between the wallets is an open business question (see 5).
+- **Tests** are refunded in full until a set time before the test session, and not after (see 5).
+- If a **trainer or the Admin** cancels an enrollment (e.g. the trainer can't take it), the customer gets back the whole share of the unheld sessions, whatever the policy.
+- Refunds apply to what the customer **actually paid** for that enrollment, after any discount.
+- The policy is **copied onto each order item** at purchase time, so later changes to the course don't affect existing enrollments.
+- A refund is a **mirror** of the enrollment's purchase transaction (see 3.12): every wallet that received a share gives it back, and the money lands in the customer's **wallet** instantly. The customer can spend it on another course or withdraw it (see 3.13). How a partial refund is split between the wallets is an open business question (see 5).
 - The Admin can issue a manual refund of any amount by creating a transaction, optionally starting from the mirror of the purchase.
 
-#### 3.7 Discount Codes
+#### 3.10 Discount Codes
 
 The Admin creates discount codes. Each code has:
 
@@ -161,25 +180,25 @@ The Admin creates discount codes. Each code has:
 - **Validity period:** start and end date.
 - **Usage limits:** total number of uses, and uses per customer.
 - **Minimum order amount** (optional).
-- **Scope:** all courses, or only selected courses.
+- **Scope:** all courses, or only selected courses. Tests and behavior plans count as their course.
 - **First order only** (optional): only for customers who have never had a paid order.
 
 **Rules:**
 
 - One code per order.
-- A fixed-amount discount is split across the order's items in proportion to their price, so each pet's seat has a known paid amount for refunds.
+- A fixed-amount discount is split across the order's items in proportion to their price, so each enrollment has a known paid amount for refunds.
 - A use is counted when the order is paid. If the order is fully refunded, the use is given back.
 - Which share absorbs a discount (trainer, admin or partner) is an open business question (see 5).
 
-#### 3.8 Revenue Split
+#### 3.11 Revenue Split
 
-- Every **purchased unit** (one pet's seat in one run) creates one **purchase transaction** when its order is paid (see 3.9). It sends the unit's paid amount from the customer's wallet to the wallets of the run's **trainer**, the **Admin**, and the customer's **partner** (if they have one).
+- Every **purchased unit** (one enrollment: a course, a test or a behavior plan for one dog) creates one **purchase transaction** when its order is paid (see 3.12). It sends the unit's paid amount from the customer's wallet to the wallets of the enrollment's **trainer**, the **Admin**, and the customer's **partner** (if they have one).
 - How the amount is divided is an open business question (see 5). The current draft is the course's **Trainer Share** percentage.
 - The transaction's lines are the permanent record of the split. Changing a course's share or the commission formula **never changes past transactions**. If the Admin wants the change to apply to past sales, they work out the difference themselves and create transactions for it (e.g. `Trainer −X, Partner +X`), or leave the past as it is.
-- If the Admin reassigns a run to another trainer, past purchases stay with the original trainer. The Admin moves money between them by hand if needed.
-- The trainer dashboard shows each run's earning (their lines in that run's purchase transactions, minus refunds) and their wallet history.
+- If the Admin reassigns an enrollment to another trainer (e.g. the assistant), the purchase stays with the original trainer. The Admin moves money between them by hand if needed.
+- The trainer dashboard shows each enrollment's earning (their lines in its purchase transaction, minus refunds) and their wallet history.
 
-**Example:** a course costs 100, the Admin takes 20%, and the partner gets 10 per sale. A referred customer buys one seat:
+**Example:** a course costs 100, the Admin takes 20%, and the partner gets 10 per sale. A referred customer buys it for one dog:
 
 | Wallet   | Purchase | Refund (mirror) |
 | -------- | -------: | --------------: |
@@ -191,7 +210,7 @@ The Admin creates discount codes. Each code has:
 
 If 10 referred customers buy, that's 10 purchase transactions like this. If one of them later cancels, only their transaction is mirrored.
 
-#### 3.9 Wallets & Transactions
+#### 3.12 Wallets & Transactions
 
 All money in the app is tracked as **transactions between wallets**. The app never moves real money by itself: card payments come in through the payment gateway, and the owner pays people from their own bank app and records it here.
 
@@ -202,7 +221,7 @@ All money in the app is tracked as **transactions between wallets**. The app nev
   - **Admin:** the owner's wallet. It receives the platform's share of each sale.
   - **Gateway:** where online card payments come from. Its balance is minus the total received online.
   - **Bank:** where payouts go. Its balance is the total paid out from the owner's bank account.
-  - **Withdrawal Hold:** money of withdrawal requests waiting for the Admin (see 3.10).
+  - **Withdrawal Hold:** money of withdrawal requests waiting for the Admin (see 3.13).
 - A wallet's **balance** is the sum of its lines.
 - **Any wallet can be negative.** Example: a trainer was paid out, then a customer cancelled and the trainer's share was mirrored back. The Admin has a list of negative balances, and the owner settles them with the user outside the app.
 
@@ -210,7 +229,7 @@ All money in the app is tracked as **transactions between wallets**. The app nev
 
 - A transaction is a list of **lines**. Each line is one wallet and a signed amount: negative lines are the **senders**, positive lines are the **receivers**. A transaction can have any number of senders and receivers.
 - **The lines of a transaction always add up to 0.** Money is never created or lost inside the app, only moved, so all wallets together always add up to 0.
-- A transaction's **sum** is the total of its positive lines (e.g. 100 in the example in 3.8).
+- A transaction's **sum** is the total of its positive lines (e.g. 100 in the example in 3.11).
 - Each wallet appears at most once in a transaction.
 - Transactions are created in only two ways: by the **system** (payment, purchase, automatic refund, withdrawal steps) or by the **Admin**.
 - **Transactions are never edited or deleted.** A mistake is fixed with a new transaction, usually its mirror.
@@ -219,7 +238,7 @@ All money in the app is tracked as **transactions between wallets**. The app nev
 
 - Any transaction can be **mirrored**. Mirroring opens a new transaction prefilled with every line's sign flipped. The Admin can change any field before saving.
 - The new transaction stores which transaction it mirrors, so the history reads "بازگشت تراکنش #۱۲۳". If a transaction was already mirrored, the Admin sees a warning but can still go ahead.
-- Automatic refunds (customer cancels, run cancelled) are exact mirrors created by the system.
+- Automatic refunds (customer cancels, trainer or Admin cancels) are mirrors created by the system: exact for a full refund, proportional for a partial one.
 
 **Admin transactions:**
 
@@ -236,27 +255,28 @@ All money in the app is tracked as **transactions between wallets**. The app nev
 - At checkout, a positive wallet balance is used first and the rest is paid through the gateway.
 - Nothing moves until payment succeeds. Then, in **one database transaction**:
   1. If part was paid online: `Gateway −g, Customer +g`, linked to the Payment.
-  2. For each purchased unit: its purchase transaction (see 3.8).
+  2. For each purchased unit: its purchase transaction (see 3.11), and its enrollment.
 - An order paid fully from the wallet skips step 1 and is paid immediately.
 - So the same balance can't be spent twice, a customer can have only **one pending order that uses wallet balance** at a time.
-- Gateway payments are also logged separately as **Payments**, which are immutable (see entity 15).
+- Gateway payments are also logged separately as **Payments**, which are immutable (see entity 16).
+- **Installments** (e.g. Snapp Pay) are not in phase one (see 5).
 
-#### 3.10 Withdrawal
+#### 3.13 Withdrawal
 
 1. Any user with a positive balance can request a withdrawal of an amount up to their balance, with a Sheba number and account holder name. The user is told it will be handled **within 72 hours**. Only one request can be pending at a time.
 2. The system immediately moves the amount to the hold: `User −X, Withdrawal Hold +X`. The user sees it as "در انتظار برداشت" and can't spend it.
 3. The Admin sees pending requests in a **withdrawal queue**, oldest first, with requests older than 72 hours highlighted.
 4. **Approve:** the Admin pays the amount from their bank app, enters the bank tracking code, and approves: `Withdrawal Hold −X, Bank +X`.
-5. **Decline** (with a note shown to the user), or the **user cancels** while it's pending: the hold transaction is mirrored and the money returns to the user's wallet. After declining, the owner can still pay the user in parts with Admin transactions (see 3.9).
+5. **Decline** (with a note shown to the user), or the **user cancels** while it's pending: the hold transaction is mirrored and the money returns to the user's wallet. After declining, the owner can still pay the user in parts with Admin transactions (see 3.12).
 
 The user is notified by SMS when their request is approved or declined.
 
-#### 3.11 Partner (Affiliate) System
+#### 3.14 Partner (Affiliate) System
 
 - Partners have a dedicated dashboard with a unique **Referral Link** and **QR Code**.
 - **Dashboard Metrics:** Partners can view referred customers and the total revenue generated from their purchases, filterable by date range. Each referred customer shows signup date, number of paid orders, and total spend. The dashboard also shows the commission earned (their lines in purchase transactions, minus refunds) and their wallet.
 - **Pre-registration Attribution:** Partners can enter a customer's phone number before the customer signs up. If that customer later registers without a referral link, they are automatically credited to that Partner.
-- **Commission:** the partner's commission is **their line in each purchase transaction** of a referred customer (see 3.8). How it's calculated is an open business question (see 5).
+- **Commission:** the partner's commission is **their line in each purchase transaction** of a referred customer (see 3.11). How it's calculated is an open business question (see 5).
 
 **Attribution rules:**
 
@@ -267,23 +287,27 @@ The user is notified by SMS when their request is approved or declined.
 - Each order stores the partner it was attributed to at purchase time, so dashboard numbers don't change retroactively.
 - Only **paid** orders count toward revenue. Refunded amounts are subtracted.
 
-#### 3.12 Reviews, Comments & Questions
+#### 3.15 Reviews, Comments & Questions
 
 **Reviews:**
 
-- After a run is **Completed**, the customer can review it once per enrollment.
+- After an enrollment is **Passed** or **Failed**, the customer can review it once.
 - A review has a **course rating** (1–5), a **trainer rating** (1–5), and an optional **comment**.
 - Ratings count toward the averages immediately. The comment follows the comment rules below.
-- Course and trainer averages and counts are shown on the course page and the trainer's profile.
+- Course and trainer averages and counts are shown on the course page and the trainer's page.
 
 **Comments and questions:**
 
-- Any logged-in customer can post a comment or question on a course page, even before enrolling. A review's comment appears in the same list, with its ratings.
+- Any logged-in customer can post a comment or question on a course page, even before booking. A review's comment appears in the same list, with its ratings.
 - Customer comments are shown **only after Admin approval**. The Admin can approve or reject a comment with a reason.
-- The course's owner trainer, any trainer who has taught a run of it, and the Admin can **reply**. Replies are shown immediately. Replies are one level deep.
+- Any trainer and the Admin can **reply**. Replies are shown immediately. Replies are one level deep.
 - The customer is notified when their comment gets a reply.
 - The Admin can **hide** any comment or reply at any time, with a reason. Hiding a comment also hides all its replies. A hidden comment can be restored.
-- Comments show the customer's first name, and the pet's name when there is one (e.g. "سارا، همراه لئو").
+- Comments show the customer's first name, and the dog's name when there is one (e.g. "سارا، همراه لئو").
+
+#### 3.16 Notifications
+
+SMS goes to the customer for: assessment booked, cancelled or reminder (the day before); enrollment paid; a session scheduled, changed, or reminder (the day before); a result recorded; a behavior plan proposed or declined; a refund; a comment reply; a withdrawal approved or declined. Trainers get an SMS for a new assessment booking, a new paid enrollment and a new behavior request.
 
 ---
 
@@ -295,7 +319,7 @@ These apply to every entity and are not repeated in each table:
 
 - **ID:** UUID primary key.
 - **Timestamps:** `Created At` and `Updated At` on every table, stored in UTC and shown in the Jalali calendar.
-- **Soft delete:** entities with history (User, Pet, Course, Course Run) use `Deleted At` instead of being removed.
+- **Soft delete:** entities with history (User, Pet, Course, Enrollment) use `Deleted At` instead of being removed.
 - **Money:** stored as integers in **Rial**. No floating-point amounts. The UI shows toman (Rial ÷ 10), shortened as "هزار" or "میلیون".
 - **Snapshots:** values that can change later (price, partner, refund policy) are copied at the moment they're used. The split of each sale is recorded by its purchase transaction.
 - **Append-only money:** Payments, Transactions and Transaction Lines are never edited or deleted. Corrections are new transactions.
@@ -309,16 +333,18 @@ erDiagram
   USER ||--o| WALLET : has
   USER ||--o{ PET : owns
   USER }o--o| USER : "referred by (partner)"
-  USER ||--o{ COURSE : "creates / owns"
   REFUND_POLICY ||--o{ COURSE : "applies to"
   COURSE ||--o{ COURSE_PREREQUISITE : requires
-  COURSE ||--o{ COURSE_RUN : "scheduled as"
-  USER ||--o{ COURSE_RUN : teaches
-  COURSE_RUN ||--o{ COURSE_SESSION : "split into"
-  COURSE_RUN ||--o{ ENROLLMENT : has
-  COURSE_RUN ||--o{ WAITLIST_ENTRY : has
+  USER ||--o{ ASSESSMENT_SLOT : "opens (trainer)"
+  ASSESSMENT_SLOT ||--o| ASSESSMENT : "booked as"
+  PET ||--o{ ASSESSMENT : "assessed in"
+  ASSESSMENT }o--o{ COURSE : recommends
+  PET ||--o{ BEHAVIOR_REQUEST : "subject of"
+  BEHAVIOR_REQUEST ||--o| ORDER_ITEM : "paid as"
+  COURSE ||--o{ ENROLLMENT : "booked as"
   PET ||--o{ ENROLLMENT : "enrolled in"
-  PET ||--o{ WAITLIST_ENTRY : waits
+  USER ||--o{ ENROLLMENT : teaches
+  ENROLLMENT ||--o{ SESSION : "split into"
   ENROLLMENT ||--o| REVIEW : "reviewed by"
   COURSE ||--o{ COMMENT : has
   COMMENT ||--o{ COMMENT : "replied by"
@@ -326,7 +352,7 @@ erDiagram
   USER ||--o{ ORDER : places
   DISCOUNT_CODE ||--o{ ORDER : "applied to"
   ORDER ||--|{ ORDER_ITEM : contains
-  ORDER_ITEM ||--|| ENROLLMENT : creates
+  ORDER_ITEM ||--o| ENROLLMENT : creates
   ORDER ||--o{ PAYMENT : "paid by"
   PAYMENT ||--o| TRANSACTION : "recorded as"
   ORDER_ITEM ||--o{ TRANSACTION : "purchase / refund"
@@ -357,16 +383,16 @@ erDiagram
 
 #### **2. Trainer Profile**
 
-| Field                        | Notes                                        |
-| ---------------------------- | -------------------------------------------- |
-| User ID                      | One-to-one with a `Trainer` user.            |
-| Bio                          | Shown on course and run pages.               |
-| Specialties                  | e.g. obedience, behaviour, agility.          |
-| Years of Experience          |                                              |
-| Certificates                 | Uploaded files or titles.                    |
-| City                         |                                              |
-| Verified At                  | Set by an Admin. Shows the "تأییدشده" badge. |
-| Rating Average, Rating Count | From reviews.                                |
+| Field                        | Notes                                                      |
+| ---------------------------- | ---------------------------------------------------------- |
+| User ID                      | One-to-one with a `Trainer` user.                          |
+| Is Head Trainer              | Exactly one. His profile is the one the public site shows. |
+| Bio                          | Shown on the trainer page and course pages.                |
+| Specialties                  | e.g. obedience, behavior, IGP.                             |
+| Years of Experience          |                                                            |
+| Certificates                 | Uploaded files or titles.                                  |
+| Photo                        | Portrait for the public site.                              |
+| Rating Average, Rating Count | From reviews.                                              |
 
 #### **3. Partner Profile**
 
@@ -379,159 +405,156 @@ erDiagram
 | City, Address |                                                          |
 | Is Active     | Inactive partners' links stop attributing new customers. |
 
-#### **4. Pet**
+#### **4. Pet (Dog)**
 
-| Field               | Notes                                                       |
-| ------------------- | ----------------------------------------------------------- |
-| Owner (Customer ID) |                                                             |
-| Name                |                                                             |
-| Species             | `Dog`, `Cat`, `Bird`, `Other`.                              |
-| Breed               | Free text or from a list.                                   |
-| Sex                 | `Male`, `Female`.                                           |
-| Birth Date          | Approximate is fine. Age is calculated from it, not stored. |
-| Weight (kg)         |                                                             |
-| Is Neutered         |                                                             |
-| Photo               |                                                             |
-| Microchip Number    | Optional.                                                   |
-| Vaccination Status  | `Up to date`, `Partial`, `Unknown`.                         |
-| Behaviour Notes     | Shown to the trainer (e.g. fear of other dogs).             |
-| Medical Notes       | Shown to the trainer.                                       |
+| Field               | Notes                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| Owner (Customer ID) |                                                                                      |
+| Name                |                                                                                      |
+| Breed               | Free text or from a list.                                                            |
+| Sex                 | `Male`, `Female`.                                                                    |
+| Birth Date          | Approximate is fine. Age is calculated from it, not stored.                          |
+| Weight (kg)         |                                                                                      |
+| Is Neutered         |                                                                                      |
+| Photo               |                                                                                      |
+| Microchip Number    | Optional.                                                                            |
+| Vaccination Status  | `Up to date`, `Partial`, `Unknown`.                                                  |
+| Behavior Notes      | Shown to the trainer (e.g. fear of other dogs).                                      |
+| Medical Notes       | Shown to the trainer.                                                                |
+| Known Since         | Set by a trainer or Admin for a dog they already know, so it has a record (see 3.3). |
 
-- **Relations:** Belongs to a **Customer**; Has many **Enrollments** and **Waitlist Entries**.
+- Phase one is dogs only, so there is no species field.
+- **Has a record** is calculated: a `Completed` assessment, an enrollment with at least one `Held` session, or `Known Since` is set.
+- **Relations:** Belongs to a **Customer**; has many **Assessments**, **Enrollments** and **Behavior Requests**.
 
-#### **5. Course (Curriculum)**
+#### **5. Course**
 
-| Field                        | Notes                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| Title, Slug                  | Slug is unique and used in the URL.                                                               |
-| Short Description            | Shown on course cards.                                                                            |
-| Description                  | Full rich-text content.                                                                           |
-| Cover Image                  |                                                                                                   |
-| Category                     | e.g. `Obedience`, `Behaviour`, `Agility`, `Puppy`.                                                |
-| Level                        | `Beginner`, `Intermediate`, `Advanced`.                                                           |
-| Created By (User ID)         | Admin or Trainer.                                                                                 |
-| Owner Trainer ID             | The trainer allowed to schedule runs. Empty for Admin-created courses. Changeable by Admin only.  |
-| Target Species               | One or more species.                                                                              |
-| Min / Max Pet Age (months)   | Optional eligibility range.                                                                       |
-| Session Count                | e.g. 12. Part of the curriculum, the same for every run.                                          |
-| Session Duration (minutes)   | e.g. 60.                                                                                          |
-| Estimated Duration (weeks)   | Shown as "۶ هفته".                                                                                |
-| Default Price                | Pre-filled into new runs. Each run sets its own price.                                            |
-| Refund Policy ID             | Picked by the trainer, changeable by the Admin.                                                   |
-| Trainer Share (%)            | Pre-filled from the platform default, changeable by the Admin.                                    |
-| Ineligibility Message        | Custom text shown when a pet fails prerequisites or eligibility.                                  |
-| Status                       | `Draft`, `Pending Approval`, `Awaiting Trainer Confirmation`, `Rejected`, `Approved`, `Archived`. |
-| Rejection Reason             | Set when an Admin rejects it.                                                                     |
-| Admin Changes                | List of fields the Admin changed during review, each with old and new value.                      |
-| Admin Note                   | Shown to the trainer with the changes.                                                            |
-| Approved By, Approved At     |                                                                                                   |
-| Archived At                  |                                                                                                   |
-| Rating Average, Rating Count | From reviews.                                                                                     |
+| Field                        | Notes                                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------------ |
+| Title, Slug                  | Slug is unique and used in the URL.                                                  |
+| Latin Name                   | The owner's name for it, e.g. `House manner`, `CGC`.                                 |
+| Family                       | `Basics`, `Obedience`, `Companion`, `Six-month`, `Working`, `Sport`, `Behavior`.     |
+| Short Description            | Shown on course cards.                                                               |
+| Description                  | Full rich-text content.                                                              |
+| Commands                     | The list of what is taught, as on the owner's course card.                           |
+| Cover Image                  |                                                                                      |
+| Min / Max Dog Age (months)   | Optional eligibility range.                                                          |
+| Session Count                | Approximate, e.g. 7. Copied to each new enrollment, where the trainer can change it. |
+| Session Duration (minutes)   | e.g. 60.                                                                             |
+| Place                        | `Home`, `Outside`, `Mostly Outside`.                                                 |
+| Price                        | Rial. For behavior modification, each plan sets its own price instead (see 3.7).     |
+| Boarding Price               | Optional. Added when the customer chooses boarding (see 5).                          |
+| Test Price                   | Optional. When set, the course offers a test (see 3.6).                              |
+| Booking Kind                 | `Standard`, or `Behavior Request` for behavior modification.                         |
+| Default Trainer ID           | Gets new enrollments.                                                                |
+| Refund Policy ID             |                                                                                      |
+| Trainer Share (%)            | Pre-filled from the platform default.                                                |
+| Ineligibility Message        | Custom text shown when a dog fails prerequisites or eligibility.                     |
+| Status                       | `Draft`, `Published`, `Archived`.                                                    |
+| Rating Average, Rating Count | From reviews.                                                                        |
 
-- **Relations:** Has many **Prerequisites**, **Course Runs** and **Comments**; uses one **Refund Policy**.
+- **Relations:** Has many **Prerequisites**, **Enrollments** and **Comments**; uses one **Refund Policy**.
 
 #### **6. Course Prerequisite**
 
-| Field              | Notes                                                         |
-| ------------------ | ------------------------------------------------------------- |
-| Course ID          | The course that has the requirement.                          |
-| Required Course ID | The course the pet must have **Passed** (in any of its runs). |
+| Field              | Notes                                                           |
+| ------------------ | --------------------------------------------------------------- |
+| Course ID          | The course that has the requirement.                            |
+| Required Course ID | The course the dog must have **passed**, or passed the test of. |
 
 - Unique on (Course ID, Required Course ID). A course can't require itself.
 
-#### **7. Course Run (Cohort)**
+#### **7. Assessment Slot**
 
-| Field                             | Notes                                                                       |
-| --------------------------------- | --------------------------------------------------------------------------- |
-| Course ID                         | Must be an `Approved` course.                                               |
-| Trainer ID                        | The trainer who teaches this run.                                           |
-| Label                             | Optional, shown next to the course title (e.g. "پاییز ۱۴۰۵ · تهران").       |
-| Format                            | `In Person`, `Online`, `Hybrid`.                                            |
-| City, Location / Address          | For in-person runs.                                                         |
-| Start Date                        |                                                                             |
-| Estimated End Date                |                                                                             |
-| Schedule Note                     | e.g. "شنبه و چهارشنبه، ساعت ۱۷".                                            |
-| Enrollment Deadline               | Defaults to the start date.                                                 |
-| Capacity                          | Max reservations.                                                           |
-| Min Reservations to Start         | Must be ≤ Capacity.                                                         |
-| Price                             | Rial.                                                                       |
-| Status                            | `Draft`, `Published`, `Confirmed`, `In Progress`, `Completed`, `Cancelled`. |
-| Published At                      |                                                                             |
-| Confirmed At                      | When the minimum was reached.                                               |
-| Cancelled At, Cancellation Reason |                                                                             |
+| Field              | Notes                       |
+| ------------------ | --------------------------- |
+| Trainer ID         |                             |
+| Starts At          |                             |
+| Duration (minutes) | Default 60.                 |
+| Status             | `Open`, `Booked`, `Closed`. |
 
-**Calculated values** (from active enrollments, not entered by hand):
+- Booking takes the slot all-or-nothing: only an `Open` slot can become `Booked`, so two customers can't book the same one.
+- Cancelling the assessment sets the slot back to `Open`, unless it has already started.
 
-- **Reserved Count:** enrollments with status `Reserved`, `In Progress`, `Passed` or `Failed`, plus unexpired `Pending Payment` holds and unexpired waitlist offers.
-- **Remaining to Start:** `max(0, Min Reservations to Start − Reserved Count)`.
-- **Remaining Seats:** `Capacity − Reserved Count`.
-- **Is Enrollment Open:** status is `Published` or `Confirmed`, the deadline hasn't passed, and seats remain.
-- **Is Waitlist Open:** status is `Published` or `Confirmed`, the deadline hasn't passed, and no seats remain.
+#### **8. Assessment**
 
-Reserved Count can be cached on the run row for fast listing, but it must be updated in the same transaction as the enrollment.
+| Field                             | Notes                                          |
+| --------------------------------- | ---------------------------------------------- |
+| Slot ID                           | Unique among non-cancelled assessments.        |
+| Pet ID, Customer ID, Trainer ID   |                                                |
+| Training Goal                     | `Home`, `Sport`, `Work`.                       |
+| Customer Note                     | What they want to change.                      |
+| Place                             | Address or meeting point.                      |
+| Status                            | `Booked`, `Completed`, `No Show`, `Cancelled`. |
+| Cancelled By, Cancellation Reason |                                                |
+| Trainer Notes                     | Shown to the customer.                         |
+| Recommended Courses               | Ordered list of course IDs.                    |
+| Completed At                      |                                                |
 
-- **Relations:** Belongs to a **Course** and a **Trainer**; Has many **Course Sessions**, **Enrollments** and **Waitlist Entries**.
+#### **9. Behavior Request**
 
-#### **8. Course Session**
+| Field                             | Notes                                                                |
+| --------------------------------- | -------------------------------------------------------------------- |
+| Pet ID, Customer ID               |                                                                      |
+| Problem Category                  | One of the categories in 3.7.                                        |
+| Description                       |                                                                      |
+| Videos                            | One or more uploaded videos (see 5).                                 |
+| Status                            | `Submitted`, `Proposed`, `Paid`, `Declined`, `Withdrawn`, `Expired`. |
+| Reviewed By (Trainer ID)          |                                                                      |
+| Proposed Sessions, Proposed Price | Set with the plan.                                                   |
+| Trainer Note                      | The plan's explanation, or the reason it was declined.               |
+| Proposal Expires At               | The plan can be paid until then.                                     |
+| Order Item ID                     | Set when the plan is paid.                                           |
 
-| Field              | Notes                            |
-| ------------------ | -------------------------------- |
-| Course Run ID      |                                  |
-| Order              | 1, 2, 3…                         |
-| Title              | e.g. "آشنایی با فرمان‌های پایه". |
-| Starts At          |                                  |
-| Duration (minutes) | Defaults to the course's value.  |
-| Location / Link    | Overrides the run's location.    |
+#### **10. Enrollment**
 
-- Optional in phase one. Without it, the run's Schedule Note is enough.
+| Field                             | Notes                                                                        |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| Course ID, Pet ID, Customer ID    |                                                                              |
+| Trainer ID                        | From the course's default trainer; the Admin can reassign.                   |
+| Kind                              | `Course`, `Test`.                                                            |
+| Order Item ID                     |                                                                              |
+| Behavior Request ID               | For behavior plans.                                                          |
+| Assessment ID                     | Optional: the assessment that recommended it.                                |
+| Training Goal                     | `Home`, `Sport`, `Work`.                                                     |
+| Boarding                          | Yes or no.                                                                   |
+| Address                           | For sessions at home or outside.                                             |
+| Preferred Times                   | Free text from the customer.                                                 |
+| Planned Sessions                  | Copied from the course or the plan; the trainer can change it. A test has 1. |
+| Is Retake                         | The dog had already passed this course when it was booked.                   |
+| Status                            | `Scheduling`, `Active`, `Passed`, `Failed`, `Cancelled`.                     |
+| Cancelled By, Cancellation Reason |                                                                              |
+| Completed Date                    | Set when the result is recorded.                                             |
+| Trainer Note                      | Final feedback for the customer.                                             |
 
-#### **9. Course Enrollment / Progress**
+- Only one `Scheduling` or `Active` enrollment per (Course ID, Pet ID).
+- **Held Sessions** is calculated from the sessions: `Held` plus `Missed`.
+- _(Note: This is the dog's record. A prerequisite is met by any `Passed` enrollment of the required course, of either kind.)_
 
-| Field                             | Notes                                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------------------------ |
-| Course Run ID, Pet ID             |                                                                                            |
-| Course ID                         | Copied from the run, so prerequisite checks don't need to go through runs.                 |
-| Customer ID                       | Copied from the pet's owner for easier queries.                                            |
-| Order Item ID                     |                                                                                            |
-| Is Retake                         | The pet had already passed this course when it enrolled.                                   |
-| Status                            | `Pending Payment`, `Reserved`, `Cancelled`, `Refunded`, `In Progress`, `Passed`, `Failed`. |
-| Hold Expires At                   | For `Pending Payment`. The seat is released after this.                                    |
-| Reserved At                       | When payment succeeded.                                                                    |
-| Cancelled At, Cancellation Reason |                                                                                            |
-| Attended Sessions                 | Count, updated by the trainer.                                                             |
-| Completed Date                    | Set when the result is recorded.                                                           |
-| Trainer Note                      | Feedback for the customer.                                                                 |
+#### **11. Session**
 
-- Only one active (not `Cancelled`/`Refunded`) enrollment per (Course ID, Pet ID) among runs that haven't finished.
-- _(Note: This tracks whether a specific pet meets the prerequisites for future courses. A prerequisite is met by any `Passed` enrollment with the required Course ID.)_
+| Field              | Notes                                          |
+| ------------------ | ---------------------------------------------- |
+| Enrollment ID      |                                                |
+| Trainer ID         | Defaults to the enrollment's trainer.          |
+| Starts At          |                                                |
+| Duration (minutes) | Defaults to the course's value.                |
+| Place              | Address, outside location, or boarding kennel. |
+| Status             | `Scheduled`, `Held`, `Missed`, `Cancelled`.    |
+| Trainer Note       | Shown to the customer.                         |
 
-#### **10. Waitlist Entry**
+#### **12. Refund Policy**
 
-| Field                 | Notes                                                             |
-| --------------------- | ----------------------------------------------------------------- |
-| Course Run ID, Pet ID | Unique together.                                                  |
-| Customer ID           |                                                                   |
-| Status                | `Waiting`, `Offered`, `Enrolled`, `Expired`, `Left`, `Closed`.    |
-| Offered At            |                                                                   |
-| Offer Expires At      | The held seat is released and offered to the next pet after this. |
-| Enrollment ID         | Set when the customer pays for the offered seat.                  |
-
-- Order in line is by `Created At`.
-
-#### **11. Refund Policy**
-
-| Field                    | Notes                                                    |
-| ------------------------ | -------------------------------------------------------- |
-| Name                     | e.g. "منعطف".                                            |
-| Customer Description     | Plain explanation shown on the run page and at checkout. |
-| Full Refund Until (days) | Days before start until which the refund is 100%.        |
-| Partial Refund (%)       | From then until the start date.                          |
-| After Start Refund (%)   | Usually 0.                                               |
-| Is Active                | Inactive presets can't be picked for new courses.        |
+| Field                      | Notes                                                              |
+| -------------------------- | ------------------------------------------------------------------ |
+| Name                       | e.g. "منعطف".                                                      |
+| Customer Description       | Plain explanation shown on the course page and at checkout.        |
+| Unheld Sessions Refund (%) | Share of the unheld sessions refunded after the first one is held. |
+| Is Active                  | Inactive presets can't be picked for courses.                      |
 
 - Managed by the Admin only.
 
-#### **12. Discount Code**
+#### **13. Discount Code**
 
 | Field               | Notes                                                |
 | ------------------- | ---------------------------------------------------- |
@@ -550,7 +573,7 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 | Used Count          | Paid orders that used it, minus fully refunded ones. |
 | Is Active           | The Admin can turn a code off at any time.           |
 
-#### **13. Order**
+#### **14. Order**
 
 | Field               | Notes                                                                       |
 | ------------------- | --------------------------------------------------------------------------- |
@@ -569,23 +592,25 @@ Reserved Count can be cached on the run row for fast listing, but it must be upd
 
 - _(Note: Used to calculate partner revenue: `Total Amount − Refunded Amount` of paid orders.)_
 
-#### **14. Order Item**
+#### **15. Order Item**
 
-| Field                  | Notes                                                    |
-| ---------------------- | -------------------------------------------------------- |
-| Order ID               |                                                          |
-| Course Run ID          |                                                          |
-| Pet ID                 |                                                          |
-| Unit Price             | Snapshot of the run's price.                             |
-| Discount Amount        | This item's part of the order discount.                  |
-| Paid Amount            | Unit Price − Discount Amount. Refunds are based on this. |
-| Refund Policy Snapshot | The policy's day and percentage values at purchase time. |
-| Refunded Amount        |                                                          |
+| Field                  | Notes                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------- |
+| Order ID               |                                                                                             |
+| Course ID, Pet ID      |                                                                                             |
+| Kind                   | `Course`, `Test`.                                                                           |
+| Behavior Request ID    | For behavior plans.                                                                         |
+| Booking Details        | Boarding, address, preferred times and training goal, copied into the enrollment when paid. |
+| Unit Price             | Snapshot of the course, boarding, test or plan price.                                       |
+| Discount Amount        | This item's part of the order discount.                                                     |
+| Paid Amount            | Unit Price − Discount Amount. Refunds are based on this.                                    |
+| Refund Policy Snapshot | The policy's values at purchase time.                                                       |
+| Refunded Amount        |                                                                                             |
 
-- One item per pet per run. An order can reserve several pets or several runs at once.
-- Each paid item has one `Purchase` transaction holding its split (see 3.8).
+- One item per enrollment. An order can book several dogs or several courses at once.
+- Each paid item has one `Purchase` transaction holding its split (see 3.11), and creates one enrollment.
 
-#### **15. Payment (Gateway)**
+#### **16. Payment (Gateway)**
 
 The log of money actually received through the payment gateway. It is kept separate from wallets and is **immutable**.
 
@@ -603,11 +628,11 @@ The log of money actually received through the payment gateway. It is kept separ
 | Paid At              |                                            |
 
 - A row is created as `Pending` and moves to `Succeeded` or `Failed` exactly once, from the verified gateway callback. After that it is never edited or deleted, by anyone. The admin panel has no edit or delete action for it.
-- A successful payment creates its `Gateway Payment` transaction (see 3.9).
+- A successful payment creates its `Gateway Payment` transaction (see 3.12).
 - An order can have several payment attempts. Only one can succeed.
-- Gateway callbacks must be verified server-side and handled idempotently (a repeated callback must not reserve or create transactions twice).
+- Gateway callbacks must be verified server-side and handled idempotently (a repeated callback must not create enrollments or transactions twice).
 
-#### **16. Wallet**
+#### **17. Wallet**
 
 | Field         | Notes                                                                           |
 | ------------- | ------------------------------------------------------------------------------- |
@@ -618,14 +643,14 @@ The log of money actually received through the payment gateway. It is kept separ
 - Exactly one of Owner User ID and System Kind is set.
 - Balance is updated in the same database transaction as the lines that change it.
 
-#### **17. Transaction**
+#### **18. Transaction**
 
 | Field                 | Notes                                                                                                            |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Number                | Human-readable, unique (e.g. `TX-140507-0042`).                                                                  |
 | Type                  | `Gateway Payment`, `Purchase`, `Refund`, `Withdrawal Hold`, `Withdrawal Payout`, `Withdrawal Release`, `Manual`. |
 | Sum                   | Total of the positive lines. Cached for listing.                                                                 |
-| Description           | Shown to every user who has a line in it (e.g. "خرید دوره اطاعت‌پذیری مقدماتی برای لئو").                        |
+| Description           | Shown to every user who has a line in it (e.g. "خرید دوره سگ همدم ۱ برای لئو").                                  |
 | Created By            | Empty for system transactions. The Admin, for `Manual` ones.                                                     |
 | Mirror Of             | Optional. The transaction this one mirrors.                                                                      |
 | Order Item ID         | For `Purchase` and `Refund`.                                                                                     |
@@ -636,7 +661,7 @@ The log of money actually received through the payment gateway. It is kept separ
 - At most one `Purchase` per order item.
 - `Refund` and `Withdrawal Release` are always mirrors. A `Manual` transaction can be one too.
 
-#### **18. Transaction Line**
+#### **19. Transaction Line**
 
 | Field          | Notes                                                    |
 | -------------- | -------------------------------------------------------- |
@@ -648,7 +673,7 @@ The log of money actually received through the payment gateway. It is kept separ
 - Unique on (Transaction ID, Wallet ID).
 - A user's wallet history is their own lines, joined with each transaction's number, type, description and date.
 
-#### **19. Withdrawal Request**
+#### **20. Withdrawal Request**
 
 | Field                    | Notes                                                     |
 | ------------------------ | --------------------------------------------------------- |
@@ -664,7 +689,7 @@ The log of money actually received through the payment gateway. It is kept separ
 - At most one `Pending` request per user.
 - Creating it creates the `Withdrawal Hold` transaction. Approving creates the `Withdrawal Payout`. Declining or cancelling creates the `Withdrawal Release` (the mirror of the hold).
 
-#### **20. Partner Lead (Pre-registration)**
+#### **21. Partner Lead (Pre-registration)**
 
 | Field                 | Notes                                                                 |
 | --------------------- | --------------------------------------------------------------------- |
@@ -678,19 +703,19 @@ The log of money actually received through the payment gateway. It is kept separ
 
 - _(Note: Used to match a new customer's phone number upon registration if they didn't use a referral link.)_
 
-#### **21. Review**
+#### **22. Review**
 
-| Field                    | Notes                              |
-| ------------------------ | ---------------------------------- |
-| Enrollment ID            | Unique. One review per enrollment. |
-| Customer ID, Pet ID      |                                    |
-| Course ID, Course Run ID |                                    |
-| Trainer ID               |                                    |
-| Course Rating            | 1–5.                               |
-| Trainer Rating           | 1–5.                               |
-| Comment ID               | Optional. The review's comment.    |
+| Field               | Notes                              |
+| ------------------- | ---------------------------------- |
+| Enrollment ID       | Unique. One review per enrollment. |
+| Customer ID, Pet ID |                                    |
+| Course ID           |                                    |
+| Trainer ID          |                                    |
+| Course Rating       | 1–5.                               |
+| Trainer Rating      | 1–5.                               |
+| Comment ID          | Optional. The review's comment.    |
 
-#### **22. Comment**
+#### **23. Comment**
 
 | Field                      | Notes                                                                     |
 | -------------------------- | ------------------------------------------------------------------------- |
@@ -705,7 +730,7 @@ The log of money actually received through the payment gateway. It is kept separ
 
 - A hidden comment hides all its replies, without changing the replies' own status, so restoring the comment brings them back.
 
-#### **23. OTP Code**
+#### **24. OTP Code**
 
 | Field        | Notes                                   |
 | ------------ | --------------------------------------- |
@@ -716,15 +741,17 @@ The log of money actually received through the payment gateway. It is kept separ
 | Consumed At  | A code can be used only once.           |
 | IP Address   | For rate limiting.                      |
 
-#### **24. Platform Setting**
+#### **25. Platform Setting**
 
 Global values the Admin can change without a code release. Defaults:
 
 | Setting                    | Default               |
 | -------------------------- | --------------------- |
 | Default trainer share      | To be decided (see 5) |
-| Seat hold during payment   | 15 minutes            |
-| Waitlist offer duration    | 12 hours              |
+| Assessment slot duration   | 60 minutes            |
+| Late session cancellation  | To be decided (see 5) |
+| Test refund cut-off        | To be decided (see 5) |
+| Behavior plan validity     | To be decided (see 5) |
 | OTP validity / resend wait | 2 min / 60 sec        |
 | OTP max attempts           | 5                     |
 | Minimum withdrawal amount  | To be decided         |
@@ -734,10 +761,27 @@ Global values the Admin can change without a code release. Defaults:
 
 ### 5. Open Business Logic
 
-The money **system** above (wallets, transactions, mirrors, withdrawals) is settled. These **business rules** decide the numbers that go into it, and are still open:
+The money **system** above (wallets, transactions, mirrors, withdrawals) is settled. These **business rules** are still open. [business-logic.md](business-logic.md) gives each one a working default so the app can be built now.
 
-1. **Who pays the partner?** In the example in 3.8, the Admin keeps a fixed 20% and the partner's 10 comes out of the trainer's part. Is the trainer always the remainder (e.g. 80 when the customer has no partner)?
+**The split of each sale:**
+
+1. **Who pays the partner?** In the example in 3.11, the Admin keeps a fixed 20% and the partner's 10 comes out of the trainer's part. Is the trainer always the remainder (e.g. 80 when the customer has no partner)?
 2. **Where is the split configured?** Is the Admin's (or trainer's) percentage set per course, as the current Trainer Share field is, or globally?
 3. **How is partner commission calculated?** A fixed amount or a percentage per sale? On every purchase of a referred customer, or only the first? Is there an attribution window? The earlier design with monthly tiers and monthly statements (commit `1f62a76`) doesn't fit a per-sale split, so its Commission Plan, Commission Tier and Commission Statement entities were removed until this is decided.
 4. **Who absorbs discounts?** If a 100 course is sold for 80, which shares shrink? Can the Admin's line be negative on a heavily discounted sale?
 5. **How are partial refunds split?** When the refund policy gives back e.g. 50%, is the refund a proportional mirror (every line × 50%)?
+
+**The private-training model:**
+
+6. **Is the head trainer the Admin?** If the owner is the head trainer, he needs both roles, but each phone number has one role in phase one.
+7. **Is everything private?** The courses doc says the Admin can make a course private or group. The owner has since said training is like hiring a private tutor, so this spec has no group courses.
+8. **Who confirms the trainer has time?** Customers pay when they book, and the trainer arranges the sessions afterwards. Should the trainer accept a booking before the customer pays instead?
+9. **Refunds without a start date:** is "full refund until the first session, then the policy's share of the unheld sessions" right? How late can a customer cancel a single session before it counts as held?
+10. **Tests:** what does each test cost, who runs it, how late can it be cancelled, and can a failed test be retaken?
+11. **Behavior modification:** does the trainer propose sessions and price per request (as this spec assumes), or does it have a fixed length and price? How long is a plan valid?
+12. **Boarding:** how is it priced: a fixed add-on per course, per day, or quoted per booking?
+13. **Paid assessments:** which paid assessment types exist, and how do they differ from the free one?
+14. **CGC and BMC "for every dog":** recommendations, or enforced prerequisites? Can a dog older than 7 months still take BMC?
+15. **Catalog gaps** from the courses doc: Advanced's prerequisite, BMC's age range (card: 6–7 months; conversation: 6–10), session length, and every detail of working and sport dogs.
+16. **Installments:** pay in installments (e.g. Snapp Pay), if possible.
+17. **Videos:** size and length limits for behavior request videos.

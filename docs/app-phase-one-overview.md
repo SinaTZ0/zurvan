@@ -1,46 +1,52 @@
 # Phase One — Overview
 
-A short version of [app-phase-one.md](app-phase-one.md). Read this first. Go to the full spec for exact rules, edge cases and entity fields.
+A short version of [app-phase-one.md](app-phase-one.md). Read this first. Go to the full spec for exact rules, edge cases and entity fields. The course catalog itself is in [zurvan-courses.md](zurvan-courses.md).
 
 ## What it is
 
-An online shop for **pet training courses**. Customers reserve a seat for their **pet** in a scheduled class, and pay online or from their in-app wallet. Trainers run the courses and get a share of each sale. Partners (pet shops, clinics, groomers) bring in customers through referral links and get a commission.
+The website of **K9 Training** (آموزش K9), one dog trainer's private practice. It sells **him**: customers meet him on the site, book a **free assessment** for their dog, then buy **private courses** he teaches one dog at a time, at their home or outside, with boarding as an option. They pay online or from their in-app wallet. Partners (pet shops, clinics, groomers) bring in customers through referral links and get a commission.
+
+There are no group classes, seats or waitlists, and phase one is for dogs only.
 
 The site is in Persian. Everyone signs in with their **phone number and an SMS code**.
 
 ## Roles
 
-| Role         | Does                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------- |
-| **Admin**    | The owner. Manages everything, approves courses, handles money and withdrawals.          |
-| **Trainer**  | Creates courses (needs Admin approval), schedules classes, records each pet's result.    |
-| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.         |
-| **Customer** | Adds pets, reserves and pays, follows each pet's progress, writes reviews and questions. |
+| Role         | Does                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------ |
+| **Admin**    | The owner. Manages everything: the catalog, bookings, money and withdrawals.                                 |
+| **Trainer**  | The head trainer and his assistant. Run assessments, schedule and record sessions, review behavior requests. |
+| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.                             |
+| **Customer** | Adds dogs, books assessments and courses, follows each dog's record, writes reviews and questions.           |
 
 Only customers can sign up themselves. The Admin creates trainers and partners.
 
-## Courses and runs
-
-- A **course** is the curriculum: what's taught, for which pets, and what they must have passed first. The Admin approves it once.
-- A **run** is one scheduled class of a course: trainer, dates, place, price and number of seats. A course can have many runs, and trainers can relaunch one in a click without new approval.
-- Pets **enroll in a run** but **pass a course**. Passing any run of a course counts as its prerequisite.
-
-A run only happens if enough pets reserve it:
+## How a dog starts
 
 ```text
-Draft → Published → Confirmed (minimum reached) → In Progress → Completed
-            ↓              ↓
-        Cancelled (minimum not reached by the deadline, or Admin cancels)
+New dog:        free assessment → trainer recommends courses → book a course
+Dog with a record:                                             book a course directly
+Behavior problem:  request with a video → trainer proposes a plan → pay
 ```
 
-## Reserving a seat
+- **Assessment:** the trainer opens time slots; the customer picks one, says what they want to change and where to meet. A slot can be booked only once. Afterwards the trainer writes notes and recommends courses.
+- **A record** means the dog has a completed assessment, has had a session, or the trainer marked it as already known.
+- **Tests:** some courses can be skipped by passing their test (the Companion levels, and CGC). A passed test counts like the passed course.
+- **Behavior modification:** for any age and breed. The customer picks the problem, describes it and uploads a video; the trainer proposes sessions and a price, or asks for an assessment first.
 
-1. The customer picks a run and a pet. The pet must meet the course's prerequisites, species and age rules.
-2. The seat is held for **15 minutes** while they pay. A run can **never be overbooked**, even when many people book at once.
-3. When a run is full, customers can join a **waitlist**. If a seat frees up, the next pet in line gets a 12-hour offer by SMS.
-4. Discount codes can be applied at checkout.
+## Booking a course
 
-**Cancelling:** each course has a refund policy (e.g. full refund until 7 days before the start, 50% after that). Cancelling before the run is confirmed, or when the platform cancels the run, always gives a full refund. Refunds go to the customer's wallet.
+1. The customer picks the course and the dog, boarding or not, the address and the times that suit them, and pays. The dog must meet the course's age and prerequisite rules.
+2. The trainer schedules the sessions one by one (place and time), marks each one held or missed, and writes notes.
+3. At the end the trainer records **passed** or **failed** with a note. Passing a course meets the prerequisites that need it.
+
+```text
+Scheduling → Active (first session scheduled) → Passed / Failed
+     ↓           ↓
+         Cancelled
+```
+
+**Cancelling:** before the first session, always a full refund. After that, the course's refund policy decides how much of the unheld sessions comes back. If the trainer or Admin cancels, the customer gets back everything for the unheld sessions. Refunds go to the customer's wallet.
 
 ## Money
 
@@ -50,7 +56,7 @@ All money in the app is tracked as **transactions between wallets**. The app nev
 
 **Transactions.** A transaction is a list of lines, each with a wallet and an amount. Negative lines send, positive lines receive, and **the lines always add up to 0**. Transactions are never edited or deleted.
 
-**A sale** creates one transaction per purchased seat. Its **refund** is the mirror, with every sign flipped:
+**A sale** creates one transaction per enrollment (one course, test or behavior plan for one dog). Its **refund** is the mirror, with every sign flipped:
 
 | Wallet   | Sale | Refund |
 | -------- | ---: | -----: |
@@ -73,15 +79,15 @@ All money in the app is tracked as **transactions between wallets**. The app nev
 
 ## Reviews and questions
 
-- After a run is completed, the customer can rate the course and the trainer (1–5) and leave a comment.
+- After a course ends, the customer can rate the course and the trainer (1–5) and leave a comment.
 - Anyone logged in can ask a question on a course page. Customer comments appear after Admin approval. Trainers and the Admin can reply.
 
 ## Still open
 
-These business rules decide the numbers in each sale transaction and aren't settled yet (see section 5 of the full spec):
+Section 5 of the full spec lists the open business rules, and [business-logic.md](business-logic.md) gives each a working default. The biggest ones:
 
-1. Is the partner paid from the trainer's part or the Admin's part?
-2. Is the split set per course or globally?
-3. How is partner commission calculated: fixed or percentage, every purchase or only the first?
-4. Which shares shrink when a discount is used?
-5. How is a partial refund (e.g. 50%) split between the wallets?
+1. How each sale is split between the trainer, the Admin and the partner, and who absorbs discounts.
+2. Refunds without a start date: is "full until the first session, then by policy" right?
+3. Whether the trainer should accept a booking before the customer pays.
+4. Prices for tests, boarding and behavior plans.
+5. Missing catalog details: working and sport dogs, Advanced's prerequisite, BMC's age range.

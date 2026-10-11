@@ -1,9 +1,10 @@
 import { cn } from "cn";
-import { PawPrintIcon, UndoDotIcon } from "lucide-react";
+import { GiftIcon, HouseIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { HeroDoodles, HeroReviewDoodle, HeroSideDoodles } from "~/routes/home/components/hero-doodles";
 import { ReviewCard } from "~/routes/home/components/review-card";
 import { REVIEWS } from "~/routes/home/reviews";
@@ -175,24 +176,26 @@ export function HomeHero() {
                 buttons end level with its last, so the two columns read as one block. */}
             <div className="flex flex-col gap-6 lg:justify-between lg:py-3">
               <p className="max-w-[28rem] text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.9] font-medium text-balance text-foreground/85">
-                آموزش خوب با زمان و حوصله جواب می‌دهد. کلاس‌های کوچک و حضوری در تهران و کرج، از توله‌سگی تا سگ بالغ.
+                آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون. از ادب خانگی و فرمان‌پذیری تا سگ‌های کار
+                و ورزشی.
               </p>
-              {/* One main action and one quieter way in, so the choice is never a coin toss. */}
+              {/* One main action and one quieter way in, so the choice is never a coin toss. Every new dog starts
+                  with the free assessment, so that is the main action. */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
                 <Link
-                  to="/courses"
+                  to="/assessment"
                   className={buttonVariants({
                     size: "lg",
                     className: "px-9 text-lg font-extrabold shadow-md max-sm:flex-1",
                   })}
                 >
-                  کلاس‌ها را ببین
+                  ارزیابی رایگان رزرو کن
                 </Link>
                 <Link
-                  to="/#upcoming-runs"
+                  to="/#courses"
                   className={buttonVariants({ size: "lg", variant: "ghost", className: "text-primary" })}
                 >
-                  کلاس‌های پیش رو
+                  دوره‌ها را ببین
                 </Link>
               </div>
             </div>
@@ -206,15 +209,15 @@ export function HomeHero() {
             <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm font-medium sm:flex">
               <li className="flex items-center gap-2.5">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
-                  <PawPrintIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
+                  <HouseIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
-                حداکثر ۱۰ سگ در هر کلاس
+                جلسه‌ی خصوصی، فقط تو و سگت
               </li>
               <li className="flex items-center gap-2.5">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
-                  <UndoDotIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
+                  <GiftIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
-                کلاس شروع نشد؟ کل مبلغ برمی‌گردد
+                اولین ارزیابی رایگان است
               </li>
             </ul>
 
@@ -293,7 +296,7 @@ export function HomeHero() {
           className="pointer-events-none absolute inset-0 z-20 site-container lg:flex lg:items-center lg:justify-end"
         >
           <h2 id="reviews-title" className="sr-only">
-            نظر صاحبان حیوان‌ها
+            نظر صاحبان سگ‌ها
           </h2>
           {/* Phones run the cards top to bottom in a zig-zag. The spacer below the list keeps it at the top while it
               fits; once it outgrows the screen the spacer is gone and `justify-end` lets it overflow upward instead,

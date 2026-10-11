@@ -19,7 +19,7 @@ export function SiteSearch({ className, id = "site-search" }: { className?: stri
           <InputGroupAddon>
             <SearchIcon strokeWidth={1.7} aria-hidden />
           </InputGroupAddon>
-          <InputGroupInput id={id} name="q" type="search" placeholder="جست‌وجوی دوره یا مربی" />
+          <InputGroupInput id={id} name="q" type="search" placeholder="جست‌وجوی دوره" />
         </InputGroup>
       </Form>
     </search>

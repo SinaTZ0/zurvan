@@ -7,7 +7,7 @@
 // All amounts are integer Rial.
 
 /*===== Platform Setting Defaults =====*/
-// Initial values for Platform Settings (entity 24). The Admin can change them at runtime.
+// Initial values for Platform Settings (entity 25). The Admin can change them at runtime.
 
 // TODO(business-logic): B2 — per-course trainer share, pre-filled from this default.
 export const DEFAULT_TRAINER_SHARE_PERCENT = 70;
@@ -26,7 +26,7 @@ export const DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR = 20;
 
 /*===== Purchase Split =====*/
 
-/** The signed lines of one seat's purchase transaction, by wallet role. They add up to 0. */
+/** The signed lines of one enrollment's purchase transaction, by wallet role. They add up to 0. */
 export type PurchaseSplit = {
   customer: number;
   trainer: number;
@@ -43,7 +43,7 @@ export function maxTrainerSharePercent(partnerCommissionPercent: number): number
 }
 
 /**
- * Splits one seat's paid amount between the trainer, the partner and the Admin.
+ * Splits one enrollment's paid amount between the trainer, the partner and the Admin.
  *
  * Percentages apply to the paid amount (after discount). Trainer and partner lines round down and
  * the Admin takes the remainder, so the lines always add up to 0. A zero line means the wallet is
@@ -83,8 +83,11 @@ export function splitPurchase({
 
 /*===== Refunds =====*/
 
-/** Refund for one seat under a policy percentage, rounded down to whole Rial. */
-// TODO(business-logic): B6
+/**
+ * Refund for one enrollment, rounded down to whole Rial. `refundPercent` is the effective share to give back,
+ * which B11 works out from the held sessions and the refund policy.
+ */
+// TODO(business-logic): B6, B11
 export function calculateRefundAmount({
   paidAmount,
   refundPercent,
