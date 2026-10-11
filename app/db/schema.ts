@@ -124,6 +124,32 @@ export const smsOutbox = pgTable(
   (table) => [index("sms_outbox_created_at_idx").on(table.createdAt)],
 );
 
+/*===== Media =====*/
+// One row per uploaded image (docs/media.md). The row's id is the `mediaId` in the storage key, and it is inserted only
+// after every variant is in the bucket. Entities point to it with a nullable foreign key (`dog.photo_media_id`, ...).
+
+export const media = pgTable(
+  "media",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    // Plain text instead of a pg enum. Allowed values and their variants live in `app/orpc/media/constants.ts`.
+    kind: text("kind").notNull(),
+    uploadedBy: text("uploaded_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Of the original after rotation, for the `full` variant's aspect ratio. */
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    /** Data URI of a 16 px wide WebP, shown blurred while the image loads. */
+    placeholder: text("placeholder").notNull(),
+    /** Set when an entity starts using it. Null means an orphan, which the cleanup job deletes after 24 hours. */
+    attachedAt: timestamp("attached_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // Serves the cleanup job's "unattached and older than 24 hours" scan.
+  (table) => [index("media_attached_at_created_at_idx").on(table.attachedAt, table.createdAt)],
+);
+
 /*===== Pets =====*/
 
 export const pet = pgTable(
@@ -148,8 +174,6 @@ export const pet = pgTable(
 // A customer's dog (docs/app-phase-one.md, entity 4). Replaces `pet` once the Dogs List UI is built; until then both
 // exist. Assessments and enrollments will point at a dog, which is why its owner can't be deleted out from under it
 // (`restrict`) and why a removed dog is only marked deleted.
-//
-// There is no photo column yet: the media pipeline (docs/media.md) isn't built, and it will add `photo_media_id`.
 
 export const dog = pgTable(
   "dog",
@@ -179,6 +203,8 @@ export const dog = pgTable(
     medicalNotes: text("medical_notes"),
     /** Set by a trainer or the Admin for a dog they already know, which gives it a record. Customers can't set it. */
     knownSince: date("known_since", { mode: "string" }),
+    /** The dog's photo. Cleared if the media row is ever deleted, so a dog never points at a missing image. */
+    photoMediaId: uuid("photo_media_id").references(() => media.id, { onDelete: "set null" }),
     /** Soft delete: the dog's history (assessments, enrollments) stays. */
     deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),

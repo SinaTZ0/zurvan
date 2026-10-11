@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { dog, user } from "~/db/schema";
+import { dog, media, user } from "~/db/schema";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { createDog, getDog, listDogs, removeDog, updateDog } from "~/orpc/dog/service";
 
@@ -26,6 +26,8 @@ const dogInput = {
 };
 
 let dogId: string;
+// A dog photo that ownerB uploaded: only the row exists, which is all the ownership check reads.
+const strangerMediaId = randomUUID();
 
 beforeAll(async () => {
   await db.insert(user).values(
@@ -38,6 +40,15 @@ beforeAll(async () => {
     })),
   );
 
+  await db.insert(media).values({
+    id: strangerMediaId,
+    kind: "dog",
+    uploadedBy: ownerB.id,
+    width: 800,
+    height: 600,
+    placeholder: "data:image/webp;base64,",
+  });
+
   const created = await createDog({ db, ownerId: ownerA.id, input: dogInput });
   if (created.kind !== "success") throw new Error("Could not create the test dog.");
   dogId = created.dog.id;
@@ -47,6 +58,7 @@ afterAll(async () => {
   const ids = [ownerA.id, ownerB.id];
   // Dogs first: they reference the users.
   await db.delete(dog).where(inArray(dog.ownerId, ids));
+  await db.delete(media).where(eq(media.id, strangerMediaId));
   await db.delete(user).where(inArray(user.id, ids));
   await db.$client.end();
 });
@@ -69,6 +81,25 @@ describe("dog ownership", () => {
 
     // Nothing changed for the real owner.
     expect(await getDog({ db, ownerId: ownerA.id, id: dogId })).toMatchObject({ dog: { name: "رکس" } });
+  });
+
+  it("refuses a photo another user uploaded, for create and update", async () => {
+    const photoError = { kind: "invalid", fields: { photoMediaId: "عکس را دوباره بارگذاری کن." } };
+
+    const created = await createDog({ db, ownerId: ownerA.id, input: { ...dogInput, photoMediaId: strangerMediaId } });
+    const updated = await updateDog({
+      db,
+      ownerId: ownerA.id,
+      id: dogId,
+      input: { ...dogInput, photoMediaId: strangerMediaId },
+    });
+
+    expect(created).toMatchObject(photoError);
+    expect(updated).toMatchObject(photoError);
+    // The stranger's upload was not claimed, and the dog did not get it.
+    const [row] = await db.select().from(media).where(eq(media.id, strangerMediaId));
+    expect(row?.attachedAt).toBeNull();
+    expect(await getDog({ db, ownerId: ownerA.id, id: dogId })).toMatchObject({ dog: { photo: null } });
   });
 
   it("treats a malformed id as not found", async () => {

@@ -19,6 +19,16 @@ const envSchema = z.object({
   // The owner's showcase: no SMS provider (the sign-in code is always 12345 and messages go to the `sms_outbox`
   // table). With it off, auth refuses to start until a real SMS provider is wired (docs/foundations-plan.md).
   SHOWCASE_MODE: z.stringbool().default(false),
+  // S3-compatible storage for uploaded images (SeaweedFS; docs/media.md). The app writes through this endpoint.
+  S3_ENDPOINT: z.url(),
+  S3_BUCKET_NAME: z.string().min(1),
+  // Any value works while S3 auth is off (local SeaweedFS); production uses the app's identity.
+  S3_ACCESS_KEY: z.string().min(1),
+  S3_SECRET_KEY: z.string().min(1),
+  S3_REGION: z.string().min(1).default("us-east-1"),
+  // Where browsers read images: a full URL (dev, straight from SeaweedFS) or a path behind nginx (`/media`). No
+  // trailing slash.
+  MEDIA_PUBLIC_URL: z.union([z.url(), z.string().regex(/^\/\S*$/, "Must be a URL or a path starting with /")]),
 });
 
 /*===== Validation =====*/

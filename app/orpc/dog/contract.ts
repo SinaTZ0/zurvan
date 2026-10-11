@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { DOG_SEXES, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
+import { mediaSchema } from "~/orpc/media/contract";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
 
 /*===== Schemas =====*/
@@ -25,6 +26,8 @@ export const dogSchema = z.object({
   knownSince: z.string().nullable(),
   /** Whether the dog has a record, so it can book its next course directly instead of starting with an assessment. */
   hasRecord: z.boolean(),
+  /** Null until the owner adds one. */
+  photo: mediaSchema.nullable(),
   createdAt: z.date(),
 });
 
@@ -44,6 +47,8 @@ const dogInputShape = {
   vaccinationStatus: z.string().optional(),
   behaviorNotes: z.string().nullish(),
   medicalNotes: z.string().nullish(),
+  /** The ID of an image uploaded with `media.upload` (kind `dog`). Left out keeps the photo; `null` removes it. */
+  photoMediaId: z.string().nullish(),
 };
 
 const createDogInputSchema = z.strictObject(dogInputShape);

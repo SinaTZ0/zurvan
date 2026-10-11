@@ -17,3 +17,6 @@
 # Storybook
 /storybook-static/
 *storybook.log
+
+# Local SeaweedFS (media storage) Docker config, kept per developer
+/SeaweedFS/

@@ -7,6 +7,7 @@ import {
   updateDogProcedure,
 } from "~/orpc/dog/procedure";
 import { implementer } from "~/orpc/implementer.server";
+import { uploadMediaProcedure } from "~/orpc/media/procedure";
 import { createPetProcedure, listPetsProcedure } from "~/orpc/pet/procedure";
 
 /*===== API Router =====*/
@@ -22,6 +23,9 @@ export const router = implementer.router({
     create: createDogProcedure,
     update: updateDogProcedure,
     remove: removeDogProcedure,
+  },
+  media: {
+    upload: uploadMediaProcedure,
   },
   pet: {
     list: listPetsProcedure,

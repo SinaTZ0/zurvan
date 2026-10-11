@@ -2,10 +2,11 @@ import { DOG_SEXES, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { DogSex, VaccinationStatus } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
 import type { DogRecord } from "~/orpc/dog/repository";
+import { toPublicMedia } from "~/orpc/media/mapper";
 
 /*===== Public Dog =====*/
 /**
- * Converts a stored dog into its public shape: drops `ownerId`, `deletedAt` and `updatedAt`, narrows `sex` and
+ * Converts a stored dog into its public shape: drops `ownerId`, `photoMediaId`, `deletedAt` and `updatedAt`, adds the photo, narrows `sex` and
  * `vaccinationStatus`, which are plain text in the database, and calculates `hasRecord`.
  *
  * @throws When `sex` isn't a known value. There is no honest fallback for it, and the service only ever writes valid
@@ -32,6 +33,7 @@ export function toPublicDog(record: DogRecord): Dog {
     // Spec: a Completed assessment, an enrollment with a Held session, or `knownSince` set. Only `knownSince` exists
     // so far; assessments and enrollments join this rule when they are built.
     hasRecord: record.knownSince !== null,
+    photo: record.photo ? toPublicMedia(record.photo) : null,
     createdAt: record.createdAt,
   };
 }

@@ -107,6 +107,8 @@ export const dogInputSchema = z.object({
     max: DOG_NOTES_MAX_LENGTH,
     message: `یادداشت پزشکی حداکثر ${formatNumberFa(DOG_NOTES_MAX_LENGTH)} حرف است.`,
   }),
+  // Passed through: whether the media exists, is a dog photo and is the owner's is I/O, so the service decides.
+  photoMediaId: z.string().nullish(),
 });
 
 export type DogInput = z.output<typeof dogInputSchema>;

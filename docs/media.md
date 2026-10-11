@@ -1,6 +1,6 @@
 # Media (Images)
 
-How the app stores, processes and serves images: avatars, pet photos, course covers and trainer certificates.
+How the app stores, processes and serves images: avatars, dog photos, course covers and trainer certificates.
 
 ## Overview
 
@@ -25,8 +25,8 @@ Each kind of image has a fixed set of variants. Variants are generated once at u
 | ------------- | ------- | ------ | ----------- | --------------------------------------------- |
 | `avatar`      | `thumb` | cover  | 96 × 96     | Comment lists, tables, nav menu               |
 |               | `md`    | cover  | 320 × 320   | Profile pages, trainer profile                |
-| `pet`         | `thumb` | cover  | 160 × 160   | Pet pickers, pet rows, checkout               |
-|               | `card`  | cover  | 800 × 600   | Pet cards and the pet detail header (4:3)     |
+| `dog`         | `thumb` | cover  | 160 × 160   | Dog pickers, dog rows, checkout               |
+|               | `card`  | cover  | 800 × 600   | Dog cards and the dog detail header (4:3)     |
 |               | `full`  | inside | 1600 × 1600 | Opening the photo                             |
 | `course`      | `thumb` | cover  | 480 × 270   | Order lists, admin tables, small cards (16:9) |
 |               | `card`  | cover  | 960 × 540   | Catalogue cards (16:9)                        |
@@ -66,14 +66,14 @@ One `media` table records every upload:
 | Field       | Notes                                                           |
 | ----------- | --------------------------------------------------------------- |
 | ID          | The `mediaId` in the storage key.                               |
-| Kind        | `avatar`, `pet`, `course`, `certificate`. Decides the variants. |
+| Kind        | `avatar`, `dog`, `course`, `certificate`. Decides the variants. |
 | Uploaded By | User ID.                                                        |
 | Width       | Of the original after rotation, for the `full` aspect ratio.    |
 | Height      |                                                                 |
 | Placeholder | Data URI of the tiny blurred preview.                           |
 | Attached At | Set when an entity starts using it. Empty means it's an orphan. |
 
-Entities point to it with a nullable foreign key: `user.avatarMediaId`, `pet.photoMediaId`, `course.coverMediaId`, and a `trainer_certificate` table with `mediaId` and a title.
+Entities point to it with a nullable foreign key: `user.avatarMediaId`, `dog.photoMediaId`, `course.coverMediaId`, and a `trainer_certificate` table with `mediaId` and a title.
 
 ## Upload Flow
 
@@ -111,9 +111,10 @@ location /media/ { return 404; }
 | Variable           | Development                     | Docker Compose            |
 | ------------------ | ------------------------------- | ------------------------- |
 | `S3_ENDPOINT`      | `http://localhost:8333`         | `http://seaweedfs:8333`   |
-| `S3_BUCKET`        | `zurvann`                       | `zurvann`                 |
+| `S3_BUCKET_NAME`   | `zurvann`                       | `zurvann`                 |
 | `S3_ACCESS_KEY`    | any (S3 auth is off locally)    | the app's identity key    |
 | `S3_SECRET_KEY`    | any                             | the app's identity secret |
+| `S3_REGION`        | `us-east-1` (the default)       | `us-east-1`               |
 | `MEDIA_PUBLIC_URL` | `http://localhost:8333/zurvann` | `/media`                  |
 
 The current local SeaweedFS (`SeaweedFS/docker-compose.yml`) runs S3 **without authentication**, which is fine on a development PC. In the project's Compose file, SeaweedFS should:
