@@ -8,3 +8,12 @@ export const authErrors = {
     data: errorDataSchema,
   },
 };
+
+/*===== Role Errors =====*/
+// Declared, together with `authErrors`, on every contract whose procedure uses `requireRoleMiddleware`.
+export const roleErrors = {
+  FORBIDDEN: {
+    message: "Your account can't do this.",
+    data: errorDataSchema,
+  },
+};

@@ -7,6 +7,9 @@ export default [
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
   ]),
 
+  /*===== Account (customers, trainers, partners) =====*/
+  route("account", "routes/layout_account/layout-account.tsx", [index("routes/account_home/account-home.tsx")]),
+
   route("auth", "routes/auth/auth.tsx"),
   route("pets", "routes/pets/pets.tsx"),
 

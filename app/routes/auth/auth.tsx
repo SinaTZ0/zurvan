@@ -9,8 +9,8 @@ import { TrustNote } from "~/routes/auth/components/trust-note";
 
 import type { Route } from "./+types/auth";
 
-/** Where people land after signing in when nothing asked for a page. The Dogs List will replace the old pets page. */
-const DEFAULT_REDIRECT = "/pets";
+/** Where people land after signing in when nothing asked for a page. The account area sends each role on from there. */
+const DEFAULT_REDIRECT = "/account";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [

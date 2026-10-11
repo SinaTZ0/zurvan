@@ -141,3 +141,10 @@ export const auth = betterAuth({
 });
 
 export type AuthSession = typeof auth.$Infer.Session;
+
+/*===== Session Revocation =====*/
+/** Signs a user out everywhere by deleting all their sessions, e.g. once they are blocked. */
+export async function revokeUserSessions(userId: string): Promise<void> {
+  const context = await auth.$context;
+  await context.internalAdapter.deleteUserSessions(userId);
+}
