@@ -71,7 +71,9 @@ export function DogForm({
     saveDog.mutate(toDogInput(values), {
       onSuccess: async (saved) => {
         toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
-        await navigate(redirectTo ?? `/account/dogs/${saved.id}`, { viewTransition: true });
+        // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
+        const destination = redirectTo ? (dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id })) : null;
+        await navigate(destination ?? `/account/dogs/${saved.id}`, { viewTransition: true });
       },
       onError: (error) => applyServerError({ error, setError }),
     });
@@ -234,6 +236,14 @@ export function DogForm({
       </form>
     </div>
   );
+}
+
+/*===== Redirect =====*/
+/** `redirectTo` with `dog=<id>` added to its query; any query it already has is kept. `redirectTo` is a same-site path. */
+function withDogParam({ redirectTo, dogId }: { redirectTo: string; dogId: string }) {
+  const url = new URL(redirectTo, "http://localhost");
+  url.searchParams.set("dog", dogId);
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 /*===== Server Errors =====*/
