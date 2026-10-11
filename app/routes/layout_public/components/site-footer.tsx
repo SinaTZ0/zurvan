@@ -8,18 +8,14 @@ const FOOTER_GROUPS = [
   {
     title: "دوره‌ها",
     links: [
-      { label: "دوره‌های سگ", to: "/courses?species=dog" },
-      { label: "دوره‌های گربه", to: "/courses?species=cat" },
-      { label: "دوره‌های آنلاین", to: "/courses?format=online" },
       { label: "همه‌ی دوره‌ها", to: "/courses" },
+      { label: "کلاس‌های پیش رو", to: "/#upcoming-runs" },
+      { label: "دوره‌های آنلاین", to: "/courses?format=online" },
     ],
   },
   {
     title: "همراه زروان",
-    links: [
-      { label: "مربی زروان شو", to: "/join/trainer" },
-      { label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" },
-    ],
+    links: [{ label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" }],
   },
   {
     title: "راهنما",
@@ -34,7 +30,7 @@ const FOOTER_GROUPS = [
 /*===== Site Footer =====*/
 export function SiteFooter() {
   return (
-    <footer className="surface-inverse mt-section-md bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
+    <footer className="mt-section-md surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
@@ -42,7 +38,7 @@ export function SiteFooter() {
             <BrandLogo className="text-[1.875rem]" />
           </Link>
           <p className="text-sm text-pretty text-muted-foreground">
-            دوره‌های آموزشی سگ و گربه با مربیان تأییدشده، در کلاس‌های حضوری و آنلاین.
+            دوره‌های آموزشی سگ با مربیان تأییدشده، در کلاس‌های حضوری و آنلاین.
           </p>
           <a
             href="tel:02191000000"
@@ -79,7 +75,8 @@ export function SiteFooter() {
           from. A name with a story is easier to remember than one that is only repeated. */}
       <div className="site-container -mt-6 flex flex-col gap-6 overflow-hidden lg:-mt-16 lg:flex-row-reverse lg:items-end lg:justify-between">
         <p className="max-w-xs text-sm leading-[1.9] text-pretty text-muted-foreground lg:mb-10">
-          زروان در اسطوره‌های ایرانی خدای زمان است. آموزش حیوان هم با زمان و حوصله جواب می‌دهد، و اسم ما از همین‌جا آمده.
+          زروان در اسطوره‌های ایرانی خدای زمان است. آموزش حیوان هم با زمان و حوصله جواب می‌دهد، و اسم ما از همین‌جا
+          آمده.
         </p>
         <p
           aria-hidden

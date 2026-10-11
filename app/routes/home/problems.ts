@@ -1,23 +1,8 @@
 import type { Seats } from "~/routes/home/components/seat-roster";
 
-/*===== Pets =====*/
-// What the finder's first blank offers. Age matters as much as species: puppies and kittens get their own courses.
-export type PetKind = "dog" | "puppy" | "cat" | "kitten";
-
-/** The first blank of the sentence, written to follow "برای" ("برای سگم"). */
-export const PET_KINDS: { value: PetKind; label: string }[] = [
-  { value: "dog", label: "سگم" },
-  { value: "puppy", label: "توله‌سگم" },
-  { value: "cat", label: "گربه‌ام" },
-  { value: "kitten", label: "بچه‌گربه‌ام" },
-];
-
 /*===== Problems =====*/
 export type Problem = {
   id: string;
-  species: "dog" | "cat";
-  /** The pets the problem is offered for in the finder. */
-  pets: PetKind[];
   /** Fills the sentence's second blank, after "که": "که قلاده می‌کشد". */
   phrase: string;
   /** Stands alone in the index, in the owner's own words. */
@@ -81,35 +66,12 @@ export const COURSE_DETAILS: Record<string, CourseDetail> = {
     duration: "۴ جلسه، هر جلسه ۶۰ دقیقه",
     price: 1_600_000,
   },
-  "calm-cat": {
-    summary: "دلیل رفتار گربه را پیدا می‌کنیم، بعد محیط خانه را طوری تغییر می‌دهیم که چنگ زدن و بی‌قراری شبانه کم شود.",
-    outcomes: ["خراشیدن در جای درست", "خواب شبانه‌ی آرام‌تر", "بازی و کاوش بدون استرس"],
-    duration: "۳ جلسه‌ی آنلاین، هر جلسه ۷۵ دقیقه",
-    price: 1_200_000,
-  },
-  "litter-and-habits": {
-    summary:
-      "اگر گربه از ظرف خاک استفاده نمی‌کند، معمولاً دلیلی دارد. با هم جنس خاک، جا و عادت‌ها را بررسی و اصلاح می‌کنیم.",
-    outcomes: ["پیدا کردن دلیل مشکل", "چیدن درست ظرف خاک", "برنامه‌ی تمیزکاری و پیگیری"],
-    duration: "۲ جلسه‌ی آنلاین، هر جلسه ۶۰ دقیقه",
-    price: 900_000,
-  },
-  "kitten-at-home": {
-    summary:
-      "هفته‌های اول خانه‌ی جدید را راحت‌تر می‌کنیم: آماده‌سازی خانه، غذا و بازی، و آشنایی آرام با اعضای خانواده.",
-    outcomes: ["آماده کردن خانه برای بچه‌گربه", "برنامه‌ی غذا و خواب", "بازی بی‌خطر بدون گاز و چنگ"],
-    duration: "۳ جلسه‌ی آنلاین، هر جلسه ۶۰ دقیقه",
-    price: 1_000_000,
-  },
 };
 
 // Sample data: once courses exist, each course lists the problems it solves and this comes from the database.
 export const PROBLEMS: Problem[] = [
-  /*------ Dogs ------*/
   {
     id: "leash",
-    species: "dog",
-    pets: ["dog"],
     phrase: "قلاده می‌کشد",
     title: "قلاده را می‌کشد",
     course: {
@@ -127,8 +89,6 @@ export const PROBLEMS: Problem[] = [
   },
   {
     id: "recall",
-    species: "dog",
-    pets: ["dog", "puppy"],
     phrase: "صدایش می‌زنم و نمی‌آید",
     title: "صدایش می‌زنم و نمی‌آید",
     course: {
@@ -146,8 +106,6 @@ export const PROBLEMS: Problem[] = [
   },
   {
     id: "alone",
-    species: "dog",
-    pets: ["dog"],
     phrase: "تنها که می‌ماند پارس می‌کند",
     title: "تنها که می‌ماند، پارس می‌کند",
     course: {
@@ -165,8 +123,6 @@ export const PROBLEMS: Problem[] = [
   },
   {
     id: "listen",
-    species: "dog",
-    pets: ["dog", "puppy"],
     phrase: "حرف گوش نمی‌دهد",
     title: "حرف گوش نمی‌دهد",
     course: {
@@ -184,8 +140,6 @@ export const PROBLEMS: Problem[] = [
   },
   {
     id: "jumping",
-    species: "dog",
-    pets: ["dog"],
     phrase: "روی مهمان‌ها می‌پرد",
     title: "روی مهمان‌ها می‌پرد",
     course: {
@@ -203,8 +157,6 @@ export const PROBLEMS: Problem[] = [
   },
   {
     id: "puppy-bite",
-    species: "dog",
-    pets: ["puppy"],
     phrase: "همه‌چیز را گاز می‌گیرد",
     title: "توله‌ام همه‌چیز را گاز می‌گیرد",
     course: {
@@ -220,87 +172,4 @@ export const PROBLEMS: Problem[] = [
       seats: { capacity: 8, reserved: 8, minToStart: 5 },
     },
   },
-
-  /*------ Cats ------*/
-  {
-    id: "scratch",
-    species: "cat",
-    pets: ["cat", "kitten"],
-    phrase: "مبل را چنگ می‌زند",
-    title: "مبل را چنگ می‌زند",
-    course: {
-      slug: "calm-cat",
-      title: "رفتار و آرامش گربه در خانه",
-      trainer: "الهام شریفی",
-      photo: "/demo/course-cat-behaviour.jpg",
-      photoAlt: "گربه‌ای با چشم‌های سبز در نور کم",
-    },
-    nextRun: {
-      startsAt: new Date("2026-10-20T19:00:00+03:30"),
-      place: "آنلاین",
-      seats: { capacity: 20, reserved: 9, minToStart: 6 },
-    },
-  },
-  {
-    id: "litter",
-    species: "cat",
-    pets: ["cat", "kitten"],
-    phrase: "از ظرف خاک استفاده نمی‌کند",
-    title: "از ظرف خاک استفاده نمی‌کند",
-    course: {
-      slug: "litter-and-habits",
-      title: "ظرف خاک و عادت‌های خانه",
-      trainer: "الهام شریفی",
-      photo: "/demo/species-cat.jpg",
-      photoAlt: "یک گربه‌ی نارنجی کنار پنجره",
-    },
-    nextRun: {
-      startsAt: new Date("2026-10-26T19:00:00+03:30"),
-      place: "آنلاین",
-      seats: { capacity: 20, reserved: 3, minToStart: 6 },
-    },
-  },
-  {
-    id: "night",
-    species: "cat",
-    pets: ["cat"],
-    phrase: "شب‌ها بی‌قرار است",
-    title: "شب‌ها بی‌قرار است و سروصدا می‌کند",
-    course: {
-      slug: "calm-cat",
-      title: "رفتار و آرامش گربه در خانه",
-      trainer: "الهام شریفی",
-      photo: "/demo/course-cat-behaviour.jpg",
-      photoAlt: "گربه‌ای با چشم‌های سبز در نور کم",
-    },
-    nextRun: {
-      startsAt: new Date("2026-10-20T19:00:00+03:30"),
-      place: "آنلاین",
-      seats: { capacity: 20, reserved: 9, minToStart: 6 },
-    },
-  },
-  {
-    id: "kitten-new",
-    species: "cat",
-    pets: ["kitten"],
-    phrase: "تازه به خانه آمده",
-    title: "بچه‌گربه‌ام تازه به خانه آمده",
-    course: {
-      slug: "kitten-at-home",
-      title: "بچه‌گربه در خانه‌ی جدید",
-      trainer: "الهام شریفی",
-      photo: "/demo/course-kitten.jpg",
-      photoAlt: "یک بچه‌گربه‌ی کنجکاو روی مبل",
-    },
-    nextRun: {
-      startsAt: new Date("2026-10-21T19:00:00+03:30"),
-      place: "آنلاین",
-      seats: { capacity: 16, reserved: 5, minToStart: 6 },
-    },
-  },
 ];
-
-/** The problems offered for a pet in the finder, in index order. */
-export function problemsFor(pet: PetKind): Problem[] {
-  return PROBLEMS.filter((problem) => problem.pets.includes(pet));
-}

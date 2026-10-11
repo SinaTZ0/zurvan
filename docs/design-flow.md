@@ -12,7 +12,7 @@ Follow these steps in order for every new page.
    - `motion`: which elements respond to hover and focus, and the one orchestrated moment if the page has one. Use the `ease-silk` easings in `app.css`.
 4. **Components**: Design the page first, then pick components. Shadcn is a toolkit, not a limit. Use it for standard controls like buttons, inputs, dialogs and menus. Build custom pieces wherever the design calls for something more distinctive. Never let the component list flatten the design.
 5. **Styling**:
-   - **Base styles** (`components/ui`): change these only for app-wide `mood`, `tone` and `theme`. A change here affects every page. If a component you use doesn't match the tokens in `app.css` yet, update its base style first, in its own commit, then build the page. Add or update its story, and check it in light, dark and side by side (`npm run storybook`).
+   - **Base styles** (`components/ui`): change these only for app-wide `mood`, `tone` and `theme`. A change here affects every page. If a component you use doesn't match the tokens in `app.css` yet, update its base style first, in its own commit, then build the page. Add or update its story, and check it in Storybook (`npm run storybook`). The app has one theme, onyx and gold, so there is no light version to check.
    - **Sizes**: check the page at 390, 768, 1024 and 1440px, and with reduced motion turned on.
    - **Variants**: if a page-specific look will be reused, make it a variant. One-off creative styling is fine; keep it local to the page.
    - **RTL**: the app is right-to-left. Use logical utilities (`ms`/`me`, `ps`/`pe`, `start`/`end`, `text-start`), never `left`/`right`.

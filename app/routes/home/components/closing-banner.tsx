@@ -2,13 +2,13 @@ import { Link } from "~/components/link";
 
 /*===== Closing Banner =====*/
 /**
- * The last ask on the page: a park photo with a deep firuzeh fade from the text side, so the headline stays readable
+ * The last ask on the page: a park photo with a deep bronze fade from the text side, so the headline stays readable
  * while the dogs stay visible. Reassurance on cancelling sits right under the headline, where hesitation happens.
  */
 export function ClosingBanner() {
   return (
     <section aria-labelledby="closing-title" className="site-container pt-section-md">
-      <div className="surface-inverse relative flex min-h-96 items-center overflow-hidden rounded-4xl">
+      <div className="relative flex min-h-96 items-center overflow-hidden rounded-4xl surface-inverse">
         <img
           src="/photo/cta-park.jpg"
           alt="زنی روی چمن پارک کنار دو سگ نشسته است"

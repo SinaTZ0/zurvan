@@ -45,17 +45,6 @@ const UPCOMING_RUNS: UpcomingRun[] = [
     seats: { capacity: 10, reserved: 6, minToStart: 8 },
   },
   {
-    id: "r3",
-    courseSlug: "calm-cat",
-    course: "رفتار و آرامش گربه در خانه",
-    trainer: "الهام شریفی",
-    startsAt: new Date("2026-10-20T19:00:00+03:30"),
-    time: "ساعت ۱۹",
-    place: null,
-    price: 1_200_000,
-    seats: { capacity: 20, reserved: 9, minToStart: 6 },
-  },
-  {
     id: "r4",
     courseSlug: "puppy-foundations",
     course: "آموزش توله‌سگ، ۲ تا ۶ ماهگی",

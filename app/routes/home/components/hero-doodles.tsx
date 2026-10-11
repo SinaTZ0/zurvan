@@ -43,23 +43,6 @@ const FIGURES = {
       <path d="M15.5 -1 Q22 0 23 -4" />
     </>
   ),
-  catSit: (
-    <>
-      <circle cx="6" cy="-21" r="4.2" />
-      <path d="M3 -24 L2.5 -29.5 L6 -25.4 M7.5 -25.4 L10.5 -29 L10.2 -23.5" />
-      <path d="M3 0 C-1 -8 2 -16 6.5 -17 C12 -16 15 -8 11 0 Z" />
-      <path d="M11 -1 Q20 0 18 -8 Q17 -12 20 -14" />
-    </>
-  ),
-  catWalk: (
-    <>
-      <circle cx="4" cy="-17" r="3.6" />
-      <path d="M1.5 -19.5 L1 -24 L4 -20.8 M5.5 -20.8 L8 -24 L7.8 -19.5" />
-      <path d="M7.5 -14 C13 -15.5 21 -15.5 26 -14 C27.5 -12 27 -9 24.5 -8.5 C19 -8 13 -8 9.5 -8.5 C7 -9.5 6.5 -12 7.5 -14 Z" />
-      <path d="M10 -8.5 L8 0 M12.5 -8.5 L13.5 0 M22.5 -8.5 L21 0 M25 -9 L27.5 0" />
-      <path d="M26 -14 Q31 -14 31 -20 Q31 -25 35 -26" />
-    </>
-  ),
   person: (
     <>
       <circle cx="6" cy="-32" r="3.6" />
@@ -84,18 +67,6 @@ const FIGURES = {
       <path d="M-3 0 L3 0 M27 0 L33 0" />
       <path d="M-1 -14 L31 -14" />
       <path d="M8 -16 L10 -12 M16 -16 L18 -12 M24 -16 L26 -12" />
-    </>
-  ),
-  // The cat tree stands in for the reference art's lattice tower.
-  catTree: (
-    <>
-      <path d="M2 0 L5 -44 M24 0 L21 -44" />
-      <path d="M3 -14 L23 -14 M4 -28 L22 -28 M-1 -44 L27 -44" />
-      <path d="M2 0 L23 -14 M24 0 L3 -14 M3.5 -14 L22 -28 M22.5 -14 L4 -28 M4 -28 L21 -44 M22 -28 L5 -44" />
-      <path d="M4 -44 C4 -50 14 -51 19 -46 C20 -45 19.5 -44 18 -44" />
-      <circle cx="4.5" cy="-48.5" r="3.4" />
-      <path d="M2.2 -51 L1.6 -55 L4.6 -51.9 M5.8 -51.9 L8.4 -54.5 L7.8 -50.6" />
-      <path d="M19 -44 Q22.5 -40 20 -35" />
     </>
   ),
   ball: (
@@ -170,12 +141,13 @@ const FRIEZE: Scene = {
         { figure: "dogSit", x: 152, scale: 0.75 },
         { figure: "dogWalk", x: 186 },
         { figure: "person", x: 226 },
-        { figure: "catSit", x: 258 },
-        { figure: "catTree", x: 292 },
+        { figure: "dogSit", x: 258, scale: 0.8 },
+        { figure: "hurdle", x: 292 },
+        { figure: "dogLeap", x: 294, lift: 10 },
         { figure: "dogRun", x: 334, scale: 0.85 },
         { figure: "dogWalk", x: 380, scale: 1.1 },
         { figure: "person", x: 424 },
-        { figure: "catWalk", x: 452, scale: 0.9 },
+        { figure: "dogSit", x: 454, scale: 0.8 },
         { figure: "person", x: 488 },
         { figure: "bone", x: 516 },
         { figure: "dogWalk", x: 540, scale: 0.7 },
@@ -185,7 +157,7 @@ const FRIEZE: Scene = {
         { figure: "dogRun", x: 690 },
         { figure: "dogSit", x: 740, scale: 0.8 },
         { figure: "person", x: 764 },
-        { figure: "catSit", x: 796, scale: 0.85 },
+        { figure: "dogSit", x: 796, scale: 0.85 },
         { figure: "dogWalk", x: 826, scale: 0.85 },
         { figure: "person", x: 862 },
         { figure: "paws", x: 894 },
@@ -227,7 +199,7 @@ const LEFT_SCENE: Scene = {
   ],
 };
 
-/** Beside the right edge of the page: a game of fetch, and a cat and dog sitting. */
+/** Beside the right edge of the page: a game of fetch, and a trainer with a dog sitting. */
 const RIGHT_SCENE: Scene = {
   width: 200,
   height: 720,
@@ -240,7 +212,7 @@ const RIGHT_SCENE: Scene = {
     },
     {
       placements: row(560, [
-        { figure: "catSit", x: 16 },
+        { figure: "trainer", x: 12 },
         { figure: "dogSit", x: 46 },
       ]),
     },
@@ -254,7 +226,7 @@ const REVIEW_SCENES: Scene[] = [
   {
     width: 44,
     height: 34,
-    groups: [{ placements: [...row(33, [{ figure: "catSit", x: 6 }]), { figure: "bird", x: 36, y: 8 }] }],
+    groups: [{ placements: [...row(33, [{ figure: "dogSit", x: 6 }]), { figure: "bird", x: 36, y: 8 }] }],
   },
   {
     width: 50,
@@ -281,7 +253,7 @@ const REVIEW_SCENES: Scene[] = [
       },
     ],
   },
-  { width: 42, height: 28, groups: [{ placements: row(27, [{ figure: "catWalk", x: 4 }]) }] },
+  { width: 42, height: 28, groups: [{ placements: row(27, [{ figure: "dogWalk", x: 4 }]) }] },
   { width: 44, height: 36, groups: [{ placements: row(35, [{ figure: "dogLeap", x: 6 }]) }] },
 ];
 
@@ -304,6 +276,14 @@ export function HeroDoodles({ className }: { className?: string }) {
       ))}
     </div>
   );
+}
+
+/**
+ * The same procession standing still, for a band that wants the hero's hand-drawn figures without the march. Its front
+ * is at the start of the line; size it by height and let the parent clip and fade the far end.
+ */
+export function DoodleFrieze({ className }: { className?: string }) {
+  return <DoodleScene scene={FRIEZE} still className={className} />;
 }
 
 /**
@@ -344,13 +324,13 @@ export function HeroReviewDoodle({ index, className }: { index: number; classNam
 
 /*===== Doodle Scene =====*/
 /**
- * Draws a scene in saffron with wobbly, hand-drawn strokes. Figures draw in one after another, `stagger` ms apart
+ * Draws a scene in gold with wobbly, hand-drawn strokes. Figures draw in one after another, `stagger` ms apart
  * from `delay`; each group's strings follow once its figures are partly down. With `rise`, figures instead come up from
  * below the scene one after another, and strings fade in once the group's last figure has arrived. With `float`, each
  * group bobs and tilts gently, out of step with the others. Reduced motion turns all of it off.
  *
- * Sized by CSS; `--scene-width` holds the viewBox width, to size it in pixels per unit. `onPhoto` adds the night-time glow
- * in both themes, over a soft dark shadow that lifts the lines off bright parts of the photo.
+ * Sized by CSS; `--scene-width` holds the viewBox width, to size it in pixels per unit. `onPhoto` adds the glow
+ * over a soft dark shadow that lifts the lines off bright parts of the photo.
  */
 function DoodleScene({
   scene,
@@ -359,6 +339,7 @@ function DoodleScene({
   rise = false,
   float = false,
   onPhoto = false,
+  still = false,
   className,
 }: {
   scene: Scene;
@@ -367,6 +348,8 @@ function DoodleScene({
   rise?: boolean;
   float?: boolean;
   onPhoto?: boolean;
+  /** Draws the scene already finished, with no draw-in. */
+  still?: boolean;
   className?: string;
 }) {
   // Each scene has its own filter, sized to it, so the ids must not collide when a scene appears twice.
@@ -386,7 +369,7 @@ function DoodleScene({
       strokeLinecap="round"
       strokeLinejoin="round"
       className={cn(
-        "max-w-none overflow-visible text-saffron dark:drop-shadow-[0_0_4px_color-mix(in_oklab,var(--saffron)_55%,transparent)]",
+        "max-w-none overflow-visible text-saffron drop-shadow-[0_0_4px_color-mix(in_oklab,var(--saffron)_55%,transparent)]",
         onPhoto && "drop-shadow-[0_0_4px_color-mix(in_oklab,var(--saffron)_55%,transparent),0_1px_3px_rgb(0_0_0/0.55)]",
         className,
       )}
@@ -433,7 +416,9 @@ function DoodleScene({
                   style={
                     rise ? undefined : { animationDelay: `${delay + (firstIndex[groupIndex] + index) * stagger}ms` }
                   }
-                  className={cn(!rise && "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none")}
+                  className={cn(
+                    !rise && !still && "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none",
+                  )}
                 >
                   {withPathLength(FIGURES[figure])}
                 </g>
@@ -467,9 +452,11 @@ function DoodleScene({
                     : `${delay + (firstIndex[groupIndex] + group.placements.length * 0.4) * stagger + index * 200}ms`,
                 }}
                 className={
-                  rise
-                    ? "animate-doodle-fade motion-reduce:animate-none"
-                    : "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none"
+                  still
+                    ? undefined
+                    : rise
+                      ? "animate-doodle-fade motion-reduce:animate-none"
+                      : "animate-doodle-draw [stroke-dasharray:1] motion-reduce:animate-none"
                 }
               />
             ))}

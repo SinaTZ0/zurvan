@@ -9,6 +9,8 @@ import {
   StethoscopeIcon,
 } from "lucide-react";
 
+import { BrandLogo } from "~/components/brand-logo";
+
 const SERVICES = [
   { label: "دامپزشکی", Icon: StethoscopeIcon },
   { label: "پت تاکسی", Icon: CarIcon },
@@ -19,7 +21,7 @@ const SERVICES = [
 
 /*===== Auth Banner =====*/
 /**
- * Desktop-only brand panel beside the auth forms: a hero card (ivory by day, ink by night) that says what Zurvann
+ * Desktop-only brand panel beside the auth forms: a bronze hero card that says what Zurvann
  * offers. Phones skip it, so it must not hold anything the forms depend on.
  */
 export function AuthBanner({ className }: { className?: string }) {
@@ -36,14 +38,7 @@ export function AuthBanner({ className }: { className?: string }) {
       />
 
       {/*------ Logo ------*/}
-      {/* The banner is deep firuzeh in both themes, so the logo is always shown light. */}
-      <img
-        src="/logo-stack.png"
-        alt=""
-        width={180}
-        height={170}
-        className="h-32 w-auto self-start opacity-90 brightness-0 invert"
-      />
+      <BrandLogo className="self-start text-[2.75rem]" />
 
       {/*------ Pitch ------*/}
       <div className="my-auto flex max-w-xl flex-col py-10">

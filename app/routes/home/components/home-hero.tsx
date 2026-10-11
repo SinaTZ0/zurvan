@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { BadgeCheckIcon, UndoDotIcon } from "lucide-react";
+import { PawPrintIcon, UndoDotIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Link } from "~/components/link";
@@ -132,30 +132,29 @@ export function HomeHero() {
           className="site-container origin-top pt-8 lg:pt-14"
         >
           <div className="grid gap-y-6 lg:grid-cols-[auto_minmax(0,22rem)] lg:items-stretch lg:justify-start lg:gap-x-12 xl:grid-cols-[auto_26rem] xl:gap-x-16">
-            {/* Big and heavy, in two fixed lines on desktop so the highlighted phrase always ends the first. */}
+            {/* Big and heavy, in two fixed lines on desktop so the promise sits on the first and its payoff on the second. */}
             <h1
               id="hero-title"
-              className="text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.2] font-black text-balance dark:font-extrabold dark:text-foreground/90"
+              className="text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.2] font-extrabold text-balance text-foreground/90"
             >
               <span className="lg:block">
-                آموزش{" "}
-                {/* A saffron marker stroke wipes in behind the words, in the same hand as the doodles. By day it
-                    sits low behind the dark letters; by night light letters would not hold on saffron, so it grows into
-                    a full highlighter block and the phrase turns dark ink. */}
-                <span className="relative isolate whitespace-nowrap dark:text-saffron-foreground">
+                به سگت{" "}
+                {/* A gold marker stroke wipes in behind the words, in the same hand as the doodles. Light letters would
+                    not hold on gold, so it is a full highlighter block and the phrase turns dark ink. */}
+                <span className="relative isolate whitespace-nowrap text-saffron-foreground">
                   <svg
                     aria-hidden
                     viewBox="0 0 200 40"
                     preserveAspectRatio="none"
-                    className="absolute inset-x-[-0.12em] top-[44%] -bottom-[2%] -z-10 h-[54%] w-[calc(100%+0.24em)] animate-marker-swipe fill-saffron opacity-90 motion-reduce:animate-none dark:top-[-8%] dark:h-[108%] dark:opacity-100"
+                    className="absolute inset-x-[-0.12em] top-[-8%] -z-10 h-[108%] w-[calc(100%+0.24em)] animate-marker-swipe fill-saffron motion-reduce:animate-none"
                   >
                     <path d="M3 10 C28 3 66 12 108 6 S178 3 197 9 L199 29 C172 37 132 28 92 34 S26 37 2 32 Z" />
                   </svg>
-                  سگ و گربه
-                </span>
-                ،
+                  وقت
+                </span>{" "}
+                بده،
               </span>{" "}
-              <span className="lg:block">با مربیان تأییدشده</span>
+              <span className="lg:block">نتیجه‌اش را می‌بینی</span>
             </h1>
 
             {/*------ Pitch ------*/}
@@ -163,7 +162,7 @@ export function HomeHero() {
                 buttons end level with its last, so the two columns read as one block. */}
             <div className="flex flex-col gap-6 lg:justify-between lg:py-3">
               <p className="max-w-[28rem] text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.9] font-medium text-balance text-foreground/85">
-                کلاس حضوری در تهران و کرج، یا آنلاین از خانه. جای حیوانت را رزرو کن و آنلاین پرداخت کن.
+                آموزش خوب با زمان و حوصله جواب می‌دهد. کلاس‌های کوچک و حضوری در تهران و کرج، از توله‌سگی تا سگ بالغ.
               </p>
               {/* One main action and one quieter way in, so the choice is never a coin toss. */}
               <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
@@ -177,10 +176,10 @@ export function HomeHero() {
                   کلاس‌ها را ببین
                 </Link>
                 <Link
-                  to="/#trainers"
+                  to="/#upcoming-runs"
                   className={buttonVariants({ size: "lg", variant: "ghost", className: "text-primary" })}
                 >
-                  مربیان را بشناس
+                  کلاس‌های پیش رو
                 </Link>
               </div>
             </div>
@@ -194,9 +193,9 @@ export function HomeHero() {
             <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm font-medium sm:flex">
               <li className="flex items-center gap-2.5">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">
-                  <BadgeCheckIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
+                  <PawPrintIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
-                ۴۲ مربی تأییدشده‌ی زروان
+                حداکثر ۱۰ سگ در هر کلاس
               </li>
               <li className="flex items-center gap-2.5">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent text-primary">

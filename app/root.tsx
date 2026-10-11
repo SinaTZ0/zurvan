@@ -8,7 +8,6 @@ import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
-import { THEME_INIT_SCRIPT } from "~/lib/theme";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -25,12 +24,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    // The theme script changes <html>'s class and style before hydration, so React must not
-    // treat that as a mismatch.
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
+    // The site has one theme, onyx and gold. `dark` turns on the `dark:` variants the UI components are written with;
+    // `color-scheme` (set in app.css) makes native controls and scrollbars dark too.
+    <html lang="fa" dir="rtl" className="dark">
       <head>
-        {/* First in <head>: applies the saved or system theme before anything paints. */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />

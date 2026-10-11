@@ -5,17 +5,9 @@ import { useState } from "react";
 import { Link } from "~/components/link";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 import { buttonVariants } from "~/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { describeSeats, SeatRoster } from "~/routes/home/components/seat-roster";
 import { dateParts, formatDayMonth, formatTime, formatToman } from "~/routes/home/format";
 import { COURSE_DETAILS, type Problem, PROBLEMS } from "~/routes/home/problems";
-
-type Species = Problem["species"];
-
-const SPECIES_TABS: { value: Species; label: string }[] = [
-  { value: "dog", label: "سگ" },
-  { value: "cat", label: "گربه" },
-];
 
 /*===== Browse Section =====*/
 /**
@@ -25,72 +17,47 @@ const SPECIES_TABS: { value: Species; label: string }[] = [
  * button, so reading about a course doesn't cost a page change.
  */
 export function BrowseSection() {
-  const [species, setSpecies] = useState<Species>("dog");
-  const problems = PROBLEMS.filter((problem) => problem.species === species);
-  const [activeId, setActiveId] = useState(problems[0]!.id);
+  const [activeId, setActiveId] = useState(PROBLEMS[0]!.id);
   const [openId, setOpenId] = useState<string | null>(null);
-  const active = problems.find((problem) => problem.id === activeId) ?? problems[0]!;
+  const active = PROBLEMS.find((problem) => problem.id === activeId) ?? PROBLEMS[0]!;
 
   return (
     <section aria-labelledby="browse-title" className="site-container pt-section-md">
-      <Tabs
-        value={species}
-        onValueChange={(value: Species) => {
-          setSpecies(value);
-          setActiveId(PROBLEMS.find((problem) => problem.species === value)!.id);
-          setOpenId(null);
-        }}
-        className="gap-0"
-      >
-        {/*------ Heading ------*/}
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
-          <div className="max-w-2xl">
-            <h2 id="browse-title" className="text-h2 text-balance">
-              حیوانت چه کاری می‌کند؟
-            </h2>
-            <p className="mt-2 text-pretty text-muted-foreground">
-              کاری را که می‌خواهی تغییر کند پیدا کن. دوره‌ای که برایش ساخته شده و نزدیک‌ترین کلاسش را نشانت می‌دهیم.
-            </p>
-          </div>
-          <TabsList className="group-data-horizontal/tabs:h-11 [&>button]:px-6 [&>button]:text-sm [&>button]:font-bold">
-            {SPECIES_TABS.map((tab) => (
-              <TabsTrigger key={tab.value} value={tab.value}>
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+      {/*------ Heading ------*/}
+      <div className="max-w-2xl">
+        <h2 id="browse-title" className="text-h2 text-balance">
+          سگت چه کاری می‌کند؟
+        </h2>
+        <p className="mt-2 text-pretty text-muted-foreground">
+          کاری را که می‌خواهی تغییر کند پیدا کن. دوره‌ای که برایش ساخته شده و نزدیک‌ترین کلاسش را نشانت می‌دهیم.
+        </p>
+      </div>
 
-        <div className="mt-8 grid gap-gutter lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-16">
-          {/*------ Index ------*/}
-          {SPECIES_TABS.map((tab) => (
-            <TabsContent key={tab.value} value={tab.value}>
-              <Accordion
-                value={openId ? [openId] : []}
-                onValueChange={(value) => {
-                  const next = value[0] ?? null;
-                  setOpenId(next);
-                  // Opening a row also moves the preview to it, which matters on touch screens that never hover.
-                  if (next) setActiveId(next);
-                }}
-                className="border-t"
-              >
-                {PROBLEMS.filter((problem) => problem.species === tab.value).map((problem) => (
-                  <ProblemRow
-                    key={problem.id}
-                    problem={problem}
-                    isActive={problem.id === active.id}
-                    onActivate={() => setActiveId(problem.id)}
-                  />
-                ))}
-              </Accordion>
-            </TabsContent>
+      <div className="mt-8 grid gap-gutter lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-16">
+        {/*------ Index ------*/}
+        <Accordion
+          value={openId ? [openId] : []}
+          onValueChange={(value) => {
+            const next = value[0] ?? null;
+            setOpenId(next);
+            // Opening a row also moves the preview to it, which matters on touch screens that never hover.
+            if (next) setActiveId(next);
+          }}
+          className="border-t"
+        >
+          {PROBLEMS.map((problem) => (
+            <ProblemRow
+              key={problem.id}
+              problem={problem}
+              isActive={problem.id === active.id}
+              onActivate={() => setActiveId(problem.id)}
+            />
           ))}
+        </Accordion>
 
-          {/*------ Preview ------*/}
-          <CoursePreview problems={problems} active={active} />
-        </div>
-      </Tabs>
+        {/*------ Preview ------*/}
+        <CoursePreview problems={PROBLEMS} active={active} />
+      </div>
     </section>
   );
 }

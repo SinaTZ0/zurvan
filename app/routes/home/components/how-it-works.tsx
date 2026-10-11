@@ -1,6 +1,7 @@
 import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
+import { DoodleFrieze } from "~/routes/home/components/hero-doodles";
 import { SectionHeading } from "~/routes/home/components/section-heading";
 
 // The real order of a reservation (spec 3.3–3.6), so the numbering carries meaning.
@@ -11,7 +12,7 @@ const STEPS = [
   },
   {
     title: "حیوانت را انتخاب کن",
-    body: "سن، گونه و دوره‌های پیش‌نیاز حیوانت را بررسی می‌کنیم تا کلاس واقعاً برایش مناسب باشد.",
+    body: "سن و دوره‌های پیش‌نیاز حیوانت را بررسی می‌کنیم تا کلاس واقعاً برایش مناسب باشد.",
   },
   {
     title: "جایش را رزرو کن",
@@ -31,8 +32,8 @@ const FINAL_STEP = {
 /*===== How It Works =====*/
 /**
  * The reservation flow in four numbered panels, under a frieze of the doodled people and animals the hero draws. It's
- * the page's one deep firuzeh band, the pause between shopping and meeting the trainers. The last step is the payoff,
- * so it alone is a light panel and carries both outcomes.
+ * the page's one bronze band, the pause between shopping and meeting the trainers. The last step is the payoff,
+ * so it alone is a solid gold panel and carries both outcomes.
  */
 export function HowItWorks() {
   return (
@@ -47,14 +48,13 @@ export function HowItWorks() {
               description="چهار قدم تا جای تو در کلاس؛ و اگر کلاس برگزار نشود، پولت سر جایش برمی‌گردد."
             />
           </div>
-          <img
-            src="/photo/doodle-frieze.png"
-            alt=""
-            width={1718}
-            height={160}
-            loading="lazy"
-            className="h-auto w-full max-w-lg min-w-0 flex-[0_1_32rem]"
-          />
+          {/* Laid out left to right so the procession's front is at the near edge; the far end fades out. */}
+          <div
+            dir="ltr"
+            className="h-14 w-full max-w-lg min-w-0 flex-[0_1_32rem] overflow-hidden mask-r-from-[calc(100%-3rem)]"
+          >
+            <DoodleFrieze className="h-full w-auto" />
+          </div>
         </div>
 
         {/*------ Steps ------*/}
@@ -67,9 +67,9 @@ export function HowItWorks() {
             </li>
           ))}
 
-          {/* Light on the dark band whichever theme is on, so it resets the band's re-pointed text colours. */}
-          <li className="flex flex-col gap-2.5 rounded-3xl bg-white p-6 text-foreground [--foreground:#13201f] [--muted-foreground:#3f4b49] [--primary:#0e6466]">
-            <StepNumber className="text-primary">{STEPS.length + 1}</StepNumber>
+          {/* The one solid gold panel, so it resets the band's re-pointed text colours to ink. */}
+          <li className="flex flex-col gap-2.5 rounded-3xl bg-primary p-6 text-primary-foreground [--foreground:var(--primary-foreground)] [--muted-foreground:#3d2f12]">
+            <StepNumber className="text-primary-foreground">{STEPS.length + 1}</StepNumber>
             <h3 className="mt-1.5 text-h4">{FINAL_STEP.title}</h3>
             {FINAL_STEP.outcomes.map(({ lead, body }) => (
               <p key={lead} className="text-sm text-pretty text-muted-foreground">
@@ -84,7 +84,7 @@ export function HowItWorks() {
 }
 
 /*===== Step Number =====*/
-/** The big count at the top of a step panel: saffron on the dark panels, firuzeh on the light one. */
+/** The big count at the top of a step panel: gold on the dark panels, ink on the gold one. */
 function StepNumber({ children, className }: { children: number; className?: string }) {
   return (
     <span aria-hidden className={cn("text-6xl leading-none font-black", className ?? "text-saffron")}>

@@ -2,7 +2,6 @@ import { cn } from "cn";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { ThemeToggle } from "~/components/theme-toggle";
 import { buttonVariants } from "~/components/ui/button";
 import { MobileMenu } from "~/routes/layout_public/components/mobile-menu";
 import { SiteSearch } from "~/routes/layout_public/components/site-search";
@@ -10,7 +9,7 @@ import { NAV_ITEMS } from "~/routes/layout_public/nav-items";
 
 /*===== Site Header =====*/
 /**
- * Storefront header. Desktop: logo, nav, search, theme and sign-in in one row. Phones keep the logo and sign-in in
+ * Storefront header. Desktop: logo, nav, search and sign-in in one row. Phones keep the logo and sign-in in
  * view and move the nav and search into a sheet.
  */
 export function SiteHeader() {
@@ -41,7 +40,6 @@ export function SiteHeader() {
         {/*------ Actions ------*/}
         <div className="ms-auto flex items-center gap-1 lg:gap-2">
           <SiteSearch className="hidden w-64 xl:block xl:w-72" />
-          <ThemeToggle />
           <Link to="/auth" className={cn(buttonVariants({ variant: "outline", className: "hidden sm:inline-flex" }))}>
             ورود یا ثبت‌نام
           </Link>

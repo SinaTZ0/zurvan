@@ -60,19 +60,6 @@ const DEALS: Deal[] = [
     code: "CALM15",
     seatsLeft: 6,
   },
-  {
-    id: "d4",
-    courseSlug: "kitten-at-home",
-    title: "بچه‌گربه در خانه‌ی جدید",
-    photo: "/photo/deal-kitten.jpg",
-    photoAlt: "بچه‌گربه‌ای راه‌راه که به دوربین نگاه می‌کند",
-    trainer: "الهام شریفی",
-    startsAt: new Date("2026-10-21T19:00:00+03:30"),
-    price: 750_000,
-    fullPrice: 950_000,
-    code: "KITTEN",
-    seatsLeft: 11,
-  },
 ];
 
 // Under this many seats, the seat count is the deal's headline instead of the discount.
@@ -93,7 +80,7 @@ export function DealsShelf() {
         link={{ label: "همه‌ی تخفیف‌ها", to: "/courses?deals=1" }}
       />
 
-      <ul className="-mx-site mt-8 flex snap-x snap-mandatory scroll-px-site gap-4 overflow-x-auto px-site pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:gap-gutter lg:overflow-visible lg:px-0 lg:pb-0">
+      <ul className="-mx-site mt-8 flex snap-x snap-mandatory scroll-px-site gap-4 overflow-x-auto px-site pb-2 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-gutter lg:overflow-visible lg:px-0 lg:pb-0">
         {DEALS.map((deal) => (
           <li key={deal.id} className="w-[64%] shrink-0 snap-start sm:w-[38%] lg:w-auto">
             <DealTile deal={deal} />

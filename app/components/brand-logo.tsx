@@ -3,7 +3,7 @@ import { cn } from "cn";
 /*===== Brand Mark =====*/
 /**
  * The dog-and-Z emblem, cut from the original logo into two masks so each part takes a palette colour: the dog in
- * firuzeh, the Z stroke in saffron. Inside `surface-inverse` the primary token turns ivory, so the mark follows.
+ * gold, the Z stroke in the brighter champagne.
  * Size it by height; the width follows the emblem's shape.
  */
 export function BrandMark({ className }: { className?: string }) {
