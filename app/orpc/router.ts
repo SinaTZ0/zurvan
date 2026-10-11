@@ -19,6 +19,20 @@ import {
   removeDogProcedure,
   updateDogProcedure,
 } from "~/orpc/dog/procedure";
+import {
+  getMyEnrollmentProcedure,
+  listMyEnrollmentsProcedure,
+  trainerCancelSessionProcedure,
+  trainerGetEnrollmentProcedure,
+  trainerListEnrollmentsProcedure,
+  trainerMarkSessionProcedure,
+  trainerRecordResultProcedure,
+  trainerRescheduleSessionProcedure,
+  trainerScheduleSessionProcedure,
+  trainerSessionsProcedure,
+  trainerSetPlannedSessionsProcedure,
+  trainerUpdateSessionNoteProcedure,
+} from "~/orpc/enrollment/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
 
@@ -50,6 +64,22 @@ export const router = implementer.router({
     create: createDogProcedure,
     update: updateDogProcedure,
     remove: removeDogProcedure,
+  },
+  enrollment: {
+    listMine: listMyEnrollmentsProcedure,
+    get: getMyEnrollmentProcedure,
+    trainer: {
+      list: trainerListEnrollmentsProcedure,
+      get: trainerGetEnrollmentProcedure,
+      sessions: trainerSessionsProcedure,
+      scheduleSession: trainerScheduleSessionProcedure,
+      rescheduleSession: trainerRescheduleSessionProcedure,
+      cancelSession: trainerCancelSessionProcedure,
+      markSession: trainerMarkSessionProcedure,
+      updateSessionNote: trainerUpdateSessionNoteProcedure,
+      setPlannedSessions: trainerSetPlannedSessionsProcedure,
+      recordResult: trainerRecordResultProcedure,
+    },
   },
   media: {
     upload: uploadMediaProcedure,

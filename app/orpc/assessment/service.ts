@@ -231,7 +231,7 @@ export async function bookAssessment({
       const record = await findDogByOwnerForUpdate({ db: tx, ownerId: customerId, id: dogId });
       if (!record) return { kind: "not-found" };
 
-      if (record.knownSince !== null || record.hasCompletedAssessment) {
+      if (record.knownSince !== null || record.hasRecordEvent) {
         return {
           kind: "has-record",
           errors: [`${record.name} پرونده دارد و می‌تواند مستقیم دوره رزرو کند.`],

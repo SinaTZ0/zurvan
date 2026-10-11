@@ -1,15 +1,15 @@
 import { and, asc, eq, exists, isNull, sql } from "drizzle-orm";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
-import { assessment, dog, media } from "~/db/schema";
+import { assessment, dog, enrollment, media, trainingSession } from "~/db/schema";
 import type { MediaRecord } from "~/orpc/media/repository";
 
 /*===== Types =====*/
 /**
- * A stored dog with its photo's media row, and whether it has a completed assessment, which gives it a record. Both are
- * read in the same query.
+ * A stored dog with its photo's media row, and whether it has a record event: a completed assessment, or an enrollment
+ * with a held session. Both are read in the same query.
  */
-export type DogRecord = typeof dog.$inferSelect & { photo: MediaRecord | null; hasCompletedAssessment: boolean };
+export type DogRecord = typeof dog.$inferSelect & { photo: MediaRecord | null; hasRecordEvent: boolean };
 
 /** What an owner may write. Never `knownSince`, `ownerId` or `deletedAt`. */
 export type DogValues = Pick<
@@ -30,12 +30,12 @@ export type DogValues = Pick<
 >;
 
 /*===== Selection =====*/
-// One query returns the dog, its photo and whether it has a record through an assessment, so a list never costs a
-// query per dog.
-type DogRow = { dog: typeof dog.$inferSelect; photo: MediaRecord | null; hasCompletedAssessment: boolean };
+// One query returns the dog, its photo and whether it has a record through an assessment or a session, so a list never
+// costs a query per dog.
+type DogRow = { dog: typeof dog.$inferSelect; photo: MediaRecord | null; hasRecordEvent: boolean };
 
-function toRecord({ dog: row, photo, hasCompletedAssessment }: DogRow): DogRecord {
-  return { ...row, photo, hasCompletedAssessment };
+function toRecord({ dog: row, photo, hasRecordEvent }: DogRow): DogRecord {
+  return { ...row, photo, hasRecordEvent };
 }
 
 /** The columns every dog read selects. `db` only builds the subquery. */
@@ -43,11 +43,18 @@ function dogSelection(db: DatabaseOrTransaction) {
   return {
     dog,
     photo: media,
-    hasCompletedAssessment: sql<boolean>`${exists(
+    // Spec: a completed assessment, an enrollment with a held session, or `knownSince` (checked by the mapper).
+    hasRecordEvent: sql<boolean>`${exists(
       db
         .select({ one: sql`1` })
         .from(assessment)
         .where(and(eq(assessment.dogId, dog.id), eq(assessment.status, "completed"))),
+    )} or ${exists(
+      db
+        .select({ one: sql`1` })
+        .from(trainingSession)
+        .innerJoin(enrollment, eq(trainingSession.enrollmentId, enrollment.id))
+        .where(and(eq(enrollment.dogId, dog.id), eq(trainingSession.status, "held"))),
     )}`,
   };
 }

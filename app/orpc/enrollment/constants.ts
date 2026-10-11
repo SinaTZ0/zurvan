@@ -1,3 +1,5 @@
+import type { EnrollmentRefundRule } from "~/lib/business-rules";
+
 /*===== Enrollment Constants =====*/
 // Browser-safe values shared by the API, the seed and the training screens. Stored as plain text (see
 // `app/db/schema.ts`).
@@ -70,3 +72,24 @@ export const SESSION_PLACE_MAX_LENGTH = 300;
 export const SESSION_NOTE_MAX_LENGTH = 2000;
 export const ENROLLMENT_NOTE_MAX_LENGTH = 2000;
 export const ENROLLMENT_REASON_MAX_LENGTH = 300;
+
+/*===== Result =====*/
+/** What a trainer records when a course or test ends: the enrollment becomes `passed` or `failed`. */
+export const ENROLLMENT_RESULTS = ["passed", "failed"] as const satisfies readonly EnrollmentStatus[];
+
+export type EnrollmentResult = (typeof ENROLLMENT_RESULTS)[number];
+
+/** What a trainer records for a session whose time has come. */
+export const SESSION_OUTCOMES = ["held", "missed"] as const satisfies readonly SessionStatus[];
+
+export type SessionOutcome = (typeof SESSION_OUTCOMES)[number];
+
+/*===== Refund Rules =====*/
+/** The rules `calculateEnrollmentRefund` can answer with, for the preview on a live enrollment. */
+export const ENROLLMENT_REFUND_RULES = [
+  "before-first-session",
+  "policy",
+  "staff",
+  "test-before-cutoff",
+  "test-after-cutoff",
+] as const satisfies readonly EnrollmentRefundRule[];
