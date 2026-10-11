@@ -220,11 +220,10 @@
 }
 
 /*===== Palette: Lacquer & Gold Leaf =====*/
-/* One theme, and it is dark. The page is black lacquer with bottle green in its depth (never brown: warm black under
-   gold reads as mud), and gold leaf leads: actions, links, the selected state, hairlines. `saffron` is the brighter
+/* One theme, and it is dark. The page is a cool blue-slate (`--base`, never brown: warm black under gold reads as
+   mud, and near-black reads as depressing), and gold leaf leads: actions, links, the selected state, hairlines. `saffron` is the brighter
    champagne gold for the small bright notes: stars, icons beside a value and the hero's scribbles. Text is ivory,
-   never white. Green and gold are the old pairing of watchmakers and grand hotels, and the green echoes the grass and
-   parks where the training happens, so the photos sit in it naturally.
+   never white. Slate and gold read as authority and trust, and the grass in the photos sits well against the blue.
 
    Layers, from back to front. Each step is a lighter surface plus a deeper shadow, so depth reads on black:
      sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)
@@ -233,8 +232,8 @@
      popover     overlays: menus, sheets, dialogs, things floating over a photo         + shadow-lg
    `inverse` is the one emphasis band per page: charcoal with only a trace of the green (see `surface-inverse` below).
    A real emerald there floods the band and reads as green, not black.
-   `jet` is a neutral black with no green in it, for the header and the home hero: the first screen is plain black
-   with quiet, flat gold, so the site opens looking like a professional, not a jeweller.
+   `jet` is the header and home hero surface; it is the same slate as the page, so the first screen is flat colour
+   with quiet, flat gold, and the site opens looking like a professional, not a jeweller.
 
    Metal: flat gold is mustard. Large gold fills and display gold text below the hero use the `gold-leaf` gradient,
    which has a highlight and a shadow in it, so it reads as metal catching light.
@@ -246,11 +245,14 @@
   --radius: 0.75rem;
 
   /*------ Surfaces ------*/
-  --jet: #0a0a0b;
-  --sunken: #050a08;
-  --background: #08100d;
-  --card: #0e1814;
-  --popover: #15221d;
+  /* One slate carries every dark surface; the rest are lifted or sunk from it so they stay the same hue. The
+     BaseColorPicker trial overrides `--base` inline on <html>. */
+  --base: #171d24;
+  --jet: var(--base);
+  --sunken: color-mix(in oklab, var(--base), black 40%);
+  --background: var(--base);
+  --card: color-mix(in oklab, var(--base), white 5%);
+  --popover: color-mix(in oklab, var(--base), white 9%);
 
   /*------ Text ------*/
   --foreground: #f4eddc;
@@ -265,8 +267,8 @@
   --ring: #e6c77e;
 
   /*------ Fills ------*/
-  --muted: #121d19;
-  --secondary: #121d19;
+  --muted: color-mix(in oklab, var(--base), white 7%);
+  --secondary: var(--muted);
   --secondary-foreground: #f4eddc;
   --accent: #1d2419; /* hover and selected rows: a gold tint on the green */
   --accent-foreground: #f4eddc;
@@ -322,22 +324,6 @@
   --sidebar-ring: #e6c77e;
 }
 
-/* The base-colour trial (BaseColorPicker): one hex in `--base` re-derives every dark surface, so the whole page can be
-   judged in a new black. The green depth is dropped with it; over a different base it would muddy the colour. */
-html[data-base-color] {
-  --jet: var(--base);
-  --background: var(--base);
-  --sunken: color-mix(in oklab, var(--base), black 40%);
-  --card: color-mix(in oklab, var(--base), white 5%);
-  --popover: color-mix(in oklab, var(--base), white 9%);
-  --muted: color-mix(in oklab, var(--base), white 7%);
-  --secondary: var(--muted);
-  --sidebar: var(--card);
-}
-html[data-base-color] body {
-  background-image: none;
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -345,13 +331,6 @@ html[data-base-color] body {
   /* Vazirmatn at 400 reads thin on screen, so body text (and the inputs that inherit it) defaults to 500 */
   body {
     @apply bg-background font-medium text-foreground;
-    /* A faint pool of light at the top of the page, like a spotlight on a shop window: green depth with a little gold
-       in its core. It scrolls with the page and fades out well before the content, so no section sits on a visible
-       gradient edge. The home hero covers it with its own black. */
-    background-image:
-      radial-gradient(40rem 18rem at 50% -6rem, rgb(240 211 139 / 0.07), transparent 70%),
-      radial-gradient(70rem 32rem at 50% -8rem, rgb(32 96 72 / 0.22), transparent 70%);
-    background-repeat: no-repeat;
   }
   html {
     @apply font-sans;

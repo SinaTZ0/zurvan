@@ -30,6 +30,9 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
         // Lower is softer. 0.1 (the default) feels sluggish on long product pages.
         lerp: 0.12,
         allowNestedScroll: true,
+        // Same-page `#hash` links glide to their section instead of jumping. The offset matches the `scroll-mt-8`
+        // the sections carry, which Lenis doesn't read on its own.
+        anchors: { offset: -32 },
         // A link click mid-glide would otherwise keep easing on the next page.
         stopInertiaOnNavigate: true,
         // Hand locked-page wheel events back to the browser, which won't scroll an `overflow: hidden` page.

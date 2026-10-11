@@ -13,7 +13,7 @@ import { BASE_COLOR_STORAGE_KEY } from "~/routes/layout_public/components/base-c
 import type { Route } from "./+types/root";
 import "./app.css";
 
-const BASE_COLOR_SCRIPT = `try{var c=localStorage.getItem("${BASE_COLOR_STORAGE_KEY}");if(c&&/^#[0-9a-f]{6}$/i.test(c)){var d=document.documentElement;d.dataset.baseColor="";d.style.setProperty("--base",c)}}catch(e){}`;
+const BASE_COLOR_SCRIPT = `try{var c=localStorage.getItem("${BASE_COLOR_STORAGE_KEY}");if(c&&/^#[0-9a-f]{6}$/i.test(c)){var d=document.documentElement;d.style.setProperty("--base",c)}}catch(e){}`;
 
 export function Layout({ children }: { children: React.ReactNode }) {
   // One client per render tree (like the Jotai store): a module-level client on the server would
