@@ -48,9 +48,9 @@ const FRAME_CLIP =
 const SIDE_DOODLE_SIZE = "h-auto w-[clamp(15.625rem,calc((100vw-80rem)/2-4rem),22rem)] shrink-0";
 
 /*===== Photo =====*/
-const PHOTO = { src: "/demo/hero.jpg", width: 1280, height: 853 };
+const PHOTO = { src: "/demo/hero.webp", width: 1536, height: 1024 };
 /** Between the man's face and the dog's face, as a fraction of the photo's height. The starting frame centres on it. */
-const PHOTO_FOCUS_Y = 0.5;
+const PHOTO_FOCUS_Y = 0.28;
 /** The photo starts zoomed in and settles to 1 as it fills the screen. */
 const PHOTO_START_SCALE = 1.15;
 
