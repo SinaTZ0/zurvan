@@ -1,6 +1,7 @@
 import { data } from "react-router";
 
 import { referralCookieFromUrl } from "~/lib/referral.server";
+import { createServerClient } from "~/orpc/server-client.server";
 import { BrowseSection } from "~/routes/home/components/browse-section";
 import { ClosingBanner } from "~/routes/home/components/closing-banner";
 import { CourseMap } from "~/routes/home/components/course-map";
@@ -21,21 +22,27 @@ export const meta: Route.MetaFunction = () => [
 ];
 
 /*===== Loader =====*/
-// The page's content is sample data for now (docs/foundations-plan.md). The loader's one real job is remembering a
-// partner's referral code from `?ref=`, so signup can attribute the customer later (spec 3.11).
+// The catalogue is render-critical, so it comes from the database here and the page renders fully on the server.
+// Reviews, problems and photos are still sample data (docs/foundations-plan.md). The loader also remembers a partner's
+// referral code from `?ref=`, so signup can attribute the customer later (spec 3.11).
 export async function loader({ request }: Route.LoaderArgs) {
-  const referralCookie = await referralCookieFromUrl(request.url);
-  return data(null, referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined);
+  const [courses, referralCookie] = await Promise.all([
+    createServerClient(request).course.list(),
+    referralCookieFromUrl(request.url),
+  ]);
+  return data({ courses }, referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined);
 }
 
 /*===== Page =====*/
-export default function HomePage() {
+export default function HomePage({ loaderData }: Route.ComponentProps) {
+  const { courses } = loaderData;
+
   return (
     <>
       <HomeHero />
       <TrainerIntro />
-      <BrowseSection />
-      <CourseMap />
+      <BrowseSection courses={courses} />
+      <CourseMap courses={courses} />
       <HowItWorks />
       <ClosingBanner />
     </>

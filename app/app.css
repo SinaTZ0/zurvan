@@ -82,6 +82,9 @@
     }
   }
 
+  /* The same draw, quick, for a check mark ticked off a list. Stagger it with an `animation-delay` per item */
+  --animate-tick-draw: doodle-draw 0.45s var(--ease-silk) both;
+
   /* Wipes a marker stroke across a phrase, from the side Persian starts reading on. Lands just after the page does */
   --animate-marker-swipe: marker-swipe 0.7s var(--ease-silk-in-out) 0.5s both;
   @keyframes marker-swipe {

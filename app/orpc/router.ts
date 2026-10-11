@@ -1,4 +1,5 @@
 import { createCaptchaChallengeProcedure } from "~/orpc/captcha/procedure";
+import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { createPetProcedure, listPetsProcedure } from "~/orpc/pet/procedure";
 
@@ -7,6 +8,10 @@ import { createPetProcedure, listPetsProcedure } from "~/orpc/pet/procedure";
 export const router = implementer.router({
   captcha: {
     createChallenge: createCaptchaChallengeProcedure,
+  },
+  course: {
+    list: listCoursesProcedure,
+    get: getCourseProcedure,
   },
   pet: {
     list: listPetsProcedure,

@@ -1,6 +1,10 @@
 import { cn } from "cn";
 import { Children, cloneElement, isValidElement, useId } from "react";
 
+/*===== Doodles =====*/
+// The brand's hand-drawn figures of people and dogs. The home hero and "how it works" use them; elsewhere, use them at
+// most once per page, as a light accent (an empty state, say).
+
 /*===== Figures =====*/
 // Each figure is drawn facing left, the way the procession walks (forward, in RTL), with its feet on y = 0 and its
 // body above it at negative y. Each is a fragment of strokes; `withPathLength` prepares them for the draw-in.

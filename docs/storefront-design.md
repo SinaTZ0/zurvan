@@ -51,6 +51,28 @@ at these paths.
 The head trainer's page (Trainer Page, `/trainers/:slug`) isn't linked yet; once it exists, the trainer section should
 link to it.
 
+## Course Detail
+
+`app/routes/course_detail/`, at `/courses/:slug`, top to bottom. Working and sport dogs (`/courses/working-dogs`,
+`/courses/sport`) are course rows and use the same page. The loader reads `course.get` and `course.list`; an unknown
+slug renders the route's 404 boundary inside the public layout.
+
+| Section               | Component          | Surface                                | Job                                                                                                                                                                                                 |
+| --------------------- | ------------------ | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero                  | `CourseHero`       | page (plain slate)                     | Breadcrumb, the title in Amiri with its Latin name, the summary, "with Arman, private", the rating, the facts (`Fact`), the price in one sentence, and the next step in flat gold.                  |
+| The course card       | `CourseCardBand`   | `surface-inverse`, the page's one band | The owner's own card: a raised card with the page's one gold-leaf strip, listing every command. Its ticks draw in once when it scrolls into view, the page's one orchestrated moment.               |
+| Path                  | `CoursePath`       | page                                   | The home page's age ruler cut down to this course's lane, with this course lit; below `xl` a short vertical list. Notes: prerequisite, BMC's age window, the test, the next course, the equal path. |
+| Reviews and questions | `CourseDiscussion` | page                                   | Course and trainer averages in a ruled `dl`, then one ruled thread of reviews and questions with Arman's replies. The empty state is the page's one doodle.                                         |
+| Price and start       | `CoursePricing`    | `bg-sunken` band with a `glow`         | The closing ask: "Arman sees your dog first", the gold-leaf button, and a price sheet (course, boarding, test, refund policy in plain words).                                                       |
+| Phone action bar      | `PhoneActionBar`   | `popover`, fixed to the bottom         | Phones only: the main action follows once the hero's buttons scroll away, and steps aside while the closing buttons are on screen.                                                                  |
+
+The variants follow the course, through `getCourseActions` in the slice:
+
+- **A normal course:** free assessment, with «سگت پرونده دارد؟ مستقیم رزرو کن» as the alternative.
+- **Behavior modification:** «درخواست اصلاح رفتار» only. The card lists the problems a request can be about (with a
+  plain mark, not a tick); the price comes from Arman after he sees the video; there is no path section.
+- **Working and sport dogs:** free assessment only. The card shows the branches as tags; no ruler and no list price.
+
 ## Colour and Surfaces
 
 The tokens are in `app/app.css` ("Lacquer & Gold Leaf"). One dark theme; there is no light mode.
@@ -106,7 +128,7 @@ The tokens are in `app/app.css` ("Lacquer & Gold Leaf"). One dark theme; there i
 - Problems are written in the owner's words, not the catalogue's: «تنها که می‌ماند، پارس می‌کند», not «اضطراب جدایی».
   Course names come second.
 - Numbers from the course cards are approximate and say so: «حدوداً ۵ جلسه». Use `describeAge`, `describeSessions`
-  and `describePlace` from `app/routes/home/courses.ts` so every page words them the same way.
+  and `describePlace` (and `describePrerequisites`) from `app/lib/course-format.ts` so every page words them the same way.
 - Never write that every dog should take CGC or almost every dog BMC. That rule lives in the trainer's
   recommendations.
 - No prices on the home page or in the course map. Prices belong on Course Detail and checkout.
@@ -135,7 +157,7 @@ The tokens are in `app/app.css` ("Lacquer & Gold Leaf"). One dark theme; there i
   screen (then `fetchPriority="high"`).
 - Persian `alt` text describes the scene. Decorative copies (a thumbnail that repeats a row's title) get `alt=""`.
 - Photos under text get a dark gradient from the text side only, so the dogs stay visible.
-- The **doodles** (`hero-doodles.tsx`: the marching frieze of people and dogs, the side scenes, the review doodles) are
+- The **doodles** (`app/components/doodles.tsx`: the marching frieze of people and dogs, the side scenes, the review doodles) are
   the brand's hand. They appear in the hero and once more above "how it works". Use them as a light accent, at most once
   per page outside the home page.
 
@@ -151,26 +173,43 @@ The tokens are in `app/app.css` ("Lacquer & Gold Leaf"). One dark theme; there i
 ## Reuse
 
 These were built for the home page and are what the next pages will need. Following the "promote only when shared"
-rule, move each one when its second consumer arrives, not before.
+rule, move each one when its second consumer arrives, not before. `SectionHeading`, `Fact`, `Stars` and the doodles
+were promoted to `app/components/` for Course Detail.
 
-| Piece                                              | Where now                                 | Next consumer                     | Promote to                                      |
-| -------------------------------------------------- | ----------------------------------------- | --------------------------------- | ----------------------------------------------- |
-| Course data, `getCourse`, `ADVANCED_TRACKS`        | `routes/home/courses.ts`                  | Catalogue, Course Detail          | the database (seed), then loaders               |
-| `describeAge`, `describeSessions`, `describePlace` | `routes/home/courses.ts`                  | Catalogue, Course Detail, booking | `app/lib/` (course formatting)                  |
-| `SectionHeading`                                   | `routes/home/components/`                 | any storefront page               | `app/components/`                               |
-| `ReviewCard`, `Stars`, the `Review` type           | `routes/home/components/`, `reviews.ts`   | Course Detail, Trainer Page       | `app/components/` (data from the Review entity) |
-| `Fact` (icon, label, value)                        | inside `browse-section.tsx`               | Course Detail                     | `app/components/`                               |
-| `DoodleFrieze` and figures                         | `routes/home/components/hero-doodles.tsx` | empty states, the trainer page    | `app/components/`                               |
-| Problems → course mapping                          | `routes/home/problems.ts`                 | home only                         | stays                                           |
+| Piece                                                                       | Where now                                 | Next consumer                     | Promote to                                        |
+| --------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------- | ------------------------------------------------- |
+| Course data (working and sport dogs are rows)                               | the database; `course.list`, `course.get` | Catalogue, Course Detail, booking | already shared (loaders read the oRPC procedures) |
+| `describeAge`, `describeSessions`, `describePlace`, `describePrerequisites` | `app/lib/course-format.ts`                | Catalogue, Course Detail, booking | already shared                                    |
+| `SectionHeading`                                                            | `app/components/section-heading.tsx`      | any storefront page               | already shared                                    |
+| `Stars` (rating, optional `size`)                                           | `app/components/stars.tsx`                | Course Detail, Trainer Page       | already shared                                    |
+| `ReviewCard`, the `Review` type                                             | `routes/home/components/`, `reviews.ts`   | Course Detail, Trainer Page       | `app/components/` (data from the Review entity)   |
+| `Fact` (icon, label, value)                                                 | `app/components/fact.tsx`                 | Course Detail                     | already shared                                    |
+| `DoodleFrieze` and figures                                                  | `app/components/doodles.tsx`              | empty states, the trainer page    | already shared                                    |
+| Problems → course mapping                                                   | `routes/home/problems.ts`                 | home only                         | stays                                             |
+
+## Loose Ends on Course Detail
+
+- **Sample data:** the reviews, questions and replies (`app/routes/course_detail/discussion.ts`) until the Review and
+  Comment entities exist; the course prices and cover photos in the seed. Several covers are 300 px demo images and look
+  soft at the hero's size.
+- **Cover shape:** the hero shows the cover at 4:5 on desktop and 16:10 on phones, but [media.md](media.md) plans a 21:9
+  `hero` variant for this page. Change the variant when course uploads are built.
+- **Links to unbuilt pages:** «سگت پرونده دارد؟» and «رزرو تست» go to `/pets` until the Dogs List and booking exist;
+  «سؤالت را بپرس» goes to `/auth` until comments can be posted; the breadcrumb and 404 page link to `/courses`. The
+  trainer line doesn't link anywhere until the Trainer Page exists.
+- **One trainer:** the hero, the replies and the copy name the head trainer, because there is no Owner Trainer on a
+  course yet. When assistants can own courses, show the owner trainer instead.
 
 ## Loose Ends on the Home Page
 
 Known gaps, left on purpose until the page or data behind them exists:
 
+- **The catalogue** is seeded with `npm run db:seed` (after `npm run db:push`). Its prices and cover photos are
+  placeholders until the owner sends the real ones.
 - **Sample data:** the head trainer's name, years and photo; the reviews; the course and problem photos
   (`public/demo/`, `public/photo/`); the footer phone number. They are placeholders until the owner sends the real
   ones.
-- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth` and `/pets`.
+- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth`, `/pets` and the course pages (`/courses/:slug`).
 - **`/pets`** is the old pets demo. The closing banner's «رزرو دوره‌ی بعدی» should point at the Dogs List once it is
   built (a dog's page is where a dog with a record books its next course).
 - **`/join/partner`** is linked from the footer, but partners can't sign up themselves; the Admin creates them. The

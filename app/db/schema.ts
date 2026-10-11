@@ -1,4 +1,16 @@
-import { boolean, index, integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import {
+  bigint,
+  boolean,
+  check,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /*===== Database Schema =====*/
 // Single source of truth for tables, read by Drizzle Kit (`drizzle.config.ts`) and the
@@ -99,4 +111,95 @@ export const pet = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("pet_owner_id_idx").on(table.ownerId)],
+);
+
+/*===== Courses =====*/
+// The catalogue (docs/app-phase-one.md, entities 5, 6 and 12), with only the fields the public pages read so far. The
+// approval workflow, the owner trainer, the revenue split and the rating averages arrive with their features; until
+// trainer profiles exist, every course is the head trainer's. Rows come from `npm run db:seed`.
+
+export const refundPolicy = pgTable("refund_policy", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Unique so the seed can upsert by name.
+  name: text("name").notNull().unique(),
+  /** Plain Persian explanation, shown on the course page and at checkout. */
+  customerDescription: text("customer_description").notNull(),
+  /** Share of the unheld sessions refunded once the first session has been held (spec 3.9). */
+  unheldRefundPercent: integer("unheld_refund_percent").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const course = pgTable(
+  "course",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    /** The name on the owner's course card, which dog people use as-is: `House manner`, `CGC`. */
+    latinName: text("latin_name").notNull(),
+    // Plain text instead of pg enums, so adding a value is a code change, not a migration. Allowed values live in
+    // `app/orpc/course/constants.ts`.
+    family: text("family").notNull(),
+    bookingKind: text("booking_kind").notNull().default("standard"),
+    // New courses start as drafts; the seed and the Admin approve them.
+    status: text("status").notNull().default("draft"),
+    /** One or two sentences on what the course is for, in the owner's terms. */
+    summary: text("summary").notNull(),
+    /** A few results an owner would recognise as their problem solved, for course cards. */
+    highlights: text("highlights")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Everything on the owner's course card, in its order. For working and sport dogs that is their branches. */
+    commands: text("commands")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    coverImage: text("cover_image").notNull(),
+    coverAlt: text("cover_alt").notNull(),
+    coverWidth: integer("cover_width").notNull(),
+    coverHeight: integer("cover_height").notNull(),
+    /** Months. Null when the course has no lower bound or it isn't known yet. */
+    minAgeMonths: integer("min_age_months"),
+    maxAgeMonths: integer("max_age_months"),
+    /** Approximate. Null when the trainer decides it after seeing the dog. */
+    sessionCount: integer("session_count"),
+    /** Null when it is decided after the assessment. */
+    place: text("place"),
+    // Money is Rial everywhere. A null price means it isn't sold at a list price: behavior plans are priced per
+    // request, and working and sport dogs after the assessment. A null boarding price is "price on request".
+    price: bigint("price", { mode: "number" }),
+    boardingPrice: bigint("boarding_price", { mode: "number" }),
+    /** When set, the course offers a test that counts as passing it (spec 3.6). */
+    testPrice: bigint("test_price", { mode: "number" }),
+    refundPolicyId: uuid("refund_policy_id")
+      .notNull()
+      .references(() => refundPolicy.id, { onDelete: "restrict" }),
+    /** Catalogue order. */
+    position: integer("position").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("course_status_position_idx").on(table.status, table.position)],
+);
+
+/** A course the dog must have passed, or passed the test of, before booking this one (spec 3.8). */
+export const coursePrerequisite = pgTable(
+  "course_prerequisite",
+  {
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "cascade" }),
+    requiredCourseId: uuid("required_course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "restrict" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.courseId, table.requiredCourseId] }),
+    check("course_prerequisite_not_self", sql`${table.courseId} <> ${table.requiredCourseId}`),
+  ],
 );

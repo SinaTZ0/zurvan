@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { HeroDoodles, HeroReviewDoodle, HeroSideDoodles } from "~/routes/home/components/hero-doodles";
+import { HeroDoodles, HeroReviewDoodle, HeroSideDoodles } from "~/components/doodles";
 import { ReviewCard } from "~/routes/home/components/review-card";
 import { REVIEWS } from "~/routes/home/reviews";
 

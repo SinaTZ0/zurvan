@@ -1,12 +1,17 @@
 import { cn } from "cn";
-import { CakeIcon, CheckIcon, ClockIcon, KeyRoundIcon, MapPinIcon, type LucideIcon } from "lucide-react";
+import { CakeIcon, CheckIcon, ClockIcon, KeyRoundIcon, MapPinIcon } from "lucide-react";
 import { useState } from "react";
 
+import { Fact } from "~/components/fact";
 import { Link } from "~/components/link";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 import { buttonVariants } from "~/components/ui/button";
-import { describeAge, describePlace, describeSessions } from "~/routes/home/courses";
-import { type Problem, PROBLEMS } from "~/routes/home/problems";
+import { describeAge, describePlace, describePrerequisites, describeSessions } from "~/lib/course-format";
+import type { Course } from "~/orpc/course/contract";
+import { PROBLEMS, type Problem } from "~/routes/home/problems";
+
+/** A problem with its course resolved from the loaded catalogue. */
+type ResolvedProblem = Problem & { course: Course };
 
 /*===== Browse Section =====*/
 /**
@@ -15,10 +20,19 @@ import { type Problem, PROBLEMS } from "~/routes/home/problems";
  * through the list previews each course without leaving it. A row opens in place with the course details and the
  * next step, so reading about a course doesn't cost a page change.
  */
-export function BrowseSection() {
+export function BrowseSection({ courses }: { courses: Course[] }) {
+  /*------ Resolve Problems ------*/
+  // A problem whose course isn't in the list (archived, say) is left out rather than shown with a dead link.
+  const problems = PROBLEMS.flatMap((problem): ResolvedProblem[] => {
+    const course = courses.find((entry) => entry.slug === problem.courseSlug);
+    return course ? [{ ...problem, course }] : [];
+  });
+
   const [activeId, setActiveId] = useState(PROBLEMS[0]!.id);
   const [openId, setOpenId] = useState<string | null>(null);
-  const active = PROBLEMS.find((problem) => problem.id === activeId) ?? PROBLEMS[0]!;
+  const active = problems.find((problem) => problem.id === activeId) ?? problems[0];
+
+  if (!active) return null;
 
   return (
     <section aria-labelledby="browse-title" className="site-container pt-section-md">
@@ -45,7 +59,7 @@ export function BrowseSection() {
           }}
           className="border-t"
         >
-          {PROBLEMS.map((problem) => (
+          {problems.map((problem) => (
             <ProblemRow
               key={problem.id}
               problem={problem}
@@ -56,7 +70,7 @@ export function BrowseSection() {
         </Accordion>
 
         {/*------ Preview ------*/}
-        <CoursePreview problems={PROBLEMS} active={active} />
+        <CoursePreview problems={problems} active={active} />
       </div>
     </section>
   );
@@ -68,11 +82,12 @@ function ProblemRow({
   isActive,
   onActivate,
 }: {
-  problem: Problem;
+  problem: ResolvedProblem;
   isActive: boolean;
   onActivate: () => void;
 }) {
   const { course } = problem;
+  const prerequisites = describePrerequisites(course);
 
   return (
     <AccordionItem value={problem.id} className="border-b transition-colors data-open:bg-primary/5">
@@ -94,7 +109,7 @@ function ProblemRow({
           <span className="mt-1 flex flex-wrap gap-x-4 text-sm text-muted-foreground">
             <span>دوره‌ی {course.title}</span>
             {/* Behavior modification has no fixed length, so its line says who it is for instead. */}
-            <span>{course.kind === "behavior" ? "برای هر سن و هر نژاد" : describeSessions(course)}</span>
+            <span>{course.bookingKind === "behavior-request" ? "برای هر سن و هر نژاد" : describeSessions(course)}</span>
           </span>
         </span>
 
@@ -138,9 +153,9 @@ function ProblemRow({
             <Fact icon={MapPinIcon} label="محل آموزش">
               {describePlace(course)}
             </Fact>
-            {course.prerequisite && (
+            {prerequisites && (
               <Fact icon={KeyRoundIcon} label="پیش‌نیاز">
-                {course.prerequisite}
+                {prerequisites}
               </Fact>
             )}
           </dl>
@@ -149,7 +164,7 @@ function ProblemRow({
           {/* A new dog starts with the free assessment; behavior problems start from a request with a video, so the
               trainer has seen the behavior before the first session. */}
           <div className="flex flex-wrap items-center gap-3 border-t border-primary/15 pt-5">
-            {course.kind === "behavior" ? (
+            {course.bookingKind === "behavior-request" ? (
               <Link
                 to="/behavior-modification"
                 className={buttonVariants({ size: "lg", className: "hover:text-primary-foreground!" })}
@@ -183,25 +198,12 @@ function ProblemRow({
   );
 }
 
-/*===== Fact =====*/
-function Fact({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-start gap-3">
-      <Icon aria-hidden strokeWidth={1.7} className="mt-0.5 size-5 shrink-0 text-primary" />
-      <div>
-        <dt className="text-sm text-muted-foreground">{label}</dt>
-        <dd className="font-bold">{children}</dd>
-      </div>
-    </div>
-  );
-}
-
 /*===== Course Preview =====*/
 /**
  * Desktop-only photo of the active row's course. Every photo is stacked and only the active one is opaque, so
  * switching rows cross-fades instead of waiting for an image to load.
  */
-function CoursePreview({ problems, active }: { problems: Problem[]; active: Problem }) {
+function CoursePreview({ problems, active }: { problems: ResolvedProblem[]; active: ResolvedProblem }) {
   return (
     <figure aria-hidden className="sticky top-8 isolate hidden self-start lg:block">
       {/* A halo of gold light behind the photo, so the picture looks lit rather than pasted on the dark page. */}

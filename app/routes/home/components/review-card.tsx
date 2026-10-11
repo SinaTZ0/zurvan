@@ -1,8 +1,5 @@
-import { StarIcon } from "lucide-react";
-
+import { Stars } from "~/components/stars";
 import type { Review } from "~/routes/home/reviews";
-
-const digitFormat = new Intl.NumberFormat("fa-IR");
 
 /*===== Review Card =====*/
 /** One owner's review. A course review leads with the course and its stars; a comment is just the owner's words. */
@@ -44,23 +41,5 @@ export function ReviewCard({ review }: { review: Review }) {
         </span>
       </figcaption>
     </figure>
-  );
-}
-
-/*===== Stars =====*/
-function Stars({ rating }: { rating: number }) {
-  return (
-    <p className="flex gap-0.5">
-      <span className="sr-only">{`${digitFormat.format(rating)} از ${digitFormat.format(5)} ستاره`}</span>
-      {Array.from({ length: 5 }, (_, index) => (
-        <StarIcon
-          key={index}
-          strokeWidth={1.7}
-          aria-hidden
-          fill={index < rating ? "currentColor" : "none"}
-          className={index < rating ? "size-3.5 text-saffron" : "size-3.5 text-faint"}
-        />
-      ))}
-    </p>
   );
 }

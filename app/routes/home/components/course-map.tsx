@@ -3,43 +3,44 @@ import { ChevronLeftIcon } from "lucide-react";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
-import { SectionHeading } from "~/routes/home/components/section-heading";
-import { ADVANCED_TRACKS, type Course, describeAge, describePlace, getCourse } from "~/routes/home/courses";
+import { SectionHeading } from "~/components/section-heading";
+import { describeAge, describePlace } from "~/lib/course-format";
+import type { Course } from "~/orpc/course/contract";
 
 /*===== Map Layout =====*/
 // The ruler's months, one grid column each. The last column stands for "8 months and older".
 const MONTHS = [2, 3, 4, 5, 6, 7, 8];
 
-/** Each row is a lane of courses taken one after another; a group's rows share its label. */
-const GROUPS: { title: string; note: string; rows: Course[][] }[] = [
+/**
+ * Each row is a lane of course slugs taken one after another; a group's rows share its label. Slugs are looked up in
+ * the loaded catalogue, so a course that is missing (archived, say) drops out of its lane.
+ */
+const GROUPS: { title: string; note: string; rows: string[][] }[] = [
   // The owner wants every dog to get CGC and almost every dog BMC, but the site never says so: the trainer builds them
   // into each dog's recommendations after the assessment instead.
   {
     title: "پایه",
     note: "قواعد زندگی در خانه، و آرام ماندن کنار آدم‌ها، سگ‌های دیگر و صداها.",
-    rows: [[getCourse("house-manner")], [getCourse("cgc")]],
+    rows: [["house-manner"], ["cgc"]],
   },
   {
     // The owner's rule: both lanes teach the same things and end in the same place, at different prices.
     title: "فرمان‌پذیری",
     note: "دو مسیر با یک نتیجه. یکی را انتخاب کن.",
     rows: [
-      [getCourse("elementary"), getCourse("advanced")],
-      [getCourse("companion-1"), getCourse("companion-2"), getCourse("companion-3"), getCourse("companion-4")],
+      ["elementary", "advanced"],
+      ["companion-1", "companion-2", "companion-3", "companion-4"],
     ],
   },
   {
     title: "شش‌ماهگی",
     note: "برای سنی که سگ مرزها را امتحان می‌کند، بیرون از خانه.",
-    rows: [[getCourse("bmc")]],
+    rows: [["bmc"]],
   },
 ];
 
-/** One line under each advanced track's title, saying who it is for. Keyed by the track's slug. */
-const TRACK_LEADS: Record<(typeof ADVANCED_TRACKS)[number]["slug"], string> = {
-  "working-dogs": "برای سگ‌هایی که کار واقعی می‌کنند: نگهبانی، حفاظت، خدمت و ردیابی.",
-  sport: "برای سگ‌هایی که برای مسابقه و ورزش‌های سگی آماده می‌شوند.",
-};
+/** The advanced tracks are ordinary catalogue rows: their branches are the `commands`, their lead is the `summary`. */
+const TRACK_SLUGS = ["working-dogs", "sport"];
 
 /** The grid column (1-based) a course's minimum age falls in. */
 function monthColumn(months: number) {
@@ -54,7 +55,15 @@ function monthColumn(months: number) {
  * Below `xl` the columns get too narrow for the course names, so the lanes become plain lists with the age written on
  * each course.
  */
-export function CourseMap() {
+export function CourseMap({ courses }: { courses: Course[] }) {
+  /*------ Resolve Groups ------*/
+  const bySlug = new Map(courses.map((course) => [course.slug, course]));
+  const groups = GROUPS.map((group) => ({
+    ...group,
+    rows: group.rows.map((row) => row.flatMap((slug) => bySlug.get(slug) ?? [])).filter((row) => row.length > 0),
+  })).filter((group) => group.rows.length > 0);
+  const tracks = TRACK_SLUGS.flatMap((slug) => bySlug.get(slug) ?? []);
+
   return (
     <section
       id="courses"
@@ -81,7 +90,7 @@ export function CourseMap() {
           </ol>
 
           {/*------ Groups ------*/}
-          {GROUPS.map((group) => (
+          {groups.map((group) => (
             <div
               key={group.title}
               className="border-t py-6 first-of-type:border-t-0 xl:col-span-2 xl:grid xl:grid-cols-subgrid xl:border-t xl:py-5"
@@ -104,16 +113,16 @@ export function CourseMap() {
             is for any age, so they sit off the ruler. One panel with hairline dividers, so the three read as a set of
             doors rather than three loose cards; each column pins its footnote to the bottom so they line up. */}
         <ul className="mt-10 grid overflow-hidden rounded-3xl border bg-card md:grid-cols-3">
-          {ADVANCED_TRACKS.map((track) => (
+          {tracks.map((track) => (
             <TrackColumn
               key={track.slug}
               to={`/courses/${track.slug}`}
               title={track.title}
-              lead={TRACK_LEADS[track.slug]}
+              lead={track.summary}
               footnote="شرایط و برنامه‌ی هر گرایش بعد از ارزیابی سگت مشخص می‌شود."
             >
               <ul className="flex flex-wrap gap-2">
-                {track.branches.map((branch) => (
+                {track.commands.map((branch) => (
                   <li
                     key={branch}
                     className="rounded-full border border-primary/35 px-3 py-1 text-sm font-bold text-primary"
@@ -153,9 +162,9 @@ export function CourseMap() {
  */
 function Lane({ courses }: { courses: Course[] }) {
   const first = courses[0]!;
-  const lineStart = monthColumn(first.minAge!);
+  const lineStart = monthColumn(first.minAgeMonths!);
   // Grid lines are numbered one past the column, so the last column ends at line 8.
-  const lineEnd = first.maxAge ? monthColumn(first.maxAge) + 1 : MONTHS.length + 1;
+  const lineEnd = first.maxAgeMonths ? monthColumn(first.maxAgeMonths) + 1 : MONTHS.length + 1;
 
   return (
     <ol className="flex flex-wrap gap-2 xl:grid xl:grid-cols-7 xl:gap-x-3">
@@ -165,9 +174,9 @@ function Lane({ courses }: { courses: Course[] }) {
         className="hidden h-0.5 self-center rounded-full bg-primary/45 xl:row-start-1 xl:block"
       />
       {courses.map((course) => {
-        const start = monthColumn(course.minAge!);
+        const start = monthColumn(course.minAgeMonths!);
         // A course with an upper bound covers its whole window, so its chip spans it.
-        const end = course.maxAge ? monthColumn(course.maxAge) + 1 : start + 1;
+        const end = course.maxAgeMonths ? monthColumn(course.maxAgeMonths) + 1 : start + 1;
         return (
           <li
             key={course.slug}
@@ -182,7 +191,7 @@ function Lane({ courses }: { courses: Course[] }) {
               <span className="text-xs text-muted-foreground">
                 {/* The ruler already says the age on desktop; lists and screen readers still need it. */}
                 <span className="xl:sr-only">{describeAge(course)}، </span>
-                {formatNumberFa(course.sessions!)} جلسه، {describePlace(course)}
+                {formatNumberFa(course.sessionCount!)} جلسه، {describePlace(course)}
               </span>
             </Link>
           </li>

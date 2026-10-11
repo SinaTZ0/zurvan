@@ -2,8 +2,8 @@ import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { DoodleFrieze } from "~/routes/home/components/hero-doodles";
-import { SectionHeading } from "~/routes/home/components/section-heading";
+import { DoodleFrieze } from "~/components/doodles";
+import { SectionHeading } from "~/components/section-heading";
 
 // The real order of starting with the trainer, so the numbering carries meaning.
 const STEPS = [
