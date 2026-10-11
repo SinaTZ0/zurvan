@@ -215,8 +215,6 @@ export async function findSessionByTrainer({
 }
 
 /** The trainer's sessions that start from `from` up to, not including, `to`, cancelled ones left out, in time order. */
-const sessionsBefore = alias(trainingSession, "sessions_before");
-
 export function findTrainerSessionsInRange({
   db,
   trainerId,
@@ -228,10 +226,10 @@ export function findTrainerSessionsInRange({
       session: trainingSession,
       // The same order as the session card's boxes, so the label and the card agree.
       position: sql<number>`(
-        select count(*)::int from ${sessionsBefore}
-        where ${sessionsBefore.enrollmentId} = ${trainingSession.enrollmentId}
-          and ${sessionsBefore.status} <> 'cancelled'
-          and (${sessionsBefore.startsAt}, ${sessionsBefore.id}) <= (${trainingSession.startsAt}, ${trainingSession.id})
+        select count(*)::int from training_session as before
+        where before.enrollment_id = ${trainingSession.enrollmentId}
+          and before.status <> 'cancelled'
+          and (before.starts_at, before.id) <= (${trainingSession.startsAt}, ${trainingSession.id})
       )`,
       plannedSessions: enrollment.plannedSessions,
       courseTitle: course.title,

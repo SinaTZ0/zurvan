@@ -23,16 +23,12 @@ export async function loader({ request }: Route.LoaderArgs) {
   const show = parseShow(new URL(request.url).searchParams.get("show"));
   const api = createServerClient(request).enrollment.trainer;
 
-  // The list is cheap and already ordered for the trainer (waiting first, then by next session), so it is read whole and
-  // the filter in the URL decides what is shown. That also gives the filter its counts.
+  // The list is already ordered for the trainer (waiting first, then by next session) and carries what every row
+  // needs, so it is read whole and the filter in the URL decides what is shown. That also gives the filter its counts.
   const summaries = await api.list({});
   const wanted = summaries.filter((summary) =>
     show === "all" ? true : show === "live" ? isLive(summary.status) : !isLive(summary.status),
   );
-
-  // The summary has neither the owner's phone and preferred times nor the sessions (the strip needs them), so each
-  // shown row is read in full. A trainer has a handful of dogs in training at once.
-  const enrollments = await Promise.all(wanted.map((summary) => api.get({ id: summary.id })));
 
   return {
     show,
@@ -41,9 +37,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       finished: summaries.filter((summary) => !isLive(summary.status)).length,
       all: summaries.length,
     } satisfies Record<ShowFilter, number>,
-    waiting: enrollments.filter((enrollment) => enrollment.status === "scheduling"),
-    active: enrollments.filter((enrollment) => enrollment.status === "active"),
-    finished: enrollments
+    waiting: wanted.filter((enrollment) => enrollment.status === "scheduling"),
+    active: wanted.filter((enrollment) => enrollment.status === "active"),
+    finished: wanted
       .filter((enrollment) => !isLive(enrollment.status))
       .sort(
         (a, b) =>

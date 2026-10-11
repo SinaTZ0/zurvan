@@ -5,12 +5,12 @@ import { Link } from "~/components/link";
 import { SessionCard } from "~/components/session-card";
 import { formatJalaliDate } from "~/lib/jalali";
 import { utcToTehranParts } from "~/lib/tehran-time";
-import type { TrainerEnrollment } from "~/orpc/enrollment/contract";
+import type { TrainerEnrollmentSummary } from "~/orpc/enrollment/contract";
 import { DogMark } from "~/routes/trainer_enrollments/components/dog-mark";
 
 /*===== Finished Ledger =====*/
 /** Passed, failed and cancelled courses, newest first: the date it ended, the dog, the course and how it ended. */
-export function FinishedLedger({ enrollments }: { enrollments: readonly TrainerEnrollment[] }) {
+export function FinishedLedger({ enrollments }: { enrollments: readonly TrainerEnrollmentSummary[] }) {
   return (
     <section aria-labelledby="finished-title">
       <h2 id="finished-title" className="mb-3 text-lg font-extrabold">

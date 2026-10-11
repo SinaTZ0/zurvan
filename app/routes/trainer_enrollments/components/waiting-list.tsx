@@ -3,7 +3,7 @@ import { PhoneIcon } from "lucide-react";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
-import type { TrainerEnrollment } from "~/orpc/enrollment/contract";
+import type { TrainerEnrollmentSummary } from "~/orpc/enrollment/contract";
 import { DogMark } from "~/routes/trainer_enrollments/components/dog-mark";
 
 /*===== Waiting List =====*/
@@ -11,7 +11,7 @@ import { DogMark } from "~/routes/trainer_enrollments/components/dog-mark";
  * Paid, and nobody has been called yet: the trainer's real to-do. Each row has what the call is about, the owner's
  * phone as a `tel:` link and the times they wrote down, quoted, then goes to the page where the first session is set.
  */
-export function WaitingList({ enrollments }: { enrollments: readonly TrainerEnrollment[] }) {
+export function WaitingList({ enrollments }: { enrollments: readonly TrainerEnrollmentSummary[] }) {
   return (
     <section
       aria-labelledby="waiting-title"
@@ -38,15 +38,15 @@ export function WaitingList({ enrollments }: { enrollments: readonly TrainerEnro
             {/*------ The Call ------*/}
             <div className="flex min-w-0 flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-x-4">
-                <span className="text-sm font-bold">{enrollment.customer.name}</span>
-                {enrollment.customer.phoneNumber && (
+                <span className="text-sm font-bold">{enrollment.customerName}</span>
+                {enrollment.customerPhoneNumber && (
                   <a
-                    href={`tel:${enrollment.customer.phoneNumber}`}
+                    href={`tel:${enrollment.customerPhoneNumber}`}
                     className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline"
                   >
                     <PhoneIcon aria-hidden strokeWidth={1.7} className="size-4" />
                     <span dir="ltr" className="tabular-nums">
-                      {toPersianDigits(enrollment.customer.phoneNumber)}
+                      {toPersianDigits(enrollment.customerPhoneNumber)}
                     </span>
                   </a>
                 )}

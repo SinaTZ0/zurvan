@@ -5,7 +5,6 @@ import { formatNumberFa } from "~/lib/digits";
 import { formatSlotDay, formatSlotTime } from "~/lib/tehran-time";
 import type { ScheduleSlot } from "~/orpc/assessment/contract";
 import type { TrainerSession } from "~/orpc/enrollment/contract";
-import type { SessionPosition } from "~/routes/trainer_schedule/session-positions";
 
 type WaitingSlot = ScheduleSlot & { assessment: NonNullable<ScheduleSlot["assessment"]> };
 
@@ -18,11 +17,9 @@ type WaitingSlot = ScheduleSlot & { assessment: NonNullable<ScheduleSlot["assess
 export function AwaitingOutcome({
   slots,
   sessions,
-  positions,
 }: {
   slots: readonly WaitingSlot[];
   sessions: readonly TrainerSession[];
-  positions: Record<string, SessionPosition>;
 }) {
   const rows = [
     ...slots.map((slot) => ({ kind: "assessment" as const, key: slot.id, startsAt: slot.startsAt, slot })),
@@ -40,7 +37,6 @@ export function AwaitingOutcome({
       <ul className="mt-2 divide-y">
         {rows.map((row) => {
           const dogName = row.kind === "assessment" ? row.slot.assessment.dog.name : row.session.dog.name;
-          const position = row.kind === "session" ? positions[row.session.id] : undefined;
 
           return (
             <li key={row.key} className="flex flex-wrap items-center gap-x-4 gap-y-3 py-3">
@@ -51,8 +47,7 @@ export function AwaitingOutcome({
                   {row.kind === "session" && (
                     <>
                       {row.session.courseTitle}
-                      {position &&
-                        `، جلسه‌ی ${formatNumberFa(position.position)} از ${formatNumberFa(position.planned)}`}
+                      {`، جلسه‌ی ${formatNumberFa(row.session.position)} از ${formatNumberFa(row.session.plannedSessions)}`}
                       {"؛ "}
                     </>
                   )}

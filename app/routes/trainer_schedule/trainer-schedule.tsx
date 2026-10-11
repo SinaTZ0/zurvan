@@ -9,7 +9,6 @@ import { AwaitingOutcome } from "~/routes/trainer_schedule/components/awaiting-o
 import { OpenTimesDialog } from "~/routes/trainer_schedule/components/open-times-dialog";
 import { ScheduleHeader } from "~/routes/trainer_schedule/components/schedule-header";
 import { WeekView } from "~/routes/trainer_schedule/components/week-view";
-import { sessionPositions, type SessionPosition } from "~/routes/trainer_schedule/session-positions";
 import { resolveWeekStart, weekRange } from "~/routes/trainer_schedule/week";
 
 import type { Route } from "./+types/trainer-schedule";
@@ -40,7 +39,6 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   // A session in the past that was neither held nor missed is waiting for the trainer; `to` is exclusive and ends now.
   const waitingSessions = recentSessions.filter((session) => session.status === "scheduled");
-  const positions = await loadPositions({ client, sessions: [...weekSessions, ...waitingSessions] });
 
   const waiting = recentSlots.filter(hasBookedAssessment);
   // Hide what can't be acted on: times that have passed without a booking, and slots that were closed.
@@ -48,23 +46,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     slot.status === "open" ? slot.startsAt.getTime() > now.getTime() : slot.assessment !== null,
   );
 
-  return { weekStart, today, slots: shown, waiting, sessions: weekSessions, waitingSessions, positions };
-}
-
-/**
- * «جلسه‌ی ۳ از ۷» needs the whole enrollment, which a week's sessions don't carry, so each enrollment that appears is
- * read once. A trainer has a handful of dogs in training, so the fan-out stays small.
- */
-async function loadPositions({
-  client,
-  sessions,
-}: {
-  client: ReturnType<typeof createServerClient>;
-  sessions: readonly { enrollmentId: string }[];
-}): Promise<Record<string, SessionPosition>> {
-  const ids = [...new Set(sessions.map((session) => session.enrollmentId))];
-  const enrollments = await Promise.all(ids.map((id) => client.enrollment.trainer.get({ id })));
-  return Object.assign({}, ...enrollments.map(sessionPositions)) as Record<string, SessionPosition>;
+  return { weekStart, today, slots: shown, waiting, sessions: weekSessions, waitingSessions };
 }
 
 /** A slot whose live assessment is still `booked`; the loader's range ends now, so its time has started. */
@@ -76,7 +58,7 @@ function hasBookedAssessment(
 
 /*===== Page =====*/
 export default function TrainerSchedulePage({ loaderData }: Route.ComponentProps) {
-  const { weekStart, today, slots, waiting, sessions, waitingSessions, positions } = loaderData;
+  const { weekStart, today, slots, waiting, sessions, waitingSessions } = loaderData;
   const [composerOpen, setComposerOpen] = useState(false);
   const openComposer = () => setComposerOpen(true);
 
@@ -86,7 +68,7 @@ export default function TrainerSchedulePage({ loaderData }: Route.ComponentProps
 
       {/*===== Waiting for an Outcome =====*/}
       {(waiting.length > 0 || waitingSessions.length > 0) && (
-        <AwaitingOutcome slots={waiting} sessions={waitingSessions} positions={positions} />
+        <AwaitingOutcome slots={waiting} sessions={waitingSessions} />
       )}
 
       {/*===== The Week =====*/}
@@ -99,7 +81,7 @@ export default function TrainerSchedulePage({ loaderData }: Route.ComponentProps
             </Button>
           </p>
         )}
-        <WeekView weekStart={weekStart} today={today} slots={slots} sessions={sessions} positions={positions} />
+        <WeekView weekStart={weekStart} today={today} slots={slots} sessions={sessions} />
       </section>
 
       <OpenTimesDialog open={composerOpen} onOpenChange={setComposerOpen} today={today} />

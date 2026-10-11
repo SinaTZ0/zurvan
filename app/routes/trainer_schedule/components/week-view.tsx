@@ -6,7 +6,6 @@ import type { TrainerSession } from "~/orpc/enrollment/contract";
 import { BookedSlot } from "~/routes/trainer_schedule/components/booked-slot";
 import { OpenSlot } from "~/routes/trainer_schedule/components/open-slot";
 import { SessionBlock } from "~/routes/trainer_schedule/components/session-block";
-import type { SessionPosition } from "~/routes/trainer_schedule/session-positions";
 import { jalaliDayMonth, weekDays } from "~/routes/trainer_schedule/week";
 
 /*===== Week View =====*/
@@ -17,21 +16,18 @@ import { jalaliDayMonth, weekDays } from "~/routes/trainer_schedule/week";
  *
  * @param slots Only what is shown: open times still ahead, and booked ones. The caller drops the rest.
  * @param sessions The training sessions of the week, shown among the slots by time.
- * @param positions Where each session sits in its course, by session id.
  */
 export function WeekView({
   weekStart,
   today,
   slots,
   sessions,
-  positions,
 }: {
   weekStart: string;
   /** `YYYY-MM-DD` in Tehran, to mark today's head. */
   today: string;
   slots: readonly ScheduleSlot[];
   sessions: readonly TrainerSession[];
-  positions: Record<string, SessionPosition>;
 }) {
   const days = weekDays(weekStart);
 
@@ -77,7 +73,7 @@ export function WeekView({
                 {entries.map(({ key, slot, session }) => (
                   <li key={key}>
                     {session ? (
-                      <SessionBlock session={session} position={positions[session.id]} />
+                      <SessionBlock session={session} />
                     ) : slot.assessment ? (
                       <BookedSlot slot={slot} assessment={slot.assessment} />
                     ) : (

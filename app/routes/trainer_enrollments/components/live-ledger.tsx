@@ -4,7 +4,7 @@ import { Link } from "~/components/link";
 import { SessionCard } from "~/components/session-card";
 import { formatNumberFa } from "~/lib/digits";
 import { formatSlotDay, formatSlotTime } from "~/lib/tehran-time";
-import type { TrainerEnrollment } from "~/orpc/enrollment/contract";
+import type { TrainerEnrollmentSummary } from "~/orpc/enrollment/contract";
 import { DogMark } from "~/routes/trainer_enrollments/components/dog-mark";
 
 const COLUMNS = "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1.5fr)_minmax(0,1fr)_1.5rem]";
@@ -16,7 +16,7 @@ const COLUMNS = "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1.5fr)_m
  *
  * @param now Passed from the loader so the server and the browser agree on what is overdue.
  */
-export function LiveLedger({ enrollments, now }: { enrollments: readonly TrainerEnrollment[]; now: Date }) {
+export function LiveLedger({ enrollments, now }: { enrollments: readonly TrainerEnrollmentSummary[]; now: Date }) {
   return (
     <section aria-labelledby="live-title">
       <h2 id="live-title" className="mb-3 text-lg font-extrabold">
@@ -43,7 +43,7 @@ export function LiveLedger({ enrollments, now }: { enrollments: readonly Trainer
                 <DogMark name={enrollment.dog.name} photo={enrollment.dog.photo} />
                 <span className="min-w-0">
                   <span className="block truncate font-bold">{enrollment.dog.name}</span>
-                  <span className="block truncate text-sm text-muted-foreground">{enrollment.customer.name}</span>
+                  <span className="block truncate text-sm text-muted-foreground">{enrollment.customerName}</span>
                 </span>
               </span>
               <span className="min-w-0 text-pretty">{enrollment.course.title}</span>
@@ -59,7 +59,7 @@ export function LiveLedger({ enrollments, now }: { enrollments: readonly Trainer
 }
 
 /*===== Next Session =====*/
-function NextSession({ enrollment, now }: { enrollment: TrainerEnrollment; now: Date }) {
+function NextSession({ enrollment, now }: { enrollment: TrainerEnrollmentSummary; now: Date }) {
   const overdue = enrollment.sessions.filter(
     (session) => session.status === "scheduled" && session.startsAt.getTime() <= now.getTime(),
   ).length;
