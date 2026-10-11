@@ -5,7 +5,7 @@ import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select"
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
 import { isoToJalali, JALALI_MONTHS, jalaliMonthLength, todayIso } from "~/lib/jalali";
 import { DOG_MAX_AGE_YEARS } from "~/orpc/dog/constants";
-import { SegmentedChoice } from "~/routes/account_dog_form/components/segmented-choice";
+import { SegmentedChoice } from "~/components/segmented-choice";
 import {
   AGE_MONTH_OPTIONS,
   AGE_YEAR_OPTIONS,

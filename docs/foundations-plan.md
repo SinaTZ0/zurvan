@@ -39,13 +39,13 @@ A single `SHOWCASE_MODE` env flag turns all three on. With it off, the app refus
 
 **Layouts and guards** (layout routes in `routes.ts`, flat slices):
 
-| Layout           | URL prefix | Guard                                                             |
-| ---------------- | ---------- | ----------------------------------------------------------------- |
-| `layout_public`  | `/`        | none                                                              |
-| `layout_account` | `/account` | signed in, any role but Admin                                     |
-| `layout_trainer` | `/trainer` | has a Trainer Profile (a `Trainer`, or the Admin as head trainer) |
-| `layout_partner` | `/partner` | role `Partner`                                                    |
-| `layout_admin`   | `/admin`   | role `Admin`                                                      |
+| Layout           | URL prefix | Guard                                                                                                           |
+| ---------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| `layout_public`  | `/`        | none                                                                                                            |
+| `layout_account` | `/account` | signed in, any role but Admin                                                                                   |
+| `layout_trainer` | `/trainer` | has a Trainer Profile (a `Trainer`, or the Admin as head trainer); built, guarded by role until entity 2 exists |
+| `layout_partner` | `/partner` | role `Partner`                                                                                                  |
+| `layout_admin`   | `/admin`   | role `Admin`                                                                                                    |
 
 Guards are React Router **middleware** on the layout route: it loads the session once, puts the user in the router context for every child loader, and redirects to `/auth?redirectTo=…` when signed out. oRPC procedures check the role again with a `requireRole` middleware; the UI guard is never the only check.
 

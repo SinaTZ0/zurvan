@@ -21,7 +21,7 @@ import { BirthDateField } from "~/routes/account_dog_form/components/birth-date-
 import { DogPreview } from "~/routes/account_dog_form/components/dog-preview";
 import { FormSection } from "~/routes/account_dog_form/components/form-section";
 import { PhotoPicker } from "~/routes/account_dog_form/components/photo-picker";
-import { SegmentedChoice } from "~/routes/account_dog_form/components/segmented-choice";
+import { SegmentedChoice } from "~/components/segmented-choice";
 import { useSaveDog } from "~/routes/account_dog_form/hooks/use-save-dog";
 import {
   type DogFormInput,

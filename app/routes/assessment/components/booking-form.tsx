@@ -12,7 +12,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { MEETING_PLACE_KINDS, MEETING_PLACE_KIND_LABELS } from "~/orpc/assessment/constants";
 import type { AvailableSlot } from "~/orpc/assessment/contract";
 import { errorDataSchema } from "~/orpc/errors";
-import { SegmentedChoice } from "~/routes/account_dog_form/components/segmented-choice";
+import { SegmentedChoice } from "~/components/segmented-choice";
 import { BookingPart } from "~/routes/assessment/components/booking-part";
 import { Diary } from "~/routes/assessment/components/diary";
 import { DogPicker, NoDogs } from "~/routes/assessment/components/dog-picker";

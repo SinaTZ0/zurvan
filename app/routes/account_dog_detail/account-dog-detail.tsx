@@ -8,7 +8,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { describeDog } from "~/lib/dog-format";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogNotes } from "~/routes/account_dog_detail/components/dog-notes";
-import { DogProfile } from "~/routes/account_dog_detail/components/dog-profile";
+import { DogProfile } from "~/components/dog-profile";
 import { DogRecord } from "~/routes/account_dog_detail/components/dog-record";
 import { NextStepPanel } from "~/routes/account_dog_detail/components/next-step-panel";
 

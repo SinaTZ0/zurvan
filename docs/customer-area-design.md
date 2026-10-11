@@ -6,7 +6,8 @@ calmer, denser, no hero scenes. For the steps behind each brief, see [design-flo
 and voice, [storefront-design.md](storefront-design.md).
 
 > **Status: built.** The shell, Dogs List, Dog Form and Dog Detail are live at `/account`. Agreed with the owner:
-> photos, the gold-leaf tag on Dog Detail, and trainers and partners landing on the storefront until their areas exist.
+> photos, the gold-leaf tag on Dog Detail, and partners landing on the storefront until their area exists (trainers and the Admin now land on `/trainer`,
+> see [assessment-design.md](assessment-design.md)).
 
 ## What the Area Must Feel Like
 
@@ -26,11 +27,11 @@ K9 handlers' dogs wear a stamped metal tag. Here every dog gets one: a small rou
 the dog's name engraved in Amiri, and its microchip number stamped underneath in Latin digits (or the sex and age
 when there is no chip). It is the dog's mark everywhere in the area:
 
-| Where       | Size                  | Finish                                                                 |
-| ----------- | --------------------- | ---------------------------------------------------------------------- |
-| Dogs List   | 64 px, the row's mark | the photo's `thumb`; without one, the engraved tag with the initial    |
-| Dog Form    | live preview          | the detail header's composition, engraved; the name stamps in as typed |
-| Dog Detail  | page header           | **gold leaf**, hanging from the photo: the page's one gold-leaf object |
+| Where      | Size                  | Finish                                                                 |
+| ---------- | --------------------- | ---------------------------------------------------------------------- |
+| Dogs List  | 64 px, the row's mark | the photo's `thumb`; without one, the engraved tag with the initial    |
+| Dog Form   | live preview          | the detail header's composition, engraved; the name stamps in as typed |
+| Dog Detail | page header           | **gold leaf**, hanging from the photo: the page's one gold-leaf object |
 
 The photo and the tag go together the way they do on a real dog: the tag **hangs** from the photo's bottom-start
 corner, tilted a few degrees, on a short ring. A dog without a photo shows the tag alone, larger. It is a custom SVG
@@ -171,18 +172,18 @@ component (`DogTag`), in `app/components/` because all three pages use it.
 
 ## Shared Pieces This Needs
 
-| Piece                                 | Where                          | Note                                                                 |
-| ------------------------------------- | ------------------------------ | -------------------------------------------------------------------- |
-| `DogTag`                              | `app/components/dog-tag.tsx`   | SVG tag: `engraved` and `leaf` finishes, sizes; story in Storybook   |
-| `describeDog` (sex, age, weight line) | `app/lib/dog-format.ts`        | «نر، حدوداً ۳ ساله، ۳۲٫۵ کیلو»; age from the birth date, never stored |
-| Jalali date helpers                   | `app/lib/jalali.ts`            | format with `Intl` (`fa-IR-u-ca-persian`); Jalali ↔ Gregorian for the form needs a converter: the small `jalaali-js` package |
-| Segmented control                     | `app/components/ui/toggle-group.tsx` | already there; check its look against the tokens first          |
-| Breed suggestions                     | `app/orpc/dog/constants.ts`    | ~30 common breeds in Iran, Persian names                             |
+| Piece                                 | Where                                | Note                                                                                                                         |
+| ------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `DogTag`                              | `app/components/dog-tag.tsx`         | SVG tag: `engraved` and `leaf` finishes, sizes; story in Storybook                                                           |
+| `describeDog` (sex, age, weight line) | `app/lib/dog-format.ts`              | «نر، حدوداً ۳ ساله، ۳۲٫۵ کیلو»; age from the birth date, never stored                                                        |
+| Jalali date helpers                   | `app/lib/jalali.ts`                  | format with `Intl` (`fa-IR-u-ca-persian`); Jalali ↔ Gregorian for the form needs a converter: the small `jalaali-js` package |
+| Segmented control                     | `app/components/ui/toggle-group.tsx` | already there; check its look against the tokens first                                                                       |
+| Breed suggestions                     | `app/orpc/dog/constants.ts`          | ~30 common breeds in Iran, Persian names                                                                                     |
 
 ## Decided
 
 - **Photos** are in: the media pipeline ([media.md](media.md)) is built for them, on the local SeaweedFS.
 - **The gold-leaf tag** on Dog Detail is the exception to "no gold leaf on the first screen": small, and the
   subject's own metal.
-- **Trainers and partners** land on the storefront after signing in until their areas exist. The dog pages are
+- **Partners** land on the storefront after signing in until their area exists; trainers and the Admin land on `/trainer`. The dog pages are
   customer-only.

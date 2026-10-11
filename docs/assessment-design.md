@@ -6,7 +6,7 @@ shows afterwards, and the smallest trainer area that closes the loop. The bookin
 [customer-area-design.md](customer-area-design.md): same theme, calmer, denser. For the steps behind each brief, see
 [design-flow.md](design-flow.md).
 
-> **Status: agreed with the owner, being built.** The API is built (`assessment.*`, see the end of this doc).
+> **Status: built.** Every page here is live; the API is `assessment.*` (see the end of this doc).
 
 ## What It Must Feel Like
 
@@ -275,3 +275,12 @@ the dog a record.
   trainer's open slots.
 - **A dog with a record can't book a free assessment.** Having a record means it has been assessed (or Arman knows
   it), so it books its next course instead.
+
+## Loose Ends
+
+- **Times on the trainer's composer** use the browser's native time field, which shows Latin digits («17:00»).
+- **The demo seed** books Rocky an hour before it runs, so seeding late at night gives a late-evening slot.
+- **`DogTag` at its large size** wraps a three-letter name like «رکس» onto two lines (seen while testing the trainer
+  pages).
+- **Not built yet:** marking a dog as already known from Assessment Detail, the day-before reminders (pg-boss sweep),
+  and closing past open slots (they are hidden from the week instead).

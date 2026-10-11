@@ -36,17 +36,17 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 These are the URLs the home page, header and footer already link to. They fix the public URL scheme; build the pages
 at these paths.
 
-| URL                                       | Page (see [app-phase-one-pages.md](app-phase-one-pages.md))  | Linked from                                                     |
-| ----------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
-| `/assessment`                             | Book a Free Assessment                                       | hero, trainer section, every course row, closing banner, footer |
-| `/courses`, `/courses?q=`                 | Course Catalogue (the header search submits `q` here)        | course map, header search, footer                               |
-| `/courses/:slug`                          | Course Detail                                                | course rows, course map chips                                   |
-| `/courses/working-dogs`, `/courses/sport` | Course Detail for the two advanced tracks (branches as tags) | course map                                                      |
-| `/behavior-modification`                  | Behavior Modification Request                                | nav, behavior row, course map, footer                           |
-| `/auth`                                   | Login / Register (built)                                     | header                                                          |
-| `/account/dogs`                           | Dogs List (built; signed in, see [customer-area-design.md](customer-area-design.md)) | closing banner, "book the next course", Course Detail |
-| `/help`, `/help/refunds`, `/privacy`      | Help and FAQ, Cancellation and Refund Rules, Privacy         | footer                                                          |
-| `/join/partner`                           | Partner Enquiry                                              | footer                                                          |
+| URL                                       | Page (see [app-phase-one-pages.md](app-phase-one-pages.md))                          | Linked from                                                     |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| `/assessment`                             | Book a Free Assessment (built)                                                       | hero, trainer section, every course row, closing banner, footer |
+| `/courses`, `/courses?q=`                 | Course Catalogue (the header search submits `q` here)                                | course map, header search, footer                               |
+| `/courses/:slug`                          | Course Detail                                                                        | course rows, course map chips                                   |
+| `/courses/working-dogs`, `/courses/sport` | Course Detail for the two advanced tracks (branches as tags)                         | course map                                                      |
+| `/behavior-modification`                  | Behavior Modification Request                                                        | nav, behavior row, course map, footer                           |
+| `/auth`                                   | Login / Register (built)                                                             | header                                                          |
+| `/account/dogs`                           | Dogs List (built; signed in, see [customer-area-design.md](customer-area-design.md)) | closing banner, "book the next course", Course Detail           |
+| `/help`, `/help/refunds`, `/privacy`      | Help and FAQ, Cancellation and Refund Rules, Privacy                                 | footer                                                          |
+| `/join/partner`                           | Partner Enquiry                                                                      | footer                                                          |
 
 The head trainer's page (Trainer Page, `/trainers/:slug`) isn't linked yet; once it exists, the trainer section should
 link to it.
@@ -209,7 +209,7 @@ Known gaps, left on purpose until the page or data behind them exists:
 - **Sample data:** the head trainer's name, years and photo; the reviews; the course and problem photos
   (`public/demo/`, `public/photo/`); the footer phone number. They are placeholders until the owner sends the real
   ones.
-- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth`, `/account/dogs` and the course pages (`/courses/:slug`).
+- **Links to unbuilt pages** return 404 today: everything in the table above except `/auth`, `/assessment`, `/account/dogs` and the course pages (`/courses/:slug`).
 - **`/join/partner`** is linked from the footer, but partners can't sign up themselves; the Admin creates them. The
   pages list now has it as Partner Enquiry, an information page with the center's phone number.
 - **The base-colour picker** in the header (`BaseColorPicker`, and the inline script in `root.tsx` that repaints its

@@ -102,8 +102,8 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Course Catalogue** (`/courses`): courses by family (3.1), with age, sessions and place. Filters: family, the dog's age, place. The header search submits `?q=` here.
 - **Course Detail** (built, `/courses/:slug`): commands, age, sessions, place, prerequisites, price, refund policy, comments, questions and reviews (3.15). The action depends on the visitor: a new dog gets "book a free assessment", a dog with a record gets "book this course", a course with a test also offers the test, and behavior modification gets "send a request". Working and sport dogs (`/courses/working-dogs`, `/courses/sport`) use this page too, with their branches until their details are known.
 - **Trainer Page:** any trainer's photo, bio, years, specialties, certificates, verified badge, the courses they own, rating and reviews (3.17). URL `/trainers/:slug`. The head trainer's page is the one the home page's trainer section should link to.
-- **Book a Free Assessment** (`/assessment`): pick or add a dog, training goal, what to change, place, then an open slot (3.3). Asks to sign in first.
-- **Behavior Modification Request** (`/behavior-modification`): dog, problem category, description, video upload (3.7). Asks to sign in first.
+- **Book a Free Assessment** (built, `/assessment`): pick or add a dog, training goal, what to change, place, then an open slot (3.3). Asks to sign in first. Only the head trainer's times are offered for now ([assessment-design.md](assessment-design.md)).
+- **Behavior Modification Request** (`/behavior-modification`): dog, problem category, description, video upload (3.7). Asks to sign in first. Only the head trainer's times are offered for now ([assessment-design.md](assessment-design.md)).
 - **Login / Register** (built, `/auth`): phone number, then 5-digit code with resend timer (2). A number seen for the first time becomes a customer account and is asked for its name once. `?redirectTo=` brings people back to the page that sent them. In showcase mode it lists the demo accounts and says the code (`12345`).
 - **Help and FAQ, Cancellation and Refund Rules, Privacy** (`/help`, `/help/refunds`, `/privacy`): plain content pages linked from the footer. The refund rules page explains 3.9 in plain Persian.
 - **Partner Enquiry** (`/join/partner`): for pet shops, clinics and groomers who want to refer customers. Partners can't sign up themselves (2), so it isn't a signup. Working default until the owner decides: a short page explaining the program, with the center's phone number to call. No form, so no new entity.
@@ -117,7 +117,7 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Checkout:** items, discount code, wallet use (3.10, 3.12). Also used to pay a behavior plan (3.7).
 - **Payment Result:** gateway callback page, success or failure with retry. For the showcase there is no gateway: "pay" always succeeds and lands here (see [foundations-plan.md](foundations-plan.md)).
 - **Enrollment Detail:** session schedule with places and notes, held count, result, refund amount preview, cancel (3.5, 3.9).
-- **My Assessments:** upcoming and past, cancel an upcoming one (3.3).
+- **My Assessments** (built, `/account/assessments`): upcoming and past, cancel an upcoming one (3.3).
 - **My Behavior Requests:** status, the trainer's plan with its expiry, pay or withdraw (3.7).
 
 ### Shared
@@ -129,8 +129,8 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 
 - **The head trainer is the Admin** (business-logic B8). He uses these pages for his own teaching, linked from the Admin panel. My Courses, Course Form and Review Changes are for assistants: he edits courses from the Admin's Course Form. His pay goes to the Admin wallet, so Wallet and Withdrawal Request are for assistants too.
 - **Trainer Dashboard:** today's sessions and assessments, enrollments waiting to be scheduled, new behavior requests.
-- **Schedule:** a week view of the trainer's assessment slots and sessions. Open slots (one or repeating), close a slot, warnings on overlaps (3.3, 3.5).
-- **Assessment Detail:** dog with its notes, customer's note and place, mark completed or no-show, write notes, pick recommended courses, mark a dog as already known (3.3).
+- **Schedule** (built for assessment slots, `/trainer`): a week view of the trainer's assessment slots and sessions. Open slots (one or repeating), close a slot, warnings on overlaps (3.3, 3.5).
+- **Assessment Detail** (built, `/trainer/assessments/:id`): dog with its notes, customer's note and place, mark completed or no-show, write notes, pick recommended courses, mark a dog as already known (3.3). Marking a dog as known isn't built yet.
 - **Enrollment Detail:** dog with its notes, customer's preferred times and address, schedule and reschedule sessions, mark held or missed, session notes, change the planned count, record the result (3.4, 3.5).
 - **Behavior Request Detail:** videos, description, propose a plan or decline (3.7).
 - **Course Form:** create, edit and resubmit; Admin-only fields are read-only after approval; shows the rejection reason (3.2).

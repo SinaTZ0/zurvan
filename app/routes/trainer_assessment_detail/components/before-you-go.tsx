@@ -7,7 +7,7 @@ import { describeDog } from "~/lib/dog-format";
 import { toPersianDigits } from "~/lib/digits";
 import { MEETING_PLACE_KIND_LABELS, TRAINING_GOAL_LABELS } from "~/orpc/assessment/constants";
 import type { TrainerAssessment } from "~/orpc/assessment/contract";
-import { DogProfile } from "~/routes/account_dog_detail/components/dog-profile";
+import { DogProfile } from "~/components/dog-profile";
 
 /*===== Before You Go =====*/
 /**
