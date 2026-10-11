@@ -3,8 +3,10 @@ import {
   bigint,
   boolean,
   check,
+  date,
   index,
   integer,
+  numeric,
   pgTable,
   primaryKey,
   text,
@@ -140,6 +142,52 @@ export const pet = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("pet_owner_id_idx").on(table.ownerId)],
+);
+
+/*===== Dogs =====*/
+// A customer's dog (docs/app-phase-one.md, entity 4). Replaces `pet` once the Dogs List UI is built; until then both
+// exist. Assessments and enrollments will point at a dog, which is why its owner can't be deleted out from under it
+// (`restrict`) and why a removed dog is only marked deleted.
+//
+// There is no photo column yet: the media pipeline (docs/media.md) isn't built, and it will add `photo_media_id`.
+
+export const dog = pgTable(
+  "dog",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: text("owner_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    /** Free text; the form suggests common breeds. */
+    breed: text("breed"),
+    // Plain text instead of pg enums, so adding a value is a code change, not a migration. Allowed values live in
+    // `app/orpc/dog/constants.ts`.
+    sex: text("sex").notNull(),
+    /** `YYYY-MM-DD`, Gregorian. Age is calculated from it and never stored. */
+    birthDate: date("birth_date", { mode: "string" }).notNull(),
+    /** The owner gave an age, not a date ("approximate is fine"), so `birth_date` is an estimate. */
+    birthDateApproximate: boolean("birth_date_approximate").notNull().default(false),
+    /** Kilograms, one decimal. */
+    weightKg: numeric("weight_kg", { precision: 4, scale: 1, mode: "number" }).notNull(),
+    isNeutered: boolean("is_neutered").notNull(),
+    microchipNumber: text("microchip_number"),
+    vaccinationStatus: text("vaccination_status").notNull().default("unknown"),
+    /** Shown to the trainer, e.g. a fear of other dogs. */
+    behaviorNotes: text("behavior_notes"),
+    /** Shown to the trainer. */
+    medicalNotes: text("medical_notes"),
+    /** Set by a trainer or the Admin for a dog they already know, which gives it a record. Customers can't set it. */
+    knownSince: date("known_since", { mode: "string" }),
+    /** Soft delete: the dog's history (assessments, enrollments) stays. */
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("dog_owner_id_idx").on(table.ownerId)],
 );
 
 /*===== Courses =====*/

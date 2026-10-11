@@ -1,4 +1,11 @@
 import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
+import {
+  createDogProcedure,
+  getDogProcedure,
+  listDogsProcedure,
+  removeDogProcedure,
+  updateDogProcedure,
+} from "~/orpc/dog/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { createPetProcedure, listPetsProcedure } from "~/orpc/pet/procedure";
 
@@ -8,6 +15,13 @@ export const router = implementer.router({
   course: {
     list: listCoursesProcedure,
     get: getCourseProcedure,
+  },
+  dog: {
+    list: listDogsProcedure,
+    get: getDogProcedure,
+    create: createDogProcedure,
+    update: updateDogProcedure,
+    remove: removeDogProcedure,
   },
   pet: {
     list: listPetsProcedure,

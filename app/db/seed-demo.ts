@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { inArray, sql } from "drizzle-orm";
 
 import { db } from "~/db/client.server";
-import { pet, user } from "~/db/schema";
+import { dog, user } from "~/db/schema";
 import { env } from "~/env.server";
 import { DEMO_ACCOUNTS } from "~/lib/demo-accounts";
 import { phonePlaceholderEmail } from "~/lib/phone";
@@ -15,10 +15,46 @@ import { phonePlaceholderEmail } from "~/lib/phone";
 //
 // Showcase only: these accounts have well-known numbers and a public code, so the script refuses to run otherwise.
 
-/** The first demo customer's dogs. The second customer has none, to show the empty state. */
+/** `YYYY-MM-DD` for a date `months` months before today, so the demo dogs keep their ages whenever it is seeded. */
+function monthsAgo(months: number): string {
+  const date = new Date();
+  date.setMonth(date.getMonth() - months);
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * The first demo customer's dogs. The second customer has none, to show the empty state. Leo has a record (Arman
+ * trained him before the site existed); Pesteh is new, so she starts with a free assessment.
+ */
 const DEMO_DOGS = [
-  { name: "لئو", breed: "ژرمن شپرد", ageYears: 3 },
-  { name: "پسته", breed: "پامرانین", ageYears: 1 },
+  {
+    name: "لئو",
+    breed: "ژرمن شپرد",
+    sex: "male",
+    birthDate: monthsAgo(36),
+    birthDateApproximate: true,
+    weightKg: 32.5,
+    isNeutered: true,
+    microchipNumber: "982000412345678",
+    vaccinationStatus: "up_to_date",
+    behaviorNotes: "از صدای موتور و اسکیت می‌ترسد و پارس می‌کند.",
+    medicalNotes: null,
+    knownSince: monthsAgo(14),
+  },
+  {
+    name: "پسته",
+    breed: "پامرانین",
+    sex: "female",
+    birthDate: monthsAgo(10),
+    birthDateApproximate: false,
+    weightKg: 2.8,
+    isNeutered: false,
+    microchipNumber: null,
+    vaccinationStatus: "partial",
+    behaviorNotes: "وقتی تنها می‌ماند زوزه می‌کشد.",
+    medicalNotes: "به مرغ حساسیت دارد.",
+    knownSince: null,
+  },
 ];
 
 async function seedDemo() {
@@ -60,15 +96,25 @@ async function seedDemo() {
     const customers = accounts.filter((account) =>
       DEMO_ACCOUNTS.some((demo) => demo.phoneNumber === account.phoneNumber && demo.role === "customer"),
     );
-    await tx.delete(pet).where(
+    await tx.delete(dog).where(
       inArray(
-        pet.ownerId,
+        dog.ownerId,
         customers.map((customer) => customer.id),
       ),
     );
     const owner = customers[0];
     if (owner) {
-      await tx.insert(pet).values(DEMO_DOGS.map((dog) => ({ ...dog, ownerId: owner.id, species: "dog" })));
+      // One insert shares one `now()`, so space the creation times out to keep the list in the order above.
+      const start = Date.now() - DEMO_DOGS.length * 60_000;
+      await tx
+        .insert(dog)
+        .values(
+          DEMO_DOGS.map((demoDog, index) => ({
+            ...demoDog,
+            ownerId: owner.id,
+            createdAt: new Date(start + index * 60_000),
+          })),
+        );
     }
 
     console.log(`Seeded ${accounts.length} demo accounts and ${owner ? DEMO_DOGS.length : 0} dogs.`);
