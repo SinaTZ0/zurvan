@@ -20,7 +20,7 @@ import type { Dog } from "~/orpc/dog/contract";
 import { listDogs } from "~/orpc/dog/service";
 import type { CancelledByRole, EnrollmentKind } from "~/orpc/enrollment/constants";
 import type { BookingOptions, CheckoutOrder } from "~/orpc/order/contract";
-import type { IneligibilityKind } from "~/orpc/order/constants";
+import type { IneligibilityKind, UnavailableKind } from "~/orpc/order/constants";
 import { toCheckoutOrder } from "~/orpc/order/mapper";
 import {
   addDiscountUse,
@@ -106,18 +106,33 @@ function purchaseName({ kind, title }: { kind: EnrollmentKind; title: string }):
 //     dog trained elsewhere joins a path midway. The age range and "not already enrolled" still apply.
 //   - An age range is inclusive in whole months: BMC's 6–7 months takes a dog of 7 months and 20 days.
 
-/** Why a course, or its test, can't be booked online at all. Null when it can. */
-function courseUnavailableReason({ course, kind }: { course: CourseRecord; kind: EnrollmentKind }): string | null {
-  if (course.bookingKind === "behavior-request") return "اصلاح رفتار با فرستادن درخواست و ویدیوی رفتار سگ شروع می‌شود.";
-  if (kind === "test") return course.testPrice === null ? "این دوره تست ندارد." : null;
+/** Why a course, or its test, can't be booked online at all, as a kind and a Persian sentence. Null when it can. */
+function courseUnavailability({
+  course,
+  kind,
+}: {
+  course: CourseRecord;
+  kind: EnrollmentKind;
+}): { kind: UnavailableKind; message: string } | null {
+  if (course.bookingKind === "behavior-request") {
+    return { kind: "behavior-request", message: "اصلاح رفتار با فرستادن درخواست و ویدیوی رفتار سگ شروع می‌شود." };
+  }
+  if (kind === "test") return course.testPrice === null ? { kind: "no-test", message: "این دوره تست ندارد." } : null;
   if (course.price === null || course.sessionCount === null) {
     // TODO(business-logic): B17 — working and sport dogs are published without online booking.
-    return "قیمت و برنامه‌ی این دوره بعد از ارزیابی رایگان گفته می‌شود.";
+    return { kind: "no-price", message: "قیمت و برنامه‌ی این دوره بعد از ارزیابی رایگان گفته می‌شود." };
   }
   return null;
 }
 
-type DogVerdict = { problems: { kind: IneligibilityKind; message: string }[]; hasPassed: boolean };
+type DogProblem = {
+  kind: IneligibilityKind;
+  message: string;
+  courseSlug: string | null;
+  enrollmentId: string | null;
+};
+
+type DogVerdict = { problems: DogProblem[]; hasPassed: boolean };
 
 /** Checks one dog against a course. Pure: the caller has read the course's requirements and the dog's history. */
 function judgeDog({
@@ -148,6 +163,8 @@ function judgeDog({
       problems.push({
         kind: "no-record",
         message: `${dog.name} هنوز ارزیابی نشده. اول یک ارزیابی رایگان رزرو کن تا ببینم از کجا شروع کنیم.`,
+        courseSlug: null,
+        enrollmentId: null,
       });
     }
     for (const requirement of requirements) {
@@ -157,6 +174,8 @@ function judgeDog({
         message: requirement.hasTest
           ? `${dog.name} اول باید «${requirement.title}» یا تست آن را بگذراند.`
           : `${dog.name} اول باید «${requirement.title}» را بگذراند.`,
+        courseSlug: requirement.slug,
+        enrollmentId: null,
       });
     }
   }
@@ -167,18 +186,28 @@ function judgeDog({
     problems.push({
       kind: "too-young",
       message: `این دوره برای سگ‌های دست‌کم ${formatNumberFa(course.minAgeMonths)} ماهه است؛ ${dog.name} هنوز کوچک است.`,
+      courseSlug: null,
+      enrollmentId: null,
     });
   }
   if (course.maxAgeMonths !== null && age > course.maxAgeMonths) {
     problems.push({
       kind: "too-old",
       message: `این دوره برای سگ‌های تا ${formatNumberFa(course.maxAgeMonths)} ماه است؛ ${dog.name} از این سن گذشته.`,
+      courseSlug: null,
+      enrollmentId: null,
     });
   }
 
   /*------ Already Enrolled ------*/
-  if (mine.some((row) => row.courseId === course.id && row.status !== "passed")) {
-    problems.push({ kind: "live-enrollment", message: `${dog.name} همین حالا در این دوره ثبت‌نام شده است.` });
+  const live = mine.find((row) => row.courseId === course.id && row.status !== "passed");
+  if (live) {
+    problems.push({
+      kind: "live-enrollment",
+      message: `${dog.name} همین حالا در این دوره ثبت‌نام شده است.`,
+      courseSlug: null,
+      enrollmentId: live.id,
+    });
   }
 
   return { problems, hasPassed: passed.has(course.id) };
@@ -212,6 +241,7 @@ export async function getBookingOptions({
     findRecommendingAssessments({ db, dogIds, courseId: course.id }),
   ]);
   const today = utcToTehranParts(now).date;
+  const unavailable = courseUnavailability({ course, kind });
 
   return {
     kind: "success",
@@ -239,7 +269,8 @@ export async function getBookingOptions({
         prerequisites: requirements.map(({ slug, title, hasTest }) => ({ slug, title, hasTest })),
       },
       kind,
-      unavailableReason: courseUnavailableReason({ course, kind }),
+      unavailableReason: unavailable?.message ?? null,
+      unavailableKind: unavailable?.kind ?? null,
       dogs: dogs.map((dog) => {
         const verdict = judgeDog({ dog, hasRecord: dog.hasRecord, course, kind, requirements, history, today });
         const recommendation = recommendations.find((entry) => entry.dogId === dog.id);
@@ -285,8 +316,8 @@ export async function bookCourse({
   if (!found) return { kind: "not-found" };
   const { course, refundPolicy } = found;
 
-  const unavailable = courseUnavailableReason({ course, kind: details.kind });
-  if (unavailable) return { kind: "not-eligible", errors: [unavailable] };
+  const unavailable = courseUnavailability({ course, kind: details.kind });
+  if (unavailable) return { kind: "not-eligible", errors: [unavailable.message] };
 
   /*------ Booking Details ------*/
   const fields: Record<string, string> = {};
@@ -335,7 +366,7 @@ export async function bookCourse({
     await cancelPendingOrders({ db: tx, ids: superseded, reason: "سفارش تازه‌تری جای آن را گرفت." });
 
     /*------ Order ------*/
-    // `courseUnavailableReason` has made sure the price exists.
+    // `courseUnavailability` has made sure the price exists.
     const basePrice = (details.kind === "test" ? course.testPrice : course.price) ?? 0;
     const boardingPrice = details.boarding ? (course.boardingPrice ?? 0) : 0;
     const unitPrice = basePrice + boardingPrice;

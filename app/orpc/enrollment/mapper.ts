@@ -74,10 +74,19 @@ export function toTrainingSession(record: SessionRecord): TrainingSession {
 }
 
 /** Converts a session on the trainer's week view. */
-export function toTrainerSession({ session, courseTitle, dog, photo }: TrainerSessionRow): TrainerSession {
+export function toTrainerSession({
+  session,
+  position,
+  plannedSessions,
+  courseTitle,
+  dog,
+  photo,
+}: TrainerSessionRow): TrainerSession {
   return {
     ...toTrainingSession(session),
     enrollmentId: session.enrollmentId,
+    position,
+    plannedSessions,
     courseTitle,
     dog: { name: dog.name, photo: photo ? toPublicMedia(photo) : null },
   };
@@ -260,9 +269,14 @@ export function toTrainerEnrollmentSummary({
     course: { slug: common.course.slug, title: common.course.title },
     dog: { id: row.dog.id, name: row.dog.name, photo: row.photo ? toPublicMedia(row.photo) : null },
     customerName: fullName(row.customer),
+    customerPhoneNumber: row.customer.phoneNumber,
+    preferredTimes: common.preferredTimes,
     plannedSessions: common.plannedSessions,
     usedSessions: common.usedSessions,
+    sessions: common.sessions,
     nextSession: common.nextSession,
+    completedAt: common.completedAt,
+    cancelledAt: common.cancelledAt,
     createdAt: common.createdAt,
   };
 }

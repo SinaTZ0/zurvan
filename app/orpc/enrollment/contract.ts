@@ -126,9 +126,16 @@ export const trainerEnrollmentSummarySchema = z.object({
   course: z.object({ slug: z.string(), title: z.string() }),
   dog: dogSummarySchema,
   customerName: z.string(),
+  /** For the waiting list's call: the number to ring and when the customer said it suits them. */
+  customerPhoneNumber: z.string().nullable(),
+  preferredTimes: z.string(),
   plannedSessions: z.number().int(),
   usedSessions: z.number().int(),
+  /** Oldest first, cancelled ones included, for the session strip. */
+  sessions: z.array(trainingSessionSchema),
   nextSession: trainingSessionSchema.nullable(),
+  completedAt: z.date().nullable(),
+  cancelledAt: z.date().nullable(),
   createdAt: z.date(),
 });
 
@@ -137,6 +144,9 @@ export type TrainerEnrollmentSummary = z.infer<typeof trainerEnrollmentSummarySc
 /** A session on the trainer's week view, with enough of its enrollment to label it. */
 export const trainerSessionSchema = trainingSessionSchema.extend({
   enrollmentId: z.string(),
+  /** 1-based place among the enrollment's sessions that weren't cancelled, as on its session card: «جلسه‌ی ۳ از ۷». */
+  position: z.number().int(),
+  plannedSessions: z.number().int(),
   courseTitle: z.string(),
   dog: z.object({ name: z.string(), photo: mediaSchema.nullable() }),
 });

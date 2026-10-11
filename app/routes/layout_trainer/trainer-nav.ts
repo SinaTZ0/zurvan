@@ -5,7 +5,7 @@ import type { DeskExitLink, DeskNavItem } from "~/routes/layout_account/account-
 // "Trainer Area Shell"). Only built pages are listed; behavior requests join when they exist.
 
 export const TRAINER_NAV_ITEMS: readonly DeskNavItem[] = [
-  { label: "برنامه", to: "/trainer" },
+  { label: "برنامه", to: "/trainer", end: true },
   { label: "شاگردها", to: "/trainer/enrollments" },
 ];
 

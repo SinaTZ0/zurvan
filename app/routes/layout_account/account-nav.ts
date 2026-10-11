@@ -4,7 +4,12 @@
 // tab bar instead of listing them in the person menu.
 
 /** One section in a desk's header. The trainer area (`layout_trainer`) passes its own list to the same header. */
-export type DeskNavItem = { label: string; to: string };
+export type DeskNavItem = {
+  label: string;
+  to: string;
+  /** Active only on this exact URL: a desk's landing page would otherwise stay underlined on every page below it. */
+  end?: boolean;
+};
 
 /** The link at the end of the header, back out of the desk. */
 export type DeskExitLink = { label: string; to: string };

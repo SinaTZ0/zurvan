@@ -54,6 +54,18 @@ export const INELIGIBILITY_KINDS = [
 
 export type IneligibilityKind = (typeof INELIGIBILITY_KINDS)[number];
 
+/** Why a course, or its test, can't be booked online at all. */
+export const UNAVAILABLE_KINDS = [
+  /** Behavior modification starts from a request with a video. */
+  "behavior-request",
+  /** No list price yet (working and sport dogs): it starts from the free assessment. */
+  "no-price",
+  /** `?kind=test` on a course without a test. */
+  "no-test",
+] as const;
+
+export type UnavailableKind = (typeof UNAVAILABLE_KINDS)[number];
+
 /*===== Booking Limits =====*/
 export const BOOKING_ADDRESS_MAX_LENGTH = 300;
 export const BOOKING_PREFERRED_TIMES_MAX_LENGTH = 500;

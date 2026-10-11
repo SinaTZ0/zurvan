@@ -2,8 +2,11 @@ import { cn } from "cn";
 
 import { utcToTehranParts, WEEKDAY_NAMES } from "~/lib/tehran-time";
 import type { ScheduleSlot } from "~/orpc/assessment/contract";
+import type { TrainerSession } from "~/orpc/enrollment/contract";
 import { BookedSlot } from "~/routes/trainer_schedule/components/booked-slot";
 import { OpenSlot } from "~/routes/trainer_schedule/components/open-slot";
+import { SessionBlock } from "~/routes/trainer_schedule/components/session-block";
+import type { SessionPosition } from "~/routes/trainer_schedule/session-positions";
 import { jalaliDayMonth, weekDays } from "~/routes/trainer_schedule/week";
 
 /*===== Week View =====*/
@@ -13,25 +16,39 @@ import { jalaliDayMonth, weekDays } from "~/routes/trainer_schedule/week";
  * reading order never differs.
  *
  * @param slots Only what is shown: open times still ahead, and booked ones. The caller drops the rest.
+ * @param sessions The training sessions of the week, shown among the slots by time.
+ * @param positions Where each session sits in its course, by session id.
  */
 export function WeekView({
   weekStart,
   today,
   slots,
+  sessions,
+  positions,
 }: {
   weekStart: string;
   /** `YYYY-MM-DD` in Tehran, to mark today's head. */
   today: string;
   slots: readonly ScheduleSlot[];
+  sessions: readonly TrainerSession[];
+  positions: Record<string, SessionPosition>;
 }) {
   const days = weekDays(weekStart);
 
   return (
     <ol className="divide-y border-y lg:grid lg:grid-cols-7 lg:divide-x lg:divide-y-0 lg:border-y-0 lg:border-t">
       {days.map((date, index) => {
-        const daySlots = slots.filter((slot) => utcToTehranParts(slot.startsAt).date === date);
+        // Slots and sessions share the day's column, in the order the trainer will meet them.
+        const entries = [
+          ...slots
+            .filter((slot) => utcToTehranParts(slot.startsAt).date === date)
+            .map((slot) => ({ key: slot.id, startsAt: slot.startsAt, slot, session: null })),
+          ...sessions
+            .filter((session) => utcToTehranParts(session.startsAt).date === date)
+            .map((session) => ({ key: session.id, startsAt: session.startsAt, slot: null, session })),
+        ].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
         const isToday = date === today;
-        const empty = daySlots.length === 0;
+        const empty = entries.length === 0;
 
         return (
           <li
@@ -57,9 +74,11 @@ export function WeekView({
               </p>
             ) : (
               <ul className="flex min-w-0 flex-col gap-2">
-                {daySlots.map((slot) => (
-                  <li key={slot.id}>
-                    {slot.assessment ? (
+                {entries.map(({ key, slot, session }) => (
+                  <li key={key}>
+                    {session ? (
+                      <SessionBlock session={session} position={positions[session.id]} />
+                    ) : slot.assessment ? (
                       <BookedSlot slot={slot} assessment={slot.assessment} />
                     ) : (
                       <OpenSlot slot={slot} />

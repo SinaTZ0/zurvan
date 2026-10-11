@@ -8,7 +8,12 @@ import { ENROLLMENT_KINDS, ENROLLMENT_REFUND_RULES } from "~/orpc/enrollment/con
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { mediaSchema } from "~/orpc/media/contract";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
-import { INELIGIBILITY_KINDS, ORDER_PAYMENT_STATUSES, PAYMENT_STATUSES } from "~/orpc/order/constants";
+import {
+  INELIGIBILITY_KINDS,
+  ORDER_PAYMENT_STATUSES,
+  PAYMENT_STATUSES,
+  UNAVAILABLE_KINDS,
+} from "~/orpc/order/constants";
 
 /*===== Schemas =====*/
 const refundPolicySchema = z.object({ name: z.string(), percent: z.number().int() });
@@ -35,12 +40,23 @@ export const bookingOptionsSchema = z.object({
   kind: z.enum(ENROLLMENT_KINDS),
   /** Why the course (or its test) can't be booked online at all, in Persian; null when it can. */
   unavailableReason: z.string().nullable(),
+  /** The same, as a value the page can pick the way out from. */
+  unavailableKind: z.enum(UNAVAILABLE_KINDS).nullable(),
   dogs: z.array(
     z.object({
       dog: dogSchema,
       eligible: z.boolean(),
       /** Why this dog can't book it, each as a Persian sentence for the page. */
-      problems: z.array(z.object({ kind: z.enum(INELIGIBILITY_KINDS), message: z.string() })),
+      problems: z.array(
+        z.object({
+          kind: z.enum(INELIGIBILITY_KINDS),
+          message: z.string(),
+          /** For `prerequisite`: the course to pass first (or its test). */
+          courseSlug: z.string().nullable(),
+          /** For `live-enrollment`: the enrollment the dog is in now. */
+          enrollmentId: z.string().nullable(),
+        }),
+      ),
       /** It has passed this course already: booking is a retake the customer must confirm. */
       hasPassed: z.boolean(),
       /** The latest completed assessment that recommended this course for the dog. */

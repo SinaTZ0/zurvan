@@ -22,6 +22,7 @@ export function AccountTabs({
           <li key={item.to} className="flex">
             <NavLink
               to={item.to}
+              end={item.end}
               className={({ isActive }) =>
                 cn(
                   "relative flex items-center rounded-sm px-3 text-sm font-bold transition-colors focus-visible:text-foreground",

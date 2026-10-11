@@ -48,7 +48,7 @@ export type OrderRow = {
 };
 
 /** One of a dog's enrollments, reduced to what eligibility needs. */
-export type DogCourseHistoryRow = { dogId: string; courseId: string; status: string };
+export type DogCourseHistoryRow = { id: string; dogId: string; courseId: string; status: string };
 
 export type PersonRecord = Pick<typeof user.$inferSelect, "id" | "name" | "role" | "phoneNumber">;
 
@@ -132,7 +132,7 @@ export function findCoursesByIds({ db, ids }: Executor & { ids: string[] }): Pro
 export function findDogCourseHistory({ db, dogIds }: Executor & { dogIds: string[] }): Promise<DogCourseHistoryRow[]> {
   if (dogIds.length === 0) return Promise.resolve([]);
   return db
-    .selectDistinct({ dogId: enrollment.dogId, courseId: enrollment.courseId, status: enrollment.status })
+    .select({ id: enrollment.id, dogId: enrollment.dogId, courseId: enrollment.courseId, status: enrollment.status })
     .from(enrollment)
     .where(and(inArray(enrollment.dogId, dogIds), inArray(enrollment.status, ["passed", "scheduling", "active"])));
 }

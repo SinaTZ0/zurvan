@@ -3,6 +3,7 @@ import { Outlet } from "react-router";
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
 import { AccountHeader } from "~/routes/layout_account/components/account-header";
+import { BottomTabs } from "~/routes/layout_account/components/bottom-tabs";
 import { TRAINER_EXIT_LINK, TRAINER_NAV_ITEMS } from "~/routes/layout_trainer/trainer-nav";
 
 import type { Route } from "./+types/layout-trainer";
@@ -41,6 +42,7 @@ export default function TrainerLayout({ loaderData }: Route.ComponentProps) {
         <Outlet />
       </main>
       <AccountFooter />
+      <BottomTabs items={TRAINER_NAV_ITEMS} label="میز مربی" />
     </div>
   );
 }
