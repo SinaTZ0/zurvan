@@ -7,6 +7,7 @@ import {
   index,
   integer,
   numeric,
+  pgSequence,
   pgTable,
   primaryKey,
   text,
@@ -14,6 +15,7 @@ import {
   unique,
   uniqueIndex,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 
 /*===== Database Schema =====*/
@@ -260,6 +262,13 @@ export const course = pgTable(
     refundPolicyId: uuid("refund_policy_id")
       .notNull()
       .references(() => refundPolicy.id, { onDelete: "restrict" }),
+    /**
+     * Gets new enrollments. Null means the head trainer (the Admin, docs/business-logic.md B8): the catalogue seed runs
+     * before any account exists, and it is his catalogue. The Admin changes it when an assistant takes a course over.
+     */
+    ownerTrainerId: text("owner_trainer_id").references(() => user.id, { onDelete: "restrict" }),
+    /** The trainer's part of each sale (B1, B2). At most `100 − partner commission`, so the Admin's line is never negative. */
+    trainerSharePercent: integer("trainer_share_percent").notNull().default(70),
     /** Catalogue order. */
     position: integer("position").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -268,7 +277,10 @@ export const course = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index("course_status_position_idx").on(table.status, table.position)],
+  (table) => [
+    index("course_status_position_idx").on(table.status, table.position),
+    check("course_trainer_share_check", sql`${table.trainerSharePercent} between 0 and 100`),
+  ],
 );
 
 /** A course the dog must have passed, or passed the test of, before booking this one (spec 3.8). */
@@ -393,5 +405,395 @@ export const assessmentRecommendation = pgTable(
   (table) => [
     primaryKey({ columns: [table.assessmentId, table.courseId] }),
     unique("assessment_recommendation_position_unique").on(table.assessmentId, table.position),
+  ],
+);
+
+/*===== Wallets and Transactions =====*/
+// The money core (docs/app-phase-one.md, 3.12 and entities 17–19). Every movement of money is a transaction between
+// wallets whose lines add up to 0, written only through `createTransaction` (`app/orpc/wallet/`). The rule is also held
+// by a deferred constraint trigger (`app/db/money-constraints.sql`), so it survives a bug that skips the service.
+// Transactions and their lines are append-only: a mistake is corrected by a new transaction, usually its mirror.
+
+export const wallet = pgTable(
+  "wallet",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** A user's wallet. Created the first time the user needs one. */
+    ownerUserId: text("owner_user_id")
+      .unique()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** `admin`, `gateway`, `bank` or `withdrawal-hold`, one of each. Allowed values in `app/orpc/wallet/constants.ts`. */
+    systemKind: text("system_kind").unique(),
+    /** Rial. The cached sum of the wallet's lines, updated in the same database transaction. Can be negative. */
+    balance: bigint("balance", { mode: "number" }).notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check("wallet_owner_xor_system_check", sql`(${table.ownerUserId} is null) <> (${table.systemKind} is null)`),
+  ],
+);
+
+/** Numbers transactions: `TX-140507-0042`. Never reset, so a number is unique however many are made in a day. */
+export const walletTransactionNumberSeq = pgSequence("wallet_transaction_number_seq");
+
+export const walletTransaction = pgTable(
+  "wallet_transaction",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    number: text("number").notNull().unique(),
+    /** `gateway-payment`, `purchase`, `refund`, `withdrawal-hold`, `withdrawal-payout`, `withdrawal-release`, `manual`. */
+    type: text("type").notNull(),
+    /** Rial. The total of the positive lines, cached for lists. */
+    sum: bigint("sum", { mode: "number" }).notNull(),
+    /** Shown to everyone with a line in it. */
+    description: text("description").notNull(),
+    /** Null for system transactions; the Admin for manual ones. */
+    createdById: text("created_by_id").references(() => user.id, { onDelete: "restrict" }),
+    mirrorOfId: uuid("mirror_of_id").references((): AnyPgColumn => walletTransaction.id, { onDelete: "restrict" }),
+    /** For `purchase` and `refund`. */
+    orderItemId: uuid("order_item_id").references((): AnyPgColumn => orderItem.id, { onDelete: "restrict" }),
+    /** For `gateway-payment`. */
+    paymentId: uuid("payment_id").references((): AnyPgColumn => payment.id, { onDelete: "restrict" }),
+    // Append-only, so there is no `updated_at`.
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    // At most one purchase per order item, and one gateway transaction per payment: a repeated payment callback
+    // can't move the money twice even if it gets past the service's checks.
+    uniqueIndex("wallet_transaction_purchase_idx")
+      .on(table.orderItemId)
+      .where(sql`${table.type} = 'purchase'`),
+    uniqueIndex("wallet_transaction_payment_idx")
+      .on(table.paymentId)
+      .where(sql`${table.type} = 'gateway-payment'`),
+    index("wallet_transaction_mirror_of_idx").on(table.mirrorOfId),
+    check("wallet_transaction_sum_check", sql`${table.sum} > 0`),
+  ],
+);
+
+export const walletTransactionLine = pgTable(
+  "wallet_transaction_line",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    transactionId: uuid("transaction_id")
+      .notNull()
+      .references(() => walletTransaction.id, { onDelete: "restrict" }),
+    walletId: uuid("wallet_id")
+      .notNull()
+      .references(() => wallet.id, { onDelete: "restrict" }),
+    /** Rial, signed: negative for a sender, positive for a receiver. Never 0. */
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    // Each wallet appears at most once in a transaction.
+    unique("wallet_transaction_line_wallet_unique").on(table.transactionId, table.walletId),
+    // A wallet's history, newest first.
+    index("wallet_transaction_line_wallet_created_idx").on(table.walletId, table.createdAt),
+    check("wallet_transaction_line_amount_check", sql`${table.amount} <> 0`),
+  ],
+);
+
+/*===== Discount Codes =====*/
+// Entity 13 and spec 3.10. Created by the Admin; the checkout applies one per order.
+
+export const discountCode = pgTable(
+  "discount_code",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Stored upper-case; matched case-insensitively. */
+    code: text("code").notNull(),
+    /** For the Admin only. */
+    description: text("description"),
+    /** `percentage` or `fixed`. */
+    type: text("type").notNull(),
+    /** A percentage (1–100), or Rial. */
+    value: bigint("value", { mode: "number" }).notNull(),
+    /** Rial. Optional cap on a percentage code. */
+    maxDiscountAmount: bigint("max_discount_amount", { mode: "number" }),
+    /** Rial. Compared with the order's subtotal. */
+    minOrderAmount: bigint("min_order_amount", { mode: "number" }),
+    startsAt: timestamp("starts_at").notNull(),
+    endsAt: timestamp("ends_at").notNull(),
+    totalUsageLimit: integer("total_usage_limit"),
+    perCustomerLimit: integer("per_customer_limit"),
+    /** Only for a customer who has never had a paid order. */
+    firstOrderOnly: boolean("first_order_only").notNull().default(false),
+    /** `all` or `selected` (the courses in `discount_code_course`). Tests and behavior plans count as their course. */
+    scope: text("scope").notNull().default("all"),
+    /** Paid orders that used it, minus fully refunded ones. */
+    usedCount: integer("used_count").notNull().default(0),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("discount_code_code_idx").on(sql`upper(${table.code})`),
+    check("discount_code_value_check", sql`${table.value} > 0`),
+  ],
+);
+
+export const discountCodeCourse = pgTable(
+  "discount_code_course",
+  {
+    discountCodeId: uuid("discount_code_id")
+      .notNull()
+      .references(() => discountCode.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "cascade" }),
+  },
+  (table) => [primaryKey({ columns: [table.discountCodeId, table.courseId] })],
+);
+
+/*===== Orders and Payments =====*/
+// Entities 14–16. Booking creates a pending order with one item per dog and course; paying it creates the enrollments
+// and their purchase transactions in one database transaction (spec 3.12, "Paying for an order").
+
+/** Numbers orders: `ZR-140507-0042`. */
+export const orderNumberSeq = pgSequence("order_number_seq");
+
+export const customerOrder = pgTable(
+  "customer_order",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    number: text("number").notNull().unique(),
+    customerId: text("customer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Snapshot of the customer's partner when the order was paid. Null until referrals exist. */
+    partnerId: text("partner_id").references(() => user.id, { onDelete: "restrict" }),
+    discountCodeId: uuid("discount_code_id").references(() => discountCode.id, { onDelete: "restrict" }),
+    // Rial. `total = subtotal − discount`, and `total = paid from wallet + paid via gateway` once the payment is
+    // started.
+    subtotal: bigint("subtotal", { mode: "number" }).notNull(),
+    discountAmount: bigint("discount_amount", { mode: "number" }).notNull().default(0),
+    totalAmount: bigint("total_amount", { mode: "number" }).notNull(),
+    paidFromWallet: bigint("paid_from_wallet", { mode: "number" }).notNull().default(0),
+    paidViaGateway: bigint("paid_via_gateway", { mode: "number" }).notNull().default(0),
+    refundedAmount: bigint("refunded_amount", { mode: "number" }).notNull().default(0),
+    /** `pending`, `paid`, `failed`, `cancelled`, `refunded`, `partially-refunded`. */
+    paymentStatus: text("payment_status").notNull().default("pending"),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("customer_order_customer_id_idx").on(table.customerId),
+    // The same balance can't be spent twice: a customer has one pending order that uses the wallet at a time.
+    uniqueIndex("customer_order_pending_wallet_idx")
+      .on(table.customerId)
+      .where(sql`${table.paymentStatus} = 'pending' and ${table.paidFromWallet} > 0`),
+    check(
+      "customer_order_amounts_check",
+      sql`${table.discountAmount} >= 0 and ${table.totalAmount} = ${table.subtotal} - ${table.discountAmount}
+        and ${table.paidFromWallet} >= 0 and ${table.paidViaGateway} >= 0
+        and ${table.refundedAmount} between 0 and ${table.totalAmount}`,
+    ),
+  ],
+);
+
+export const orderItem = pgTable(
+  "order_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => customerOrder.id, { onDelete: "restrict" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "restrict" }),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    /** `course` or `test`. */
+    kind: text("kind").notNull(),
+    /** The assessment that recommended it, when booked from one. */
+    assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
+    /*------ Booking Details ------*/
+    // Copied into the enrollment when the order is paid.
+    trainingGoal: text("training_goal").notNull(),
+    boarding: boolean("boarding").notNull().default(false),
+    /** Where the sessions happen, for courses at home or outside. Null with boarding. */
+    address: text("address"),
+    /** The days and times that suit the customer, in their words. */
+    preferredTimes: text("preferred_times").notNull(),
+    /** The customer saw that the dog had passed this course and confirmed a retake. */
+    isRetake: boolean("is_retake").notNull().default(false),
+    /*------ Price Snapshot ------*/
+    /** Rial: the course or test price, plus `boardingPrice`. */
+    unitPrice: bigint("unit_price", { mode: "number" }).notNull(),
+    /** Rial, the part of `unitPrice` that is boarding (B14). 0 without boarding. */
+    boardingPrice: bigint("boarding_price", { mode: "number" }).notNull().default(0),
+    /** This item's part of the order discount. */
+    discountAmount: bigint("discount_amount", { mode: "number" }).notNull().default(0),
+    /** `unitPrice − discountAmount`. Refunds are based on this. */
+    paidAmount: bigint("paid_amount", { mode: "number" }).notNull(),
+    /** The refund policy at purchase time (spec 3.9), so later changes to the course don't touch this item. */
+    refundPolicyName: text("refund_policy_name").notNull(),
+    refundPolicyPercent: integer("refund_policy_percent").notNull(),
+    refundedAmount: bigint("refunded_amount", { mode: "number" }).notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("order_item_order_id_idx").on(table.orderId),
+    check(
+      "order_item_amounts_check",
+      sql`${table.paidAmount} = ${table.unitPrice} - ${table.discountAmount} and ${table.paidAmount} >= 0
+        and ${table.refundedAmount} between 0 and ${table.paidAmount}`,
+    ),
+  ],
+);
+
+export const payment = pgTable(
+  "payment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => customerOrder.id, { onDelete: "restrict" }),
+    /** Rial. */
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    /** `demo` in showcase mode. */
+    gateway: text("gateway").notNull(),
+    /** The token the payment was started with; the callback finds the payment by it. */
+    authority: text("authority").notNull().unique(),
+    /** The gateway's tracking code after success. */
+    referenceId: text("reference_id"),
+    cardNumberMasked: text("card_number_masked"),
+    /** `pending`, then `succeeded` or `failed` exactly once. Never edited after that. */
+    status: text("status").notNull().default("pending"),
+    failureReason: text("failure_reason"),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("payment_order_id_idx").on(table.orderId),
+    // An order can have several attempts; only one can succeed.
+    uniqueIndex("payment_order_succeeded_idx")
+      .on(table.orderId)
+      .where(sql`${table.status} = 'succeeded'`),
+    check("payment_amount_check", sql`${table.amount} > 0`),
+  ],
+);
+
+/*===== Enrollments and Sessions =====*/
+// Entities 10 and 11. Paying an order item creates its enrollment in `scheduling`; the trainer then schedules the
+// sessions one by one, and records the result. An enrollment with a held session gives the dog a record.
+
+export const enrollment = pgTable(
+  "enrollment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "restrict" }),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    customerId: text("customer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** The course's owner trainer at purchase time; the Admin can reassign. */
+    trainerId: text("trainer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** `course` or `test`. */
+    kind: text("kind").notNull(),
+    orderItemId: uuid("order_item_id")
+      .notNull()
+      .unique()
+      .references(() => orderItem.id, { onDelete: "restrict" }),
+    assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
+    trainingGoal: text("training_goal").notNull(),
+    boarding: boolean("boarding").notNull().default(false),
+    address: text("address"),
+    preferredTimes: text("preferred_times").notNull(),
+    /** Copied from the course; the trainer can change it. A test has 1. Refunds count unheld sessions against it. */
+    plannedSessions: integer("planned_sessions").notNull(),
+    isRetake: boolean("is_retake").notNull().default(false),
+    /** `scheduling`, `active`, `passed`, `failed`, `cancelled`. */
+    status: text("status").notNull().default("scheduling"),
+    cancelledById: text("cancelled_by_id").references(() => user.id, { onDelete: "restrict" }),
+    /** `customer`, `trainer` or `admin`: decides the refund rule (B11). */
+    cancelledByRole: text("cancelled_by_role"),
+    cancellationReason: text("cancellation_reason"),
+    cancelledAt: timestamp("cancelled_at"),
+    /** When the result was recorded. */
+    completedAt: timestamp("completed_at"),
+    /** The trainer's final feedback for the customer. */
+    trainerNote: text("trainer_note"),
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    // A dog can't have two live enrollments in the same course (spec 3.4).
+    uniqueIndex("enrollment_course_dog_live_idx")
+      .on(table.courseId, table.dogId)
+      .where(sql`${table.status} in ('scheduling', 'active')`),
+    index("enrollment_customer_id_idx").on(table.customerId),
+    index("enrollment_trainer_status_idx").on(table.trainerId, table.status),
+    index("enrollment_dog_id_idx").on(table.dogId),
+    check("enrollment_planned_sessions_check", sql`${table.plannedSessions} between 1 and 100`),
+  ],
+);
+
+// `session` is Better-Auth's table, so a training session is `training_session`.
+export const trainingSession = pgTable(
+  "training_session",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    enrollmentId: uuid("enrollment_id")
+      .notNull()
+      .references(() => enrollment.id, { onDelete: "restrict" }),
+    /** Defaults to the enrollment's trainer. */
+    trainerId: text("trainer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    startsAt: timestamp("starts_at").notNull(),
+    durationMinutes: integer("duration_minutes").notNull(),
+    /** `home`, `outside` or `boarding`. */
+    placeKind: text("place_kind").notNull(),
+    /** The address, the meeting point, or the kennel. */
+    place: text("place").notNull(),
+    /** `scheduled`, `held`, `missed`, `cancelled`. Held and missed both count as used for refunds (B11). */
+    status: text("status").notNull().default("scheduled"),
+    /** Shown to the customer. */
+    trainerNote: text("trainer_note"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("training_session_enrollment_id_idx").on(table.enrollmentId),
+    index("training_session_trainer_starts_at_idx").on(table.trainerId, table.startsAt),
+    check("training_session_duration_check", sql`${table.durationMinutes} between 15 and 480`),
   ],
 );

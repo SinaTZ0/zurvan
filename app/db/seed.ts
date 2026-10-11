@@ -1,13 +1,15 @@
 import { getTableColumns, inArray, sql } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 
+import { applyHandWrittenSql } from "~/db/apply-sql";
 import { db } from "~/db/client.server";
 import { course, coursePrerequisite, refundPolicy } from "~/db/schema";
 import { SEED_COURSES, SEED_DEFAULT_REFUND_POLICY, SEED_REFUND_POLICIES } from "~/db/seed-courses";
 
 /*===== Seed =====*/
-// `npm run db:seed`, after `npm run db:push`. Idempotent: rows are upserted by their natural key (policy name, course
-// slug), so running it again updates the catalogue to match `seed-courses.ts` without duplicating anything.
+// `npm run db:seed`, after `npm run db:push`. It first applies the hand-written SQL (`apply-sql.ts`). Idempotent: rows
+// are upserted by their natural key (policy name, course slug), so running it again updates the catalogue to match
+// `seed-courses.ts` without duplicating anything.
 
 const TOMAN_TO_RIAL = 10;
 
@@ -17,6 +19,9 @@ function toRial(toman: number | undefined) {
 }
 
 async function seed() {
+  // The money triggers first: they belong to the schema, and every setup runs this seed after the push.
+  await applyHandWrittenSql(db);
+
   await db.transaction(async (tx) => {
     /*------ Refund Policies ------*/
     const policies = await tx
