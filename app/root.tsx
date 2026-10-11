@@ -8,9 +8,12 @@ import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { BASE_COLOR_STORAGE_KEY } from "~/routes/layout_public/components/base-color-picker";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+
+const BASE_COLOR_SCRIPT = `try{var c=localStorage.getItem("${BASE_COLOR_STORAGE_KEY}");if(c&&/^#[0-9a-f]{6}$/i.test(c)){var d=document.documentElement;d.dataset.baseColor="";d.style.setProperty("--base",c)}}catch(e){}`;
 
 export function Layout({ children }: { children: React.ReactNode }) {
   // One client per render tree (like the Jotai store): a module-level client on the server would
@@ -30,6 +33,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Repaints the owner's trial base colour (see BaseColorPicker) before first paint, so a reload doesn't flash the stock black. */}
+        <script dangerouslySetInnerHTML={{ __html: BASE_COLOR_SCRIPT }} />
         <Meta />
         <Links />
       </head>

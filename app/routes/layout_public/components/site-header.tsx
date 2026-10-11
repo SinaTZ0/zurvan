@@ -3,6 +3,7 @@ import { cn } from "cn";
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { BaseColorPicker } from "~/routes/layout_public/components/base-color-picker";
 import { MobileMenu } from "~/routes/layout_public/components/mobile-menu";
 import { SiteSearch } from "~/routes/layout_public/components/site-search";
 import { NAV_ITEMS } from "~/routes/layout_public/nav-items";
@@ -43,6 +44,7 @@ export function SiteHeader() {
           <Link to="/auth" className={cn(buttonVariants({ variant: "outline", className: "hidden sm:inline-flex" }))}>
             ورود یا ثبت‌نام
           </Link>
+          <BaseColorPicker />
           <MobileMenu />
         </div>
       </div>

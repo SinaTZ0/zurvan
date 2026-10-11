@@ -41,7 +41,7 @@ export function HowItWorks() {
     <section
       id="how-it-works"
       aria-labelledby="how-title"
-      className="glow mt-section-md surface-inverse py-section-md [--glow-alpha:0.05] [--glow-at:100%_0%] [--glow-h:75%] [--glow-w:50%]"
+      className="glow surface-inverse py-section-md [--glow-alpha:0.05] [--glow-at:100%_0%] [--glow-h:75%] [--glow-w:50%]"
     >
       <div className="site-container">
         {/*------ Heading and Frieze ------*/}

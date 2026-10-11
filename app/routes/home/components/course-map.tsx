@@ -1,4 +1,7 @@
+import { ChevronLeftIcon } from "lucide-react";
+
 import { Link } from "~/components/link";
+import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import { SectionHeading } from "~/routes/home/components/section-heading";
 import { ADVANCED_TRACKS, type Course, describeAge, describePlace, getCourse } from "~/routes/home/courses";
@@ -31,6 +34,12 @@ const GROUPS: { title: string; note: string; rows: Course[][] }[] = [
     rows: [[getCourse("bmc")]],
   },
 ];
+
+/** One line under each advanced track's title, saying who it is for. Keyed by the track's slug. */
+const TRACK_LEADS: Record<(typeof ADVANCED_TRACKS)[number]["slug"], string> = {
+  "working-dogs": "برای سگ‌هایی که کار واقعی می‌کنند: نگهبانی، حفاظت، خدمت و ردیابی.",
+  sport: "برای سگ‌هایی که برای مسابقه و ورزش‌های سگی آماده می‌شوند.",
+};
 
 /** The grid column (1-based) a course's minimum age falls in. */
 function monthColumn(months: number) {
@@ -92,40 +101,45 @@ export function CourseMap() {
 
         {/*------ Beyond the Ruler ------*/}
         {/* Working and sport dogs have no ages or session counts on the owner's cards yet, and behavior modification
-            is for any age, so they sit off the ruler. */}
-        <ul className="mt-10 grid gap-gutter md:grid-cols-3">
+            is for any age, so they sit off the ruler. One panel with hairline dividers, so the three read as a set of
+            doors rather than three loose cards; each column pins its footnote to the bottom so they line up. */}
+        <ul className="mt-10 grid overflow-hidden rounded-3xl border bg-card md:grid-cols-3">
           {ADVANCED_TRACKS.map((track) => (
-            <li key={track.slug} className="flex flex-col gap-3 rounded-3xl border bg-card p-6">
-              <h3 className="text-h4">
-                <Link to={`/courses/${track.slug}`} className="hover:text-primary">
-                  {track.title}
-                </Link>
-              </h3>
+            <TrackColumn
+              key={track.slug}
+              to={`/courses/${track.slug}`}
+              title={track.title}
+              lead={TRACK_LEADS[track.slug]}
+              footnote="شرایط و برنامه‌ی هر گرایش بعد از ارزیابی سگت مشخص می‌شود."
+            >
               <ul className="flex flex-wrap gap-2">
                 {track.branches.map((branch) => (
-                  <li key={branch} className="rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary">
+                  <li
+                    key={branch}
+                    className="rounded-full border border-primary/35 px-3 py-1 text-sm font-bold text-primary"
+                  >
                     <bdi>{branch}</bdi>
                   </li>
                 ))}
               </ul>
-              <p className="mt-auto text-sm text-pretty text-muted-foreground">
-                شرایط و برنامه‌ی هر گرایش بعد از ارزیابی سگت مشخص می‌شود.
-              </p>
-            </li>
+            </TrackColumn>
           ))}
-          <li className="flex flex-col gap-3 rounded-3xl border border-saffron/40 bg-card p-6">
-            <h3 className="text-h4">
-              <Link to="/behavior-modification" className="hover:text-primary">
-                اصلاح رفتار
-              </Link>
-            </h3>
-            <p className="text-sm text-pretty">
-              برای هر سن و هر نژاد: پرخاشگری، اضطراب جدایی، گاز گرفتن، خطای دستشویی و مشکل‌های دیگر.
-            </p>
-            <p className="mt-auto text-sm text-pretty text-muted-foreground">
-              مشکل را توضیح بده و ویدیویی از رفتار سگت بفرست تا پیش از اولین جلسه بررسی شود.
-            </p>
-          </li>
+
+          {/*------ Behavior Modification ------*/}
+          {/* Not a track: it starts from a request, so it is the one column with its own action. */}
+          <TrackColumn
+            to="/behavior-modification"
+            title="اصلاح رفتار"
+            lead="برای هر سن و هر نژاد: پرخاشگری، اضطراب جدایی، گاز گرفتن، خطای دستشویی و مشکل‌های دیگر."
+            footnote="مشکل را توضیح بده و ویدیویی از رفتار سگت بفرست تا پیش از اولین جلسه بررسی شود."
+          >
+            <Link
+              to="/behavior-modification"
+              className={buttonVariants({ variant: "outline", size: "sm", className: "w-fit" })}
+            >
+              درخواست بررسی
+            </Link>
+          </TrackColumn>
         </ul>
       </div>
     </section>
@@ -175,5 +189,44 @@ function Lane({ courses }: { courses: Course[] }) {
         );
       })}
     </ol>
+  );
+}
+
+/*===== Track Column =====*/
+/**
+ * One column of the panel below the ruler: a linked title, a line on who it is for, the column's own content (branch
+ * tags or an action), and a footnote pinned to the bottom so the three footnotes share a baseline.
+ */
+function TrackColumn({
+  to,
+  title,
+  lead,
+  footnote,
+  children,
+}: {
+  to: string;
+  title: string;
+  lead?: string;
+  footnote: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <li className="flex flex-col gap-4 border-t p-6 first:border-t-0 md:border-s md:border-t-0 md:first:border-s-0 lg:p-8">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-h4">
+          <Link to={to} className="group inline-flex items-center gap-1 hover:text-primary">
+            {title}
+            <ChevronLeftIcon
+              aria-hidden
+              strokeWidth={2}
+              className="size-5 text-primary transition-transform group-hover:-translate-x-1"
+            />
+          </Link>
+        </h3>
+        {lead && <p className="text-sm text-pretty">{lead}</p>}
+      </div>
+      {children}
+      <p className="mt-auto border-t pt-4 text-sm text-pretty text-muted-foreground">{footnote}</p>
+    </li>
   );
 }

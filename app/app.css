@@ -322,6 +322,22 @@
   --sidebar-ring: #e6c77e;
 }
 
+/* The base-colour trial (BaseColorPicker): one hex in `--base` re-derives every dark surface, so the whole page can be
+   judged in a new black. The green depth is dropped with it; over a different base it would muddy the colour. */
+html[data-base-color] {
+  --jet: var(--base);
+  --background: var(--base);
+  --sunken: color-mix(in oklab, var(--base), black 40%);
+  --card: color-mix(in oklab, var(--base), white 5%);
+  --popover: color-mix(in oklab, var(--base), white 9%);
+  --muted: color-mix(in oklab, var(--base), white 7%);
+  --secondary: var(--muted);
+  --sidebar: var(--card);
+}
+html[data-base-color] body {
+  background-image: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
