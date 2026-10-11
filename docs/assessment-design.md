@@ -6,7 +6,7 @@ shows afterwards, and the smallest trainer area that closes the loop. The bookin
 [customer-area-design.md](customer-area-design.md): same theme, calmer, denser. For the steps behind each brief, see
 [design-flow.md](design-flow.md).
 
-> **Status: briefs, waiting for the owner's OK.** The API is built (`assessment.*`, see the end of this doc).
+> **Status: agreed with the owner, being built.** The API is built (`assessment.*`, see the end of this doc).
 
 ## What It Must Feel Like
 
@@ -75,8 +75,8 @@ Within the app's one theme (tokens in `app/app.css`); nothing new is added to th
   start, then a thin time rail from 9:00 to 21:00 with the open times sitting on it **at their hour**, so mornings and
   evenings read at a glance, the way his day actually looks. A time is a pill on the rail («۱۷:۰۰»); the chosen one
   fills with flat gold. Days without open times are left out; the rail's hour ticks are faint and labelled only at
-  9, 12, 15, 18 and 21. A slot with the assistant carries her name in the pill's tooltip and a small «با نگار» under
-  it; Arman's carry nothing, because he is the default.
+  9, 12, 15, 18 and 21. Only Arman's times are listed (decided with the owner); the assistant's slots stay on her
+  own schedule.
   - Phone: the rail doesn't fit, so each day row becomes the day name and its times as a wrapping row of pills
     (44 px targets), still one ruled row per day.
 - **States:**
@@ -269,9 +269,9 @@ reserved.
 conditional update, with a partial unique index behind it (foundations-plan step 3). A completed assessment gives
 the dog a record.
 
-## Open Questions for the Owner
+## Decided
 
-- Should the booking page show the assistant's free times next to Arman's (as briefed, marked «با نگار»), or
-  Arman's only?
-- Can a dog that already has a record still book a free assessment (e.g. a new problem)? Briefed as **no**: it books
-  its next course, or a behavior request.
+- **Only Arman's times** are offered on the booking page for now; `assessment.availableSlots` lists the head
+  trainer's open slots.
+- **A dog with a record can't book a free assessment.** Having a record means it has been assessed (or Arman knows
+  it), so it books its next course instead.

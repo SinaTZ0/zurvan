@@ -1,15 +1,24 @@
 import { cn } from "cn";
 
 import { NavLink } from "~/components/nav-link";
-import { ACCOUNT_NAV_ITEMS } from "~/routes/layout_account/account-nav";
+import type { DeskNavItem } from "~/routes/layout_account/account-nav";
 
 /*===== Account Tabs =====*/
-/** Desktop: the account's sections in the header. The current one is ivory with a flat-gold underline. */
-export function AccountTabs({ className }: { className?: string }) {
+/** Desktop: the desk's sections in the header. The current one is ivory with a flat-gold underline. */
+export function AccountTabs({
+  items,
+  label,
+  className,
+}: {
+  items: readonly DeskNavItem[];
+  /** The nav landmark's name, e.g. «حساب من». */
+  label: string;
+  className?: string;
+}) {
   return (
-    <nav aria-label="حساب من" className={className}>
+    <nav aria-label={label} className={className}>
       <ul className="flex h-full items-stretch gap-1">
-        {ACCOUNT_NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <li key={item.to} className="flex">
             <NavLink
               to={item.to}

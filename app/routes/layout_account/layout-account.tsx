@@ -1,6 +1,7 @@
 import { Outlet } from "react-router";
 
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
+import { ACCOUNT_EXIT_LINK, ACCOUNT_NAV_ITEMS } from "~/routes/layout_account/account-nav";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
 import { AccountHeader } from "~/routes/layout_account/components/account-header";
 
@@ -22,7 +23,13 @@ export function loader({ context }: Route.LoaderArgs) {
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex min-h-svh flex-col">
-      <AccountHeader firstName={loaderData.firstName} phoneNumber={loaderData.phoneNumber} />
+      <AccountHeader
+        firstName={loaderData.firstName}
+        phoneNumber={loaderData.phoneNumber}
+        navItems={ACCOUNT_NAV_ITEMS}
+        navLabel="حساب من"
+        exitLink={ACCOUNT_EXIT_LINK}
+      />
       <main id="main" className="flex-1">
         <Outlet />
       </main>

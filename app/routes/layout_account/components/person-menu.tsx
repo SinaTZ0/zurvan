@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { ACCOUNT_NAV_ITEMS, BOTTOM_TABS_FROM } from "~/routes/layout_account/account-nav";
+import { BOTTOM_TABS_FROM, type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
 import { useSignOut } from "~/routes/layout_account/hooks/use-sign-out";
 
 /*===== Person Menu =====*/
@@ -18,10 +18,23 @@ import { useSignOut } from "~/routes/layout_account/hooks/use-sign-out";
  * The signed-in person: their initial and first name, opening a menu with their number and «خروج». On phones, while
  * there are too few sections for a bottom tab bar, the menu also lists the sections.
  */
-export function PersonMenu({ firstName, phoneNumber }: { firstName: string; phoneNumber: string | null }) {
+export function PersonMenu({
+  firstName,
+  phoneNumber,
+  roleLabel,
+  navItems,
+  exitLink,
+}: {
+  firstName: string;
+  phoneNumber: string | null;
+  /** Shown under the name where the role isn't obvious, e.g. «مربی ارشد» in the trainer area. */
+  roleLabel?: string;
+  navItems: readonly DeskNavItem[];
+  exitLink: DeskExitLink;
+}) {
   const navigate = useNavigate();
   const signOut = useSignOut();
-  const sectionsInMenu = ACCOUNT_NAV_ITEMS.length < BOTTOM_TABS_FROM;
+  const sectionsInMenu = navItems.length < BOTTOM_TABS_FROM;
 
   return (
     <DropdownMenu>
@@ -44,6 +57,7 @@ export function PersonMenu({ firstName, phoneNumber }: { firstName: string; phon
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-2 py-1.5">
             <span className="block text-sm font-bold text-foreground">{firstName}</span>
+            {roleLabel && <span className="block text-xs text-muted-foreground">{roleLabel}</span>}
             {phoneNumber && (
               <span dir="ltr" className="block text-end text-xs text-muted-foreground tabular-nums">
                 {phoneNumber}
@@ -56,7 +70,7 @@ export function PersonMenu({ firstName, phoneNumber }: { firstName: string; phon
         {sectionsInMenu && (
           <div className="lg:hidden">
             <DropdownMenuSeparator />
-            {ACCOUNT_NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <DropdownMenuItem
                 key={item.to}
                 className="px-2 py-2 text-sm"
@@ -67,9 +81,9 @@ export function PersonMenu({ firstName, phoneNumber }: { firstName: string; phon
             ))}
             <DropdownMenuItem
               className="px-2 py-2 text-sm"
-              onClick={() => void navigate("/courses", { viewTransition: true })}
+              onClick={() => void navigate(exitLink.to, { viewTransition: true })}
             >
-              دوره‌ها
+              {exitLink.label}
             </DropdownMenuItem>
           </div>
         )}

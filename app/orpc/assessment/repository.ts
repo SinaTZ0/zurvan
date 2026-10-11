@@ -144,14 +144,21 @@ export function findRecommendations({
 }
 
 /*===== Slot Reads =====*/
-/** Lists the open slots that start after `after` and no later than `until`, soonest first, with their trainers. */
+/** Lists the head trainer's open slots that start after `after` and no later than `until`, soonest first. */
 export function findOpenSlots({ db, after, until }: Executor & { after: Date; until: Date }): Promise<OpenSlotRow[]> {
   return db
     .select({ slot: assessmentSlot, trainer: personColumns(user) })
     .from(assessmentSlot)
     .innerJoin(user, eq(assessmentSlot.trainerId, user.id))
     .where(
-      and(eq(assessmentSlot.status, "open"), gt(assessmentSlot.startsAt, after), lte(assessmentSlot.startsAt, until)),
+      and(
+        eq(assessmentSlot.status, "open"),
+        gt(assessmentSlot.startsAt, after),
+        lte(assessmentSlot.startsAt, until),
+        // The owner wants customers to book the head trainer only for now; the assistant's slots stay on her own
+        // schedule. TODO: the Trainer Profile's head-trainer flag instead of the role, when entity 2 exists.
+        eq(user.role, "admin"),
+      ),
     )
     .orderBy(asc(assessmentSlot.startsAt), asc(assessmentSlot.id));
 }
