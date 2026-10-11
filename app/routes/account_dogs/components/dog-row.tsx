@@ -5,6 +5,8 @@ import { Link } from "~/components/link";
 import { MediaImage } from "~/components/media-image";
 import { buttonVariants } from "~/components/ui/button";
 import { describeDog } from "~/lib/dog-format";
+import { formatSlotDay } from "~/lib/tehran-time";
+import type { Assessment } from "~/orpc/assessment/contract";
 import type { Dog } from "~/orpc/dog/contract";
 
 /*===== Dog Row =====*/
@@ -17,7 +19,7 @@ import type { Dog } from "~/orpc/dog/contract";
  * Desktop lines the columns up across rows (identity, record mark, next step, chevron). On a phone the row stacks:
  * the identity on top, the record mark and the next step on one line beneath.
  */
-export function DogRow({ dog }: { dog: Dog }) {
+export function DogRow({ dog, booked }: { dog: Dog; booked: Assessment | null }) {
   return (
     <li className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-4 transition-colors hover:bg-primary/5 md:min-h-22 md:grid-cols-[minmax(0,1fr)_8.5rem_11.5rem_1.25rem] md:gap-x-4 md:px-5 md:py-3 lg:grid-cols-[minmax(0,1fr)_9.5rem_13rem_1.25rem] lg:gap-x-6 lg:px-6">
       {/*------ Mark, Name and Facts ------*/}
@@ -71,18 +73,32 @@ export function DogRow({ dog }: { dog: Dog }) {
       </p>
 
       {/*------ Next Step ------*/}
-      {/* Later states (next session, a plan to pay) take over this slot. */}
-      <Link
-        to={dog.hasRecord ? "/courses" : `/assessment?dog=${dog.id}`}
-        className={buttonVariants({
-          variant: "ghost",
-          className:
-            "relative z-10 col-start-2 row-start-2 justify-self-end text-primary hover:text-primary md:col-start-3 md:row-start-1",
-        })}
-      >
-        {dog.hasRecord ? "رزرو دوره‌ی بعدی" : "ارزیابی رایگان رزرو کن"}
-        <span className="sr-only"> برای {dog.name}</span>
-      </Link>
+      {/* Later states (next session, a plan to pay) take over this slot. A booked assessment leaves nothing to do, so
+          the slot shows when, and still leads to the page where it can be cancelled. */}
+      {booked ? (
+        <Link
+          to="/account/assessments"
+          className={buttonVariants({
+            variant: "ghost",
+            className: "relative z-10 col-start-2 row-start-2 justify-self-end md:col-start-3 md:row-start-1",
+          })}
+        >
+          ارزیابی: {formatSlotDay(booked.startsAt)}
+          <span className="sr-only"> برای {dog.name}</span>
+        </Link>
+      ) : (
+        <Link
+          to={dog.hasRecord ? "/courses" : `/assessment?dog=${dog.id}`}
+          className={buttonVariants({
+            variant: "ghost",
+            className:
+              "relative z-10 col-start-2 row-start-2 justify-self-end text-primary hover:text-primary md:col-start-3 md:row-start-1",
+          })}
+        >
+          {dog.hasRecord ? "رزرو دوره‌ی بعدی" : "ارزیابی رایگان رزرو کن"}
+          <span className="sr-only"> برای {dog.name}</span>
+        </Link>
+      )}
     </li>
   );
 }

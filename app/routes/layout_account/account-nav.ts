@@ -9,7 +9,10 @@ export type DeskNavItem = { label: string; to: string };
 /** The link at the end of the header, back out of the desk. */
 export type DeskExitLink = { label: string; to: string };
 
-export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [{ label: "سگ‌های من", to: "/account/dogs" }];
+export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [
+  { label: "سگ‌های من", to: "/account/dogs" },
+  { label: "ارزیابی‌ها", to: "/account/assessments" },
+];
 
 export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };
 

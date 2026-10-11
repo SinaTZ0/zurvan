@@ -109,6 +109,23 @@
     }
   }
 
+  /* The booking stamp (My Assessments): the tag-stamp's press, larger and turning to its tilt as it lands. The end
+     rotation is the stamp's resting tilt, so the keyframe and the class agree */
+  --animate-slip-stamp: slip-stamp 0.32s var(--ease-silk) both;
+  @keyframes slip-stamp {
+    from {
+      transform: scale(1.35) rotate(-20deg);
+      opacity: 0;
+    }
+    60% {
+      opacity: 1;
+    }
+    to {
+      transform: scale(1) rotate(-9deg);
+      opacity: 1;
+    }
+  }
+
   /* Slides a full-size layer up from beyond its own bottom edge: fast at first, then a long, soft landing */
   --animate-rise-in: rise-in 1.4s var(--ease-silk) both;
   @keyframes rise-in {

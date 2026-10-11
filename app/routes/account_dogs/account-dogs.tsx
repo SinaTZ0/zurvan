@@ -15,13 +15,21 @@ export const meta: Route.MetaFunction = () => [{ title: "سگ‌های من | آ
 export async function loader({ request }: Route.LoaderArgs) {
   // The API lists the oldest dog first, so the list reads like a ledger that grows at the bottom and a dog never jumps
   // when another is added.
-  const dogs = await createServerClient(request).dog.list();
-  return { dogs };
+  const client = createServerClient(request);
+  // One call for every dog's assessments, matched up below, instead of one per dog.
+  const [dogs, assessments] = await Promise.all([client.dog.list(), client.assessment.listMine({})]);
+  // A dog has at most one booked assessment at a time (the API refuses a second).
+  const bookedByDog = Object.fromEntries(
+    assessments
+      .filter((assessment) => assessment.status === "booked")
+      .map((assessment) => [assessment.dog.id, assessment]),
+  );
+  return { dogs, bookedByDog };
 }
 
 /*===== Page =====*/
 export default function DogsPage({ loaderData }: Route.ComponentProps) {
-  const { dogs } = loaderData;
+  const { dogs, bookedByDog } = loaderData;
   const isEmpty = dogs.length === 0;
 
   return (
@@ -58,7 +66,7 @@ export default function DogsPage({ loaderData }: Route.ComponentProps) {
             </h2>
             <ul className="divide-y">
               {dogs.map((dog) => (
-                <DogRow key={dog.id} dog={dog} />
+                <DogRow key={dog.id} dog={dog} booked={bookedByDog[dog.id] ?? null} />
               ))}
             </ul>
           </section>
