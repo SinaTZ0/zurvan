@@ -19,8 +19,14 @@ const CHALLENGE_TTL_MS = 10 * 60 * 1000;
 // In-memory and per process: enough for a single-instance demo, use a shared store when scaling out.
 const usedChallenges = new CappedMap<string, boolean>({ maxSize: 10_000 });
 
-// Derived once: the key-signature secret is a pure function of the master key.
-const hmacKeySecretPromise = deriveHmacKeySecret(env.ALTCHA_HMAC_KEY);
+// Derived once on first use: the key-signature secret is a pure function of the master key. It is
+// lazy so importing this module never fails when env validation is skipped and the key is missing.
+let hmacKeySecretPromise: Promise<string> | undefined;
+
+function getHmacKeySecret(): Promise<string> {
+  hmacKeySecretPromise ??= deriveHmacKeySecret(env.ALTCHA_HMAC_KEY);
+  return hmacKeySecretPromise;
+}
 
 /*===== Challenge =====*/
 /**
@@ -37,7 +43,7 @@ export async function createAltchaChallenge(): Promise<Challenge> {
     deriveKey,
     expiresAt: new Date(Date.now() + CHALLENGE_TTL_MS),
     hmacSignatureSecret: env.ALTCHA_HMAC_KEY,
-    hmacKeySignatureSecret: await hmacKeySecretPromise,
+    hmacKeySignatureSecret: await getHmacKeySecret(),
   });
 }
 
@@ -50,6 +56,6 @@ export async function createAltchaChallenge(): Promise<Challenge> {
  * @returns `true` only for a valid, unexpired, first-time payload. Never throws for bad input.
  */
 export async function verifyAltchaPayload(payload: string | null | undefined): Promise<boolean> {
-  const { error } = await verify(payload, deriveKey, env.ALTCHA_HMAC_KEY, await hmacKeySecretPromise, usedChallenges);
+  const { error } = await verify(payload, deriveKey, env.ALTCHA_HMAC_KEY, await getHmacKeySecret(), usedChallenges);
   return error === null;
 }

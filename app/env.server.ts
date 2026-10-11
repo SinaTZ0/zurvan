@@ -21,10 +21,21 @@ const envSchema = z.object({
 });
 
 /*===== Validation =====*/
+// TODO: Remove this bypass and always validate once the Cloudflare deployment has real env vars
+// (a Wrangler config with `vars`/secrets, or the dashboard settings). It exists only because the
+// demo deploy has none configured and does not touch the database, auth, or captcha yet.
+// Cloudflare Workers is detected by its user agent because `process.env` is empty there at load time.
+const skipValidation =
+  process.env.SKIP_ENV_VALIDATION === "true" || globalThis.navigator?.userAgent === "Cloudflare-Workers";
+
 const parsed = envSchema.safeParse(process.env);
 
+if (!parsed.success && skipValidation) {
+  console.warn("Skipping environment validation (demo deploy); server features that need env vars will fail.");
+}
+
 // Fail fast at startup instead of crashing later on first use of a missing variable.
-if (!parsed.success) {
+if (!parsed.success && !skipValidation) {
   throw new Error(`Invalid environment variables:\n${z.prettifyError(parsed.error)}`);
 }
 
@@ -34,6 +45,6 @@ if (!parsed.success) {
  * Server-only: the `.server` suffix makes React Router fail the build if this
  * module is imported into client code, keeping secrets out of the browser bundle.
  */
-export const env = parsed.data;
+export const env = (parsed.success ? parsed.data : process.env) as Env;
 
 export type Env = z.infer<typeof envSchema>;
