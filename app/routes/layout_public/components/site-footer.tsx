@@ -2,6 +2,7 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
+import { CENTER_PHONE } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 // The pages behind these links come later in phase one; the structure is what matters for now.
@@ -42,12 +43,12 @@ export function SiteFooter() {
             آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون.
           </p>
           <a
-            href="tel:02191000000"
+            href={`tel:${CENTER_PHONE.tel}`}
             className="flex items-center gap-2.5 self-start py-2 text-base font-bold text-foreground transition-colors hover:text-saffron"
           >
             <PhoneIcon strokeWidth={1.7} className="size-5 text-saffron" aria-hidden />
             {/* Phone numbers read left to right even in Persian text. */}
-            <span dir="ltr">۰۲۱-۹۱۰۰۰۰۰۰</span>
+            <span dir="ltr">{CENTER_PHONE.display}</span>
           </a>
         </div>
 

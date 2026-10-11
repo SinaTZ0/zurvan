@@ -176,6 +176,22 @@ const FRIEZE: Scene = {
   ],
 };
 
+/*------ Walk ------*/
+/** One person walking their dog: the frieze's commonest moment on its own, for an empty state. */
+const WALK_SCENE: Scene = {
+  width: 76,
+  height: 64,
+  groups: [
+    {
+      placements: row(GROUND, [
+        { figure: "dogWalk", x: 6 },
+        { figure: "person", x: 46 },
+      ]),
+      strings: [leash({ ground: GROUND, hand: 46, collar: 13 })],
+    },
+  ],
+};
+
 /*------ Side scenes ------*/
 // Sparse scenes for the empty margins beside the page on wide screens: a few moments with plenty of air between
 // them, so the margins frame the page without competing with it. Each keeps its figures next to the content, because
@@ -288,6 +304,11 @@ export function HeroDoodles({ className }: { className?: string }) {
  */
 export function DoodleFrieze({ className }: { className?: string }) {
   return <DoodleScene scene={FRIEZE} still className={className} />;
+}
+
+/** A person walking their dog, standing still: the light accent for an empty state. Size it by height. */
+export function DoodleWalk({ className }: { className?: string }) {
+  return <DoodleScene scene={WALK_SCENE} still className={className} />;
 }
 
 /**

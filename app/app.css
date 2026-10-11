@@ -96,6 +96,19 @@
     }
   }
 
+  /* Presses a name into a dog tag: it lands a touch large and faint, then settles into the metal */
+  --animate-tag-stamp: tag-stamp 0.18s var(--ease-silk) both;
+  @keyframes tag-stamp {
+    from {
+      transform: scale(1.06);
+      opacity: 0.55;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
   /* Slides a full-size layer up from beyond its own bottom edge: fast at first, then a long, soft landing */
   --animate-rise-in: rise-in 1.4s var(--ease-silk) both;
   @keyframes rise-in {

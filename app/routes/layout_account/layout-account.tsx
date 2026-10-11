@@ -1,6 +1,8 @@
 import { Outlet } from "react-router";
 
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
+import { AccountFooter } from "~/routes/layout_account/components/account-footer";
+import { AccountHeader } from "~/routes/layout_account/components/account-header";
 
 import type { Route } from "./+types/layout-account";
 
@@ -11,11 +13,20 @@ export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: [
 /*===== Loader =====*/
 export function loader({ context }: Route.LoaderArgs) {
   const { user } = context.get(sessionContext);
-  return { firstName: user.firstName, role: user.role };
+  // The guard only lets named accounts through, so `firstName` is set.
+  return { firstName: user.firstName ?? "", phoneNumber: user.phoneNumber ?? null };
 }
 
 /*===== Account Layout =====*/
-/** The signed-in shell for customers, trainers and partners at `/account`. */
-export default function AccountLayout() {
-  return <Outlet />;
+/** The signed-in shell for customers, trainers and partners at `/account` (docs/customer-area-design.md). */
+export default function AccountLayout({ loaderData }: Route.ComponentProps) {
+  return (
+    <div className="flex min-h-svh flex-col">
+      <AccountHeader firstName={loaderData.firstName} phoneNumber={loaderData.phoneNumber} />
+      <main id="main" className="flex-1">
+        <Outlet />
+      </main>
+      <AccountFooter />
+    </div>
+  );
 }
