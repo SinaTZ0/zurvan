@@ -126,7 +126,8 @@ export async function createTransaction({
     });
     await insertLines({ db: tx, transactionId: record.id, lines: input.lines });
 
-    // In the same order as the locks.
+    // In the same order as the locks. `toSorted` needs ES2023 types; this sorts a fresh copy.
+    // oxlint-disable-next-line unicorn/no-array-sort
     const byWallet = [...input.lines].sort((a, b) => (a.walletId < b.walletId ? -1 : 1));
     for (const line of byWallet) await addToBalance({ db: tx, walletId: line.walletId, amount: line.amount });
 

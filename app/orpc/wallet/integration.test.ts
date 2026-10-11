@@ -128,7 +128,9 @@ describe("creating a transaction", () => {
       ]);
     });
 
-    await expect(write).rejects.toThrow();
+    // Drizzle wraps the driver's error, raised by the trigger at commit, as `cause`.
+    const error: unknown = await write.catch((caught: unknown) => caught);
+    expect((error as { cause?: Error }).cause?.message).toMatch(/unbalanced/);
     const leftover = await db
       .select()
       .from(walletTransaction)
