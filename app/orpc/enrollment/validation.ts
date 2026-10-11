@@ -127,11 +127,3 @@ export const recordResultInputSchema = z.object({
     tooLong: `یادداشت حداکثر ${formatNumberFa(ENROLLMENT_NOTE_MAX_LENGTH)} حرف است.`,
   }),
 });
-
-/*===== Id =====*/
-const idSchema = z.guid();
-
-/** Whether the text can be an id. A malformed one would make Postgres throw, so it is treated as "no such row". */
-export function isUuid(value: string): boolean {
-  return idSchema.safeParse(value).success;
-}

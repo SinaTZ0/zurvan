@@ -127,11 +127,3 @@ export function openSlotsInputSchema({ now }: { now: Date }) {
       .default(ASSESSMENT_DEFAULT_DURATION_MINUTES),
   });
 }
-
-/*===== Id =====*/
-const idSchema = z.guid();
-
-/** Whether the text can be an id. A malformed one would make Postgres throw, so it is treated as "no such row". */
-export function isUuid(value: string): boolean {
-  return idSchema.safeParse(value).success;
-}

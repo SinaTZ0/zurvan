@@ -4,6 +4,7 @@ import type { Database } from "~/db/client.server";
 import { sendSms } from "~/lib/sms.server";
 import { formatSlotDay, formatSlotTime, utcToTehranParts } from "~/lib/tehran-time";
 import { issuesToErrorData } from "~/lib/schema-issues";
+import { isUuid } from "~/lib/uuid";
 import {
   ASSESSMENT_BOOKING_WINDOW_DAYS,
   ASSESSMENT_MAX_DURATION_MINUTES,
@@ -36,7 +37,6 @@ import {
   bookInputSchema,
   completeInputSchema,
   customerCancelInputSchema,
-  isUuid,
   markNoShowInputSchema,
   openSlotsInputSchema,
   scheduleInputSchema,

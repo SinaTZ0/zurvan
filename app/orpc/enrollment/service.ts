@@ -1,5 +1,6 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
+import { isUuid } from "~/lib/uuid";
 import { sendSms } from "~/lib/sms.server";
 import { formatSlotDay, formatSlotTime } from "~/lib/tehran-time";
 import { toPublicDog } from "~/orpc/dog/mapper";
@@ -44,7 +45,6 @@ import {
 } from "~/orpc/enrollment/repository";
 import type { EnrollmentRecord, EnrollmentRow, SessionRecord } from "~/orpc/enrollment/repository";
 import {
-  isUuid,
   markSessionInputSchema,
   plannedSessionsInputSchema,
   recordResultInputSchema,
