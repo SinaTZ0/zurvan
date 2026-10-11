@@ -6,8 +6,9 @@ Detail. All of them are working screens, so they follow [customer-area-design.md
 paper trail of [assessment-design.md](assessment-design.md): same theme, calm, dense, one gold-leaf object per page.
 For the steps behind each brief, see [design-flow.md](design-flow.md).
 
-> **Status: briefs, waiting for the owner's review.** The API under them is built: `order.*`, `enrollment.*` and
-> `wallet.mine` (see the end of this doc).
+> **Status: agreed with the owner, pages being built.** The API under them is built: `order.*`, `enrollment.*` and
+> `wallet.mine` (see the end of this doc), and so are the shared pieces (`SessionCard`, `Receipt`, `Stamp`,
+> `EnrollmentStatusBadge`).
 
 ## What It Must Feel Like
 
@@ -236,7 +237,7 @@ time has passed without «برگزار شد» or «غیبت».
   `setPlannedSessions`, `recordResult`.
 - `wallet.mine`: balance and own lines.
 
-## Working Defaults to Confirm
+## Decided
 
 - **A test needs no record and no prerequisites:** it is an assessment itself (3.6), and it is how a dog trained
   elsewhere joins the Companion path midway. The age range still applies.

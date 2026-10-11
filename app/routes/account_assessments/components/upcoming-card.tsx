@@ -4,7 +4,7 @@ import { MEETING_PLACE_KIND_LABELS, TRAINING_GOAL_LABELS } from "~/orpc/assessme
 import type { Assessment } from "~/orpc/assessment/contract";
 import { AssessmentDogMark } from "~/routes/account_assessments/components/assessment-dog";
 import { splitSlotDay, trainerShortName } from "~/routes/account_assessments/components/assessment-people";
-import { BookedStamp } from "~/routes/account_assessments/components/booked-stamp";
+import { Stamp } from "~/components/stamp";
 import { CancelAssessment } from "~/routes/account_assessments/components/cancel-assessment";
 
 /*===== Upcoming Card =====*/
@@ -20,7 +20,7 @@ export function UpcomingCard({ assessment, stamped }: { assessment: Assessment; 
 
   return (
     <li className="relative">
-      {stamped && <BookedStamp />}
+      {stamped && <Stamp lines={["رزرو", "شد"]} />}
       <article
         aria-labelledby={`upcoming-${assessment.id}`}
         className="flex flex-col overflow-hidden rounded-xl bg-card shadow-sm ring-1 ring-border sm:flex-row"

@@ -46,3 +46,14 @@ const RIAL_PER_TOMAN = 10;
 export function formatToman(rial: number): string {
   return `${formatNumberFa(Math.round(rial / RIAL_PER_TOMAN))} تومان`;
 }
+
+/**
+ * The way people say a price: «۹۰۰ هزار تومان», «۸٫۵ میلیون تومان». Only when that is exact; any other amount is
+ * written in full, so a refund or a total is never rounded on screen.
+ */
+export function formatTomanShort(rial: number): string {
+  const toman = Math.round(rial / RIAL_PER_TOMAN);
+  if (toman >= 1_000_000 && toman % 100_000 === 0) return `${formatNumberFa(toman / 1_000_000)} میلیون تومان`;
+  if (toman >= 1_000 && toman % 1_000 === 0) return `${formatNumberFa(toman / 1_000)} هزار تومان`;
+  return formatToman(rial);
+}

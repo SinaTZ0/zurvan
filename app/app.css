@@ -126,6 +126,19 @@
     }
   }
 
+  /* A session punched on the session card: the hole is pressed in, lands a touch large and settles */
+  --animate-punch: punch 0.18s var(--ease-silk) both;
+  @keyframes punch {
+    from {
+      transform: scale(1.35);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
   /* Slides a full-size layer up from beyond its own bottom edge: fast at first, then a long, soft landing */
   --animate-rise-in: rise-in 1.4s var(--ease-silk) both;
   @keyframes rise-in {

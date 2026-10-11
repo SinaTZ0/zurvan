@@ -1,11 +1,13 @@
-/*===== Booked Stamp =====*/
+/*===== Stamp =====*/
 /**
- * The page's one moment: a round gold-leaf «رزرو شد» that lands on the card of the assessment just booked.
+ * A round gold-leaf stamp that lands once on the corner of the paper it marks: «رزرو شد» on a booked assessment,
+ * «پرداخت شد» on a paid receipt. It is its page's one moment, so a page has at most one. The parent must be
+ * `relative`.
  *
  * The resting tilt is a plain `transform` (not Tailwind's `rotate`, which composes with it), so that the animation's
  * last frame and the reduced-motion state, where the stamp is simply there, show the same tilt.
  */
-export function BookedStamp() {
+export function Stamp({ lines }: { /** Two short words, one per line. */ lines: [string, string] }) {
   return (
     <div
       aria-hidden
@@ -13,9 +15,9 @@ export function BookedStamp() {
     >
       <div className="flex size-[88%] items-center justify-center rounded-full border-2 border-[#4a320c]/55">
         <span className="text-center text-lg leading-tight font-black sm:text-xl">
-          رزرو
+          {lines[0]}
           <br />
-          شد
+          {lines[1]}
         </span>
       </div>
     </div>

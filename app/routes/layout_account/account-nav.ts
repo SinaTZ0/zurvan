@@ -11,6 +11,7 @@ export type DeskExitLink = { label: string; to: string };
 
 export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [
   { label: "سگ‌های من", to: "/account/dogs" },
+  { label: "آموزش‌ها", to: "/account/training" },
   { label: "ارزیابی‌ها", to: "/account/assessments" },
 ];
 
