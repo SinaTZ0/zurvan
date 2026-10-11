@@ -126,13 +126,14 @@ Two commands, both idempotent (they upsert, so running them again resets rather 
 
 Showcase-mode demo phone numbers are fixed, so the login hint always matches:
 
-| Phone         | Role     | What it shows               |
-| ------------- | -------- | --------------------------- |
-| `09120000001` | Admin    | the owner, the head trainer |
-| `09120000002` | Trainer  | an assistant                |
-| `09120000003` | Partner  | a partner pet shop          |
-| `09120000004` | Customer | a customer with two dogs    |
-| `09120000005` | Customer | a new customer, no dogs yet |
+| Phone         | Role     | What it shows                  |
+| ------------- | -------- | ------------------------------ |
+| `09120000001` | Admin    | the owner, the head trainer    |
+| `09120000002` | Trainer  | an assistant                   |
+| `09120000003` | Partner  | a partner pet shop             |
+| `09120000004` | Customer | a customer with two dogs       |
+| `09120000005` | Customer | a new customer, no dogs yet    |
+| `09120000006` | Customer | a dog with an assessment today |
 
 The demo grows with each entity: as they are built, it should reach a believable showcase — an assistant's courses in
 every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in

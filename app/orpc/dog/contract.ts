@@ -65,6 +65,14 @@ const dogErrors = {
   },
 };
 
+// Maps to HTTP 409. The message is Persian, in `data.errors`, for the Dog Form to show as it is.
+const removeDogErrors = {
+  HAS_BOOKING: {
+    message: "The dog has a booked assessment.",
+    data: errorDataSchema,
+  },
+};
+
 const baseErrors = { ...commonErrors, ...authErrors, ...roleErrors };
 
 /*===== Procedures =====*/
@@ -83,7 +91,7 @@ export const updateDogContract = oc
   .output(dogSchema);
 
 export const removeDogContract = oc
-  .errors({ ...baseErrors, ...dogErrors })
+  .errors({ ...baseErrors, ...dogErrors, ...removeDogErrors })
   .input(dogIdInputSchema)
   .output(z.object({ id: z.string() }));
 

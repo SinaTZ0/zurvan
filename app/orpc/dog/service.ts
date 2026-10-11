@@ -4,7 +4,9 @@ import type { Dog } from "~/orpc/dog/contract";
 import { toPublicDog } from "~/orpc/dog/mapper";
 import {
   findDogByOwner,
+  findDogByOwnerForUpdate,
   findDogsByOwner,
+  hasBookedAssessment,
   insertDog,
   isDogPhotoInUse,
   softDeleteDogByOwner,
@@ -161,18 +163,29 @@ export async function updateDog({
 }
 
 /*===== Remove =====*/
-type RemoveDogResult = { kind: "success"; id: string } | NotFoundResult;
+type RemoveDogResult = { kind: "success"; id: string } | { kind: "has-booking"; errors: string[] } | NotFoundResult;
 
 /**
- * Soft-deletes one of the owner's dogs; its history stays.
+ * Soft-deletes one of the owner's dogs; its history stays. The dog's row is locked while it is checked, so a booking
+ * can't be made for it in between.
  *
- * TODO: Refuse while the dog has a Scheduling or Active enrollment or a Booked assessment, once those entities exist.
+ * TODO: Also refuse while the dog has a Scheduling or Active enrollment, once enrollments exist.
  *
- * @returns `not-found` when the dog isn't the owner's or was already removed.
+ * @returns `not-found` when the dog isn't the owner's or was already removed, `has-booking` while it has a booked
+ * assessment: the owner cancels that first, so a trainer isn't left waiting for a dog that is gone.
  */
 export async function removeDog({ db, ownerId, id }: Owned & { id: string }): Promise<RemoveDogResult> {
   if (!isDogId(id)) return { kind: "not-found" };
 
-  const removed = await softDeleteDogByOwner({ db, ownerId, id });
-  return removed ? { kind: "success", id } : { kind: "not-found" };
+  return db.transaction(async (tx): Promise<RemoveDogResult> => {
+    const current = await findDogByOwnerForUpdate({ db: tx, ownerId, id });
+    if (!current) return { kind: "not-found" };
+
+    if (await hasBookedAssessment({ db: tx, dogId: id })) {
+      return { kind: "has-booking", errors: ["این سگ یک ارزیابی رزروشده دارد. اول آن را لغو کن."] };
+    }
+
+    const removed = await softDeleteDogByOwner({ db: tx, ownerId, id });
+    return removed ? { kind: "success", id } : { kind: "not-found" };
+  });
 }

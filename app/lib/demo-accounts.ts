@@ -16,6 +16,13 @@ export const DEMO_ACCOUNTS: {
   { phoneNumber: "09120000003", role: "partner", firstName: "بهرام", lastName: "کاظمی", note: "پت‌شاپ همکار" },
   { phoneNumber: "09120000004", role: "customer", firstName: "سارا", lastName: "محمدی", note: "مشتری با دو سگ" },
   { phoneNumber: "09120000005", role: "customer", firstName: "علی", lastName: "نوری", note: "مشتری تازه، بدون سگ" },
+  {
+    phoneNumber: "09120000006",
+    role: "customer",
+    firstName: "مریم",
+    lastName: "احمدی",
+    note: "مشتری با ارزیابی امروز",
+  },
 ];
 
 /** Whether a number belongs to a demo account. */

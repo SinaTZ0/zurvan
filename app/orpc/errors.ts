@@ -29,4 +29,13 @@ export const commonErrors = {
 /** Statuses for codes oRPC doesn't already map (see `COMMON_ERROR_STATUS_MAP`). */
 export const ERROR_STATUS_MAP = {
   INVALID_INPUT: 422,
+  // The request is fine but contradicts the current state: a slot just taken, an assessment already recorded, a dog
+  // with a booking.
+  HAS_BOOKING: 409,
+  HAS_RECORD: 409,
+  ALREADY_BOOKED: 409,
+  SLOT_TAKEN: 409,
+  NOT_CANCELLABLE: 409,
+  NOT_RECORDABLE: 409,
+  NOT_OPEN: 409,
 };

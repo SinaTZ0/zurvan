@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -16,7 +17,16 @@ import {
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "~/components/ui/toast";
+import { errorDataSchema } from "~/orpc/errors";
 import { client, orpc } from "~/orpc/client";
+
+/** The server's own message when it refuses (a booked assessment), which tells the owner what to do first. */
+function refusalMessage(error: Error): string | null {
+  if (!(error instanceof ORPCError) || error.code !== "HAS_BOOKING") return null;
+
+  const parsed = errorDataSchema.safeParse(error.data);
+  return parsed.success ? (parsed.data.errors[0] ?? null) : null;
+}
 
 /*===== Remove Dog =====*/
 /**
@@ -27,6 +37,7 @@ export function RemoveDog({ dogId, name }: { dogId: string; name: string }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [refusal, setRefusal] = useState<string | null>(null);
 
   const remove = useMutation({
     mutationFn: () => client.dog.remove({ id: dogId }),
@@ -36,12 +47,24 @@ export function RemoveDog({ dogId, name }: { dogId: string; name: string }) {
       await navigate("/account/dogs", { viewTransition: true });
       void queryClient.invalidateQueries({ queryKey: orpc.dog.key() });
     },
-    onError: () => toast.add({ title: "برداشته نشد. دوباره امتحان کن.", type: "error" }),
+    onError: (error) => {
+      const message = refusalMessage(error);
+      // A refusal is something the owner can fix, so it stays in the dialog next to the question; anything else is a
+      // failure to retry.
+      if (message) setRefusal(message);
+      else toast.add({ title: "برداشته نشد. دوباره امتحان کن.", type: "error" });
+    },
   });
 
   return (
     <div className="border-t pt-6">
-      <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (next) setRefusal(null);
+        }}
+      >
         <AlertDialogTrigger render={<Button type="button" variant="ghost" className="text-destructive" />}>
           برداشتن {name} از حسابم
         </AlertDialogTrigger>
@@ -52,6 +75,11 @@ export function RemoveDog({ dogId, name }: { dogId: string; name: string }) {
               دیگر در فهرست سگ‌هایت نیست و نمی‌توانی برایش رزرو کنی. پرونده‌ی آموزشش پیش آرمان می‌ماند.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {refusal && (
+            <p role="alert" className="text-sm text-destructive">
+              {refusal}
+            </p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>نه، بماند</AlertDialogCancel>
             <AlertDialogAction variant="destructive" disabled={remove.isPending} onClick={() => remove.mutate()}>

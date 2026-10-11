@@ -11,6 +11,8 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -283,5 +285,113 @@ export const coursePrerequisite = pgTable(
   (table) => [
     primaryKey({ columns: [table.courseId, table.requiredCourseId] }),
     check("course_prerequisite_not_self", sql`${table.courseId} <> ${table.requiredCourseId}`),
+  ],
+);
+
+/*===== Assessments =====*/
+// The free assessment (docs/app-phase-one.md, 3.3 and entities 7 and 8): a trainer opens slots, a customer books one
+// for a dog, and the trainer records the outcome and recommends courses. Plain text instead of pg enums, as elsewhere;
+// allowed values live in `app/orpc/assessment/constants.ts`. Rows are never deleted by the app, so every reference is
+// `restrict`: an assessment is part of a dog's history.
+
+export const assessmentSlot = pgTable(
+  "assessment_slot",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    trainerId: text("trainer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    startsAt: timestamp("starts_at").notNull(),
+    durationMinutes: integer("duration_minutes").notNull().default(60),
+    /** `open`, `booked` or `closed`. */
+    status: text("status").notNull().default("open"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    // Serves the public list of open slots.
+    index("assessment_slot_status_starts_at_idx").on(table.status, table.startsAt),
+    // Opening the same time twice is a no-op. A closed slot doesn't count, so the trainer can open that time again.
+    uniqueIndex("assessment_slot_trainer_starts_at_live_idx")
+      .on(table.trainerId, table.startsAt)
+      .where(sql`${table.status} <> 'closed'`),
+    check("assessment_slot_duration_check", sql`${table.durationMinutes} between 15 and 240`),
+  ],
+);
+
+export const assessment = pgTable(
+  "assessment",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    slotId: uuid("slot_id")
+      .notNull()
+      .references(() => assessmentSlot.id, { onDelete: "restrict" }),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    customerId: text("customer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Copied from the slot, so the trainer's queries don't join it. */
+    trainerId: text("trainer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** `home`, `sport` or `work`. */
+    trainingGoal: text("training_goal").notNull(),
+    /** What the owner wants to change. */
+    customerNote: text("customer_note").notNull(),
+    /** `home` or `meeting-point`. */
+    placeKind: text("place_kind").notNull(),
+    /** The address, or a description of the meeting point. */
+    place: text("place").notNull(),
+    /** `booked`, `completed`, `no-show` or `cancelled`. */
+    status: text("status").notNull().default("booked"),
+    cancelledBy: text("cancelled_by").references(() => user.id, { onDelete: "restrict" }),
+    cancellationReason: text("cancellation_reason"),
+    cancelledAt: timestamp("cancelled_at"),
+    /** Shown to the customer. */
+    trainerNotes: text("trainer_notes"),
+    /** When the outcome was recorded, for a completed assessment and a no-show alike. */
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    // The last line of defence against double booking: whatever the service does, a slot has one live assessment.
+    uniqueIndex("assessment_slot_live_idx")
+      .on(table.slotId)
+      .where(sql`${table.status} <> 'cancelled'`),
+    // A dog has at most one upcoming assessment.
+    uniqueIndex("assessment_dog_booked_idx")
+      .on(table.dogId)
+      .where(sql`${table.status} = 'booked'`),
+    index("assessment_customer_id_idx").on(table.customerId),
+    index("assessment_trainer_id_idx").on(table.trainerId),
+    index("assessment_dog_id_idx").on(table.dogId),
+  ],
+);
+
+/** The courses a trainer recommends after an assessment, in the order to take them (a join table keeps the foreign key). */
+export const assessmentRecommendation = pgTable(
+  "assessment_recommendation",
+  {
+    assessmentId: uuid("assessment_id")
+      .notNull()
+      .references(() => assessment.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "restrict" }),
+    /** 0-based. */
+    position: integer("position").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.assessmentId, table.courseId] }),
+    unique("assessment_recommendation_position_unique").on(table.assessmentId, table.position),
   ],
 );

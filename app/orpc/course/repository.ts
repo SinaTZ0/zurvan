@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
-import type { Database } from "~/db/client.server";
+import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { course, coursePrerequisite, refundPolicy } from "~/db/schema";
 
 /*===== Types =====*/
@@ -17,6 +17,23 @@ export type PrerequisiteRecord = { courseId: string; slug: string; title: string
 /** Lists every approved course in catalogue order. */
 export function findApprovedCourses({ db }: { db: Database }): Promise<CourseRecord[]> {
   return db.select().from(course).where(eq(course.status, "approved")).orderBy(asc(course.position));
+}
+
+/** Finds the approved courses with these slugs, in catalogue order. A slug that isn't an approved course is left out. */
+export function findApprovedCoursesBySlugs({
+  db,
+  slugs,
+}: {
+  db: DatabaseOrTransaction;
+  slugs: string[];
+}): Promise<CourseRecord[]> {
+  if (slugs.length === 0) return Promise.resolve([]);
+
+  return db
+    .select()
+    .from(course)
+    .where(and(eq(course.status, "approved"), inArray(course.slug, slugs)))
+    .orderBy(asc(course.position));
 }
 
 /** Finds one approved course by slug, joined with its refund policy. */

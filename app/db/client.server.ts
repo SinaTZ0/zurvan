@@ -16,3 +16,9 @@ export const db = drizzle({
 });
 
 export type Database = typeof db;
+
+/** What a callback of `db.transaction` receives. It runs the same queries as the database, inside one transaction. */
+export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/** For repository functions that a service runs both on their own and inside a transaction. */
+export type DatabaseOrTransaction = Database | Transaction;

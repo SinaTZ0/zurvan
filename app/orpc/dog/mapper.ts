@@ -30,9 +30,9 @@ export function toPublicDog(record: DogRecord): Dog {
     behaviorNotes: record.behaviorNotes,
     medicalNotes: record.medicalNotes,
     knownSince: record.knownSince,
-    // Spec: a Completed assessment, an enrollment with a Held session, or `knownSince` set. Only `knownSince` exists
-    // so far; assessments and enrollments join this rule when they are built.
-    hasRecord: record.knownSince !== null,
+    // Spec: a Completed assessment, an enrollment with a Held session, or `knownSince` set. Enrollments join this
+    // rule when they are built.
+    hasRecord: record.knownSince !== null || record.hasCompletedAssessment,
     photo: record.photo ? toPublicMedia(record.photo) : null,
     createdAt: record.createdAt,
   };

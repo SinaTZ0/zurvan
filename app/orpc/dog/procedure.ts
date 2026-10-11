@@ -61,6 +61,7 @@ export const removeDogProcedure = base.dog.remove
     const result = await removeDog({ db: context.db, ownerId: context.user.id, id: input.id });
 
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    if (result.kind === "has-booking") throw errors.HAS_BOOKING({ data: { errors: result.errors, fields: {} } });
 
     return { id: result.id };
   });
