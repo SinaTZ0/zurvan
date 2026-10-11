@@ -48,9 +48,9 @@ const FRAME_CLIP =
 const SIDE_DOODLE_SIZE = "h-auto w-[clamp(15.625rem,calc((100vw-80rem)/2-4rem),22rem)] shrink-0";
 
 /*===== Photo =====*/
-const PHOTO = { src: "/demo/hero.webp", width: 2400, height: 1600 };
-/** Between the man's face and the dog's head, as a fraction of the photo's height. The starting frame centres on it. */
-const PHOTO_FOCUS_Y = 0.4;
+const PHOTO = { src: "/demo/hero.jpg", width: 1280, height: 853 };
+/** Between the man's face and the dog's face, as a fraction of the photo's height. The starting frame centres on it. */
+const PHOTO_FOCUS_Y = 0.5;
 /** The photo starts zoomed in and settles to 1 as it fills the screen. */
 const PHOTO_START_SCALE = 1.15;
 
@@ -273,7 +273,7 @@ export function HomeHero() {
         >
           <img
             src={PHOTO.src}
-            alt="مردی با پیراهن چهارخانه میان علف‌های بلند به دیوار تکیه داده و سگش کنارش نشسته است"
+            alt="مردی با کاپشن زرد خندان سگ سفیدش را در آغوش گرفته است"
             width={PHOTO.width}
             height={PHOTO.height}
             fetchPriority="high"
@@ -281,15 +281,16 @@ export function HomeHero() {
             style={{
               transform: `translateY(calc(var(--photo-shift, 0px) * (1 - var(--expand, 0)))) scale(calc(${PHOTO_START_SCALE} - var(--expand, 0) * ${PHOTO_START_SCALE - 1}))`,
             }}
-            // The man and his dog sit right of centre; tall phone crops keep them in view, and on desktop the open
-            // grass on the left is where the review cards land.
-            className="size-full object-cover object-[64%_50%]"
+            // The man and his dog sit right of centre. A tall phone crop shows only a third of the photo's width, so it
+            // leans further right to keep both faces in; on desktop the dark wall on the left is where the cards land.
+            className="size-full object-cover object-[74%_50%] lg:object-[64%_50%]"
           />
-          {/* Darkens where the cards land: the bottom on phones, the left on desktop. */}
+          {/* Settles the dark wall where the cards land (the bottom on phones, the left on desktop). The photo is already
+              dark there, so this stays light and leaves the faces and the yellow jacket bright. */}
           <div
             aria-hidden
             style={{ opacity: "var(--expand, 0)" }}
-            className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent lg:bg-linear-to-r lg:from-black/55 lg:via-black/15"
+            className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent lg:bg-linear-to-r lg:from-black/35 lg:via-black/10"
           />
         </div>
 
