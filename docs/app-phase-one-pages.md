@@ -104,7 +104,7 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Trainer Page:** any trainer's photo, bio, years, specialties, certificates, verified badge, the courses they own, rating and reviews (3.17). URL `/trainers/:slug`. The head trainer's page is the one the home page's trainer section should link to.
 - **Book a Free Assessment** (`/assessment`): pick or add a dog, training goal, what to change, place, then an open slot (3.3). Asks to sign in first.
 - **Behavior Modification Request** (`/behavior-modification`): dog, problem category, description, video upload (3.7). Asks to sign in first.
-- **Login / Register** (built, `/auth`): phone number, then 5-digit code with resend timer (2).
+- **Login / Register** (built, `/auth`): phone number, then 5-digit code with resend timer (2). A number seen for the first time becomes a customer account and is asked for its name once. `?redirectTo=` brings people back to the page that sent them. In showcase mode it lists the demo accounts and says the code (`12345`).
 - **Help and FAQ, Cancellation and Refund Rules, Privacy** (`/help`, `/help/refunds`, `/privacy`): plain content pages linked from the footer. The refund rules page explains 3.9 in plain Persian.
 - **Partner Enquiry** (`/join/partner`): for pet shops, clinics and groomers who want to refer customers. Partners can't sign up themselves (2), so it isn't a signup. Working default until the owner decides: a short page explaining the program, with the center's phone number to call. No form, so no new entity.
 

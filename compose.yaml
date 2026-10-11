@@ -12,11 +12,12 @@ x-app-env: &app-env
   NODE_ENV: production
   DATABASE_URL: postgresql://postgres:postgres@db:5432/zurvan
   # Production trusts only this exact origin (see app/lib/auth.server.ts), so it must match the
-  # browser URL. localhost also keeps the page a secure context, which Altcha's Web Crypto needs.
+  # browser URL.
   BETTER_AUTH_URL: http://localhost:3000
   # Local testing only. Never reuse these values in a real deployment.
   BETTER_AUTH_SECRET: local-test-only-auth-secret-0123456789abcdef
-  ALTCHA_HMAC_KEY: local-test-only-altcha-key-0123456789abcdef
+  # No SMS provider yet: the sign-in code is always 12345.
+  SHOWCASE_MODE: "true"
 
 services:
   db:
@@ -34,15 +35,16 @@ services:
       timeout: 5s
       retries: 30
 
-  # Syncs the Drizzle schema, then exits. Uses the dev-deps stage because drizzle-kit is a
+  # Syncs the Drizzle schema and seeds the showcase, then exits. Uses the dev-deps stage because drizzle-kit is a
   # devDependency. It needs the full env since drizzle.config.ts validates every variable.
   migrate:
     build:
       context: .
       target: development-dependencies-env
     environment: *app-env
-    # --force skips drizzle-kit's interactive confirmation, which a container can't answer.
-    command: ["npx", "drizzle-kit", "push", "--force"]
+    # --force skips drizzle-kit's interactive confirmation, which a container can't answer. Then it seeds the
+    # catalogue and the showcase's demo accounts; both seeds are idempotent, so every `up` is safe.
+    command: ["sh", "-c", "npx drizzle-kit push --force && npm run db:seed:demo"]
     depends_on:
       db:
         condition: service_healthy

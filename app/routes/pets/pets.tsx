@@ -20,13 +20,12 @@ export const meta: Route.MetaFunction = () => [{ title: "حیوان‌های م�
 // Render-critical: the list renders on the server, then TanStack Query takes over for updates.
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) throw redirect("/auth");
+  if (!session) throw redirect("/auth?redirectTo=/pets");
+  // A new account names itself on the sign-in page before anything else.
+  if (!session.user.firstName) throw redirect("/auth?redirectTo=/pets");
 
   const pets = await createServerClient(request).pet.list();
-
-  // Persian names go first-name-first, and the greeting uses only the first name.
-  const firstName = session.user.name.trim().split(/\s+/)[0] ?? session.user.name;
-  return { firstName, pets };
+  return { firstName: session.user.firstName, pets };
 }
 
 /*===== Page =====*/

@@ -16,14 +16,15 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   // Public origin of the app. Better-Auth uses it for callbacks and trusted-origin checks.
   BETTER_AUTH_URL: z.url(),
-  // Signs Altcha challenges so the server can verify a solution without storing the challenge.
-  ALTCHA_HMAC_KEY: z.string().min(32),
+  // The owner's showcase: no SMS provider (the sign-in code is always 12345 and messages go to the `sms_outbox`
+  // table). With it off, auth refuses to start until a real SMS provider is wired (docs/foundations-plan.md).
+  SHOWCASE_MODE: z.stringbool().default(false),
 });
 
 /*===== Validation =====*/
 // TODO: Remove this bypass and always validate once the Cloudflare deployment has real env vars
 // (a Wrangler config with `vars`/secrets, or the dashboard settings). It exists only because the
-// demo deploy has none configured and does not touch the database, auth, or captcha yet.
+// demo deploy has none configured and does not touch the database or auth yet.
 // Cloudflare Workers is detected by its user agent because `process.env` is empty there at load time.
 const skipValidation =
   process.env.SKIP_ENV_VALIDATION === "true" || globalThis.navigator?.userAgent === "Cloudflare-Workers";

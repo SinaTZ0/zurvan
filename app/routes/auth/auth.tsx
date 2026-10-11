@@ -1,41 +1,49 @@
-import { useQueryStates } from "nuqs";
 import { redirect } from "react-router";
 
 import { BrandLogo } from "~/components/brand-logo";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { env } from "~/env.server";
 import { auth } from "~/lib/auth.server";
 import { AuthBanner } from "~/routes/auth/components/auth-banner";
-import { LoginForm } from "~/routes/auth/components/login-form";
-import { SignupForm } from "~/routes/auth/components/signup-form";
+import { SignInFlow } from "~/routes/auth/components/sign-in-flow";
 import { TrustNote } from "~/routes/auth/components/trust-note";
-import { type AuthTab, authSearchParams } from "~/routes/auth/search-params";
 
 import type { Route } from "./+types/auth";
+
+/** Where people land after signing in when nothing asked for a page. The Dogs List will replace the old pets page. */
+const DEFAULT_REDIRECT = "/pets";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
   { title: "ورود به آموزش K9" },
-  { name: "description", content: "ورود یا ساخت حساب در آموزش K9، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
+  { name: "description", content: "با شماره موبایلت وارد آموزش K9 شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
 ];
 
 /*===== Loader =====*/
-// Signed-in users have nothing to do here.
 export async function loader({ request }: Route.LoaderArgs) {
+  const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
   const session = await auth.api.getSession({ headers: request.headers });
-  if (session) throw redirect("/pets");
-  return null;
+
+  // Signed-in people have nothing to do here, unless their new account still has no name.
+  if (session?.user.firstName) throw redirect(redirectTo);
+
+  return { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session };
+}
+
+/** Only same-site paths, so a crafted `?redirectTo=` link can't send someone to another site after signing in. */
+function safeRedirect(value: string | null) {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : DEFAULT_REDIRECT;
 }
 
 /*===== Page =====*/
-export default function AuthPage() {
-  const [{ tab }, setSearchParams] = useQueryStates(authSearchParams);
+export default function AuthPage({ loaderData }: Route.ComponentProps) {
+  const { showcase, redirectTo, needsName } = loaderData;
 
   return (
     // Desktop splits the screen in two. In RTL the first column is the right one, so the banner comes
     // first in the DOM to sit on the right with the form on the left; it's also the reading order.
     <main className="min-h-svh lg:grid lg:grid-cols-2">
       {/*===== Banner =====*/}
-      {/* Sticky so it stays framed beside the form when the signup tab makes the page scroll. */}
+      {/* Sticky so it stays framed beside the form when the showcase list makes the page scroll. */}
       <div className="sticky top-0 hidden h-svh p-4 lg:block">
         <AuthBanner className="h-full" />
       </div>
@@ -46,35 +54,17 @@ export default function AuthPage() {
           {/* Desktop shows the logo in the banner instead. */}
           <BrandLogo className="text-[2.5rem] lg:hidden" />
           <h1 className="mt-4 font-display text-[2rem] leading-tight font-bold text-primary lg:mt-0">
-            به آموزش K9 خوش آمدید
+            به آموزش K9 خوش آمدی
           </h1>
-          <p className="mt-3 max-w-72 text-muted-foreground">
-            وارد شو تا ارزیابی رایگان را رزرو کنی و آموزش سگت را دنبال کنی.
+          <p className="mt-3 max-w-72 text-pretty text-muted-foreground">
+            با شماره موبایلت وارد شو. بار اول است؟ حسابت همین‌جا ساخته می‌شود.
           </p>
         </header>
 
-        {/*===== Forms =====*/}
-        <Tabs
-          value={tab}
-          onValueChange={(value: AuthTab) => void setSearchParams({ tab: value })}
-          className="mt-8 gap-6"
-        >
-          <TabsList className="w-full rounded-lg p-1 group-data-horizontal/tabs:h-12">
-            <TabsTrigger value="login" className="rounded-md text-sm font-bold">
-              ورود
-            </TabsTrigger>
-            <TabsTrigger value="signup" className="rounded-md text-sm font-bold">
-              ثبت‌نام
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <LoginForm />
-          </TabsContent>
-          <TabsContent value="signup">
-            <SignupForm />
-          </TabsContent>
-        </Tabs>
+        {/*===== Steps =====*/}
+        <div className="mt-8">
+          <SignInFlow showcase={showcase} redirectTo={redirectTo} needsName={needsName} />
+        </div>
 
         {/*===== Reassurance =====*/}
         <div className="mt-8">

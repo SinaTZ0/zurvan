@@ -30,12 +30,12 @@ A single `SHOWCASE_MODE` env flag turns all three on. With it off, the app refus
 
 ## 1. Auth and Roles
 
-- Replace Better-Auth's email + password with its **`phoneNumber`** plugin (OTP sign-in, `otpLength: 5`, `expiresIn: 120`, `allowedAttempts: 5`). In showcase mode its `sendOTP` writes to the outbox and its `verifyOTP` option accepts only `12345`. That option replaces the plugin's own check, which is why expiry and attempts are off in showcase mode.
-- Add to `user`: phone (unique, normalized `09xxxxxxxxx`), first and last name, role, status, referral fields, last login. Drop the email requirement.
-- Only `Customer` can self-register. Blocked users can't log in, and their existing sessions are revoked.
-- OTP rate limits per phone and per IP use the defaults in [business-logic.md](business-logic.md) (B7).
+- **Done:** Better-Auth's email + password is replaced by its **`phoneNumber`** plugin (OTP sign-in, `otpLength: 5`, `expiresIn: 120`, `allowedAttempts: 5`). In showcase mode its `sendOTP` writes to the `sms_outbox` table and its `verifyOTP` option accepts only `12345`. That option replaces the plugin's own check, so wrong attempts aren't counted in showcase mode; it still requires a code to have been requested and not expired. A new number is signed up as a customer on verification and asked for its name once. The sign-in page lists the demo accounts.
+- **Done:** `user` has phone (unique, normalized `09xxxxxxxxx`), first and last name, role, status and last login. Better-Auth still requires an email, so phone accounts get a placeholder on the reserved `.invalid` domain and are never asked for one. **To do:** the referral fields, with the Partner Profile.
+- **Done:** only `Customer` can self-register (role and status can't be set from the client), and a blocked number gets no code and can't verify one. **To do:** revoke a user's sessions when the Admin blocks them, with the Users page.
+- **Done:** OTP rate limits per phone (5 an hour, from the send log in `sms_outbox`; the demo accounts are exempt so the owner can switch roles freely) and per IP (20 an hour, Better-Auth's rate limiter, in memory), plus the 60-second resend wait, use the defaults in [business-logic.md](business-logic.md) (B7).
 - **Referral capture:** the Home page stores `?ref=` in a cookie (30 days). Signup reads it, then falls back to the earliest pending lead (3.11).
-- Remove Altcha from login. The rate limits cover abuse, and the code adds the second factor. _(Altcha can come back on the OTP request if abuse shows up.)_
+- **Done:** Altcha is removed (packages, widget, captcha API and `ALTCHA_HMAC_KEY`). The rate limits cover abuse, and the code adds the second factor. _(Altcha can come back on the OTP request if abuse shows up.)_
 
 **Layouts and guards** (layout routes in `routes.ts`, flat slices):
 
@@ -116,6 +116,26 @@ New dependencies: `pg-boss`, `sharp`, `@aws-sdk/client-s3`, `@tiptap/react` + `@
 
 ## 5. Seed Data
 
-`npm run db:seed` creates a believable demo: an Admin who is also the head trainer, two assistants (one verified, one not), 2 partners with leads, ~8 customers with dogs, the real catalog from [zurvan-courses.md](zurvan-courses.md) (with sample prices) plus an assistant's courses in every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in every status with held and upcoming sessions, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media pipeline.
+Two commands, both idempotent (they upsert, so running them again resets rather than duplicates):
 
-Showcase-mode demo phone numbers are fixed, so the login hint always matches.
+- `npm run db:seed`: the real catalog from [zurvan-courses.md](zurvan-courses.md), with sample prices and covers, and
+  the refund policy presets. Safe in any environment.
+- `npm run db:seed:demo`: the catalog plus the showcase's demo accounts (`app/lib/demo-accounts.ts`), one per role,
+  and dogs for the first customer. It refuses to run unless `SHOWCASE_MODE=true`, since the numbers are well known and
+  the code is public. Docker Compose runs it after the schema push.
+
+Showcase-mode demo phone numbers are fixed, so the login hint always matches:
+
+| Phone         | Role     | What it shows               |
+| ------------- | -------- | --------------------------- |
+| `09120000001` | Admin    | the owner, the head trainer |
+| `09120000002` | Trainer  | an assistant                |
+| `09120000003` | Partner  | a partner pet shop          |
+| `09120000004` | Customer | a customer with two dogs    |
+| `09120000005` | Customer | a new customer, no dogs yet |
+
+The demo grows with each entity: as they are built, it should reach a believable showcase — an assistant's courses in
+every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in
+every status, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, partner
+leads and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media
+pipeline.

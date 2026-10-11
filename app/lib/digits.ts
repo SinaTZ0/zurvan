@@ -20,3 +20,11 @@ const faNumberFormat = new Intl.NumberFormat("fa-IR");
 export function formatNumberFa(value: number): string {
   return faNumberFormat.format(value);
 }
+
+/**
+ * Writes a string of digits in Persian digits, as-is (`"12345"` → `"۱۲۳۴۵"`). Unlike `formatNumberFa`, it adds no
+ * thousands separators, so it suits codes and phone numbers.
+ */
+export function toPersianDigits(value: string): string {
+  return value.replace(/\d/g, (digit) => String.fromCharCode(PERSIAN_ZERO + Number(digit)));
+}

@@ -1,29 +1,42 @@
 import { z } from "zod";
 
-/*===== Shared Fields =====*/
-const emailField = z
-  .string()
-  .trim()
-  .min(1, "ایمیل خود را وارد کنید.")
-  .pipe(z.email("ایمیل معتبر نیست. مثال درست: sara@example.com"));
+import { normalizePhoneNumber } from "~/lib/phone";
+import { SIGN_IN_CODE_LENGTH } from "~/lib/user-constants";
 
-/*===== Login =====*/
-export const loginSchema = z.object({
-  email: emailField,
-  // Length rules belong to sign-up only; here any typo should reach the server's single answer.
-  password: z.string().min(1, "رمز عبور را وارد کنید."),
+/*===== Phone =====*/
+// Typed however the person likes (Persian digits, +98, spaces); sent normalized as `09xxxxxxxxx`.
+export const phoneSchema = z.object({
+  phoneNumber: z
+    .string()
+    .trim()
+    .min(1, "شماره موبایلت را بنویس.")
+    .transform((value, ctx) => {
+      const normalized = normalizePhoneNumber(value);
+      if (!normalized) {
+        ctx.addIssue({ code: "custom", message: "شماره موبایل درست نیست. مثال درست: ۰۹۱۲۳۴۵۶۷۸۹" });
+        return z.NEVER;
+      }
+      return normalized;
+    }),
 });
 
-export type LoginValues = z.infer<typeof loginSchema>;
+export type PhoneInput = z.input<typeof phoneSchema>;
+export type PhoneValues = z.output<typeof phoneSchema>;
 
-/*===== Sign-up =====*/
-// Limits match Better-Auth's defaults (8–128) so most mistakes are caught before submitting.
-export const signupSchema = z.object({
-  name: z.string().trim().min(2, "نام خود را وارد کنید.").max(50, "نام حداکثر ۵۰ حرف است."),
-  email: emailField,
-  password: z.string().min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد.").max(128, "رمز عبور حداکثر ۱۲۸ کاراکتر است."),
-  // Filled by the Altcha widget once the proof-of-work is solved.
-  altcha: z.string().min(1, "لطفاً تأیید امنیتی را کامل کنید."),
+/*===== Code =====*/
+export const codeSchema = z.object({
+  code: z.string().regex(new RegExp(`^\\d{${SIGN_IN_CODE_LENGTH}}$`), "کد پنج‌رقمی پیامک را کامل بنویس."),
 });
 
-export type SignupValues = z.infer<typeof signupSchema>;
+export type CodeValues = z.infer<typeof codeSchema>;
+
+/*===== Name =====*/
+// Asked once, after a new number is verified. Used in greetings ("سلام سارا").
+const namePart = (missing: string) => z.string().trim().min(2, missing).max(40, "حداکثر ۴۰ حرف.");
+
+export const nameSchema = z.object({
+  firstName: namePart("اسمت را بنویس."),
+  lastName: namePart("نام خانوادگی‌ات را بنویس."),
+});
+
+export type NameValues = z.infer<typeof nameSchema>;

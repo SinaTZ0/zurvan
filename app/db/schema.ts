@@ -24,9 +24,22 @@ import {
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
+  // Better-Auth requires an email on every user, but people sign in with their phone and are never asked for one.
+  // Phone sign-ups get a placeholder address on the reserved `.invalid` domain (see `auth.server.ts`).
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  // Phone sign-in (Better-Auth's phoneNumber plugin). Stored normalized as `09xxxxxxxxx`. Nullable only for the
+  // accounts made with email and password before phone sign-in, which can no longer sign in.
+  phoneNumber: text("phone_number").unique(),
+  phoneNumberVerified: boolean("phone_number_verified").notNull().default(false),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  // Plain text instead of pg enums, so adding a value is a code change. Allowed values live in
+  // `app/lib/user-constants.ts`. Only customers can sign themselves up; the Admin creates the rest.
+  role: text("role").notNull().default("customer"),
+  status: text("status").notNull().default("active"),
+  lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
@@ -91,6 +104,22 @@ export const verification = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+/*===== SMS Outbox =====*/
+// Showcase mode sends no SMS: every message the app would have sent is written here instead, for the Admin to read
+// (docs/foundations-plan.md, "Showcase Shortcuts").
+export const smsOutbox = pgTable(
+  "sms_outbox",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    phoneNumber: text("phone_number").notNull(),
+    /** What the message is for, e.g. `sign-in-code`. */
+    kind: text("kind").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("sms_outbox_created_at_idx").on(table.createdAt)],
 );
 
 /*===== Pets =====*/

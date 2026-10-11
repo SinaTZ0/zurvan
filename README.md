@@ -52,9 +52,16 @@ Only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed
 docker compose up --build
 ```
 
-Then open http://localhost:3000. Use `localhost` exactly: auth only trusts that origin, and the sign-up captcha needs a secure context.
+Then open http://localhost:3000. Use `localhost` exactly: auth only trusts that origin.
 
-The stack starts Postgres, syncs the schema with `drizzle-kit push`, then runs the production server. The secrets in `compose.yaml` are for local testing only.
+The stack starts Postgres, syncs the schema with `drizzle-kit push`, seeds the catalogue and the demo accounts, then runs the production server in showcase mode. The secrets in `compose.yaml` are for local testing only.
+
+### Showcase mode and demo accounts
+
+With `SHOWCASE_MODE=true` (set in `compose.yaml` and `.env.example`) no SMS is sent: the sign-in code is always `12345`, and every message lands in the `sms_outbox` table. Without it, the app refuses to start, since nobody could receive a code.
+
+- `npm run db:push` syncs the schema, then `npm run db:seed:demo` seeds the catalogue and one demo account per role (`09120000001` Admin to `09120000005` Customer; the list is in `app/lib/demo-accounts.ts`). The sign-in page lists them.
+- `npm run db:seed` seeds only the catalogue, for an environment without demo accounts.
 
 - `docker compose down` stops everything and keeps the data.
 - `docker compose down -v` also deletes the database.
