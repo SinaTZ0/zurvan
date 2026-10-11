@@ -5,12 +5,11 @@ import type { BookingOptions } from "~/orpc/order/contract";
 /*===== Unavailable Panel =====*/
 /**
  * Where the form would be, when this course (or its test) can't be booked online: the server's reason, and the way to
- * start instead. The API says why in a sentence but not which kind of course it is, so the way out is picked from the
- * sentence's start (behavior modification) and from the request (a test the course doesn't have).
+ * start instead, picked from `unavailableKind`.
  */
 export function UnavailablePanel({ options }: { options: BookingOptions }) {
-  const { course, kind, unavailableReason } = options;
-  const action = getAction({ slug: course.slug, kind, reason: unavailableReason ?? "" });
+  const { course, unavailableKind, unavailableReason } = options;
+  const action = getAction({ slug: course.slug, unavailableKind });
 
   return (
     <section aria-labelledby="book-unavailable-title" className="site-container py-10 lg:py-14">
@@ -27,8 +26,13 @@ export function UnavailablePanel({ options }: { options: BookingOptions }) {
   );
 }
 
-function getAction({ slug, kind, reason }: { slug: string; kind: BookingOptions["kind"]; reason: string }) {
-  if (reason.startsWith("اصلاح رفتار")) return { label: "درخواست اصلاح رفتار", to: "/behavior-modification" };
-  if (kind === "test") return { label: "دوره را ببین", to: `/courses/${slug}` };
-  return { label: "ارزیابی رایگان رزرو کن", to: "/assessment" };
+function getAction({ slug, unavailableKind }: { slug: string; unavailableKind: BookingOptions["unavailableKind"] }) {
+  switch (unavailableKind) {
+    case "behavior-request":
+      return { label: "درخواست اصلاح رفتار", to: "/behavior-modification" };
+    case "no-test":
+      return { label: "دوره را ببین", to: `/courses/${slug}` };
+    default:
+      return { label: "ارزیابی رایگان رزرو کن", to: "/assessment" };
+  }
 }

@@ -35,12 +35,10 @@ import {
  */
 export function BookingForm({
   options,
-  liveEnrollmentIds,
   initialDogId,
   assessmentId,
 }: {
   options: BookingOptions;
-  liveEnrollmentIds: Readonly<Record<string, string>>;
   initialDogId: string;
   /** From `?assessment=` on Dog Detail's recommendations; the server drops one that isn't this dog's. */
   assessmentId: string | null;
@@ -139,7 +137,6 @@ export function BookingForm({
               )}
               <DogPicker
                 options={options}
-                liveEnrollmentIds={liveEnrollmentIds}
                 registration={register("dogId")}
                 error={errors.dogId}
                 newDogHref={newDogHref(course.slug, kind)}

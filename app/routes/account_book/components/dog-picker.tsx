@@ -20,14 +20,11 @@ type Problem = DogEntry["problems"][number];
  */
 export function DogPicker({
   options,
-  liveEnrollmentIds,
   registration,
   error,
   newDogHref,
 }: {
   options: BookingOptions;
-  /** Dog id → the enrollment it is already in for this course, so «already enrolled» can link to it. */
-  liveEnrollmentIds: Readonly<Record<string, string>>;
   registration: UseFormRegisterReturn;
   error?: FormFieldError;
   newDogHref: string;
@@ -82,12 +79,7 @@ export function DogPicker({
                 {entry.problems.map((problem) => (
                   <li key={problem.kind + problem.message} className="flex flex-col gap-1">
                     <p className="text-sm text-pretty text-muted-foreground">{problem.message}</p>
-                    <WaysOut
-                      problem={problem}
-                      dog={dog}
-                      prerequisites={options.course.prerequisites}
-                      enrollmentId={liveEnrollmentIds[dog.id]}
-                    />
+                    <WaysOut problem={problem} dog={dog} prerequisites={options.course.prerequisites} />
                   </li>
                 ))}
               </ul>
@@ -116,19 +108,17 @@ export function DogPicker({
 const LINK_CLASS = "rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline";
 
 /**
- * What a customer can do about one reason. Age has no way out. A missing prerequisite names its course only inside the
- * sentence («…»), so it is matched by title; when none matches the sentence stands alone.
+ * What a customer can do about one reason, from the problem's own `courseSlug` and `enrollmentId`. Age has no way out.
+ * A prerequisite names the course to pass first; if that course has a test, the test is offered too.
  */
 function WaysOut({
   problem,
   dog,
   prerequisites,
-  enrollmentId,
 }: {
   problem: Problem;
   dog: DogEntry["dog"];
   prerequisites: BookingOptions["course"]["prerequisites"];
-  enrollmentId: string | undefined;
 }) {
   switch (problem.kind) {
     case "no-record":
@@ -138,14 +128,14 @@ function WaysOut({
         </Link>
       );
     case "prerequisite": {
-      const required = prerequisites.find((prerequisite) => problem.message.includes(`«${prerequisite.title}»`));
-      if (!required) return null;
+      if (!problem.courseSlug) return null;
+      const required = prerequisites.find((prerequisite) => prerequisite.slug === problem.courseSlug);
       return (
         <span className="flex flex-wrap gap-x-4 gap-y-1">
-          <Link to={`/courses/${required.slug}`} className={LINK_CLASS}>
-            {required.title} را ببین
+          <Link to={`/courses/${problem.courseSlug}`} className={LINK_CLASS}>
+            {required ? `${required.title} را ببین` : "دوره را ببین"}
           </Link>
-          {required.hasTest && (
+          {required?.hasTest && (
             <Link to={`/account/book/${required.slug}?kind=test&dog=${dog.id}`} className={LINK_CLASS}>
               تستش را رزرو کن
             </Link>
@@ -155,7 +145,10 @@ function WaysOut({
     }
     case "live-enrollment":
       return (
-        <Link to={enrollmentId ? `/account/training/${enrollmentId}` : "/account/training"} className={LINK_CLASS}>
+        <Link
+          to={problem.enrollmentId ? `/account/training/${problem.enrollmentId}` : "/account/training"}
+          className={LINK_CLASS}
+        >
           آموزش {dog.name} را ببین
         </Link>
       );

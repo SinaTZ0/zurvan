@@ -39,25 +39,16 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   const courseKind = url.searchParams.get("kind") === "test" ? "test" : "course";
   const client = createServerClient(request);
 
-  const [options, enrollments] = await Promise.all([
-    client.order.bookingOptions({ courseSlug: params.courseSlug, kind: courseKind }).catch((error: unknown) => {
+  const options = await client.order
+    .bookingOptions({ courseSlug: params.courseSlug, kind: courseKind })
+    .catch((error: unknown) => {
       if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
       throw error;
-    }),
-    client.enrollment.listMine({}),
-  ]);
-
-  // A dog already in this course links to that enrollment, which the booking options don't carry.
-  const liveEnrollmentIds: Record<string, string> = {};
-  for (const enrollment of enrollments) {
-    const live = enrollment.status === "scheduling" || enrollment.status === "active";
-    if (live && enrollment.course.slug === options.course.slug) liveEnrollmentIds[enrollment.dog.id] = enrollment.id;
-  }
+    });
 
   return {
     kind: "customer" as const,
     options,
-    liveEnrollmentIds,
     initialDogId: pickInitialDog({ options, requestedId: url.searchParams.get("dog") }),
     assessmentId: url.searchParams.get("assessment"),
   };
@@ -89,7 +80,6 @@ export default function BookCoursePage({ loaderData }: Route.ComponentProps) {
         <BookingForm
           key={`${options.kind}:${loaderData.initialDogId}`}
           options={options}
-          liveEnrollmentIds={loaderData.liveEnrollmentIds}
           initialDogId={loaderData.initialDogId}
           assessmentId={loaderData.assessmentId}
         />
