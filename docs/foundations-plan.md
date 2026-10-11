@@ -54,11 +54,11 @@ Guards are React Router **middleware** on the layout route: it loads the session
 - Write every entity from section 4 of the spec in `app/db/schema.ts`, with DB constraints for the invariants that must never break:
   - A partial unique index for one non-cancelled assessment per slot, and one `Scheduling` or `Active` enrollment per (course, pet).
   - Exactly one head trainer, unique (transaction, wallet) on lines, at most one `Pending` withdrawal per user, at most one `Purchase` per order item, at most one enrollment per order item.
-  - Lines of a transaction add up to 0: checked by a **deferred constraint trigger**, so it holds even if a bug skips the service.
+  - Lines of a transaction add up to 0: checked by a **deferred constraint trigger**, so it holds even if a bug skips the service. **Done** (`app/db/money-constraints.sql`, applied by `npm run db:seed`).
 - Move from `db:push` to **generated migrations** (`db:generate` + `db:migrate`) now that there's real data to keep.
 - Bring `pet` up to the spec (birth date instead of age, sex, weight, notes, photo, known since…). Phase one is dogs only, so `species` and `PET_SPECIES` go away.
-- **Money core** (`app/orpc/wallet/`): one `createTransaction` service that every money flow uses. It checks the lines, writes them and updates cached balances in one DB transaction. Mirror, purchase, refund and withdrawal steps are built on it.
-- **Tests:** the money core is where a bug costs real money, so it gets focused integration tests: lines add up to 0, mirror flips signs, a repeated payment callback creates nothing twice, refunds follow the policy and the held sessions.
+- **Done:** **Money core** (`app/orpc/wallet/`): one `createTransaction` service that every money flow uses. It checks the lines, writes them and updates cached balances in one DB transaction. Mirror, purchase, refund and withdrawal steps are built on it.
+- **Done:** **Tests:** the money core is where a bug costs real money, so it gets focused integration tests: lines add up to 0, mirror flips signs, a repeated payment callback creates nothing twice, refunds follow the policy and the held sessions.
 
 ## 3. Slot Booking and Background Jobs
 

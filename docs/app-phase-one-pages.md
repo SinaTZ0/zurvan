@@ -113,10 +113,11 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Dog Form:** every field of entity 4: name, breed, sex, birth date (approximate is fine), weight, neutered, photo, microchip number, vaccination status, behavior notes and medical notes. Say that the two notes are shown to the trainer. Built at `/account/dogs/new` and `/account/dogs/:dogId/edit` ([customer-area-design.md](customer-area-design.md)).
 - **Dogs List** (built, `/account/dogs`): The home page's "book the next course" links here, since a dog's page is where a dog with a record books its next course.
 - **Dog Detail and Record:** assessments with the trainer's notes and recommendations (each with "book"), enrollments with results, passed tests, trainer notes. This is where a dog with a record books its next course.
-- **Book a Course or Test:** dog (with eligibility and retake notices), boarding, address, preferred times, training goal (3.4, 3.8). Leads to checkout.
-- **Checkout:** items, discount code, wallet use (3.10, 3.12). Also used to pay a behavior plan (3.7).
-- **Payment Result:** gateway callback page, success or failure with retry. For the showcase there is no gateway: "pay" always succeeds and lands here (see [foundations-plan.md](foundations-plan.md)).
-- **Enrollment Detail:** session schedule with places and notes, held count, result, refund amount preview, cancel (3.5, 3.9).
+- **Book a Course or Test** (built, `/account/book/:courseSlug`): dog (with eligibility and retake notices), boarding, address, preferred times, training goal (3.4, 3.8). Leads to checkout ([training-design.md](training-design.md)).
+- **Checkout** (built, `/account/checkout/:orderId`): items, discount code, wallet use (3.10, 3.12). Also used to pay a behavior plan (3.7).
+- **Payment Result** (built, `/account/checkout/:orderId/result`): gateway callback page, success or failure with retry. For the showcase there is no gateway: "pay" always succeeds and lands here (see [foundations-plan.md](foundations-plan.md)).
+- **My Training** (built, `/account/training`): each dog's live courses with their session strip and next step, and the finished ones.
+- **Enrollment Detail** (built, `/account/training/:enrollmentId`): session schedule with places and notes, held count, result, refund amount preview, cancel (3.5, 3.9).
 - **My Assessments** (built, `/account/assessments`): upcoming and past, cancel an upcoming one (3.3).
 - **My Behavior Requests:** status, the trainer's plan with its expiry, pay or withdraw (3.7).
 
@@ -129,9 +130,10 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 
 - **The head trainer is the Admin** (business-logic B8). He uses these pages for his own teaching, linked from the Admin panel. My Courses, Course Form and Review Changes are for assistants: he edits courses from the Admin's Course Form. His pay goes to the Admin wallet, so Wallet and Withdrawal Request are for assistants too.
 - **Trainer Dashboard:** today's sessions and assessments, enrollments waiting to be scheduled, new behavior requests.
-- **Schedule** (built for assessment slots, `/trainer`): a week view of the trainer's assessment slots and sessions. Open slots (one or repeating), close a slot, warnings on overlaps (3.3, 3.5).
+- **Schedule** (built, `/trainer`): a week view of the trainer's assessment slots and sessions. Open slots (one or repeating), close a slot, warnings on overlaps (3.3, 3.5).
 - **Assessment Detail** (built, `/trainer/assessments/:id`): dog with its notes, customer's note and place, mark completed or no-show, write notes, pick recommended courses, mark a dog as already known (3.3). Marking a dog as known isn't built yet.
-- **Enrollment Detail:** dog with its notes, customer's preferred times and address, schedule and reschedule sessions, mark held or missed, session notes, change the planned count, record the result (3.4, 3.5).
+- **Enrollments** (built, `/trainer/enrollments`): the ones waiting for a first session, then the live and finished ones.
+- **Enrollment Detail** (built, `/trainer/enrollments/:enrollmentId`): dog with its notes, customer's preferred times and address, schedule and reschedule sessions, mark held or missed, session notes, change the planned count, record the result (3.4, 3.5).
 - **Behavior Request Detail:** videos, description, propose a plan or decline (3.7).
 - **Course Form:** create, edit and resubmit; Admin-only fields are read-only after approval; shows the rejection reason (3.2).
 - **Review Changes:** old and new value per field, Admin note, accept or edit (3.2).
