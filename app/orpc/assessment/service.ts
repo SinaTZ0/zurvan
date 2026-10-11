@@ -43,6 +43,7 @@ import {
   trainerCancelInputSchema,
 } from "~/orpc/assessment/validation";
 import { findApprovedCoursesBySlugs } from "~/orpc/course/repository";
+import { findDogCourseHistory } from "~/orpc/order/repository";
 import { toPublicDog } from "~/orpc/dog/mapper";
 import { findDogByOwnerForUpdate, findDogWithPhoto, hasBookedAssessment } from "~/orpc/dog/repository";
 
@@ -121,28 +122,32 @@ function ageInMonths({ birthDate, onDate }: { birthDate: string; onDate: string 
 }
 
 /**
- * What a trainer's recommendations start with (docs/business-logic.md, B16): CGC, and BMC for a dog that is or soon
- * will be in BMC's age range on the day of the assessment. Only courses that are approved are offered.
- *
- * TODO: CGC is left out for a dog that has passed it or its test, and BMC for one that has taken it, once enrollments
- * exist. Until then every dog is offered CGC.
+ * What a trainer's recommendations start with (docs/business-logic.md, B16): CGC for a dog that hasn't passed it or its
+ * test, and BMC for a dog that hasn't taken it and is or soon will be in its age range on the day of the assessment.
+ * Only courses that are approved are offered. "Taken" means passed or under way: a dog enrolled in CGC now doesn't
+ * need it suggested again.
  */
 async function prefilledRecommendations({
   db,
+  dogId,
   birthDate,
   startsAt,
 }: {
   db: Database;
+  dogId: string;
   birthDate: string;
   startsAt: Date;
 }): Promise<string[]> {
   const courses = await findApprovedCoursesBySlugs({ db, slugs: [CGC_COURSE_SLUG, BMC_COURSE_SLUG] });
+  const history = await findDogCourseHistory({ db, dogIds: [dogId] });
+  const taken = new Set(history.map((row) => row.courseId));
   const slugs: string[] = [];
 
-  if (courses.some((course) => course.slug === CGC_COURSE_SLUG)) slugs.push(CGC_COURSE_SLUG);
+  const cgc = courses.find((course) => course.slug === CGC_COURSE_SLUG);
+  if (cgc && !taken.has(cgc.id)) slugs.push(CGC_COURSE_SLUG);
 
   const bmc = courses.find((course) => course.slug === BMC_COURSE_SLUG);
-  if (bmc?.minAgeMonths != null) {
+  if (bmc?.minAgeMonths != null && !taken.has(bmc.id)) {
     // The age is counted on the Tehran calendar day of the meeting, which is the day the owner thinks of.
     const age = ageInMonths({ birthDate, onDate: utcToTehranParts(startsAt).date });
     // "Soon" starts a couple of months before the minimum age; with no maximum, the range has no end.
@@ -172,7 +177,12 @@ async function toTrainerView({
     row.assessment.status === "completed"
       ? recommendations.map((recommendation) => recommendation.slug)
       : row.assessment.status === "booked"
-        ? await prefilledRecommendations({ db, birthDate: dogRecord.birthDate, startsAt: row.slot.startsAt })
+        ? await prefilledRecommendations({
+            db,
+            dogId: dogRecord.id,
+            birthDate: dogRecord.birthDate,
+            startsAt: row.slot.startsAt,
+          })
         : [];
 
   return toTrainerAssessment({

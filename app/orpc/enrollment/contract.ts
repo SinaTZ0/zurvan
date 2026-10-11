@@ -93,10 +93,19 @@ export const customerEnrollmentSchema = z.object({
 
 export type CustomerEnrollment = z.infer<typeof customerEnrollmentSchema>;
 
-/** An enrollment as its trainer sees it: the whole dog and the customer's contact details, and no money. */
+/**
+ * An enrollment as its trainer sees it: the whole dog and the customer's contact details. Of the money, only what the
+ * refund rule needs, so changing the planned sessions can show its effect on a refund before saving (B11).
+ */
 export const trainerEnrollmentSchema = z.object({
   ...enrollmentBaseShape,
   dog: dogSchema,
+  /** For `calculateEnrollmentRefund`: Rial from the order item, and its refund policy's share. */
+  refundBasis: z.object({
+    paidAmount: z.number().int(),
+    refundedAmount: z.number().int(),
+    policyPercent: z.number().int(),
+  }),
   customer: z.object({ name: z.string(), phoneNumber: z.string().nullable() }),
   /** The assessment that recommended the course, if the customer booked from one. */
   assessment: z

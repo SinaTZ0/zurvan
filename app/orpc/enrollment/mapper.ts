@@ -113,7 +113,7 @@ type Common = Omit<
 
 /**
  * What the customer's and the trainer's views share. Dropping the money from this is what keeps it out of the
- * trainer's view.
+ * trainer's view, which adds back only the refund basis.
  *
  * @throws When a stored value isn't a known one, for the reason {@link toTrainingSession} gives.
  */
@@ -204,7 +204,7 @@ export function toCustomerEnrollment({
 
 /*===== Trainer Enrollment =====*/
 /**
- * Same as {@link toCustomerEnrollment} without the money, plus the whole dog (from the dog feature's own mapper, so the
+ * Same as {@link toCustomerEnrollment} without the money (bar the refund basis), plus the whole dog (from the dog feature's own mapper, so the
  * trainer sees it as the owner does), the customer's contact details, the recommending assessment and what the trainer
  * may do now.
  */
@@ -226,6 +226,11 @@ export function toTrainerEnrollment({
   return {
     ...common,
     dog,
+    refundBasis: {
+      paidAmount: row.item.paidAmount,
+      refundedAmount: row.item.refundedAmount,
+      policyPercent: row.item.refundPolicyPercent,
+    },
     customer: { name: fullName(row.customer), phoneNumber: row.customer.phoneNumber },
     assessment: assessment
       ? { id: assessment.id, completedAt: assessment.completedAt, trainerNotes: assessment.trainerNotes }
