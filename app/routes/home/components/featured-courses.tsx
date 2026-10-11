@@ -57,7 +57,10 @@ const FEATURED_COURSES: CourseCardData[] = [
  */
 export function FeaturedCourses() {
   return (
-    <section aria-labelledby="featured-title" className="mt-section-md bg-sunken py-section-md">
+    <section
+      aria-labelledby="featured-title"
+      className="glow mt-section-md bg-sunken py-section-md [--glow-alpha:0.13] [--glow-at:50%_0%] [--glow-h:70%] [--glow-w:55%]"
+    >
       <div className="site-container">
         <SectionHeading
           id="featured-title"

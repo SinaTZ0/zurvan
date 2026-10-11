@@ -56,7 +56,11 @@ const ratingFormat = new Intl.NumberFormat("fa-IR", { minimumFractionDigits: 1, 
  */
 export function TrainersSection() {
   return (
-    <section id="trainers" aria-labelledby="trainers-title" className="site-container scroll-mt-8 pt-section-md">
+    <section
+      id="trainers"
+      aria-labelledby="trainers-title"
+      className="glow site-container scroll-mt-8 pt-section-md [--glow-alpha:0.16] [--glow-at:50%_40%] [--glow-h:55%] [--glow-w:55%]"
+    >
       <SectionHeading
         id="trainers-title"
         title="مربیانی که کنارت هستند"

@@ -7,7 +7,9 @@ import { Link } from "~/components/link";
  */
 export function ClosingBanner() {
   return (
-    <section aria-labelledby="closing-title" className="site-container pt-section-md">
+    <section aria-labelledby="closing-title" className="relative isolate site-container pt-section-md">
+      {/* Gold light spilling out from behind the banner, so the last ask looks like the page's lit window. */}
+      <div aria-hidden className="absolute inset-x-12 inset-y-0 -z-10 rounded-full bg-primary/25 blur-3xl" />
       <div className="relative flex min-h-96 items-center overflow-hidden rounded-4xl surface-inverse">
         <img
           src="/photo/cta-park.jpg"

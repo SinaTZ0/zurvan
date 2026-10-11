@@ -188,7 +188,9 @@ function Fact({ icon: Icon, label, children }: { icon: LucideIcon; label: string
  */
 function CoursePreview({ problems, active }: { problems: Problem[]; active: Problem }) {
   return (
-    <figure aria-hidden className="sticky top-8 hidden self-start lg:block">
+    <figure aria-hidden className="sticky top-8 isolate hidden self-start lg:block">
+      {/* A halo of gold light behind the photo, so the picture looks lit rather than pasted on the dark page. */}
+      <div className="absolute -inset-10 -z-10 rounded-full bg-primary/20 blur-3xl" />
       <div className="relative aspect-square overflow-hidden rounded-3xl bg-muted shadow-md">
         {problems.map((problem) => (
           <img

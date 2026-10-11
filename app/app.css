@@ -246,7 +246,9 @@
 
   /*------ Edges ------*/
   --border: rgb(212 175 97 / 0.16); /* a gold hairline */
-  --input: rgb(212 175 97 / 0.5); /* control edges need 3:1 (WCAG 1.4.11): 3.4:1 on card; also tints fills via bg-input/30 */
+  --input: rgb(
+    212 175 97 / 0.5
+  ); /* control edges need 3:1 (WCAG 1.4.11): 3.4:1 on card; also tints fills via bg-input/30 */
 
   /*------ Accents and status ------*/
   --saffron: #ecc774; /* champagne gold, 11:1 on card */
@@ -267,8 +269,7 @@
   --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.5);
   --elevation-sm: inset 0 1px 0 rgb(236 199 116 / 0.06), 0 1px 2px rgb(0 0 0 / 0.55), 0 4px 12px -2px rgb(0 0 0 / 0.45);
   --elevation-md: inset 0 1px 0 rgb(236 199 116 / 0.08), 0 2px 4px rgb(0 0 0 / 0.5), 0 16px 32px -8px rgb(0 0 0 / 0.65);
-  --elevation-lg:
-    inset 0 1px 0 rgb(236 199 116 / 0.1), 0 4px 10px rgb(0 0 0 / 0.5), 0 32px 64px -12px rgb(0 0 0 / 0.8);
+  --elevation-lg: inset 0 1px 0 rgb(236 199 116 / 0.1), 0 4px 10px rgb(0 0 0 / 0.5), 0 32px 64px -12px rgb(0 0 0 / 0.8);
 
   --chart-1: #d4af61;
   --chart-2: #ecc774;
@@ -320,6 +321,27 @@
   max-width: calc(var(--container-page) + var(--spacing-site) * 2);
   margin-inline: auto;
   padding-inline: var(--spacing-site);
+}
+
+/* A pool of gold light behind a section's content, for the places the page should feel lit from within. It sits on the
+   section's own box, so aim it with `--glow-at`, size it with `--glow-w` / `--glow-h` (ellipse radii as a share of the
+   box) and set its strength with `--glow-alpha`. It fades to nothing by the ellipse edge, so keep the ellipse inside the
+   box unless the section is a band with its own edge to hide the cut. */
+@utility glow {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(
+      ellipse var(--glow-w, 60%) var(--glow-h, 60%) at var(--glow-at, 50% 50%),
+      rgb(236 199 116 / var(--glow-alpha, 0.1)),
+      transparent
+    );
+  }
 }
 
 /* The emphasis band: bronze under gold hairlines. It re-points the surface and text tokens for everything inside, so

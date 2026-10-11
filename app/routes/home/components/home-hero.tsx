@@ -121,6 +121,19 @@ export function HomeHero() {
   return (
     <section ref={sectionRef} aria-labelledby="hero-title" className="h-[300svh] lg:h-[340svh]">
       <div ref={panelRef} className="sticky top-0 flex h-svh flex-col overflow-hidden">
+        {/*===== Glow =====*/}
+        {/* Warm light behind the headline (the start side) and a fainter pool low on the far side, so the dark page has
+            a lit centre. It fades out with the headline as the photo takes over. */}
+        <div
+          aria-hidden
+          style={{
+            opacity: "calc(1 - var(--expand, 0) * 1.6)",
+            backgroundImage:
+              "radial-gradient(ellipse 46rem 24rem at 72% 20%, rgb(236 199 116 / 0.17), transparent), radial-gradient(ellipse 34rem 22rem at 12% 62%, rgb(212 175 97 / 0.08), transparent)",
+          }}
+          className="pointer-events-none absolute inset-0"
+        />
+
         {/*===== Heading =====*/}
         {/* Sits under the photo, so the growing frame covers it while it shrinks away. */}
         <div

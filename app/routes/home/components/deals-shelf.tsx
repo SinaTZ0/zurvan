@@ -72,7 +72,10 @@ const LAST_SEATS_THRESHOLD = 3;
  */
 export function DealsShelf() {
   return (
-    <section aria-labelledby="deals-title" className="site-container pt-section-md">
+    <section
+      aria-labelledby="deals-title"
+      className="glow site-container pt-section-md [--glow-alpha:0.17] [--glow-at:50%_55%] [--glow-h:55%] [--glow-w:55%]"
+    >
       <SectionHeading
         id="deals-title"
         title="فرصت‌های این هفته"

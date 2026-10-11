@@ -37,7 +37,11 @@ const FINAL_STEP = {
  */
 export function HowItWorks() {
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="mt-section-md surface-inverse py-section-md">
+    <section
+      id="how-it-works"
+      aria-labelledby="how-title"
+      className="glow mt-section-md surface-inverse py-section-md [--glow-alpha:0.16] [--glow-at:100%_0%] [--glow-h:75%] [--glow-w:50%]"
+    >
       <div className="site-container">
         {/*------ Heading and Frieze ------*/}
         <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-6">
