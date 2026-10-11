@@ -11,13 +11,14 @@ import type { UserRole } from "~/lib/user-constants";
 export const sessionContext = createContext<AuthSession>();
 
 /*===== Role Homes =====*/
-// Where a signed-in person belongs when they open a page their role can't use. The trainer, partner and admin
-// panels aren't built yet, so those roles go to the storefront until they are.
+// Where a signed-in person belongs when they open a page their role can't use. Trainers and the Admin (the head
+// trainer) land on the trainer area; the Admin panel will take over the Admin's home when it exists. The partner panel
+// isn't built yet, so partners go to the storefront until it is.
 const ROLE_HOME: Record<UserRole, string> = {
   customer: "/account",
-  trainer: "/",
+  trainer: "/trainer",
   partner: "/",
-  admin: "/",
+  admin: "/trainer",
 };
 
 /** The landing page for a role. Unknown roles (a value removed from the list) go to the storefront. */
