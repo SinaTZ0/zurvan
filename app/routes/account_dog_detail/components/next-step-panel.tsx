@@ -1,27 +1,41 @@
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { SessionCard } from "~/components/session-card";
 import { formatNumberFa } from "~/lib/digits";
+import { describeNextStep, enrollmentTitle, pickNextEnrollment } from "~/lib/enrollment-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { formatSlotDay, formatSlotTime } from "~/lib/tehran-time";
 import type { Assessment } from "~/orpc/assessment/contract";
 import type { Dog } from "~/orpc/dog/contract";
+import type { CustomerEnrollment } from "~/orpc/enrollment/contract";
 
 /*===== Next Step Panel =====*/
 /**
  * What to do with this dog now, in the trainer's voice. By state:
+ * 0. a course or test is in progress: its next session (or that the trainer will call for the first), instead of
+ *    recommendations, which would only repeat what the customer has already chosen;
  * 1. an assessment is booked: when he sees the dog, and a quiet link to My Assessments (nothing to do, so no
  *    gold-leaf button);
  * 2. the latest completed assessment has recommendations: the courses in his order, the first with the gold-leaf
  *    button and the rest quiet;
- * 3. a record without recommendations: book the next course directly (the courses list, until booking exists);
+ * 3. a record without recommendations: see the courses, and book one directly from its page;
  * 4. nothing yet: the free assessment.
  */
-export function NextStepPanel({ dog, assessments }: { dog: Dog; assessments: Assessment[] }) {
+export function NextStepPanel({
+  dog,
+  assessments,
+  enrollments,
+}: {
+  dog: Dog;
+  assessments: Assessment[];
+  enrollments: CustomerEnrollment[];
+}) {
+  const training = pickNextEnrollment(enrollments);
   const booked = assessments.find((assessment) => assessment.status === "booked");
-  const recommendations =
-    assessments
-      .filter((assessment) => assessment.status === "completed" && assessment.recommendations.length > 0)
-      .sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime())[0]?.recommendations ?? [];
+  const recommending = assessments
+    .filter((assessment) => assessment.status === "completed" && assessment.recommendations.length > 0)
+    .sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime())[0];
+  const recommendations = recommending?.recommendations ?? [];
 
   return (
     <section
@@ -32,7 +46,22 @@ export function NextStepPanel({ dog, assessments }: { dog: Dog; assessments: Ass
         قدم بعدی
       </h2>
 
-      {booked ? (
+      {training ? (
+        <>
+          {/*------ In Training ------*/}
+          <p className="text-sm text-muted-foreground">{enrollmentTitle(training)}</p>
+          <p className="-mt-2 max-w-lg text-lg leading-relaxed font-bold text-pretty">
+            {describeNextStep({ enrollment: training })}
+          </p>
+          <SessionCard plannedSessions={training.plannedSessions} sessions={training.sessions} size="strip" />
+          <Link
+            to={`/account/training/${training.id}`}
+            className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-fit" })}
+          >
+            جلسه‌ها و جزئیات
+          </Link>
+        </>
+      ) : booked ? (
         <>
           {/*------ Booked ------*/}
           <p className="max-w-lg text-lg leading-relaxed text-pretty">
@@ -62,9 +91,9 @@ export function NextStepPanel({ dog, assessments }: { dog: Dog; assessments: Ass
                   </span>
                   <span className="font-bold text-pretty">{course.title}</span>
                 </p>
-                {/* Course booking doesn't exist yet, so each button opens the course's page. */}
+                {/* The booking page knows the dog and the assessment, so the recommendation arrives pre-filled. */}
                 <Link
-                  to={`/courses/${course.slug}`}
+                  to={`/account/book/${course.slug}?dog=${dog.id}&assessment=${recommending?.id}`}
                   className={
                     index === 0
                       ? buttonVariants({ size: "lg", className: "max-sm:w-full" })

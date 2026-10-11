@@ -24,19 +24,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   // The API answers NOT_FOUND for a missing, removed or someone else's dog alike, so the page never confirms that a
   // dog exists.
   const client = createServerClient(request);
-  const [dog, assessments] = await Promise.all([
+  const [dog, assessments, enrollments] = await Promise.all([
     client.dog.get({ id: params.dogId }),
     client.assessment.listMine({ dogId: params.dogId }),
+    client.enrollment.listMine({ dogId: params.dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
   });
-  return { dog, assessments };
+  return { dog, assessments, enrollments };
 }
 
 /*===== Page =====*/
 export default function DogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, assessments } = loaderData;
+  const { dog, assessments, enrollments } = loaderData;
   const editPath = `/account/dogs/${dog.id}/edit`;
   const details = [dog.breed, describeDog(dog)].filter(Boolean).join("، ");
 
@@ -84,10 +85,10 @@ export default function DogDetailPage({ loaderData }: Route.ComponentProps) {
             </Link>
           </header>
           <div className="order-3">
-            <NextStepPanel dog={dog} assessments={assessments} />
+            <NextStepPanel dog={dog} assessments={assessments} enrollments={enrollments} />
           </div>
           <div className="order-4">
-            <DogRecord dog={dog} assessments={assessments} />
+            <DogRecord dog={dog} assessments={assessments} enrollments={enrollments} />
           </div>
         </div>
       </div>

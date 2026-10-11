@@ -2,6 +2,7 @@ import { PlusIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { pickNextEnrollment } from "~/lib/enrollment-format";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogRow } from "~/routes/account_dogs/components/dog-row";
 import { DogsEmpty } from "~/routes/account_dogs/components/dogs-empty";
@@ -16,20 +17,31 @@ export async function loader({ request }: Route.LoaderArgs) {
   // The API lists the oldest dog first, so the list reads like a ledger that grows at the bottom and a dog never jumps
   // when another is added.
   const client = createServerClient(request);
-  // One call for every dog's assessments, matched up below, instead of one per dog.
-  const [dogs, assessments] = await Promise.all([client.dog.list(), client.assessment.listMine({})]);
+  // One call per kind of data for every dog, matched up below, instead of one per dog.
+  const [dogs, assessments, enrollments] = await Promise.all([
+    client.dog.list(),
+    client.assessment.listMine({}),
+    client.enrollment.listMine({}),
+  ]);
   // A dog has at most one booked assessment at a time (the API refuses a second).
   const bookedByDog = Object.fromEntries(
     assessments
       .filter((assessment) => assessment.status === "booked")
       .map((assessment) => [assessment.dog.id, assessment]),
   );
-  return { dogs, bookedByDog };
+  // The live course or test of each dog whose next session comes first.
+  const trainingByDog = Object.fromEntries(
+    dogs.flatMap((dog) => {
+      const training = pickNextEnrollment(enrollments.filter((enrollment) => enrollment.dog.id === dog.id));
+      return training ? [[dog.id, training] as const] : [];
+    }),
+  );
+  return { dogs, bookedByDog, trainingByDog };
 }
 
 /*===== Page =====*/
 export default function DogsPage({ loaderData }: Route.ComponentProps) {
-  const { dogs, bookedByDog } = loaderData;
+  const { dogs, bookedByDog, trainingByDog } = loaderData;
   const isEmpty = dogs.length === 0;
 
   return (
@@ -66,7 +78,12 @@ export default function DogsPage({ loaderData }: Route.ComponentProps) {
             </h2>
             <ul className="divide-y">
               {dogs.map((dog) => (
-                <DogRow key={dog.id} dog={dog} booked={bookedByDog[dog.id] ?? null} />
+                <DogRow
+                  key={dog.id}
+                  dog={dog}
+                  booked={bookedByDog[dog.id] ?? null}
+                  training={trainingByDog[dog.id] ?? null}
+                />
               ))}
             </ul>
           </section>

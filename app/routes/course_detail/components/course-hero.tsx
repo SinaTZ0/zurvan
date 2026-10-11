@@ -135,6 +135,14 @@ export function CourseHero({
               {actions.alternative.label}
             </Link>
           )}
+          {actions.testOnly && (
+            <Link
+              to={actions.testOnly.to}
+              className={buttonVariants({ variant: "ghost", size: "lg", className: "text-primary hover:text-primary" })}
+            >
+              {actions.testOnly.label}
+            </Link>
+          )}
         </div>
       </div>
     </section>

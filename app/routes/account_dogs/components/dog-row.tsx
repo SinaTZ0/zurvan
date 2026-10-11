@@ -5,9 +5,11 @@ import { Link } from "~/components/link";
 import { MediaImage } from "~/components/media-image";
 import { buttonVariants } from "~/components/ui/button";
 import { describeDog } from "~/lib/dog-format";
+import { describeNextStep } from "~/lib/enrollment-format";
 import { formatSlotDay } from "~/lib/tehran-time";
 import type { Assessment } from "~/orpc/assessment/contract";
 import type { Dog } from "~/orpc/dog/contract";
+import type { CustomerEnrollment } from "~/orpc/enrollment/contract";
 
 /*===== Dog Row =====*/
 /**
@@ -19,7 +21,16 @@ import type { Dog } from "~/orpc/dog/contract";
  * Desktop lines the columns up across rows (identity, record mark, next step, chevron). On a phone the row stacks:
  * the identity on top, the record mark and the next step on one line beneath.
  */
-export function DogRow({ dog, booked }: { dog: Dog; booked: Assessment | null }) {
+export function DogRow({
+  dog,
+  booked,
+  training,
+}: {
+  dog: Dog;
+  booked: Assessment | null;
+  /** The dog's live course or test, whose next session comes first. */
+  training: CustomerEnrollment | null;
+}) {
   return (
     <li className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-4 py-4 transition-colors hover:bg-primary/5 md:min-h-22 md:grid-cols-[minmax(0,1fr)_8.5rem_11.5rem_1.25rem] md:gap-x-4 md:px-5 md:py-3 lg:grid-cols-[minmax(0,1fr)_9.5rem_13rem_1.25rem] lg:gap-x-6 lg:px-6">
       {/*------ Mark, Name and Facts ------*/}
@@ -73,9 +84,22 @@ export function DogRow({ dog, booked }: { dog: Dog; booked: Assessment | null })
       </p>
 
       {/*------ Next Step ------*/}
-      {/* Later states (next session, a plan to pay) take over this slot. A booked assessment leaves nothing to do, so
-          the slot shows when, and still leads to the page where it can be cancelled. */}
-      {booked ? (
+      {/* Later states (a plan to pay) take over this slot. A course in progress shows its next session, and a booked
+          assessment, which leaves nothing to do, shows when; both lead to the page where they can be followed or
+          cancelled. */}
+      {training ? (
+        <Link
+          to={`/account/training/${training.id}`}
+          className={buttonVariants({
+            variant: "ghost",
+            className:
+              "relative z-10 col-start-2 row-start-2 h-auto min-h-8 justify-self-end py-1.5 text-start whitespace-normal md:col-start-3 md:row-start-1",
+          })}
+        >
+          {describeNextStep({ enrollment: training, withTime: false })}
+          <span className="sr-only"> برای {dog.name}</span>
+        </Link>
+      ) : booked ? (
         <Link
           to="/account/assessments"
           className={buttonVariants({
