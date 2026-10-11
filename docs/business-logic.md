@@ -20,7 +20,7 @@ When the owner settles a rule, update this doc, change the code, and remove its 
 - Partner line = Partner Commission % of the paid amount (only when the order has a partner).
 - Admin line = what is left.
 
-With a 70% trainer share and a 10% partner commission, a 100 enrollment splits like the example in 3.11: Trainer 70, Admin 20, Partner 10. Without a partner: Trainer 70, Admin 30.
+With a 70% trainer share and a 10% partner commission, a 100 enrollment splits like the example in 3.11: Trainer 70, Admin 20, Partner 10. Without a partner: Trainer 70, Admin 30. When the head trainer (the Admin) teaches it, the trainer's part joins the Admin's: Admin 90, Partner 10 (B8).
 
 **Why:** the trainer can't control who brings the customer, so their income shouldn't change with it. Bringing in customers is a marketing cost, which is the platform's to carry.
 
@@ -87,9 +87,14 @@ All of these belong in Platform Settings (entity 25), so the Admin can change th
 
 ## B8. Is the head trainer the Admin? (spec 5.6)
 
-**Default:** **separate accounts.** The owner signs in as Admin; the head trainer has a Trainer account with "Is Head Trainer" set. If they are the same person, he uses two phone numbers until accounts can hold two roles.
+**Decided:** **yes, one account.** The owner is the head trainer. He signs in once, as Admin, and his account also holds the head trainer's Trainer Profile.
 
-**Why:** it keeps "one role per phone number", which the guards and layouts rely on, and the earnings of the trainer stay visible apart from the platform's share.
+- **Teaching:** he uses the Trainer area (`/trainer`) for his own work: schedule, assessments, enrollments, behavior requests and replies. Its guard is "has a Trainer Profile", not "role is Trainer".
+- **Courses:** he creates and edits courses from the Admin's Course Form, so his courses never wait for approval. My Courses, Course Form and Review Changes in the Trainer area are for assistants.
+- **Money:** he has no personal wallet. When an enrollment's trainer is the Admin, the trainer's part goes to the **Admin wallet**, merged into the Admin line (each wallet appears once per transaction): Customer −100, Admin +90, Partner +10. His teaching income is still reported from his enrollments.
+- **Everyone else** keeps one role per phone number. The only exception is that the Admin may hold a Trainer Profile.
+
+**Why:** two phone numbers for one person is awkward and makes the site look like two people. A trainer wallet he would withdraw from to himself would be bookkeeping for nothing. If the business later gets a separate manager, the Trainer Profile can move to its own Trainer account.
 
 ## B9. Group courses (spec 5.7)
 

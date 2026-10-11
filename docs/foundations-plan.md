@@ -39,13 +39,13 @@ A single `SHOWCASE_MODE` env flag turns all three on. With it off, the app refus
 
 **Layouts and guards** (layout routes in `routes.ts`, flat slices):
 
-| Layout           | URL prefix | Guard                         |
-| ---------------- | ---------- | ----------------------------- |
-| `layout_public`  | `/`        | none                          |
-| `layout_account` | `/account` | signed in, any role but Admin |
-| `layout_trainer` | `/trainer` | role `Trainer`                |
-| `layout_partner` | `/partner` | role `Partner`                |
-| `layout_admin`   | `/admin`   | role `Admin`                  |
+| Layout           | URL prefix | Guard                                                             |
+| ---------------- | ---------- | ----------------------------------------------------------------- |
+| `layout_public`  | `/`        | none                                                              |
+| `layout_account` | `/account` | signed in, any role but Admin                                     |
+| `layout_trainer` | `/trainer` | has a Trainer Profile (a `Trainer`, or the Admin as head trainer) |
+| `layout_partner` | `/partner` | role `Partner`                                                    |
+| `layout_admin`   | `/admin`   | role `Admin`                                                      |
 
 Guards are React Router **middleware** on the layout route: it loads the session once, puts the user in the router context for every child loader, and redirects to `/auth?redirectTo=…` when signed out. oRPC procedures check the role again with a `requireRole` middleware; the UI guard is never the only check.
 
@@ -116,6 +116,6 @@ New dependencies: `pg-boss`, `sharp`, `@aws-sdk/client-s3`, `@tiptap/react` + `@
 
 ## 5. Seed Data
 
-`npm run db:seed` creates a believable demo: an Admin, the head trainer and his assistant (one verified, one not), 2 partners with leads, ~8 customers with dogs, the real catalog from [zurvan-courses.md](zurvan-courses.md) (with sample prices) plus an assistant's courses in every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in every status with held and upcoming sessions, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media pipeline.
+`npm run db:seed` creates a believable demo: an Admin who is also the head trainer, two assistants (one verified, one not), 2 partners with leads, ~8 customers with dogs, the real catalog from [zurvan-courses.md](zurvan-courses.md) (with sample prices) plus an assistant's courses in every approval status, open and booked assessment slots, completed assessments with recommendations, enrollments in every status with held and upcoming sessions, a passed test, behavior requests in every status, paid orders, a refund, a pending withdrawal, and comments waiting for moderation. Images come from a small set in the repo, uploaded through the real media pipeline.
 
 Showcase-mode demo phone numbers are fixed, so the login hint always matches.

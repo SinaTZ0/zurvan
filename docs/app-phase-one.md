@@ -16,14 +16,14 @@ The course catalog and the owner's rules come from [zurvan-courses.md](zurvan-co
 
 - **Roles:** Admin (Owner), Trainer, Partner, Customer.
 - **Authentication:** All users register and log in via Phone Number using SMS OTP (One-Time Password).
-- Each phone number has **exactly one role** in phase one.
+- Each phone number has **exactly one role** in phase one. The one exception: the owner is the head trainer, so the Admin account also holds the head trainer's **Trainer Profile** (see 3.17).
 
-| Role         | Main capabilities                                                                                                                                                                                                                  |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Admin**    | Super admin. Manages everything: users, the course catalog, assessments, enrollments, orders, refunds, discounts, wallets, withdrawals, commissions, comments, settings.                                                           |
-| **Trainer**  | The head trainer and his assistants. Has a public page, submits courses for approval, opens assessment slots, runs assessments, schedules and records sessions, reviews behavior requests, replies to comments, sees own earnings. |
-| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                                                                                                 |
-| **Customer** | Manages own dogs, books assessments, buys courses and tests, sends behavior requests, follows each dog's record, asks questions, reviews courses and trainers.                                                                     |
+| Role         | Main capabilities                                                                                                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Admin**    | The owner, who is also the head trainer. Manages everything: users, the course catalog, assessments, enrollments, orders, refunds, discounts, wallets, withdrawals, commissions, comments, settings.                                                   |
+| **Trainer**  | The head trainer's assistants, and later other trainers. Has a public page, submits courses for approval, opens assessment slots, runs assessments, schedules and records sessions, reviews behavior requests, replies to comments, sees own earnings. |
+| **Partner**  | Sees own referral link and QR code, adds pre-registration leads, views referred customers, revenue and commission.                                                                                                                                     |
+| **Customer** | Manages own dogs, books assessments, buys courses and tests, sends behavior requests, follows each dog's record, asks questions, reviews courses and trainers.                                                                                         |
 
 **OTP rules:**
 
@@ -227,6 +227,7 @@ The Admin creates discount codes. Each code has:
 - Every **purchased unit** (one enrollment: a course, a test or a behavior plan for one dog) creates one **purchase transaction** when its order is paid (see 3.12). It sends the unit's paid amount from the customer's wallet to the wallets of the enrollment's **trainer**, the **Admin**, and the customer's **partner** (if they have one).
 - How the amount is divided is an open business question (see 5). The current draft is the course's **Trainer Share** percentage.
 - The transaction's lines are the permanent record of the split. Changing a course's share or the commission formula **never changes past transactions**. If the Admin wants the change to apply to past sales, they work out the difference themselves and create transactions for it (e.g. `Trainer −X, Partner +X`), or leave the past as it is.
+- When the enrollment's trainer is the Admin (the head trainer), the trainer's part goes to the **Admin wallet**, merged into the Admin line.
 - If the Admin reassigns an enrollment to another trainer (e.g. the assistant), the purchase stays with the original trainer. The Admin moves money between them by hand if needed.
 - The trainer dashboard shows each enrollment's earning (their lines in its purchase transaction, minus refunds) and their wallet history.
 
@@ -345,7 +346,7 @@ SMS goes to the customer for: assessment booked, cancelled or reminder (the day 
 
 - Every trainer has a **public page**: photo, bio, years of experience, specialties, certificates, the approved courses they own, their rating and reviews.
 - Course pages show the owner trainer with a link to their page. An enrollment shows its trainer, so a customer whose dog moved to an assistant can see who that is.
-- The **head trainer** is featured on the home page and in the site's copy. The other trainers appear on their own pages and on the courses they own.
+- The **head trainer** is the owner: his Trainer Profile belongs to the Admin account. He uses the trainer tools for his own teaching and creates his courses directly as Admin, without approval. He is featured on the home page and in the site's copy. The other trainers appear on their own pages and on the courses they own.
 - The Admin creates trainer accounts and can mark a trainer as **verified**, which shows a badge on their page.
 
 ---
@@ -419,22 +420,22 @@ erDiagram
 | Referred At              | When attribution happened.                     |
 | Last Login At            |                                                |
 
-- **Relations:** Customers, trainers and partners have one **Wallet**. Has one **Trainer Profile** or **Partner Profile** depending on role. A Customer has many **Pets** and **Orders**.
+- **Relations:** Customers, trainers and partners have one **Wallet**; the Admin uses the system Admin wallet. Has one **Trainer Profile** or **Partner Profile** depending on role; the Admin may have the head trainer's Trainer Profile. A Customer has many **Pets** and **Orders**.
 
 #### **2. Trainer Profile**
 
-| Field                        | Notes                                        |
-| ---------------------------- | -------------------------------------------- |
-| User ID                      | One-to-one with a `Trainer` user.            |
-| Slug                         | Unique, used in the trainer page's URL.      |
-| Is Head Trainer              | Exactly one. The home page features him.     |
-| Bio                          | Shown on the trainer page and course pages.  |
-| Specialties                  | e.g. obedience, behavior, IGP.               |
-| Years of Experience          |                                              |
-| Certificates                 | Uploaded files or titles.                    |
-| Photo                        | Portrait for the public site.                |
-| Verified At                  | Set by an Admin. Shows the "تأییدشده" badge. |
-| Rating Average, Rating Count | From reviews.                                |
+| Field                        | Notes                                                                |
+| ---------------------------- | -------------------------------------------------------------------- |
+| User ID                      | One-to-one with a `Trainer` user, or the `Admin` (the head trainer). |
+| Slug                         | Unique, used in the trainer page's URL.                              |
+| Is Head Trainer              | Exactly one. The home page features him.                             |
+| Bio                          | Shown on the trainer page and course pages.                          |
+| Specialties                  | e.g. obedience, behavior, IGP.                                       |
+| Years of Experience          |                                                                      |
+| Certificates                 | Uploaded files or titles.                                            |
+| Photo                        | Portrait for the public site.                                        |
+| Verified At                  | Set by an Admin. Shows the "تأییدشده" badge.                         |
+| Rating Average, Rating Count | From reviews.                                                        |
 
 #### **3. Partner Profile**
 
@@ -821,7 +822,7 @@ The money **system** above (wallets, transactions, mirrors, withdrawals) is sett
 
 **The private-training model:**
 
-6. **Is the head trainer the Admin?** If the owner is the head trainer, he needs both roles, but each phone number has one role in phase one.
+6. **Decided:** the head trainer is the Admin, on one account with a Trainer Profile ([business-logic.md](business-logic.md) B8).
 7. **Is everything private?** The courses doc says the Admin can make a course private or group. The owner has since said training is like hiring a private tutor, so this spec has no group courses.
 8. **Who confirms the trainer has time?** Customers pay when they book, and the trainer arranges the sessions afterwards. Should the trainer accept a booking before the customer pays instead?
 9. **Refunds without a start date:** is "full refund until the first session, then the policy's share of the unheld sessions" right? How late can a customer cancel a single session before it counts as held?

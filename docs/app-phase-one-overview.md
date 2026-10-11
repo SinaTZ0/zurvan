@@ -14,14 +14,14 @@ The site is in Persian. Everyone signs in with their **phone number and an SMS c
 
 ## Roles
 
-| Role         | Does                                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Admin**    | The owner. Manages everything: the catalog, bookings, money and withdrawals.                                                         |
-| **Trainer**  | The head trainer and his assistants. Have a public page, submit courses for approval, run assessments, schedule and record sessions. |
-| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.                                                     |
-| **Customer** | Adds dogs, books assessments and courses, follows each dog's record, writes reviews and questions.                                   |
+| Role         | Does                                                                                                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Admin**    | The owner, who is also the head trainer. Manages everything (the catalog, bookings, money, withdrawals) and teaches his own dogs.     |
+| **Trainer**  | His assistants, later other trainers. Have a public page, submit courses for approval, run assessments, schedule and record sessions. |
+| **Partner**  | Shares a referral link or QR code, sees referred customers and their commission.                                                      |
+| **Customer** | Adds dogs, books assessments and courses, follows each dog's record, writes reviews and questions.                                    |
 
-Only customers can sign up themselves. The Admin creates trainers and partners.
+Only customers can sign up themselves. The Admin creates trainers and partners. Each phone number has one role, except that the owner's Admin account also holds his trainer profile, so he signs in once for both jobs.
 
 ## Courses and trainers
 
