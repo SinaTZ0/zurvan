@@ -176,27 +176,37 @@ export function HomeHero() {
             {/*------ Pitch ------*/}
             {/* On desktop the pitch is as tall as the headline: the sentence starts level with its first line and the
                 buttons end level with its last, so the two columns read as one block. */}
-            <div className="flex flex-col gap-6 lg:justify-between lg:py-3">
-              <p className="max-w-[28rem] text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.9] font-medium text-balance text-foreground/85">
-                آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون. از ادب خانگی و فرمان‌پذیری تا سگ‌های کار
-                و ورزشی.
-              </p>
+            <div className="flex flex-col gap-8 lg:justify-between lg:py-3">
+              {/* The first sentence says who and where, in ivory; the second only lists what is taught, so it steps
+                  back. A thin gold rule on the reading edge ties the pair together as one statement. */}
+              <div className="max-w-[28rem] border-s-2 border-primary/70 ps-5">
+                <p className="text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.8] font-semibold text-balance text-foreground">
+                  آموزش خصوصی سگ با <span className="whitespace-nowrap">{HEAD_TRAINER.name}</span>، در خانه‌ی خودت یا بیرون.
+                </p>
+                <p className="mt-2 text-base leading-[1.9] font-normal text-pretty text-foreground/65">
+                  از ادب خانگی و فرمان‌پذیری تا سگ‌های کار و ورزشی.
+                </p>
+              </div>
               {/* One main action and one quieter way in, so the choice is never a coin toss. Every new dog starts
-                  with the free assessment, so that is the main action. */}
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
+                  with the free assessment, so that is the main action. The second is a same-height outline, not bare
+                  text, so it reads as a button without competing with the gold. */}
+              <div className="flex flex-wrap gap-3">
                 <Link
                   to="/assessment"
                   className={buttonVariants({
                     variant: "solid",
                     size: "lg",
-                    className: "px-9 text-lg font-extrabold max-sm:flex-1",
+                    className: "flex-[1_1_13rem] px-6 text-xl font-black",
                   })}
                 >
                   ارزیابی رایگان رزرو کن
                 </Link>
                 <Link
                   to="/#courses"
-                  className={buttonVariants({ size: "lg", variant: "ghost", className: "text-primary" })}
+                  className={cn(
+                    buttonVariants({ size: "lg", variant: "ghost" }),
+                    "flex-[1_1_8rem] border-foreground/25 px-6 text-base font-semibold text-foreground hover:border-foreground/40",
+                  )}
                 >
                   دوره‌ها را ببین
                 </Link>
