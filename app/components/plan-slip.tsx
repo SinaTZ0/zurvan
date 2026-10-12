@@ -66,6 +66,7 @@ export function PlanNotches({ daysLeft, small = false }: { daysLeft: number; sma
  * @param signer The name the note is signed with.
  * @param muted An expired plan: the same slip, quiet, with «منقضی شد» across the strip.
  * @param compact A smaller slip for a ledger row (a paid or expired plan, opened in place).
+ * @param strip `false` drops the notch strip and its line, for a paid plan: its deadline no longer means anything.
  */
 export function PlanSlip({
   plan,
@@ -74,6 +75,7 @@ export function PlanSlip({
   signer,
   muted = false,
   compact = false,
+  strip = true,
   className,
 }: {
   plan: PlanSlipPlan;
@@ -82,6 +84,7 @@ export function PlanSlip({
   signer: string;
   muted?: boolean;
   compact?: boolean;
+  strip?: boolean;
   className?: string;
 }) {
   const days = daysLeft ?? BEHAVIOR_PLAN_VALID_DAYS;
@@ -131,19 +134,21 @@ export function PlanSlip({
 
       {/*------ Notch Strip ------*/}
       {/* The perforated edge: a dashed rule, then one notch per day of validity. */}
-      <div className="mt-5 border-t-2 border-dashed border-border pt-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <PlanNotches daysLeft={days} />
-          <span className={cn("text-sm font-bold", muted ? "text-muted-foreground" : "text-primary")}>
-            {muted ? "منقضی شد" : describePlanDaysLeft(days)}
-          </span>
+      {strip && (
+        <div className="mt-5 border-t-2 border-dashed border-border pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <PlanNotches daysLeft={days} />
+            <span className={cn("text-sm font-bold", muted ? "text-muted-foreground" : "text-primary")}>
+              {muted ? "منقضی شد" : describePlanDaysLeft(days)}
+            </span>
+          </div>
+          {deadline && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {muted ? "فرصت پرداخت تا" : "تا"} {deadline} {muted ? "بود" : "فرصت پرداخت داری"}
+            </p>
+          )}
         </div>
-        {deadline && (
-          <p className="mt-2 text-sm text-muted-foreground">
-            {muted ? "فرصت پرداخت تا" : "تا"} {deadline} {muted ? "بود" : "فرصت پرداخت داری"}
-          </p>
-        )}
-      </div>
+      )}
     </section>
   );
 }
