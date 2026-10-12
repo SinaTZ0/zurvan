@@ -9,6 +9,8 @@ export type DeskNavItem = {
   to: string;
   /** Active only on this exact URL: a desk's landing page would otherwise stay underlined on every page below it. */
   end?: boolean;
+  /** A count shown beside the label, e.g. requests waiting for the trainer. Nothing shows for 0. */
+  badge?: number;
 };
 
 /** The link at the end of the header, back out of the desk. */

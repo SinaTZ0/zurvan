@@ -334,8 +334,11 @@ describe("paying a plan", () => {
 describe("a plan that ran out", () => {
   it("can't be paid, however the order was started, and money that arrives late goes to the wallet", async () => {
     const { requestId } = await sendRequest(ids.dogExpiring);
-    await propose({ requestId });
-    const afterDeadline = new Date(Date.now() + 8 * DAY_MS);
+    // Proposed six days ago, so the plan has about a day left now and "after the deadline" is only two days ahead.
+    // Every service call sweeps all due plans in the database, so a test clock far in the future would also expire
+    // the demo's open plans (the seed's plan has five days left).
+    await propose({ requestId, now: new Date(Date.now() - 6 * DAY_MS) });
+    const afterDeadline = new Date(Date.now() + 2 * DAY_MS);
 
     /*------ An Order Started in Time, Paid Too Late ------*/
     const early = await checkoutOrThrow({ requestId });

@@ -1,6 +1,7 @@
 import { cn } from "cn";
 
 import { NavLink } from "~/components/nav-link";
+import { NavBadge } from "~/routes/layout_account/components/nav-badge";
 import type { DeskNavItem } from "~/routes/layout_account/account-nav";
 
 /*===== Account Tabs =====*/
@@ -33,6 +34,7 @@ export function AccountTabs({
               }
             >
               {item.label}
+              <NavBadge count={item.badge} />
             </NavLink>
           </li>
         ))}

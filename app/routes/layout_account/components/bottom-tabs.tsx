@@ -2,6 +2,7 @@ import { cn } from "cn";
 import { useMatches } from "react-router";
 
 import { NavLink } from "~/components/nav-link";
+import { NavBadge } from "~/routes/layout_account/components/nav-badge";
 import { BOTTOM_TABS_FROM, type DeskNavItem } from "~/routes/layout_account/account-nav";
 
 /*===== Bottom Tabs =====*/
@@ -49,6 +50,7 @@ export function BottomTabs({ items, label }: { items: readonly DeskNavItem[]; la
                 }
               >
                 {item.label}
+                <NavBadge count={item.badge} />
               </NavLink>
             </li>
           ))}

@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 
+import { createServerClient } from "~/orpc/server-client.server";
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
 import { AccountHeader } from "~/routes/layout_account/components/account-header";
@@ -14,19 +15,27 @@ import type { Route } from "./+types/layout-trainer";
 export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["trainer", "admin"] })];
 
 /*===== Loader =====*/
-export function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const { user } = context.get(sessionContext);
+  // The tab's count of requests waiting for an answer: one narrow read per page, so the number is fresh wherever the
+  // trainer is.
+  const waiting = await createServerClient(request).behaviorRequest.trainer.list({ status: "submitted" });
   // The guard only lets named accounts through, so `firstName` is set.
   return {
     firstName: user.firstName ?? "",
     phoneNumber: user.phoneNumber ?? null,
     isHeadTrainer: user.role === "admin",
+    waitingRequests: waiting.length,
   };
 }
 
 /*===== Trainer Layout =====*/
 /** The trainer's desk at `/trainer`: the account shell's header and footer with the trainer's own sections. */
 export default function TrainerLayout({ loaderData }: Route.ComponentProps) {
+  const navItems = TRAINER_NAV_ITEMS.map((item) =>
+    item.to === "/trainer/behavior-requests" ? { ...item, badge: loaderData.waitingRequests } : item,
+  );
+
   return (
     <div className="flex min-h-svh flex-col">
       <AccountHeader
@@ -34,7 +43,7 @@ export default function TrainerLayout({ loaderData }: Route.ComponentProps) {
         phoneNumber={loaderData.phoneNumber}
         // The Admin is the head trainer; a trainer is plain «مربی».
         roleLabel={loaderData.isHeadTrainer ? "مربی ارشد" : "مربی"}
-        navItems={TRAINER_NAV_ITEMS}
+        navItems={navItems}
         navLabel="میز مربی"
         exitLink={TRAINER_EXIT_LINK}
       />
@@ -42,7 +51,7 @@ export default function TrainerLayout({ loaderData }: Route.ComponentProps) {
         <Outlet />
       </main>
       <AccountFooter />
-      <BottomTabs items={TRAINER_NAV_ITEMS} label="میز مربی" />
+      <BottomTabs items={navItems} label="میز مربی" />
     </div>
   );
 }
