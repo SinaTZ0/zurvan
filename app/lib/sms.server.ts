@@ -17,7 +17,10 @@ export type SmsKind =
   | "enrollment-result"
   | "session-scheduled"
   | "session-rescheduled"
-  | "session-cancelled";
+  | "session-cancelled"
+  | "behavior-request-created"
+  | "behavior-plan-proposed"
+  | "behavior-request-declined";
 
 /** Queues one SMS. In showcase mode it only lands in the outbox. */
 export async function sendSms({ phoneNumber, kind, body }: { phoneNumber: string; kind: SmsKind; body: string }) {

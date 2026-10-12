@@ -36,7 +36,7 @@ import { toPublicMedia } from "~/orpc/media/mapper";
 
 /*===== People =====*/
 /** First and last name, which is how people are addressed; the account's single `name` is the fallback. */
-function fullName(person: Pick<PersonRecord, "name" | "firstName" | "lastName">): string {
+export function fullName(person: Pick<PersonRecord, "name" | "firstName" | "lastName">): string {
   const name = [person.firstName, person.lastName].filter(Boolean).join(" ");
   return name || person.name;
 }
@@ -45,7 +45,7 @@ function fullName(person: Pick<PersonRecord, "name" | "firstName" | "lastName">)
  * Whether the trainer is the head trainer. For now that is every Admin (the owner holds the one Admin account);
  * TODO: read the Trainer Profile's flag when that entity lands.
  */
-function isHeadTrainer(person: Pick<PersonRecord, "role">): boolean {
+export function isHeadTrainer(person: Pick<PersonRecord, "role">): boolean {
   return person.role === "admin";
 }
 

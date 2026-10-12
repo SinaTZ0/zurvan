@@ -11,6 +11,17 @@ import {
   trainerOpenSlotsProcedure,
   trainerScheduleProcedure,
 } from "~/orpc/assessment/procedure";
+import {
+  behaviorRequestOptionsProcedure,
+  checkoutBehaviorPlanProcedure,
+  listMyBehaviorRequestsProcedure,
+  submitBehaviorRequestProcedure,
+  trainerDeclineBehaviorRequestProcedure,
+  trainerGetBehaviorRequestProcedure,
+  trainerListBehaviorRequestsProcedure,
+  trainerProposeBehaviorPlanProcedure,
+  withdrawBehaviorRequestProcedure,
+} from "~/orpc/behavior-request/procedure";
 import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
 import {
   createDogProcedure,
@@ -62,6 +73,19 @@ export const router = implementer.router({
       complete: trainerCompleteAssessmentProcedure,
       markNoShow: trainerMarkNoShowProcedure,
       cancel: trainerCancelAssessmentProcedure,
+    },
+  },
+  behaviorRequest: {
+    options: behaviorRequestOptionsProcedure,
+    submit: submitBehaviorRequestProcedure,
+    listMine: listMyBehaviorRequestsProcedure,
+    withdraw: withdrawBehaviorRequestProcedure,
+    checkout: checkoutBehaviorPlanProcedure,
+    trainer: {
+      list: trainerListBehaviorRequestsProcedure,
+      get: trainerGetBehaviorRequestProcedure,
+      propose: trainerProposeBehaviorPlanProcedure,
+      decline: trainerDeclineBehaviorRequestProcedure,
     },
   },
   course: {

@@ -22,7 +22,7 @@ export function toCheckoutOrder({ row, walletBalance }: { row: OrderRow; walletB
     id: order.id,
     number: order.number,
     status: narrow(ORDER_PAYMENT_STATUSES, order.paymentStatus, "order status") as OrderPaymentStatus,
-    items: row.items.map(({ item, course, dog, photo, enrollmentId }) => ({
+    items: row.items.map(({ item, course, dog, photo, enrollmentId, planSessions }) => ({
       id: item.id,
       kind: narrow(ENROLLMENT_KINDS, item.kind, "order item kind") as EnrollmentKind,
       course: { slug: course.slug, title: course.title, latinName: course.latinName },
@@ -39,6 +39,8 @@ export function toCheckoutOrder({ row, walletBalance }: { row: OrderRow; walletB
       refundedAmount: item.refundedAmount,
       refundPolicy: { name: item.refundPolicyName, percent: item.refundPolicyPercent },
       enrollmentId,
+      behaviorRequestId: item.behaviorRequestId,
+      planSessions,
     })),
     subtotal: order.subtotal,
     discountCode: row.discountCode,

@@ -86,6 +86,9 @@ export const checkoutOrderItemSchema = z.object({
   refundPolicy: refundPolicySchema,
   /** Set once the order is paid. */
   enrollmentId: z.string().nullable(),
+  /** For a behavior plan: the request it pays, and the sessions the trainer proposed. Both null for any other item. */
+  behaviorRequestId: z.string().nullable(),
+  planSessions: z.number().int().nullable(),
 });
 
 /** An order as its customer sees it, at checkout and afterwards. All amounts are Rial. */

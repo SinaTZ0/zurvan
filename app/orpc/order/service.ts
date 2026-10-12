@@ -15,6 +15,8 @@ import { formatRecordNumber } from "~/lib/record-number";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { isUuid } from "~/lib/uuid";
 import { sendSms, type SmsKind } from "~/lib/sms.server";
+import { planUnpayableReason } from "~/orpc/behavior-request/plan";
+import { lockRequest, updateRequest } from "~/orpc/behavior-request/repository";
 import { findApprovedCourseBySlug } from "~/orpc/course/repository";
 import type { Dog } from "~/orpc/dog/contract";
 import { listDogs } from "~/orpc/dog/service";
@@ -158,7 +160,8 @@ function judgeDog({
   const passed = new Set(mine.filter((row) => row.status === "passed").map((row) => row.courseId));
 
   /*------ Record and Prerequisites ------*/
-  if (kind === "course") {
+  // Behavior modification starts from a request instead of an assessment, and has no prerequisites (spec 3.7).
+  if (kind === "course" && course.bookingKind !== "behavior-request") {
     if (!hasRecord) {
       problems.push({
         kind: "no-record",
@@ -675,6 +678,20 @@ async function fulfilOrder({
     }
   }
 
+  /*------ Behavior Plans Still Payable? ------*/
+  // The plan may have been replaced, withdrawn or have run out while the customer was at the gateway (B13).
+  const plans = new Map<string, NonNullable<Awaited<ReturnType<typeof lockRequest>>>>();
+  for (const item of [...items].sort((a, b) => (a.behaviorRequestId ?? "").localeCompare(b.behaviorRequestId ?? ""))) {
+    if (!item.behaviorRequestId) continue;
+    const request = await lockRequest({ db: tx, id: item.behaviorRequestId });
+    const reason = request ? planUnpayableReason({ plan: request, now }) : "این برنامه دیگر وجود ندارد.";
+    if (!request || reason) return cancelUnfulfillable({ tx, order, reason: reason ?? "" });
+    if (request.proposedPrice !== item.unitPrice) {
+      return cancelUnfulfillable({ tx, order, reason: "قیمت برنامه عوض شده است." });
+    }
+    plans.set(item.id, request);
+  }
+
   /*------ Wallets ------*/
   const headTrainer = await findHeadTrainer({ db: tx });
   if (!headTrainer) throw new Error("fulfilOrder: there is no Admin to be the head trainer");
@@ -690,7 +707,9 @@ async function fulfilOrder({
     const dog = dogs.find((candidate) => candidate.id === item.dogId);
     if (!course || !dog) throw new Error(`fulfilOrder: order item ${item.id} lost its course or dog`);
 
-    const trainerId = course.ownerTrainerId ?? headTrainer.id;
+    // A behavior plan is taught by the trainer who wrote it; every other course by its owner.
+    const plan = plans.get(item.id);
+    const trainerId = plan?.trainerId ?? course.ownerTrainerId ?? headTrainer.id;
     const [trainer] = await findPeople({ db: tx, ids: [trainerId] });
     const kind = item.kind === "test" ? "test" : "course";
 
@@ -704,12 +723,14 @@ async function fulfilOrder({
         kind,
         orderItemId: item.id,
         assessmentId: item.assessmentId,
+        behaviorRequestId: item.behaviorRequestId,
         trainingGoal: item.trainingGoal,
         boarding: item.boarding,
         address: item.address,
         preferredTimes: item.preferredTimes,
-        // A test is one session; a course starts from its approximate count, which the trainer can change.
-        plannedSessions: kind === "test" ? 1 : (course.sessionCount ?? 1),
+        // A test is one session; a plan has the sessions the trainer proposed; a course starts from its approximate
+        // count. The trainer can change it.
+        plannedSessions: kind === "test" ? 1 : (plan?.proposedSessions ?? course.sessionCount ?? 1),
         isRetake: item.isRetake,
         createdAt: now,
       },
@@ -742,6 +763,8 @@ async function fulfilOrder({
         },
       });
     }
+
+    if (plan) await updateRequest({ db: tx, id: plan.id, values: { status: "paid", orderItemId: item.id } });
 
     enrolled.push({ title: course.title, kind, dogName: dog.name, trainerId });
   }
@@ -956,6 +979,14 @@ async function findBlockingProblem({
     const course = courses.find((candidate) => candidate.id === item.courseId);
     if (!dog) return "سگ این سفارش از حسابت حذف شده.";
     if (!course || course.status !== "approved") return "این دوره دیگر رزرو نمی‌شود.";
+
+    if (item.behaviorRequestId) {
+      const request = await lockRequest({ db: tx, id: item.behaviorRequestId });
+      const reason = request ? planUnpayableReason({ plan: request, now }) : "این برنامه دیگر وجود ندارد.";
+      if (reason) return reason;
+      if (request?.proposedPrice !== item.unitPrice)
+        return "قیمت برنامه عوض شده است. دوباره از صفحه‌ی درخواست‌ها پرداخت را شروع کن.";
+    }
 
     const kind = item.kind === "test" ? "test" : "course";
     const verdict = await judgeDogNow({ db: tx, dog, course, kind, now });

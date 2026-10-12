@@ -408,6 +408,99 @@ export const assessmentRecommendation = pgTable(
   ],
 );
 
+/*===== Behavior Requests =====*/
+// Behavior modification (docs/app-phase-one.md, 3.7 and entity 9): the customer describes a problem and sends videos, the
+// trainer proposes a plan (sessions and a price) or declines, and the customer pays the plan through the order flow,
+// which creates the enrollment. Plain text instead of pg enums, as elsewhere; allowed values live in
+// `app/orpc/behavior-request/constants.ts`. Rows are never deleted by the app, so references are `restrict`.
+
+export const behaviorRequest = pgTable(
+  "behavior_request",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    customerId: text("customer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** Who reviews it and, once paid, teaches it: the behavior course's owner trainer (the head trainer's, by default) when it was sent. */
+    trainerId: text("trainer_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    problemCategory: text("problem_category").notNull(),
+    description: text("description").notNull(),
+    /** Where the sessions would happen, and when it suits the customer: copied into the enrollment when the plan is paid. */
+    address: text("address").notNull(),
+    preferredTimes: text("preferred_times").notNull(),
+    /** `submitted`, `proposed`, `paid`, `declined`, `withdrawn` or `expired`. */
+    status: text("status").notNull().default("submitted"),
+    /*------ The Plan ------*/
+    proposedSessions: integer("proposed_sessions"),
+    /** Rial. */
+    proposedPrice: bigint("proposed_price", { mode: "number" }),
+    /** The plan's explanation, or the reason it was declined. Shown to the customer. */
+    trainerNote: text("trainer_note"),
+    proposedAt: timestamp("proposed_at"),
+    /** The plan can be paid until then (B13). Paying checks it itself, so no job is needed for correctness. */
+    proposalExpiresAt: timestamp("proposal_expires_at"),
+    /** When the trainer declined it. */
+    declinedAt: timestamp("declined_at"),
+    /** Set when the plan is paid. */
+    orderItemId: uuid("order_item_id").references((): AnyPgColumn => orderItem.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("behavior_request_customer_id_idx").on(table.customerId),
+    index("behavior_request_trainer_status_idx").on(table.trainerId, table.status),
+    // The expiry sweep looks for proposals that are due.
+    index("behavior_request_status_expires_idx").on(table.status, table.proposalExpiresAt),
+    // A dog has one request being worked on at a time: it keeps the trainer's inbox honest, and a dog can have only one
+    // live behavior enrollment anyway.
+    uniqueIndex("behavior_request_dog_open_idx")
+      .on(table.dogId)
+      .where(sql`${table.status} in ('submitted', 'proposed')`),
+    check(
+      "behavior_request_plan_check",
+      sql`(${table.proposedSessions} is null or ${table.proposedSessions} between 1 and 100)
+        and (${table.proposedPrice} is null or ${table.proposedPrice} > 0)`,
+    ),
+  ],
+);
+
+/**
+ * A video of the behavior. Stored as uploaded in the bucket under `behavior-video/{id}/original.{mp4|mov}`, never
+ * served by nginx: only the app streams it, after checking who is asking (docs/media.md, "Videos").
+ */
+export const behaviorRequestVideo = pgTable(
+  "behavior_request_video",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Null until the request is sent: the customer uploads each video as soon as it is picked. */
+    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
+    /** 0-based, in the order the customer put them. Null until the request is sent. */
+    position: integer("position"),
+    uploadedBy: text("uploaded_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** The extension in the storage key: `mp4` or `mov`. */
+    format: text("format").notNull(),
+    /** The name on the customer's phone, for the list. */
+    fileName: text("file_name").notNull(),
+    sizeBytes: bigint("size_bytes", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("behavior_request_video_request_id_idx").on(table.behaviorRequestId),
+    // Serves the cleanup of videos that were uploaded and never sent.
+    index("behavior_request_video_uploaded_by_idx").on(table.uploadedBy),
+  ],
+);
+
 /*===== Wallets and Transactions =====*/
 // The money core (docs/app-phase-one.md, 3.12 and entities 17–19). Every movement of money is a transaction between
 // wallets whose lines add up to 0, written only through `createTransaction` (`app/orpc/wallet/`). The rule is also held
@@ -620,6 +713,8 @@ export const orderItem = pgTable(
     kind: text("kind").notNull(),
     /** The assessment that recommended it, when booked from one. */
     assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
+    /** The behavior plan this item pays for. Its price and sessions are the plan's (spec 3.7). */
+    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
     /*------ Booking Details ------*/
     // Copied into the enrollment when the order is paid.
     trainingGoal: text("training_goal").notNull(),
@@ -651,6 +746,7 @@ export const orderItem = pgTable(
   },
   (table) => [
     index("order_item_order_id_idx").on(table.orderId),
+    index("order_item_behavior_request_id_idx").on(table.behaviorRequestId),
     check(
       "order_item_amounts_check",
       sql`${table.paidAmount} = ${table.unitPrice} - ${table.discountAmount} and ${table.paidAmount} >= 0
@@ -726,11 +822,13 @@ export const enrollment = pgTable(
       .unique()
       .references(() => orderItem.id, { onDelete: "restrict" }),
     assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
+    /** For a behavior plan: the request it was paid from. A request is paid once. */
+    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
     trainingGoal: text("training_goal").notNull(),
     boarding: boolean("boarding").notNull().default(false),
     address: text("address"),
     preferredTimes: text("preferred_times").notNull(),
-    /** Copied from the course; the trainer can change it. A test has 1. Refunds count unheld sessions against it. */
+    /** Copied from the course, or from the plan; the trainer can change it. A test has 1. Refunds count unheld sessions against it. */
     plannedSessions: integer("planned_sessions").notNull(),
     isRetake: boolean("is_retake").notNull().default(false),
     /** `scheduling`, `active`, `passed`, `failed`, `cancelled`. */
@@ -756,6 +854,10 @@ export const enrollment = pgTable(
     uniqueIndex("enrollment_course_dog_live_idx")
       .on(table.courseId, table.dogId)
       .where(sql`${table.status} in ('scheduling', 'active')`),
+    // A request is paid once, so it has at most one enrollment.
+    uniqueIndex("enrollment_behavior_request_idx")
+      .on(table.behaviorRequestId)
+      .where(sql`${table.behaviorRequestId} is not null`),
     index("enrollment_customer_id_idx").on(table.customerId),
     index("enrollment_trainer_status_idx").on(table.trainerId, table.status),
     index("enrollment_dog_id_idx").on(table.dogId),

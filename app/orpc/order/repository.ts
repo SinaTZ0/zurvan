@@ -6,6 +6,7 @@ import type { DatabaseOrTransaction } from "~/db/client.server";
 import {
   assessment,
   assessmentRecommendation,
+  behaviorRequest,
   course,
   coursePrerequisite,
   customerOrder,
@@ -37,6 +38,8 @@ export type OrderItemRow = {
   dog: { id: string; name: string };
   photo: MediaRecord | null;
   enrollmentId: string | null;
+  /** The sessions of the behavior plan this item pays for; null for any other item. */
+  planSessions: number | null;
 };
 
 export type OrderRow = {
@@ -219,12 +222,14 @@ export async function findOrderByCustomer({
       dog: { id: dog.id, name: dog.name },
       photo: media,
       enrollmentId: enrollment.id,
+      planSessions: behaviorRequest.proposedSessions,
     })
     .from(orderItem)
     .innerJoin(course, eq(orderItem.courseId, course.id))
     .innerJoin(dog, eq(orderItem.dogId, dog.id))
     .leftJoin(media, eq(dog.photoMediaId, media.id))
     .leftJoin(enrollment, eq(enrollment.orderItemId, orderItem.id))
+    .leftJoin(behaviorRequest, eq(orderItem.behaviorRequestId, behaviorRequest.id))
     .where(eq(orderItem.orderId, id))
     .orderBy(asc(orderItem.createdAt), asc(orderItem.id));
 

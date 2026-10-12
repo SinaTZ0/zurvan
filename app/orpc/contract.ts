@@ -1,4 +1,5 @@
 import { assessmentContract } from "~/orpc/assessment/contract";
+import { behaviorRequestContract } from "~/orpc/behavior-request/contract";
 import { courseContract } from "~/orpc/course/contract";
 import { dogContract } from "~/orpc/dog/contract";
 import { enrollmentContract } from "~/orpc/enrollment/contract";
@@ -10,6 +11,7 @@ import { walletContract } from "~/orpc/wallet/contract";
 // Source of truth for the API. The browser client is typed from this, never from the router.
 export const contract = {
   assessment: assessmentContract,
+  behaviorRequest: behaviorRequestContract,
   course: courseContract,
   dog: dogContract,
   enrollment: enrollmentContract,
