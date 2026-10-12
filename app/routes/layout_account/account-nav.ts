@@ -18,6 +18,7 @@ export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [
   { label: "سگ‌های من", to: "/account/dogs" },
   { label: "آموزش‌ها", to: "/account/training" },
   { label: "ارزیابی‌ها", to: "/account/assessments" },
+  { label: "اصلاح رفتار", to: "/account/behavior-requests" },
 ];
 
 export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };

@@ -6,6 +6,7 @@ export default [
     index("routes/home/home.tsx"),
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
     route("assessment", "routes/assessment/assessment.tsx"),
+    route("behavior-modification", "routes/behavior_modification/behavior-modification.tsx"),
   ]),
 
   /*===== Account (customers, trainers, partners) =====*/
@@ -22,6 +23,7 @@ export default [
     route("checkout/:orderId/result", "routes/account_payment_result/account-payment-result.tsx"),
     route("training", "routes/account_training/account-training.tsx"),
     route("training/:enrollmentId", "routes/account_enrollment_detail/account-enrollment-detail.tsx"),
+    route("behavior-requests", "routes/account_behavior_requests/account-behavior-requests.tsx"),
   ]),
 
   /*===== Trainer (trainers, and the Admin as head trainer) =====*/
@@ -30,6 +32,8 @@ export default [
     route("assessments/:assessmentId", "routes/trainer_assessment_detail/trainer-assessment-detail.tsx"),
     route("enrollments", "routes/trainer_enrollments/trainer-enrollments.tsx"),
     route("enrollments/:enrollmentId", "routes/trainer_enrollment_detail/trainer-enrollment-detail.tsx"),
+    route("behavior-requests", "routes/trainer_behavior_requests/trainer-behavior-requests.tsx"),
+    route("behavior-requests/:requestId", "routes/trainer_behavior_request_detail/trainer-behavior-request-detail.tsx"),
   ]),
 
   route("auth", "routes/auth/auth.tsx"),
