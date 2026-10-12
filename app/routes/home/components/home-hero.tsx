@@ -181,7 +181,8 @@ export function HomeHero() {
                   back. A thin gold rule on the reading edge ties the pair together as one statement. */}
               <div className="max-w-[28rem] border-s-2 border-primary/70 ps-5">
                 <p className="text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.8] font-semibold text-balance text-foreground">
-                  آموزش خصوصی سگ با <span className="whitespace-nowrap">{HEAD_TRAINER.name}</span>، در خانه‌ی خودت یا بیرون.
+                  آموزش خصوصی سگ با <span className="whitespace-nowrap">{HEAD_TRAINER.name}</span>، در خانه‌ی خودت یا
+                  بیرون.
                 </p>
                 <p className="mt-2 text-base leading-[1.9] font-normal text-pretty text-foreground/65">
                   از ادب خانگی و فرمان‌پذیری تا سگ‌های کار و ورزشی.

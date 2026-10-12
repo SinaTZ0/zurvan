@@ -8,6 +8,7 @@ import { db } from "~/db/client.server";
 import type { Transaction } from "~/db/client.server";
 import { assessment, assessmentRecommendation, assessmentSlot, course, dog, user } from "~/db/schema";
 import { env } from "~/env.server";
+import { deleteDemoVideoObjects, detachDemoBehavior, removeDemoBehavior, seedBehavior } from "~/db/seed-behavior";
 import { removeDemoTraining, seedTraining } from "~/db/seed-training";
 import { DEMO_ACCOUNTS } from "~/lib/demo-accounts";
 import { todayIso } from "~/lib/jalali";
@@ -19,7 +20,7 @@ import { attachMedia, deleteMedia, uploadMedia } from "~/orpc/media/service";
 // `npm run db:seed:demo`: the catalogue (`seed.ts`) plus one account per role for the owner's showcase, each signing
 // in with the showcase code, and dogs (with photos) for the customers, plus the assessments: Arman's and Negar's open
 // slots, and a booked, a completed and a due-today assessment; then Leo's training, bought through the real order flow
-// (`seed-training.ts`). Idempotent: accounts are upserted by phone number, and the demo customers' dogs, orders and
+// (`seed-training.ts`), and the behavior requests (`seed-behavior.ts`). Idempotent: accounts are upserted by phone number, and the demo customers' dogs, orders and
 // training, the demo trainers' slots and every assessment between them are replaced, along with the dogs' photos in
 // the bucket, so running it again resets the demo without duplicating anything.
 //
@@ -279,7 +280,7 @@ async function seedDemo() {
 
   // Photos are uploaded and removed outside the transaction: they need the accounts committed (the media rows point at
   // their uploader), and the bucket can't be rolled back anyway.
-  const { oldPhotoIds, seededDogs, idByPhone } = await db.transaction(async (tx) => {
+  const { oldPhotoIds, oldVideoKeys, seededDogs, idByPhone } = await db.transaction(async (tx) => {
     /*------ Accounts ------*/
     const accounts = await tx
       .insert(user)
@@ -323,7 +324,10 @@ async function seedDemo() {
     );
 
     // Training and its money point at the dogs and at the assessments that recommended it, so they go first.
+    // Behavior requests are tied to their order items both ways, so they let go first and are deleted after.
+    await detachDemoBehavior({ tx, customerIds });
     await removeDemoTraining({ tx, customerIds });
+    const removedVideoKeys = await removeDemoBehavior({ tx, customerIds });
 
     // Assessments point at slots and dogs, so they go first (their recommendations go with them), then the slots, then
     // the dogs. Anyone else's assessment with a demo trainer or customer goes too: it would block the delete.
@@ -370,11 +374,12 @@ async function seedDemo() {
     console.log(`Seeded ${accounts.length} demo accounts, ${inserted.length} dogs and ${slots} assessment slots.`);
     for (const account of DEMO_ACCOUNTS) console.log(`  ${account.phoneNumber}  ${account.role}`);
 
-    return { oldPhotoIds: oldPhotos, seededDogs: inserted, idByPhone };
+    return { oldPhotoIds: oldPhotos, oldVideoKeys: removedVideoKeys, seededDogs: inserted, idByPhone };
   });
 
   /*------ Photos ------*/
   for (const mediaId of oldPhotoIds) await deleteMedia({ db, mediaId });
+  await deleteDemoVideoObjects({ keys: oldVideoKeys });
 
   let uploaded = 0;
   for (const seededDog of seededDogs) {
@@ -394,6 +399,14 @@ async function seedDemo() {
     dogIds: new Map(seededDogs.map((seeded) => [seeded.name, seeded.id])),
   });
   console.log(`Seeded ${enrollments} enrollments with their orders, payments and refunds.`);
+
+  /*------ Behavior Requests ------*/
+  const { requests } = await seedBehavior({
+    db,
+    idByPhone,
+    dogIds: new Map(seededDogs.map((seeded) => [seeded.name, seeded.id])),
+  });
+  console.log(`Seeded ${requests} behavior requests with their videos.`);
 }
 
 await seedDemo();

@@ -37,5 +37,7 @@ export default [
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),
   route("rpc/*", "routes/rpc/rpc.ts"),
+  route("api/behavior-videos", "routes/api_behavior_videos/api-behavior-videos.ts"),
+  route("api/behavior-videos/:id", "routes/api_behavior_video/api-behavior-video.ts"),
   route("payment/callback", "routes/payment_callback/payment-callback.ts"),
 ] satisfies RouteConfig;

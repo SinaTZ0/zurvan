@@ -1,6 +1,6 @@
 # Media (Images)
 
-How the app stores, processes and serves images: avatars, dog photos, course covers and trainer certificates.
+How the app stores, processes and serves images: avatars, dog photos, course covers and trainer certificates. [Videos](#videos), which are private, are at the end.
 
 ## Overview
 
@@ -122,6 +122,27 @@ The current local SeaweedFS (`SeaweedFS/docker-compose.yml`) runs S3 **without a
 - publish no ports, so only nginx and the app reach it inside the network;
 - have an S3 identity for the app (read and write on `zurvann`) and an `anonymous` identity with `Read` only, so nginx's requests still work;
 - pin an image version instead of `latest`.
+
+## Videos
+
+Behavior request videos (spec 3.7, business-logic B15) are the one private upload. They share the bucket and the S3 client, but not the image pipeline: nothing is converted or resized, and nginx never serves them.
+
+```text
+upload:  browser ──multipart──▶ POST /api/behavior-videos ──S3 PUT──▶ SeaweedFS (bucket zurvann)
+watch:   browser ──GET /api/behavior-videos/:id (session cookie)──▶ app checks who is asking ──S3 GET (Range)──▶ browser
+```
+
+- **Stored as uploaded**, under `behavior-video/{videoId}/original.{mp4|mov}`. The nginx rule above only matches `{kind}/{uuid}/{variant}.webp`, so these keys are unreachable from outside; in development SeaweedFS has no auth, so the same is not true on a developer's PC.
+- **Limits:** up to 3 videos per request, **100 MB** each, `mp4` or `mov`. The real format is read from the first bytes (an ISO `ftyp` box whose brand is `qt  ` for `.mov` or an MPEG-4 brand for `.mp4`), never from the file name or `Content-Type`; a photo with a video's extension is refused. A customer can hold at most 6 uploaded-but-unsent videos at a time.
+- **Table:** `behavior_request_video` (id, uploader, `behavior_request_id` and `position` once sent, format, file name, size). An upload has no request yet, so the row starts unattached; sending the request claims it.
+- **Who can watch:** the uploader while the video is unsent; once it belongs to a request, that request's customer and trainer, and the Admin. Anyone else gets `404`, the same answer as for a video that doesn't exist; signed out gets `401`.
+- **Routes:**
+  - `POST /api/behavior-videos`: signed-in customers only; multipart field `file`. Answers `201` with the video (`id`, `format`, `fileName`, `sizeBytes`, `url`), or `{ errors, fields: { file } }` with `422` (`413` when `Content-Length` is over the limit, `401`/`403` for the wrong person). It is a plain route instead of an oRPC procedure so the form can show upload progress.
+  - `GET /api/behavior-videos/:id`: streams the object with `Range` support (`206`, `Accept-Ranges`; `416` for a range outside the file), so the player can seek. `Cache-Control: private`.
+  - `DELETE /api/behavior-videos/:id`: the uploader removes a video that hasn't been sent. `204`.
+- **Memory:** the upload is read into memory (`request.formData()`) before it is written, so a 100 MB upload briefly costs about 200 MB. Playback streams and holds nothing.
+- **Cleanup:** TODO(foundations): the same sweep job as the images deletes videos that are still unattached 24 hours after `created_at`, with `discardBehaviorVideo`'s steps (bucket object first, then the row). Until then they pile up.
+- **nginx in production:** allow the upload with `location /api/behavior-videos { client_max_body_size 110m; proxy_pass http://app:3000; proxy_request_buffering off; }` (the default 1 MB limit would refuse every video), and keep `/media/` image-only as above.
 
 ## Dependencies
 
