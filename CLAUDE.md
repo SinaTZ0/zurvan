@@ -11,10 +11,12 @@ This is a React Router v8 application using Framework Mode. The application's us
 
 ## Product Scope
 
-- [docs/zurvan-courses.md](docs/zurvan-courses.md) is the source of truth for the course catalog and the business rules the owner has given. Where it conflicts with the phase-one docs, it wins.
-- This is a dog-training center, not a multi-service pet marketplace. Courses are taught by the head trainer, sometimes with an assistant. The head trainer is the owner: one Admin account that also holds his trainer profile. The site's job is to sell him and his personal brand: copy and design should build trust in him, not in an anonymous pool of "verified trainers". Underneath, it is built as a pet-training app: every trainer has a public page, assistants submit courses for Admin approval and can take over a course, which is the bridge from his own site to a platform with more trainers.
-- Training works like hiring a private tutor: sessions are with one dog, at the owner's home or outside, and boarding is optional. Don't design around group classes, seats, class minimums or a training venue. The phase-one docs (`docs/app-phase-one*.md`, `docs/foundations-plan.md`, `docs/business-logic.md`) describe this model.
-- A new dog starts with a free assessment. A dog that already has a record on the site can book its next course directly. Behavior modification starts from a request with a problem category, a description and a video. The owner's "every dog takes CGC / almost every dog takes BMC" is never said on the site; it lives in the trainer's default recommendations.
+- [docs/app-spec.md](docs/app-spec.md) is the source of truth for how the app works, organized by feature (F1–F18). It replaces the phase-one docs (`docs/app-phase-one*.md`, `docs/foundations-plan.md`, `docs/business-logic.md`) wherever they disagree. [docs/zurvan-courses.md](docs/zurvan-courses.md) is still the source for the courses' content.
+- This is a dog-training center, not a multi-service pet marketplace. The head trainer is the owner and the one Admin; staff trainers teach the lessons he assigns them. The site's job is to sell him and his personal brand: copy and design should build trust in him, not in an anonymous pool of "verified trainers".
+- Training works like hiring a private tutor: lessons are with one dog, at the owner's home or outside, and boarding is optional. Don't design around group classes, seats, class minimums or a training venue.
+- A new dog starts with a free evaluation. Once it is evaluated, the customer requests courses; the Admin accepts them (or assigns them directly), plans every lesson on his calendar, and the customer settles what they owe from their cart. Behavior requests, course tests, assessment slots and trainer-submitted courses are dropped.
+- Dog profiles and course settings are still being worked out with the owner: keep what exists and don't build on guesses (app-spec F2, F17).
+- The owner's "every dog takes CGC / almost every dog takes BMC" is never said on the site.
 - The head trainer's details live in `app/lib/head-trainer.ts`; the name, years and photo there are placeholders until the owner sends the real ones.
 
 ## Working Directory
