@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { describeApiFailure } from "~/lib/api-error";
 import { formatToman } from "~/lib/course-format";
+import { formatNumberFa } from "~/lib/digits";
 import { errorDataSchema } from "~/orpc/errors";
 import type { CheckoutOrder } from "~/orpc/order/contract";
 import { DogThumb } from "~/routes/assessment/components/dog-thumb";
@@ -76,7 +77,12 @@ export function CheckoutPanel({ order, showcase }: { order: CheckoutOrder; showc
   const isTest = item.kind === "test";
   const coursePrice = item.unitPrice - item.boardingPrice;
   const place = item.boarding ? "پانسیون" : (item.address ?? "");
-  const changeHref = `/account/book/${item.course.slug}?${isTest ? "kind=test&" : ""}dog=${item.dog.id}`;
+  // A behavior plan was written by the trainer for this dog: the booking form can't change it, so «تغییر» becomes a
+  // way back to the plan itself.
+  const isPlan = item.behaviorRequestId !== null;
+  const changeHref = isPlan
+    ? "/account/behavior-requests"
+    : `/account/book/${item.course.slug}?${isTest ? "kind=test&" : ""}dog=${item.dog.id}`;
   const onNotPayable = (message: string) => setProblem(message || "این سفارش تغییر کرده؛ مبلغ را دوباره نگاه کن.");
 
   return (
@@ -93,7 +99,10 @@ export function CheckoutPanel({ order, showcase }: { order: CheckoutOrder; showc
 
           {/*------ Course ------*/}
           <ReceiptLine label={isTest ? "تست" : "دوره"} amount={coursePrice}>
-            <span className="block text-pretty">{item.course.title}</span>
+            <span className="block text-pretty">
+              {item.course.title}
+              {item.planSessions !== null && ` · برنامه‌ی ${formatNumberFa(item.planSessions)} جلسه‌ای`}
+            </span>
           </ReceiptLine>
 
           {/*------ Boarding ------*/}
@@ -115,8 +124,8 @@ export function CheckoutPanel({ order, showcase }: { order: CheckoutOrder; showc
                 to={changeHref}
                 className="ms-3 inline-block rounded-sm font-bold text-primary underline-offset-4 hover:underline"
               >
-                تغییر
-                <span className="sr-only"> مشخصات رزرو</span>
+                {isPlan ? "برنامه‌ی آرمان" : "تغییر"}
+                {!isPlan && <span className="sr-only"> مشخصات رزرو</span>}
               </Link>
             </dd>
           </div>

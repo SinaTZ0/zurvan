@@ -9,9 +9,13 @@ import type { CheckoutOrder } from "~/orpc/order/contract";
  */
 export function ClosedOrder({ order }: { order: CheckoutOrder }) {
   const [item] = order.items;
-  const bookAgain = item
-    ? `/account/book/${item.course.slug}?${item.kind === "test" ? "kind=test&" : ""}dog=${item.dog.id}`
-    : "/account/dogs";
+  // A cancelled plan order (the trainer replaced the plan, or it ran out) goes back to the requests, where the current
+  // plan, if there is one, has its own pay button.
+  const bookAgain = item?.behaviorRequestId
+    ? "/account/behavior-requests"
+    : item
+      ? `/account/book/${item.course.slug}?${item.kind === "test" ? "kind=test&" : ""}dog=${item.dog.id}`
+      : "/account/dogs";
 
   return (
     <section aria-labelledby="closed-title" className="rounded-3xl bg-sunken p-6 lg:p-8">
@@ -22,7 +26,7 @@ export function ClosedOrder({ order }: { order: CheckoutOrder }) {
         چیزی از تو کم نشده و چیزی برای پرداخت نمانده. اگر هنوز می‌خواهی، دوباره رزرو کن.
       </p>
       <Link to={bookAgain} className={buttonVariants({ size: "lg", className: "mt-6 px-8" })}>
-        دوباره رزرو کن
+        {item?.behaviorRequestId ? "برنامه‌ها و درخواست‌ها" : "دوباره رزرو کن"}
       </Link>
     </section>
   );
