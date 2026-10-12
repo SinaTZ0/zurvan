@@ -29,15 +29,16 @@ export function PlanNotches({ daysLeft, small = false }: { daysLeft: number; sma
   const punched = BEHAVIOR_PLAN_VALID_DAYS - left;
 
   return (
-    <span
-      role="img"
-      aria-label={left === 0 ? "فرصت پرداخت تمام شده" : `${formatNumberFa(left)} روز از فرصت پرداخت مانده`}
-      className={cn("flex items-center", small ? "gap-1" : "gap-2")}
-    >
+    <span className={cn("flex items-center", small ? "gap-1" : "gap-2")}>
+      {/* The notches are drawn only; a screen reader gets the same fact as a sentence. */}
+      <span className="sr-only">
+        {left === 0 ? "فرصت پرداخت تمام شده" : `${formatNumberFa(left)} روز از فرصت پرداخت مانده`}
+      </span>
       {Array.from({ length: BEHAVIOR_PLAN_VALID_DAYS }, (_, index) =>
         index < punched ? (
           // Punched: the page shows through, pressed in like a held session's hole.
           <span
+            aria-hidden
             key={index}
             className={cn(
               "rounded-full bg-background shadow-[inset_0_2px_4px_rgb(0_0_0/0.6)]",
@@ -46,6 +47,7 @@ export function PlanNotches({ daysLeft, small = false }: { daysLeft: number; sma
           />
         ) : (
           <span
+            aria-hidden
             key={index}
             className={cn("rounded-full border border-primary/60 bg-primary/15", small ? "size-2.5" : "size-4")}
           />
