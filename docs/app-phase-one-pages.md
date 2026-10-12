@@ -103,7 +103,7 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Course Detail** (built, `/courses/:slug`): commands, age, sessions, place, prerequisites, price, refund policy, comments, questions and reviews (3.15). The action depends on the visitor: a new dog gets "book a free assessment", a dog with a record gets "book this course", a course with a test also offers the test, and behavior modification gets "send a request". Working and sport dogs (`/courses/working-dogs`, `/courses/sport`) use this page too, with their branches until their details are known.
 - **Trainer Page:** any trainer's photo, bio, years, specialties, certificates, verified badge, the courses they own, rating and reviews (3.17). URL `/trainers/:slug`. The head trainer's page is the one the home page's trainer section should link to.
 - **Book a Free Assessment** (built, `/assessment`): pick or add a dog, training goal, what to change, place, then an open slot (3.3). Asks to sign in first. Only the head trainer's times are offered for now ([assessment-design.md](assessment-design.md)).
-- **Behavior Modification Request** (`/behavior-modification`): dog, problem category, description, video upload (3.7). Asks to sign in first. Only the head trainer's times are offered for now ([assessment-design.md](assessment-design.md)).
+- **Behavior Modification Request** (built, `/behavior-modification`): dog, problem category, description, video upload (3.7). Asks to sign in first. Only the head trainer's times are offered for now ([assessment-design.md](assessment-design.md)).
 - **Login / Register** (built, `/auth`): phone number, then 5-digit code with resend timer (2). A number seen for the first time becomes a customer account and is asked for its name once. `?redirectTo=` brings people back to the page that sent them. In showcase mode it lists the demo accounts and says the code (`12345`).
 - **Help and FAQ, Cancellation and Refund Rules, Privacy** (`/help`, `/help/refunds`, `/privacy`): plain content pages linked from the footer. The refund rules page explains 3.9 in plain Persian.
 - **Partner Enquiry** (`/join/partner`): for pet shops, clinics and groomers who want to refer customers. Partners can't sign up themselves (2), so it isn't a signup. Working default until the owner decides: a short page explaining the program, with the center's phone number to call. No form, so no new entity.
@@ -119,7 +119,7 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **My Training** (built, `/account/training`): each dog's live courses with their session strip and next step, and the finished ones.
 - **Enrollment Detail** (built, `/account/training/:enrollmentId`): session schedule with places and notes, held count, result, refund amount preview, cancel (3.5, 3.9).
 - **My Assessments** (built, `/account/assessments`): upcoming and past, cancel an upcoming one (3.3).
-- **My Behavior Requests:** status, the trainer's plan with its expiry, pay or withdraw (3.7).
+- **My Behavior Requests** (built, `/account/behavior-requests`): status, the trainer's plan with its expiry, pay or withdraw (3.7).
 
 ### Shared
 
@@ -134,7 +134,8 @@ Public pages use the URLs the home page already links to (table in [storefront-d
 - **Assessment Detail** (built, `/trainer/assessments/:id`): dog with its notes, customer's note and place, mark completed or no-show, write notes, pick recommended courses, mark a dog as already known (3.3). Marking a dog as known isn't built yet.
 - **Enrollments** (built, `/trainer/enrollments`): the ones waiting for a first session, then the live and finished ones.
 - **Enrollment Detail** (built, `/trainer/enrollments/:enrollmentId`): dog with its notes, customer's preferred times and address, schedule and reschedule sessions, mark held or missed, session notes, change the planned count, record the result (3.4, 3.5).
-- **Behavior Request Detail:** videos, description, propose a plan or decline (3.7).
+- **Behavior Requests** (built, `/trainer/behavior-requests`): the requests waiting for an answer, the plans sent with their days left, and the finished ones; the tab shows how many are waiting (3.7).
+- **Behavior Request Detail** (built, `/trainer/behavior-requests/:requestId`): videos, description, propose a plan or decline (3.7).
 - **Course Form:** create, edit and resubmit; Admin-only fields are read-only after approval; shows the rejection reason (3.2).
 - **Review Changes:** old and new value per field, Admin note, accept or edit (3.2).
 - **Earnings:** earning per enrollment (3.11).

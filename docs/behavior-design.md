@@ -7,8 +7,9 @@ follow [customer-area-design.md](customer-area-design.md) and the paper trail of
 [assessment-design.md](assessment-design.md) and [training-design.md](training-design.md). For the steps behind each
 brief, see [design-flow.md](design-flow.md).
 
-> **Status: briefs for review, no UI code yet.** The API under them is built: `behaviorRequest.*`, the video routes
-> and the plan paid through `order.*` (see the end of this doc).
+> **Status: built.** The briefs were approved by the owner and the pages follow them: the API (`behaviorRequest.*`, the
+> video routes, the plan paid through `order.*`), the four pages, the shared pieces and the Checkout changes. The
+> trainer's tab also shows how many requests wait for an answer.
 
 ## What It Must Feel Like
 
