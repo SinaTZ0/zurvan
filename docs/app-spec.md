@@ -43,7 +43,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 
 - Sign in with a phone number and an SMS code. Already built: 5-digit code, valid for 2 minutes, resend after 60 seconds, invalidated after 5 wrong attempts, rate-limited per phone and per IP.
 - One role per phone number. Only customers self-register; the Admin creates partner accounts.
-- Blocked users can't sign in.
+- Blocked users can't sign in: the Admin blocks and unblocks from the Users page, which signs the user out everywhere at once. He can't block himself or any admin. Blocking a partner closes his sign-in only; his link and commissions are switched off by deactivating him ([F7](#f7-partners)).
 - Each user edits their name. Partners also enter their Sheba number, so the Admin knows where to send commissions ([F7](#f7-partners)).
 
 **Pages:** Login / Register · Profile Settings · Users (user form in a dialog)
@@ -200,7 +200,8 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 - The catalogue and its course pages sell the head trainer and his courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)).
 - Only the Admin creates and edits courses. Every course in this version has a **fixed price**, an age range and prerequisites. Its lesson count and lesson length are **shown to customers** as a description («حدوداً ۵ جلسه»); the app doesn't track lessons.
 - The full set of course settings is **pending the owner**, like dog profiles.
-- Archived courses can't be bought, but their active enrollments continue, and a completed one still counts as a prerequisite.
+- Archived courses can't be bought, but their active enrollments continue, and a completed one still counts as a prerequisite. Archiving and restoring are reversible switches. A course is never deleted, and its link name (slug) never changes after it is created.
+- The Admin sets the catalogue order (up and down on the Courses page), uploads the cover, and picks prerequisites; a prerequisite that would make a cycle is refused. A new course goes on sale at once. A price change applies to later purchases only; existing enrollments keep the price paid (F5).
 - Courses without a price (working and sport dogs) are **not in this version**; they are a [future feature](#future-features).
 
 **Pages:** Home · Course Catalogue · Course Detail · Courses (Admin) · Course Form
@@ -209,7 +210,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 ### F9. Notifications
 
-**Who:** sent automatically, by SMS, with an in-app copy. In showcase mode SMS land in the SMS Outbox instead of being sent.
+**Who:** sent automatically, by SMS, with an in-app copy. In showcase mode SMS land in the SMS Outbox instead of being sent. The outbox is read-only and paged (it gains a row per sign-in code).
 
 | Event                          | To                                          |
 | ------------------------------ | ------------------------------------------- |
@@ -227,7 +228,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 ### F10. Settings
 
-Stored in the database so the Admin can change them without a release.
+Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The Admin can set the commission from 1 to 50%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
 
 | Setting                | Default     |
 | ---------------------- | ----------- |

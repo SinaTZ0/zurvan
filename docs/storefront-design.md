@@ -40,7 +40,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 | `/courses`, `/courses?q=`         | Course Catalogue          | header search, nav, footer, buttons              |
 | `/auth`                           | Login / Register          | header                                           |
 | `/help`, `/help#how-buying-works` | Help and FAQ              | footer, account footer, Course Detail's buy card |
-| `/privacy`                        | Privacy (not built)       | footer                                           |
+| `/privacy`                        | Privacy                   | footer                                           |
 | `/join/partner`                   | Partner Enquiry (no form) | footer                                           |
 
 ## Course Catalogue
@@ -61,7 +61,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ## Partner Enquiry
 
-`/join/partner` (`app/routes/join_partner/`) is for the owner of a clinic, groomer or pet shop, not a customer, so its main action is the phone call, not the free evaluation. **It has no form**: the API has no way to receive an enquiry and the Admin has no screen to read one yet (his Partners page is built, but the enquiry table and procedure are not). The hero is the home hero's style with one static photo (the puppy holding its leash) and a bubble addressed to the shop owner («بفرستش پیش آرمان»); below it a three-way strip (link, QR, phone leads), the three steps (call, the Admin creates the account, sign in), the commission card and a phone ask. The commission percent shown is `DEFAULT_PARTNER_COMMISSION_PERCENT`.
+`/join/partner` (`app/routes/join_partner/`) is for the owner of a clinic, groomer or pet shop, not a customer, so its main action is the phone call, not the free evaluation. **It has no form**: the API has no way to receive an enquiry and the Admin has no screen to read one yet (his Partners page is built, but the enquiry table and procedure are not). The hero is the home hero's style with one static photo (the puppy holding its leash) and a bubble addressed to the shop owner («بفرستش پیش آرمان»); below it a three-way strip (link, QR, phone leads), the three steps (call, the Admin creates the account, sign in), the commission card and a phone ask. The commission percent shown is the setting in force (`setting.commissionPercent`), read by the page's loader.
 
 ## Signed-in Pages
 
@@ -86,6 +86,11 @@ The Admin area (`/admin`, `app/routes/layout_admin/`) uses the same tokens, calm
 - Dogs (`/admin/dogs`): a register read by faces and stamps. Each row starts with the dog's photo and ends with one pill (`DogEvaluationStamp`), so he can run down the edge and know who is where on the road. The whole row is the link (the name carries a stretched link; the owner's number sits above it).
 - Dog Detail (`/admin/dogs/:dogId`): the ladder. Courses are rungs in catalogue order, because courses open one after another: a passed rung is a filled gold check, an open one a gold ring, a locked one a lock with the reason that names the rung to climb first. The few buttons on a rung are the only gold buttons on the page besides «ارزیابی شد».
 - Partners (`/admin/partners`): the pay sheet. Paying a partner is a bank transfer outside the app, so each block is arranged in the order he works: where to send (the Sheba in groups of four, one tap to copy), the sum, then «پرداخت شد» per commission (no bulk button, so each partner SMS is true). A partner who hasn't written his Sheba gets a line and a call button instead. The roster and the partner drawer (`?partner=`) carry his people and the deactivate switch.
+- Users (`/admin/users`): a roll call. People are rows; a blocked person is **dimmed with a dashed border**, the same vocabulary as Leads' lost row and Payments' torn slip, and nothing on the page is gold but the selected pills. The user form is a dialog (`?user=`) with the danger zone last.
+- Courses (`/admin/courses`): the shelf in the order a dog climbs it. The position number and the arrows make the order something he can touch (courses open one after another) and the «بعد از:» lines show which rung opens which; an archived course stays on the shelf, dashed.
+- Course Form (`/admin/courses/new`, `/admin/courses/:slug/edit`): the card as the customer will see it. The real `CourseCard` sits beside the form (under it on phones) and updates as he types, so the preview is true by construction.
+- Platform Settings (`/admin/settings`): each number says what it will do, live: one sentence under the input is recomputed as he types, with a concrete example.
+- SMS Outbox (`/admin/sms`): messages look like the SMS on the receiver's phone (a `bg-muted` bubble, never the dog's chalk bubble), newest first, grouped by kind pills.
 
 ## Pieces
 
@@ -167,5 +172,5 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
 - **Working and sport dogs** have no price and show «بعد از ارزیابی»; they are a future feature (app-spec F8).
 - **Help copy to confirm with the owner:** the answers are written from app-spec F1 to F6; the owner should read them once (especially «اگه آرمان نتونه سگمو بپذیره چی؟», `boarding` and `no-price`).
 - **Privacy is a placeholder** until the owner sends real legal text. To confirm with him: (1) dog and evaluation photos are served by an unguessable link, so anyone with the exact address can open them (only evaluation videos are private), and the page says so; (2) the sign-in page's «به هیچ‌کس نمی‌دهیم» claim, and who the SMS provider and the payment gateway will be once they replace the showcase ones; (3) the «پرداخت‌ها» row says the card number and password never reach the site: true of the redirect design, to re-check with the real gateway; (4) retention and deletion: the page only says dogs and payments are never deleted from an account; (5) a partner sees commission amounts, which at 10% reveal a first purchase's total, while the page lists payments among what a partner doesn't see (F12's wording).
-- **Partner Enquiry has no form.** A form needs a public `partner.enquire` procedure, a `partner_enquiry` table, an SMS to the Admin, a per-IP limit and an app-spec edit; do it together with the Admin's Partners page, where enquiries can be read. The page describes the referral link, QR code and phone leads, which the Partner Dashboard shows. The commission percent is a constant, but the Admin can change the setting: if he does, the page is stale until it reads the setting.
+- **Partner Enquiry has no form.** A form needs a public `partner.enquire` procedure, a `partner_enquiry` table, an SMS to the Admin, a per-IP limit and an app-spec edit; do it together with the Admin's Partners page, where enquiries can be read. The page describes the referral link, QR code and phone leads, which the Partner Dashboard shows. The commission percent shown is the Admin's setting (`setting.commissionPercent`), so it is never stale.
 - **Leftover assets:** most of `public/demo/` and the old files in `public/photo/` (outside `home/`) are unused or only used by legacy pages. Delete them as those pages go.
