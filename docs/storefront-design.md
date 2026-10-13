@@ -32,15 +32,19 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ### Where it sends people
 
-| URL                                      | Page                                                         | Linked from                           |
-| ---------------------------------------- | ------------------------------------------------------------ | ------------------------------------- |
-| `/assessment`                            | Evaluation Request (F3)                                      | every «ارزیابی رایگان» button, footer |
-| `/#courses`, `/#evaluation`, `/#trainer` | home sections                                                | header nav, footer                    |
-| `/courses/:slug`                         | Course Detail                                                | course cards                          |
-| `/courses`, `/courses?q=`                | Course Catalogue (not built; the header search submits here) | header search                         |
-| `/auth`                                  | Login / Register                                             | header                                |
-| `/help`, `/privacy`                      | Help and FAQ, Privacy (not built)                            | footer                                |
-| `/join/partner`                          | Partner Enquiry (not built)                                  | footer                                |
+| URL                         | Page                              | Linked from                           |
+| --------------------------- | --------------------------------- | ------------------------------------- |
+| `/assessment`               | Evaluation Request (F3)           | every «ارزیابی رایگان» button, footer |
+| `/#evaluation`, `/#trainer` | home sections                     | header nav                            |
+| `/courses/:slug`            | Course Detail                     | course cards                          |
+| `/courses`, `/courses?q=`   | Course Catalogue                  | header search, nav, footer, buttons   |
+| `/auth`                     | Login / Register                  | header                                |
+| `/help`, `/privacy`         | Help and FAQ, Privacy (not built) | footer                                |
+| `/join/partner`             | Partner Enquiry (not built)       | footer                                |
+
+## Course Catalogue
+
+`/courses` (`app/routes/course_catalogue/`) lists every course with search and the family pills; its state is the URL (`?q=`, `?family=`, `?page=`). The page's idea: the stock cut-out dog stands behind the filter shelf (a `bg-sunken` band), and its chalk bubble is the live result counter, so the same words that are announced to screen readers are the design. The outline draws in once, on load. Twelve cards to a page; a free-evaluation card closes the page.
 
 ## Login / Register
 
@@ -58,15 +62,16 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ## Pieces
 
-| Piece                      | Where                                           | Use                                                                                                                                                                                                                                                           |
-| -------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SpeechBubble`             | `app/components/speech-bubble.tsx`              | The dog's words in `font-hand`, inside a hand-drawn chalk outline with a tail pointing back at the dog. `tail` (and `lgTail` for desktop) picks the tail's edge and end. Opaque black inside, so it reads over photos. `drawIn` is for the page's one moment. |
-| `ChalkDoodle`              | `app/components/chalk-doodle.tsx`               | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                |
-| `DogPhoto`                 | `app/components/dog-photo.tsx`                  | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                               |
-| `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                                                |
-| `DogThumb`                 | `app/components/dog-thumb.tsx`                  | A small round photo of the dog, or its first letter on a disc, for lists of dogs.                                                                                                                                                                             |
-| `DogEmptyState`            | `app/components/dog-empty-state.tsx`            | The cut-out dog with a bubble, a title, a sentence and one gold button, for an empty signed-in page.                                                                                                                                                          |
-| `PersonMenu`               | `app/components/person-menu.tsx`                | The signed-in person's pill and menu, shared by the storefront and account headers.                                                                                                                                                                           |
+| Piece                      | Where                                           | Use                                                                                                                                                                                                                                                                 |
+| -------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SpeechBubble`             | `app/components/speech-bubble.tsx`              | The dog's words in `font-hand`, inside a hand-drawn chalk outline with a tail pointing back at the dog. `tail` (and `lgTail` for desktop) picks the tail's edge and end. Opaque black inside, so it reads over photos. `drawIn` is for the page's one moment.       |
+| `ChalkDoodle`              | `app/components/chalk-doodle.tsx`               | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                      |
+| `DogPhoto`                 | `app/components/dog-photo.tsx`                  | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                                     |
+| `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                                                      |
+| `DogThumb`                 | `app/components/dog-thumb.tsx`                  | A small round photo of the dog, or its first letter on a disc, for lists of dogs.                                                                                                                                                                                   |
+| `DogEmptyState`            | `app/components/dog-empty-state.tsx`            | The cut-out dog with a bubble, a title, a sentence and one gold button, for an empty signed-in page.                                                                                                                                                                |
+| `PersonMenu`               | `app/components/person-menu.tsx`                | The signed-in person's pill and menu, shared by the storefront and account headers.                                                                                                                                                                                 |
+| `CourseCard`               | `app/components/course-card.tsx`                | A course as a photo card (photo, title, summary, sessions, price, «مشاهده دوره»); `showPrerequisites` adds the «بعد از» line. Used by the home grid and the catalogue, with `CourseFamilyFilter` (the family pills), `Pagination` and `app/lib/course-families.ts`. |
 
 These live in `app/components/` because several routes use them.
 

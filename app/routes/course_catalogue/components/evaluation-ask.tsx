@@ -1,0 +1,36 @@
+import { Link } from "~/components/link";
+import { buttonVariants } from "~/components/ui/button";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
+
+/*===== Evaluation Ask =====*/
+/**
+ * The page's quieter exit, under the cards: a visitor who can't pick is sent to the free evaluation. A raised card with
+ * no dog, so the one dog on this page stays the counter.
+ */
+export function EvaluationAsk() {
+  return (
+    <section
+      aria-labelledby="ask-title"
+      className="rounded-4xl border border-border bg-card px-6 py-10 shadow-sm sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:px-14 lg:py-12"
+    >
+      <div className="max-w-xl">
+        <h2 id="ask-title" className="font-display text-h2 font-black text-balance">
+          نمی‌دونی از کدوم شروع کنیم؟
+        </h2>
+        <p className="mt-3 text-pretty text-muted-foreground">
+          توی ارزیابی رایگان، {HEAD_TRAINER.firstName} سگتو می‌بینه و با هم دوره‌ی اول رو انتخاب می‌کنیم.
+        </p>
+      </div>
+      <Link
+        to="/assessment"
+        className={buttonVariants({
+          variant: "solid",
+          size: "lg",
+          className: "mt-8 w-full shrink-0 lg:mt-0 lg:w-auto lg:min-w-52",
+        })}
+      >
+        ارزیابی رایگان بگیر
+      </Link>
+    </section>
+  );
+}
