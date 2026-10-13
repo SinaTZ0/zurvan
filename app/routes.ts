@@ -26,11 +26,13 @@ export default [
 
   /*===== Admin =====*/
   route("admin", "routes/layout_admin/layout-admin.tsx", [
-    // Goes to Evaluations until the Admin Dashboard (F11) exists.
+    // The Admin Dashboard (F11).
     index("routes/admin_index/admin-index.tsx"),
     route("evaluations", "routes/admin_evaluations/admin-evaluations.tsx"),
     route("enrollments", "routes/admin_enrollments/admin-enrollments.tsx"),
     route("payments", "routes/admin_payments/admin-payments.tsx"),
+    route("dogs", "routes/admin_dogs/admin-dogs.tsx"),
+    route("dogs/:dogId", "routes/admin_dog_detail/admin-dog-detail.tsx"),
   ]),
 
   route("auth", "routes/auth/auth.tsx"),
