@@ -32,15 +32,16 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ### Where it sends people
 
-| URL                         | Page                              | Linked from                           |
-| --------------------------- | --------------------------------- | ------------------------------------- |
-| `/assessment`               | Evaluation Request (F3)           | every «ارزیابی رایگان» button, footer |
-| `/#evaluation`, `/#trainer` | home sections                     | header nav                            |
-| `/courses/:slug`            | Course Detail                     | course cards                          |
-| `/courses`, `/courses?q=`   | Course Catalogue                  | header search, nav, footer, buttons   |
-| `/auth`                     | Login / Register                  | header                                |
-| `/help`, `/privacy`         | Help and FAQ, Privacy (not built) | footer                                |
-| `/join/partner`             | Partner Enquiry (not built)       | footer                                |
+| URL                               | Page                        | Linked from                                      |
+| --------------------------------- | --------------------------- | ------------------------------------------------ |
+| `/assessment`                     | Evaluation Request (F3)     | every «ارزیابی رایگان» button, footer            |
+| `/#evaluation`, `/#trainer`       | home sections               | header nav                                       |
+| `/courses/:slug`                  | Course Detail               | course cards                                     |
+| `/courses`, `/courses?q=`         | Course Catalogue            | header search, nav, footer, buttons              |
+| `/auth`                           | Login / Register            | header                                           |
+| `/help`, `/help#how-buying-works` | Help and FAQ                | footer, account footer, Course Detail's buy card |
+| `/privacy`                        | Privacy (not built)         | footer                                           |
+| `/join/partner`                   | Partner Enquiry (not built) | footer                                           |
 
 ## Course Catalogue
 
@@ -49,6 +50,10 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 ## Login / Register
 
 `/auth` (`app/routes/auth/`) is the home hero turned into a form, outside the storefront shell: the dog's photo fills the page, the form sits in its dark half with no box, and the dog's bubble asks the question of the step. Each step has its own dog (the three hero photos): the photo crossfades and the words change; the bubble's outline draws in once, on load. On phones the photo is a band on top that fades into the form.
+
+## Help and FAQ
+
+`/help` (`app/routes/help/`) answers how buying works without a phone call. The idea: the five-stop chalk road under the header is the overview of the journey (free evaluation, courses open, pay, call and training, done) and also the index into the FAQ below, whose six groups carry the same numbered discs (the last group, «ورود و شماره‌ات», is not a step and has none). A group's disc fills gold when it is the `:target`. Answers are plain body copy, not the dog's voice; the dog speaks in the headlines and the one bubble («اول پرداخت، بعد آرمان زنگ می‌زنه»). Question ids are the anchors other pages link to (`how-buying-works`, `after-paying`, `payment-failed`, …); group ids are `evaluation`, `courses`, `paying`, `training`, `done`, `account`. The copy never states refund or cancellation rules, deadlines, expiry, a calendar or lesson tracking: the one money-back sentence is that {آرمان} cancels and returns the money outside the site if he can't take the dog.
 
 ## Signed-in Pages
 
@@ -139,4 +144,5 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
 
 - **Placeholders:** the head trainer's name, years and photo; the other two trainers' names, focuses and years; the course prices; the footer phone number. The photos are generated stand-ins until the owner has real ones.
 - **Working and sport dogs** have no price and show «بعد از ارزیابی»; they are a future feature (app-spec F8).
+- **Help copy to confirm with the owner:** the answers are written from app-spec F1 to F6; the owner should read them once (especially «اگه آرمان نتونه سگمو بپذیره چی؟», `boarding` and `no-price`).
 - **Leftover assets:** most of `public/demo/` and the old files in `public/photo/` (outside `home/`) are unused or only used by legacy pages. Delete them as those pages go.
