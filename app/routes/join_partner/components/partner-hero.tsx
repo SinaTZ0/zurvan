@@ -4,7 +4,6 @@ import { PhoneIcon } from "lucide-react";
 import { buttonVariants } from "~/components/ui/button";
 import { SpeechBubble } from "~/components/speech-bubble";
 import { CENTER_PHONE } from "~/lib/contact";
-import { DEFAULT_PARTNER_COMMISSION_PERCENT } from "~/lib/business-rules";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
@@ -15,8 +14,10 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
  * The partner page's first screen. The dog's bubble speaks to the shop owner, in the dog's voice, so the page sells the
  * partnership from the side of the dog walking in the shop's door. Phones: photo on top, bubble under it with its tail
  * up at the dog, the words below on black. Desktop: words at the start, the dog and its bubble at the end.
+ *
+ * @param commissionPercent The commission percent in force (the Admin's setting), read by the page's loader.
  */
-export function PartnerHero() {
+export function PartnerHero({ commissionPercent }: { commissionPercent: number }) {
   return (
     <section aria-labelledby="partner-title" className="relative isolate overflow-hidden bg-jet">
       {/*===== Photo =====*/}
@@ -60,8 +61,7 @@ export function PartnerHero() {
             کلینیک، آرایشگاه سگ یا پت‌شاپ داری؟ با ما همراه شو.
           </h1>
           <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-            مشتری‌هات رو به آموزش K9 معرفی کن؛ از اولین خریدشون {formatNumberFa(DEFAULT_PARTNER_COMMISSION_PERCENT)}٪
-            مال توئه.
+            مشتری‌هات رو به آموزش K9 معرفی کن؛ از اولین خریدشون {formatNumberFa(commissionPercent)}٪ مال توئه.
           </p>
 
           {/*------ Action ------*/}

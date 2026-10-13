@@ -3,6 +3,7 @@ import { useLocation } from "react-router";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
+import { createServerClient } from "~/orpc/server-client.server";
 import { CommissionCard } from "~/routes/join_partner/components/commission-card";
 import { HowToStart } from "~/routes/join_partner/components/how-to-start";
 import { PartnerAsk } from "~/routes/join_partner/components/partner-ask";
@@ -20,19 +21,30 @@ export const meta: Route.MetaFunction = () => [
   },
 ];
 
+/*===== Loader =====*/
+// Public. The one number on the page is the commission percent in force, which the Admin can change in the settings, so
+// it is read on every visit rather than fixed in the code.
+export async function loader({ request }: Route.LoaderArgs) {
+  const { percent } = await createServerClient(request).setting.commissionPercent();
+
+  return { commissionPercent: percent };
+}
+
 /*===== Partner Enquiry Page =====*/
-// Static: no loader and no form. Joining starts with a phone call (the Admin creates the partner account), so the page's
-// only action is `tel:`. Nothing here writes anything.
-export default function JoinPartnerPage() {
+// No form. Joining starts with a phone call (the Admin creates the partner account), so the page's only action is
+// `tel:`. Nothing here writes anything.
+export default function JoinPartnerPage({ loaderData }: Route.ComponentProps) {
+  const { commissionPercent } = loaderData;
+
   return (
     <>
-      <PartnerHero />
+      <PartnerHero commissionPercent={commissionPercent} />
       <WaysIn />
 
       {/*===== Start and Commission =====*/}
       <div className="site-container grid gap-12 py-section-md lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-16">
         <HowToStart />
-        <CommissionCard />
+        <CommissionCard commissionPercent={commissionPercent} />
       </div>
 
       {/*===== The Ask =====*/}

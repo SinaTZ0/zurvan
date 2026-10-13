@@ -1,14 +1,13 @@
-import { DEFAULT_PARTNER_COMMISSION_PERCENT } from "~/lib/business-rules";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Commission Card =====*/
 /**
- * The commission rules, as a raised card at the end of the page's middle row. The percent is the business rule's
- * constant, so changing it there changes it here. Payment happens outside the app: the card says so, and the app only
- * records whether it has been paid.
+ * The commission rules, as a raised card at the end of the page's middle row. The percent is the Admin's setting (read
+ * by the page's loader), so changing it there changes it here. Payment happens outside the app: the card says so, and
+ * the app only records whether it has been paid.
  */
-export function CommissionCard() {
+export function CommissionCard({ commissionPercent }: { commissionPercent: number }) {
   return (
     <section
       aria-labelledby="commission-title"
@@ -19,7 +18,7 @@ export function CommissionCard() {
       </h2>
       <ul className="mt-6 grid gap-4">
         <CommissionItem>
-          {formatNumberFa(DEFAULT_PARTNER_COMMISSION_PERCENT)}٪ از مجموع دوره‌هایی که مشتری توی اولین خریدش می‌خره.
+          {formatNumberFa(commissionPercent)}٪ از مجموع دوره‌هایی که مشتری توی اولین خریدش می‌خره.
         </CommissionItem>
         <CommissionItem>فقط اولین خرید؛ از خریدهای بعدی همون مشتری چیزی نمی‌رسه.</CommissionItem>
         <CommissionItem>
