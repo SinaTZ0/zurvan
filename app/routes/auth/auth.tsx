@@ -64,8 +64,8 @@ export default function AuthPage({ loaderData }: Route.ComponentProps) {
       <AuthPhotos step={step} />
 
       {/*===== Form Column =====*/}
-      {/* Scrolls on its own on desktop, so the demo list never moves the photo. */}
-      <div className="z-10 flex flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:px-10 lg:pt-8 lg:pb-12">
+      {/* Scrolls on its own on desktop, so the demo list never moves the photo. Its scrollbar is hidden; the wheel and touch still scroll it. */}
+      <div className="z-10 flex flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:pe-10 lg:ps-20 lg:pt-8 xl:ps-24 lg:pb-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {/*------ Logo ------*/}
         {/* Phones: laid over the photo band's top start corner. Desktop: first in the column, scrolling with it. */}
         <Link

@@ -76,7 +76,7 @@ export function PhoneStep({
               placeholder="0912 345 6789"
               aria-invalid={!!errors.phoneNumber}
               aria-describedby="sign-in-phone-note"
-              className="text-start text-base tracking-wide"
+              className="text-start text-lg tracking-wide sm:text-xl"
               {...register("phoneNumber")}
             />
           </InputGroup>
