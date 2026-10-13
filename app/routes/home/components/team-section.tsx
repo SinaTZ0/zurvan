@@ -2,7 +2,7 @@ import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { SpeechBubble } from "~/routes/home/components/speech-bubble";
+import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Trainers =====*/
 // The three trainers, shown as equals. Each portrait has the trainer's own dog at the bottom left, and the dog says one

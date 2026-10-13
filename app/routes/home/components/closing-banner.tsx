@@ -2,8 +2,8 @@ import { cn } from "cn";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
-import { ChalkDoodle } from "~/routes/home/components/chalk-doodle";
-import { SpeechBubble } from "~/routes/home/components/speech-bubble";
+import { ChalkDoodle } from "~/components/chalk-doodle";
+import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Closing Banner =====*/
 /**

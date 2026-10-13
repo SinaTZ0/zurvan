@@ -3,8 +3,8 @@ import { cn } from "cn";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { ChalkDoodle } from "~/routes/home/components/chalk-doodle";
-import { SpeechBubble } from "~/routes/home/components/speech-bubble";
+import { ChalkDoodle } from "~/components/chalk-doodle";
+import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Steps =====*/
 // The real path from a new dog to training (app-spec F3, F5, F6), told by the dog. It is a sequence, so it is numbered.
