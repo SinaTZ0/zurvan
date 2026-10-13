@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { matchesQuery, normalizeForSearch } from "./search";
+import { normalizeForSearch } from "~/lib/search";
+
+import { matchesQuery } from "./search";
 
 /*===== Search =====*/
 describe("course search", () => {
