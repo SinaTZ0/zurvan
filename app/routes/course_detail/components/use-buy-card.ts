@@ -3,9 +3,9 @@ import { useState } from "react";
 
 import { addCartItemAtom, cartItemsAtom, isInCart } from "~/atoms/cart";
 import { useHydrated } from "~/hooks/use-hydrated";
+import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import type { DogEligibility } from "~/orpc/checkout/contract";
 import type { Course } from "~/orpc/course/contract";
-import { getDogVerdict, type DogVerdict } from "~/routes/course_detail/dog-verdict";
 
 /*===== Types =====*/
 /** Who is looking: nobody signed in, a customer with a name, or a partner/Admin (who can't buy). */
@@ -82,7 +82,7 @@ export function useBuyCard({
   // Derived, not stored: if the loader reloads and the chosen dog is gone, nothing stale is left behind.
   const picked =
     eligibility.find((entry) => entry.dog.id === chosenId) ?? (eligibility.length === 1 ? eligibility[0] : undefined);
-  const verdict = picked ? getDogVerdict(picked) : null;
+  const verdict = picked ? getDogVerdict({ ...picked, dogId: picked.dog.id }) : null;
   const inCart = hydrated && picked !== undefined && isInCart(items, { courseSlug: course.slug, dogId: picked.dog.id });
 
   /*------ Main Action ------*/

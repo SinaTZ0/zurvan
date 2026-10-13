@@ -1,9 +1,8 @@
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { IneligibilityKind } from "~/lib/eligibility";
-import type { DogEligibility } from "~/orpc/checkout/contract";
 
 /*===== Dog Verdict =====*/
-// What a dog says about a course, from `checkout.eligibility` (docs/app-spec.md, F4). The server's messages are written
+// What a dog says about a course, from `checkout.eligibility` or `checkout.review` (docs/app-spec.md, F4). The server's messages are written
 // about the dog in the third person («لئو اول باید دوره‌ی … را تمام کند»), so the bubble speaks a short first-person line
 // chosen by the kind of the first problem, and the server's own message goes under it as the exact reason.
 
@@ -34,8 +33,15 @@ export type DogVerdict = {
   problems: DogVerdictProblem[];
 };
 
+/** What `getDogVerdict` needs: `DogEligibility` and a reviewed cart item both fit. */
+export type VerdictInput = {
+  dogId: string;
+  eligible: boolean;
+  problems: readonly { kind: IneligibilityKind; message: string; courseSlug: string | null }[];
+};
+
 /** Turns one dog's eligibility into the bubble's line, the reasons and the way out of each. */
-export function getDogVerdict({ dog, eligible, problems }: DogEligibility): DogVerdict {
+export function getDogVerdict({ dogId, eligible, problems }: VerdictInput): DogVerdict {
   if (eligible) return { can: true, line: CAN_LINE, problems: [] };
 
   return {
@@ -45,7 +51,7 @@ export function getDogVerdict({ dog, eligible, problems }: DogEligibility): DogV
       message: problem.message,
       way:
         problem.kind === "not-evaluated"
-          ? { label: "ارزیابی رایگان", to: `/assessment?dog=${dog.id}` }
+          ? { label: "ارزیابی رایگان", to: `/assessment?dog=${dogId}` }
           : problem.kind === "prerequisite" && problem.courseSlug
             ? { label: "این دوره را ببین", to: `/courses/${problem.courseSlug}` }
             : null,

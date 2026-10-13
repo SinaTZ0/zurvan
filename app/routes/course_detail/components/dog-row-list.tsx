@@ -1,11 +1,11 @@
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 
+import { DogThumb } from "~/components/dog-thumb";
 import { Link } from "~/components/link";
-import { MediaImage } from "~/components/media-image";
 import { SpeechBubble } from "~/components/speech-bubble";
+import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import type { DogEligibility } from "~/orpc/checkout/contract";
-import { getDogVerdict, type DogVerdict } from "~/routes/course_detail/dog-verdict";
 
 /*===== Dog Row List =====*/
 /**
@@ -38,7 +38,7 @@ export function DogRowList({
         {dogs.map((entry) => {
           const { dog } = entry;
           const isPicked = dog.id === pickedId;
-          const can = getDogVerdict(entry).can;
+          const can = getDogVerdict({ ...entry, dogId: dog.id }).can;
           const bubbleId = `dog-bubble-${dog.id}`;
 
           return (
@@ -104,20 +104,6 @@ export function DogRowList({
         })}
       </ul>
     </div>
-  );
-}
-
-/*===== Dog Thumb =====*/
-/** A 56px round photo, or the dog's first letter on a plain disc when the owner hasn't added one. */
-function DogThumb({ name, photo }: { name: string; photo: DogEligibility["dog"]["photo"] }) {
-  return (
-    <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-card text-lg font-extrabold text-muted-foreground ring-1 ring-border">
-      {photo ? (
-        <MediaImage media={photo} variant="thumb" alt={`عکس ${name}`} className="size-full" />
-      ) : (
-        <span aria-hidden>{[...name][0]}</span>
-      )}
-    </span>
   );
 }
 
