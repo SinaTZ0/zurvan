@@ -11,12 +11,12 @@ import type { UserRole } from "~/lib/user-constants";
 export const sessionContext = createContext<AuthSession>();
 
 /*===== Role Homes =====*/
-// Where a signed-in person belongs when they open a page their role can't use. The Admin's area and the partner's
-// panel aren't built yet (app-spec, Pages), so both go to the storefront until they are.
+// Where a signed-in person belongs when they open a page their role can't use. The partner's panel isn't built yet
+// (app-spec, Pages), so partners go to the storefront until it is.
 const ROLE_HOME: Record<UserRole, string> = {
   customer: "/account",
   partner: "/",
-  admin: "/",
+  admin: "/admin",
 };
 
 /** The landing page for a role. Unknown roles (a value removed from the list) go to the storefront. */
