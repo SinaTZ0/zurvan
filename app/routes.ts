@@ -9,6 +9,7 @@ export default [
     route("assessment", "routes/assessment/assessment.tsx"),
     route("help", "routes/help/help.tsx"),
     route("privacy", "routes/privacy/privacy.tsx"),
+    route("join/partner", "routes/join_partner/join-partner.tsx"),
   ]),
 
   /*===== Account (customers and partners) =====*/
