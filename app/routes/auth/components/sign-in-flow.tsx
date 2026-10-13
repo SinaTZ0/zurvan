@@ -2,16 +2,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { CodeStep } from "~/routes/auth/components/code-step";
 import { NameStep } from "~/routes/auth/components/name-step";
 import { PhoneStep } from "~/routes/auth/components/phone-step";
 
 type Step = { name: "phone" } | { name: "code"; phoneNumber: string; sentAt: number } | { name: "name" };
 
-const STEP_TITLES: Record<Step["name"], string> = {
-  phone: "شماره موبایلت را بنویس",
-  code: "کد پیامک را بنویس",
-  name: "خوش آمدی! اسمت چیست؟",
+// The dog asks, so the questions are in its voice; the instructions under each stay plain.
+const STEP_TITLES: Record<AuthStepName, string> = {
+  phone: "شماره‌ی موبایلت چنده؟",
+  code: "کد پیامک رو بگو",
+  name: "اسمت چیه؟",
 };
 
 /*===== Sign-in Flow =====*/
@@ -23,11 +25,14 @@ export function SignInFlow({
   showcase,
   redirectTo,
   needsName,
+  onStepChange,
 }: {
   showcase: boolean;
   redirectTo: string;
   /** Signed in already but never named (e.g. the tab closed after the code), so start at the name. */
   needsName: boolean;
+  /** The page's photo and bubble follow the step, so every move to a new step is reported. */
+  onStepChange: (step: AuthStepName) => void;
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -39,6 +44,7 @@ export function SignInFlow({
   const goTo = (next: Step) => {
     setHasMoved(true);
     setStep(next);
+    onStepChange(next.name);
   };
 
   async function finish() {
@@ -49,7 +55,7 @@ export function SignInFlow({
 
   return (
     <section aria-labelledby="sign-in-step-title" className="flex flex-col gap-5">
-      <h2 id="sign-in-step-title" className="text-h4">
+      <h2 id="sign-in-step-title" className="text-h3 font-bold">
         {STEP_TITLES[step.name]}
       </h2>
 

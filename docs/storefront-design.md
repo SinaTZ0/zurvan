@@ -42,6 +42,10 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 | `/help`, `/privacy`                      | Help and FAQ, Privacy (not built)                            | footer                                |
 | `/join/partner`                          | Partner Enquiry (not built)                                  | footer                                |
 
+## Login / Register
+
+`/auth` (`app/routes/auth/`) is the home hero turned into a form, outside the storefront shell: the dog's photo fills the page, the form sits in its dark half with no box, and the dog's bubble asks the question of the step. Each step has its own dog (the three hero photos): the photo crossfades and the words change; the bubble's outline draws in once, on load. On phones the photo is a band on top that fades into the form.
+
 ## Signed-in Pages
 
 - Signed-in pages are calmer and denser than the storefront: less photo, more information per screen.

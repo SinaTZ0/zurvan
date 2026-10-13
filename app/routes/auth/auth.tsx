@@ -1,9 +1,14 @@
-import { redirect } from "react-router";
+import { useState } from "react";
+import { data, redirect } from "react-router";
 
 import { BrandLogo } from "~/components/brand-logo";
+import { Link } from "~/components/link";
 import { env } from "~/env.server";
 import { auth } from "~/lib/auth.server";
-import { AuthBanner } from "~/routes/auth/components/auth-banner";
+import { referralCookieFromUrl } from "~/lib/referral.server";
+import type { AuthStepName } from "~/routes/auth/auth-scenes";
+import { AuthBubble } from "~/routes/auth/components/auth-bubble";
+import { AuthPhotos } from "~/routes/auth/components/auth-photos";
 import { SignInFlow } from "~/routes/auth/components/sign-in-flow";
 import { TrustNote } from "~/routes/auth/components/trust-note";
 
@@ -21,12 +26,19 @@ export const meta: Route.MetaFunction = () => [
 /*===== Loader =====*/
 export async function loader({ request }: Route.LoaderArgs) {
   const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
-  const session = await auth.api.getSession({ headers: request.headers });
+  const [session, referralCookie] = await Promise.all([
+    auth.api.getSession({ headers: request.headers }),
+    // A partner's link can land here too: remember its `?ref=` code so signup can attribute the customer (F7).
+    referralCookieFromUrl(request.url),
+  ]);
 
   // Signed-in people have nothing to do here, unless their new account still has no name.
   if (session?.user.firstName) throw redirect(redirectTo);
 
-  return { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session };
+  return data(
+    { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session },
+    referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined,
+  );
 }
 
 /** Only same-site paths, so a crafted `?redirectTo=` link can't send someone to another site after signing in. */
@@ -35,40 +47,54 @@ function safeRedirect(value: string | null) {
 }
 
 /*===== Page =====*/
+/**
+ * The home hero turned into a form: the dog's photo fills the page, the form sits in its dark half with no box, and a
+ * different dog asks at each step (the photo crossfades, the bubble's words change).
+ */
 export default function AuthPage({ loaderData }: Route.ComponentProps) {
   const { showcase, redirectTo, needsName } = loaderData;
+  // Which dog is up follows the flow's step; the flow reports each change.
+  const [step, setStep] = useState<AuthStepName>(needsName ? "name" : "phone");
 
   return (
-    // Desktop splits the screen in two. In RTL the first column is the right one, so the banner comes
-    // first in the DOM to sit on the right with the form on the left; it's also the reading order.
-    <main className="min-h-svh lg:grid lg:grid-cols-2">
-      {/*===== Banner =====*/}
-      {/* Sticky so it stays framed beside the form when the showcase list makes the page scroll. */}
-      <div className="sticky top-0 hidden h-svh p-4 lg:block">
-        <AuthBanner className="h-full" />
-      </div>
+    // Desktop: one full-viewport band split in two. In RTL the first column is the right one, so the form comes first in
+    // the DOM and sits on the start side; the photo is absolute behind both, so its dog fills the other half.
+    <main className="relative isolate flex min-h-svh flex-col bg-jet lg:grid lg:h-svh lg:grid-cols-2 lg:overflow-hidden">
+      {/*===== Photo =====*/}
+      <AuthPhotos step={step} />
 
-      <div className="mx-auto flex w-full max-w-sm flex-col px-4 py-10 sm:py-16 lg:justify-center">
-        {/*===== Welcome =====*/}
-        <header className="flex flex-col items-center text-center">
-          {/* Desktop shows the logo in the banner instead. */}
-          <BrandLogo className="text-[2.5rem] lg:hidden" />
-          <h1 className="mt-4 font-display text-[2rem] leading-tight font-bold text-primary lg:mt-0">
-            به آموزش K9 خوش آمدی
-          </h1>
-          <p className="mt-3 max-w-72 text-pretty text-muted-foreground">
-            با شماره موبایلت وارد شو. بار اول است؟ حسابت همین‌جا ساخته می‌شود.
-          </p>
-        </header>
+      {/*===== Form Column =====*/}
+      {/* Scrolls on its own on desktop, so the demo list never moves the photo. */}
+      <div className="z-10 flex flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:px-10 lg:pt-8 lg:pb-12">
+        {/*------ Logo ------*/}
+        {/* Phones: laid over the photo band's top start corner. Desktop: first in the column, scrolling with it. */}
+        <Link
+          to="/"
+          aria-label="آموزش K9، صفحه‌ی اصلی"
+          className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
+        >
+          <BrandLogo />
+        </Link>
 
-        {/*===== Steps =====*/}
-        <div className="mt-8">
-          <SignInFlow showcase={showcase} redirectTo={redirectTo} needsName={needsName} />
-        </div>
+        {/*------ Bubble ------*/}
+        <AuthBubble step={step} />
 
-        {/*===== Reassurance =====*/}
-        <div className="mt-8">
-          <TrustNote />
+        <div className="flex w-full max-w-md flex-col max-lg:mx-auto lg:my-auto">
+          {/*------ Welcome ------*/}
+          <header>
+            <h1 className="font-display text-h1 font-black text-balance">وارد شو، منتظرتم</h1>
+            <p className="mt-3 text-pretty text-muted-foreground">بار اول است؟ حسابت همین‌جا ساخته می‌شود.</p>
+          </header>
+
+          {/*------ Steps ------*/}
+          <div className="mt-8">
+            <SignInFlow showcase={showcase} redirectTo={redirectTo} needsName={needsName} onStepChange={setStep} />
+          </div>
+
+          {/*------ Reassurance ------*/}
+          <div className="mt-8">
+            <TrustNote />
+          </div>
         </div>
       </div>
     </main>

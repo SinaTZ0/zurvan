@@ -55,6 +55,12 @@ export function CodeStep({
   // The code step is only ever reached from the phone step, so the field always takes focus.
   useEffect(() => setFocus("code"), [setFocus]);
 
+  // The field is disabled while verifying, which drops focus. After a failed try it comes back, so the next digits go straight in.
+  const hasRootError = !!errors.root;
+  useEffect(() => {
+    if (hasRootError && !isSubmitting) setFocus("code");
+  }, [hasRootError, isSubmitting, setFocus]);
+
   const onSubmit = handleSubmit(async ({ code }) => {
     const { data, error } = await authClient.phoneNumber.verify({ phoneNumber, code });
     if (error) {
@@ -123,12 +129,13 @@ export function CodeStep({
                   disabled={isSubmitting}
                 >
                   <InputOTPGroup className="gap-2">
+                    {/* Five engraved tags: flat card, faint gold hairline, a gold ring on the one being typed in. */}
                     {Array.from({ length: SIGN_IN_CODE_LENGTH }, (_, index) => (
                       <InputOTPSlot
                         key={index}
                         index={index}
                         aria-invalid={!!errors.code}
-                        className="size-12 rounded-lg border text-lg font-bold first:rounded-lg last:rounded-lg sm:size-13"
+                        className="size-13 rounded-xl border border-border bg-card text-xl font-bold first:rounded-xl last:rounded-xl dark:bg-card"
                       />
                     ))}
                   </InputOTPGroup>
@@ -141,7 +148,7 @@ export function CodeStep({
 
         {/* Showcase mode sends no SMS, so the page says the code out loud. */}
         {showcase && (
-          <p className="rounded-lg border border-dashed border-primary/35 px-3 py-2 text-center text-sm text-muted-foreground">
+          <p className="rounded-xl border border-dashed border-primary/35 bg-card px-3 py-2 text-center text-sm text-muted-foreground">
             نسخه‌ی نمایشی: کد ورود همیشه{" "}
             <span className="font-bold text-primary">{toPersianDigits(SHOWCASE_SIGN_IN_CODE)}</span> است.
           </p>
