@@ -43,6 +43,11 @@ import { attachMedia, deleteMedia, uploadMedia } from "~/orpc/media/service";
 //
 // Showcase only: these accounts have well-known numbers and a public code, so the script refuses to run otherwise.
 
+/** A moment `days` days ago, for the demo leads' order. */
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
 /** `YYYY-MM-DD` for a date `months` months before today, so the demo dogs keep their ages whenever it is seeded. */
 function monthsAgo(months: number): string {
   const date = new Date();
@@ -344,7 +349,6 @@ async function seedDemo() {
     // Phone leads: two of Bahram's are waiting; the second partner entered one of those numbers later (so it is lost
     // to her) and one of her own. Replaced on every run, like the rest of the demo.
     await tx.delete(partnerLead).where(inArray(partnerLead.partnerId, [partnerId, secondPartnerId]));
-    const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     await tx.insert(partnerLead).values([
       { partnerId, phoneNumber: "09125550101", createdAt: daysAgo(6) },
       { partnerId, phoneNumber: "09125550102", createdAt: daysAgo(4) },
