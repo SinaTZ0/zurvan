@@ -7,9 +7,9 @@ import { and, eq } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import * as schema from "~/db/schema";
 import { env } from "~/env.server";
-import { DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR, DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR } from "~/lib/business-rules";
 import { isDemoPhoneNumber } from "~/lib/demo-accounts";
 import { isNormalizedPhoneNumber, phonePlaceholderEmail } from "~/lib/phone";
+import { readOtpLimits } from "~/lib/platform-settings.server";
 import { findPartnerForNewCustomer, readReferralCode } from "~/lib/referral.server";
 import { recentSms, sendSms } from "~/lib/sms.server";
 import {
@@ -64,11 +64,13 @@ export const auth = betterAuth({
   },
 
   /*------ Rate Limits ------*/
-  // Per IP . The per-number limits need the send log, so they live in the hook below.
+  // Per IP. The per-number limits need the send log, so they live in the hook below. Both maximums are the Admin's
+  // settings (F10), read on every request, so a change needs no restart. A lowered maximum applies to the next
+  // request; the counters of the window already running keep counting and are only compared against the new number.
   rateLimit: {
     enabled: true,
     customRules: {
-      "/phone-number/send-otp": { window: HOUR_MS / 1000, max: DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR },
+      "/phone-number/send-otp": async () => ({ window: HOUR_MS / 1000, max: (await readOtpLimits({ db })).perIp }),
     },
   },
 
@@ -126,7 +128,8 @@ export const auth = betterAuth({
         throw new APIError("TOO_MANY_REQUESTS", { code: "RESEND_TOO_SOON", message: "Wait before resending." });
       }
       // The owner signs in and out of the demo accounts while showing the site, so they skip the hourly cap.
-      if (sent.count >= DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR && !isDemoPhoneNumber(phone)) {
+      const { perPhone } = await readOtpLimits({ db });
+      if (sent.count >= perPhone && !isDemoPhoneNumber(phone)) {
         throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_CODES", message: "Too many codes this hour." });
       }
     }),
