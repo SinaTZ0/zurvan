@@ -8,6 +8,7 @@ export default [
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
     route("assessment", "routes/assessment/assessment.tsx"),
     route("help", "routes/help/help.tsx"),
+    route("privacy", "routes/privacy/privacy.tsx"),
   ]),
 
   /*===== Account (customers and partners) =====*/
