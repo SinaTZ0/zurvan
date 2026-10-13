@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
+import { env } from "~/env.server";
 import { formatNumberFa } from "~/lib/digits";
 import { findAdminPhoneNumber, notify } from "~/lib/notify.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
@@ -203,7 +204,8 @@ export async function requestEvaluation({
   await notify({
     phoneNumber: await findAdminPhoneNumber({ db }),
     kind: "evaluation-requested",
-    body: `آموزش K9: درخواست ارزیابی تازه برای ${view.dog.name}. با مشتری تماس بگیر.`,
+    // The link opens the request's drawer on the Admin's Evaluations page (F9: SMS links open the drawer directly).
+    body: `آموزش K9: درخواست ارزیابی تازه برای ${view.dog.name}. با مشتری تماس بگیر.\n${env.BETTER_AUTH_URL}/admin/evaluations?evaluation=${view.id}`,
   });
   return { kind: "success", evaluation: view };
 }
