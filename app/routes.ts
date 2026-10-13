@@ -37,6 +37,13 @@ export default [
     route("dogs", "routes/admin_dogs/admin-dogs.tsx"),
     route("dogs/:dogId", "routes/admin_dog_detail/admin-dog-detail.tsx"),
     route("partners", "routes/admin_partners/admin-partners.tsx"),
+    route("users", "routes/admin_users/admin-users.tsx"),
+    route("courses", "routes/admin_courses/admin-courses.tsx"),
+    // One form module for adding and editing, so each route needs its own id.
+    route("courses/new", "routes/admin_course_form/admin-course-form.tsx", { id: "admin-course-new" }),
+    route("courses/:slug/edit", "routes/admin_course_form/admin-course-form.tsx", { id: "admin-course-edit" }),
+    route("settings", "routes/admin_settings/admin-settings.tsx"),
+    route("sms", "routes/admin_sms/admin-sms.tsx"),
   ]),
 
   route("auth", "routes/auth/auth.tsx"),

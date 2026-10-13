@@ -11,7 +11,16 @@ import {
   adminMarkCommissionPaidProcedure,
   listMyCommissionsProcedure,
 } from "~/orpc/commission/procedure";
-import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
+import {
+  adminCreateCourseProcedure,
+  adminGetCourseProcedure,
+  adminListCoursesProcedure,
+  adminMoveCourseProcedure,
+  adminSetCourseStatusProcedure,
+  adminUpdateCourseProcedure,
+  getCourseProcedure,
+  listCoursesProcedure,
+} from "~/orpc/course/procedure";
 import { adminOverviewProcedure } from "~/orpc/dashboard/procedure";
 import {
   adminGetDogProcedure,
@@ -50,6 +59,13 @@ import {
   listMyLeadsProcedure,
   updateMyPartnerProfileProcedure,
 } from "~/orpc/partner/procedure";
+import { adminListSmsProcedure } from "~/orpc/sms/procedure";
+import {
+  adminGetSettingsProcedure,
+  adminUpdateSettingProcedure,
+  commissionPercentProcedure,
+} from "~/orpc/setting/procedure";
+import { adminListUsersProcedure, adminSetUserStatusProcedure, adminUpdateUserProcedure } from "~/orpc/user/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
@@ -74,6 +90,14 @@ export const router = implementer.router({
   course: {
     list: listCoursesProcedure,
     get: getCourseProcedure,
+    admin: {
+      list: adminListCoursesProcedure,
+      get: adminGetCourseProcedure,
+      create: adminCreateCourseProcedure,
+      update: adminUpdateCourseProcedure,
+      setStatus: adminSetCourseStatusProcedure,
+      move: adminMoveCourseProcedure,
+    },
   },
   dashboard: {
     admin: {
@@ -126,6 +150,25 @@ export const router = implementer.router({
       list: adminListPartnersProcedure,
       create: adminCreatePartnerProcedure,
       setActive: adminSetPartnerActiveProcedure,
+    },
+  },
+  sms: {
+    admin: {
+      list: adminListSmsProcedure,
+    },
+  },
+  setting: {
+    commissionPercent: commissionPercentProcedure,
+    admin: {
+      get: adminGetSettingsProcedure,
+      update: adminUpdateSettingProcedure,
+    },
+  },
+  user: {
+    admin: {
+      list: adminListUsersProcedure,
+      update: adminUpdateUserProcedure,
+      setStatus: adminSetUserStatusProcedure,
     },
   },
 });

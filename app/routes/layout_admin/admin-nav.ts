@@ -1,20 +1,27 @@
 import {
   ClipboardCheckIcon,
   GraduationCapIcon,
+  BookOpenIcon,
   HandshakeIcon,
   LayoutDashboardIcon,
+  MessageSquareTextIcon,
   PawPrintIcon,
   ReceiptTextIcon,
+  SlidersHorizontalIcon,
+  UsersIcon,
   type LucideIcon,
 } from "lucide-react";
 
 /*===== Admin Navigation =====*/
 // The Admin's pages (docs/app-spec.md, Pages), in the order he works through a day: answer the requests, call the
-// customers, check the money. Add each page here when it is built; the rail and the phone's bottom tabs both read this
+// customers, check the money. After those come the setup pages (courses, users, SMS, settings): the list has two groups
+// and the rail and the «بیشتر» sheet draw a hairline between them. Add each page here when it is built; the rail and the phone's bottom tabs both read this
 // list. With more than four pages the tabs keep the first three and put the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`).
 
 /** One page in the Admin's rail and bottom tabs. */
 export type AdminNavItem = {
+  /** `daily` pages come first; `setup` pages follow after a hairline. Items must be listed with the daily ones first. */
+  group: "daily" | "setup";
   label: string;
   to: string;
   icon: LucideIcon;
@@ -27,12 +34,16 @@ export type AdminNavItem = {
 };
 
 export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
-  { label: "نمای کلی", to: "/admin", icon: LayoutDashboardIcon, end: true },
-  { label: "ارزیابی‌ها", to: "/admin/evaluations", icon: ClipboardCheckIcon },
-  { label: "ثبت‌نام‌ها", to: "/admin/enrollments", icon: GraduationCapIcon },
-  { label: "پرداخت‌ها", to: "/admin/payments", icon: ReceiptTextIcon },
-  { label: "همکاران", to: "/admin/partners", icon: HandshakeIcon },
-  { label: "سگ‌ها", to: "/admin/dogs", icon: PawPrintIcon },
+  { group: "daily", label: "نمای کلی", to: "/admin", icon: LayoutDashboardIcon, end: true },
+  { group: "daily", label: "ارزیابی‌ها", to: "/admin/evaluations", icon: ClipboardCheckIcon },
+  { group: "daily", label: "ثبت‌نام‌ها", to: "/admin/enrollments", icon: GraduationCapIcon },
+  { group: "daily", label: "پرداخت‌ها", to: "/admin/payments", icon: ReceiptTextIcon },
+  { group: "daily", label: "همکاران", to: "/admin/partners", icon: HandshakeIcon },
+  { group: "daily", label: "سگ‌ها", to: "/admin/dogs", icon: PawPrintIcon },
+  { group: "setup", label: "دوره‌ها", to: "/admin/courses", icon: BookOpenIcon },
+  { group: "setup", label: "کاربران", to: "/admin/users", icon: UsersIcon },
+  { group: "setup", label: "پیامک‌ها", to: "/admin/sms", icon: MessageSquareTextIcon },
+  { group: "setup", label: "تنظیمات", to: "/admin/settings", icon: SlidersHorizontalIcon },
 ];
 
 /** How many pages the phone's tab bar shows when there are more than four; the rest wait in the «بیشتر» sheet. */

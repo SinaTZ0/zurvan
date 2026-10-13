@@ -7,6 +7,9 @@ import { enrollmentContract } from "~/orpc/enrollment/contract";
 import { evaluationContract } from "~/orpc/evaluation/contract";
 import { mediaContract } from "~/orpc/media/contract";
 import { partnerContract } from "~/orpc/partner/contract";
+import { settingContract } from "~/orpc/setting/contract";
+import { smsContract } from "~/orpc/sms/contract";
+import { userContract } from "~/orpc/user/contract";
 
 /*===== API Contract =====*/
 // Source of truth for the API. The browser client is typed from this, never from the router.
@@ -20,4 +23,7 @@ export const contract = {
   evaluation: evaluationContract,
   media: mediaContract,
   partner: partnerContract,
+  setting: settingContract,
+  sms: smsContract,
+  user: userContract,
 };

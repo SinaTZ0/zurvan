@@ -95,8 +95,14 @@ export function AdminBottomTabs({ items }: { items: readonly AdminNavItem[] }) {
           >
             <SheetTitle className="px-1 text-base font-extrabold">صفحه‌های دیگر</SheetTitle>
             <ul className="flex flex-col gap-1">
-              {more.map((item) => (
-                <li key={item.to}>
+              {more.map((item, index) => (
+                <li
+                  key={item.to}
+                  // The first setup page after a daily one starts a new group.
+                  className={cn(
+                    index > 0 && item.group !== more[index - 1]?.group && "mt-2 border-t border-foreground/10 pt-3",
+                  )}
+                >
                   <NavLink
                     to={item.to}
                     end={item.end}

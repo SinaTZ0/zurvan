@@ -6,16 +6,22 @@ import type { AdminNavItem } from "~/routes/layout_admin/admin-nav";
 
 /*===== Admin Rail =====*/
 /**
- * Desktop: the Admin's pages as a column at the start side, under the top bar. A column, not header tabs, because ten
- * pages will live here. The current page sits on a raised surface with a flat-gold mark at its start edge.
+ * Desktop: the Admin's pages as a column at the start side, under the top bar. A column, not header tabs, because eleven
+ * pages live here, in two groups (the daily work, then the setup pages) with a hairline between them. The current page sits on a raised surface with a flat-gold mark at its start edge.
  */
 export function AdminRail({ items }: { items: readonly AdminNavItem[] }) {
   return (
     <aside className="hidden w-56 shrink-0 border-e border-foreground/10 lg:block">
       <nav aria-label="مدیریت" className="sticky top-14 p-3">
         <ul className="flex flex-col gap-1">
-          {items.map((item) => (
-            <li key={item.to}>
+          {items.map((item, index) => (
+            <li
+              key={item.to}
+              // The group's first item carries the hairline and the gap, so the groups read as two lists.
+              className={cn(
+                item.group !== items[index - 1]?.group && index > 0 && "mt-2 border-t border-foreground/10 pt-3",
+              )}
+            >
               <NavLink
                 to={item.to}
                 end={item.end}
