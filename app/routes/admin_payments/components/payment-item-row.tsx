@@ -1,5 +1,6 @@
 import { CustomerContact } from "~/components/customer-contact";
 import { DogThumb } from "~/components/dog-thumb";
+import { Link } from "~/components/link";
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { formatToman } from "~/lib/course-format";
 import type { AdminPayment } from "~/orpc/checkout/contract";
@@ -54,7 +55,12 @@ export function PaymentItemRow({
 
       <div className="min-w-0 flex-1 basis-40">
         <p className="text-sm font-bold">
-          <bdi>{item.dog.name}</bdi>
+          <Link
+            to={`/admin/dogs/${encodeURIComponent(item.dog.id)}`}
+            className="rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <bdi>{item.dog.name}</bdi>
+          </Link>
         </p>
         <p className="text-sm text-pretty text-muted-foreground">{item.course.title}</p>
         {!item.paidNotEnrolled && enrollment && isEnrollmentStatus(enrollment.status) && (

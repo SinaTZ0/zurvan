@@ -1,4 +1,5 @@
 import { DogThumb } from "~/components/dog-thumb";
+import { Link } from "~/components/link";
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { Button } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
@@ -32,7 +33,13 @@ export function EnrollmentLine({
         <DogThumb name={dog.name} photo={dog.photo} className="size-12" />
         <div className="min-w-0">
           <p className="truncate text-sm font-bold">
-            <bdi>{dog.name}</bdi>
+            {/* The dog's name opens its page (F2); the line's buttons stay the way to end the enrollment. */}
+            <Link
+              to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+              className="rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <bdi>{dog.name}</bdi>
+            </Link>
           </p>
           <p className="mt-0.5 text-sm text-pretty">
             {course.title}{" "}

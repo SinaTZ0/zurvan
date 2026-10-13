@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { CustomerContact } from "~/components/customer-contact";
 import { DogThumb } from "~/components/dog-thumb";
+import { Link } from "~/components/link";
 import { EvaluationStatusBadge } from "~/components/evaluation-status-badge";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from "~/components/ui/sheet";
@@ -99,7 +100,15 @@ function DrawerBody({ evaluation, onAnswer }: { evaluation: AdminEvaluation; onA
         <DogThumb name={dog.name} photo={dog.photo} className="size-14" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <SheetTitle className="truncate text-lg font-extrabold">{dog.name}</SheetTitle>
+            {/* The dog's name opens its page (F2). The row behind the drawer is a stretched link, so the link lives here. */}
+            <SheetTitle className="truncate text-lg font-extrabold">
+              <Link
+                to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+                className="rounded-sm underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <bdi>{dog.name}</bdi>
+              </Link>
+            </SheetTitle>
             <EvaluationStatusBadge status={status} />
           </div>
           <SheetDescription className="mt-0.5 text-xs">
