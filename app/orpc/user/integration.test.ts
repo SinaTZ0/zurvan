@@ -185,4 +185,24 @@ describe("listing users", () => {
     // oxlint-disable-next-line unicorn/no-array-sort -- the project's TypeScript lib has no `toSorted`
     expect(times).toEqual([...times].sort((a, b) => b - a));
   });
+
+  it("skips an account of a retired role instead of failing the whole list", async () => {
+    const retiredId = `test-retired-${runId}`;
+    await db.insert(user).values({
+      id: retiredId,
+      name: "Retired trainer",
+      firstName: "Retired",
+      lastName: "Trainer",
+      email: phonePlaceholderEmail(`0912${runId}`),
+      role: "trainer",
+    });
+
+    try {
+      const users = await adminListUsers(caller);
+      expect(users.some((entry) => entry.id === retiredId)).toBe(false);
+      expect(users.some((entry) => entry.id === customer.id)).toBe(true);
+    } finally {
+      await db.delete(user).where(eq(user.id, retiredId));
+    }
+  });
 });

@@ -1,8 +1,8 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { dog, user } from "~/db/schema";
-import type { UserStatus } from "~/lib/user-constants";
+import { USER_ROLES, type UserStatus } from "~/lib/user-constants";
 
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
@@ -25,6 +25,9 @@ export type UserRecord = {
 /**
  * Users newest first (or the one `id`), each with his dog count from a single grouped join, so the list is one query
  * however many users there are. `id` as the tie-breaker keeps the order stable for users created in the same instant.
+ *
+ * Only users with a current role are read: an account of a retired role (the old trainer accounts) can't sign in and
+ * would fail the output check, taking the whole list down with it.
  */
 export async function findUsers({ db, id }: Executor & { id?: string }): Promise<UserRecord[]> {
   const dogCounts = db
@@ -48,7 +51,7 @@ export async function findUsers({ db, id }: Executor & { id?: string }): Promise
     })
     .from(user)
     .leftJoin(dogCounts, eq(dogCounts.ownerId, user.id))
-    .where(id ? eq(user.id, id) : undefined)
+    .where(and(inArray(user.role, USER_ROLES), id ? eq(user.id, id) : undefined))
     .orderBy(desc(user.createdAt), desc(user.id));
 }
 
