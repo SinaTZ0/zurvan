@@ -81,6 +81,12 @@ export function BuyCard({
           {buy.mode !== "evaluation" && (
             <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
               بعد از پرداخت، {HEAD_TRAINER.firstName} زنگ می‌زنه و با هم هماهنگ می‌کنیم.
+              <Link
+                to="/help#how-buying-works"
+                className="mt-1 block w-fit rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                خرید چطوری کار می‌کنه؟
+              </Link>
             </p>
           )}
         </div>

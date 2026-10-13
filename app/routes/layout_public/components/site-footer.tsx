@@ -5,7 +5,6 @@ import { Link } from "~/components/link";
 import { CENTER_PHONE } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
-// Some pages behind these links aren't built yet (app-spec, Pages); the structure is what matters for now.
 const FOOTER_GROUPS = [
   {
     title: "دوره‌ها",

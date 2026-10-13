@@ -4,7 +4,7 @@ import { Link } from "~/components/link";
 import { CENTER_PHONE } from "~/lib/contact";
 
 /*===== Account Footer =====*/
-/** A thin last line instead of the storefront's footer: who to call, and the refund rules people look for here. */
+/** A thin last line instead of the storefront's footer: who to call, and the FAQ where people look for how buying works. */
 export function AccountFooter() {
   return (
     <footer className="border-t border-foreground/10">
@@ -19,8 +19,8 @@ export function AccountFooter() {
             {CENTER_PHONE.display}
           </span>
         </a>
-        <Link to="/help/refunds" className="rounded-sm py-1 transition-colors hover:text-foreground">
-          قوانین لغو و بازپرداخت
+        <Link to="/help" className="rounded-sm py-1 transition-colors hover:text-foreground">
+          سؤال‌های پرتکرار
         </Link>
       </div>
     </footer>
