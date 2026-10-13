@@ -125,7 +125,7 @@ The current local SeaweedFS (`SeaweedFS/docker-compose.yml`) runs S3 **without a
 
 ## Videos
 
-Behavior request videos (spec 3.7, business-logic B15) are the one private upload. They share the bucket and the S3 client, but not the image pipeline: nothing is converted or resized, and nginx never serves them.
+Videos a customer attaches to a request are the one private upload. Today they belong to behavior requests, which are dropped; evaluation requests reuse them ([app-spec.md](app-spec.md) F3). They share the bucket and the S3 client, but not the image pipeline: nothing is converted or resized, and nginx never serves them.
 
 ```text
 upload:  browser ──multipart──▶ POST /api/behavior-videos ──S3 PUT──▶ SeaweedFS (bucket zurvann)

@@ -81,9 +81,9 @@ Make sure to deploy the output of `npm run build`
 │   └── server/    # Server-side code
 ```
 
-## Entity Diagrams
+## How the App Works
 
-The Phase One entity-relationship diagram lives in [docs/app-phase-one.md](docs/app-phase-one.md) (section 4) as a [Mermaid](https://mermaid.js.org/) `erDiagram`. It renders on GitHub and in most Markdown previews, so there's nothing to install or render.
+[docs/app-spec.md](docs/app-spec.md) describes every feature and page. The database schema is in `app/db/schema.ts`.
 
 ## Styling
 

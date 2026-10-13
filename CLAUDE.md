@@ -11,19 +11,25 @@ This is a React Router v8 application using Framework Mode. The application's us
 
 ## Product Scope
 
-- [docs/app-spec.md](docs/app-spec.md) is the source of truth for how the app works, organized by feature (F1–F18). It replaces the phase-one docs (`docs/app-phase-one*.md`, `docs/foundations-plan.md`, `docs/business-logic.md`) wherever they disagree. [docs/zurvan-courses.md](docs/zurvan-courses.md) is still the source for the courses' content.
-- This is a dog-training center, not a multi-service pet marketplace. The head trainer is the owner and the one Admin; staff trainers teach the lessons he assigns them. The site's job is to sell him and his personal brand: copy and design should build trust in him, not in an anonymous pool of "verified trainers".
+- [docs/app-spec.md](docs/app-spec.md) is the source of truth for how the app works, organized by feature (F1–F12). Code comments that cite the deleted phase-one docs (`app-phase-one.md`, `business-logic.md`, `foundations-plan.md`, the design briefs) are out of date; follow app-spec. [docs/zurvan-courses.md](docs/zurvan-courses.md) is still the source for the courses' content.
+- This is a dog-training center, not a multi-service pet marketplace. The head trainer is the owner and the one Admin. The home page introduces three trainers as equals (him and two colleagues, `TeamSection`), but only he has an account: there are no trainer accounts or trainer pages in the app. The site sells real, named people: copy and design should build trust in them, never in an anonymous pool of "verified trainers".
 - Training works like hiring a private tutor: lessons are with one dog, at the owner's home or outside, and boarding is optional. Don't design around group classes, seats, class minimums or a training venue.
-- A new dog starts with a free evaluation. Once it is evaluated, the customer requests courses; the Admin accepts them (or assigns them directly), plans every lesson on his calendar, and the customer settles what they owe from their cart. Behavior requests, course tests, assessment slots and trainer-submitted courses are dropped.
-- Dog profiles and course settings are still being worked out with the owner: keep what exists and don't build on guesses (app-spec F2, F17).
+- It is a small shop whose items are locked: a new dog starts with a free evaluation (the customer requests it; the Admin marks it evaluated or rejects it). An evaluated dog can buy courses whose prerequisites it has passed, at the course's fixed price, paid upfront from a browser-only cart. The Admin then calls the customer, and marks the enrollment done when the training is over, which unlocks the next courses.
+- The app records and shows; it doesn't run the business. Lesson times and sessions are handled by the Admin in real life: no calendar, lesson tracking, course requests to accept, trainer earnings, payouts or refunds. Admin screens are plain lists with one-click buttons and an overview dashboard. Behavior requests, course tests, assessment slots and trainer-submitted courses are dropped.
+- Dog profiles and course settings are still being worked out with the owner: keep what exists and don't build on guesses (app-spec F2, F8).
 - The owner's "every dog takes CGC / almost every dog takes BMC" is never said on the site.
 - The head trainer's details live in `app/lib/head-trainer.ts`; the name, years and photo there are placeholders until the owner sends the real ones.
+
+## Design and Legacy Pages
+
+- [docs/storefront-design.md](docs/storefront-design.md) is the look and voice of the whole site: pure black and flat gold, dark dog photos everywhere, and the dog talking to the visitor in chalk speech bubbles. The mockups in `image-reference/` are its visual reference. Only the home page is built in this look so far.
+- **Before changing any page or shared component, check [docs/legacy-pages.md](docs/legacy-pages.md).** If it's listed, follow its verdict: **Redesign** (a small fix goes in as is; a layout change means redesigning the whole page first), **Rebuild** (build the app-spec page new, don't patch the old one), or **Retire** (the feature is dropped: don't build on it, tell the user). Update the doc in the same commit when a row is done.
 
 ## Working Directory
 
 - Run project commands from the repository root.
 - After making code changes, run `npm run lint` and fix all errors.
-- Put temporary scripts, diagnostics, experiments, and logs in `./.tmp-codex/`.
+- Put temporary scripts, diagnostics, experiments, and logs in `./.tmp-claude/`.
 - Create `./.tmp-claude/` as needed. It is gitignored and must never contain deliverable source files.
 
 ## Git

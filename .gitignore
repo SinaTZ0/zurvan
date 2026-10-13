@@ -20,3 +20,7 @@
 
 # Local SeaweedFS (media storage) Docker config, kept per developer
 /SeaweedFS/
+
+# Generated photo originals (exported to public/photo/) and page screenshots, kept locally
+/image-reference/generated/
+/image-reference/localhost_*.png

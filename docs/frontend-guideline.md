@@ -103,11 +103,11 @@ Not every slice needs every file. Start with the route module alone and split it
   values in components.
 - Extract a component when a pattern repeats, not a utility class.
 - The look (colour, surface layers, elevation, type, motion) is defined by the tokens in `app/app.css`; design new
-  pages with [`design-flow.md`](./design-flow.md) and the `frontend-design` skill. Public pages follow
-  [`storefront-design.md`](./storefront-design.md), which records what the home page settled.
-- `font-display` (Amiri, bold only) is for the hero headline and storefront section titles. Everything else is
-  Vazirmatn. Gold leaf (`gold-leaf`, `text-gold-leaf`) and the `surface-inverse` band are used sparingly: see the
-  storefront doc for where.
+  pages with [`design-flow.md`](./design-flow.md) and the `frontend-design` skill. Every page follows
+  [`storefront-design.md`](./storefront-design.md), which records what the home page settled. Pages still in the old
+  look are listed in [`legacy-pages.md`](./legacy-pages.md): read it before changing one.
+- `font-display` (Estedad, heavy) is for the hero headline and section titles, `font-hand` (Marhey) for the dog's
+  speech bubbles only. Everything else is Vazirmatn. Gold is flat: see the storefront doc for where it goes.
 - Storefront headings and section spacing use the fluid `clamp()` tokens (`text-h1`, `px-site`, `py-section-md`,
   `site-container`). Component internals and dashboards use Tailwind's static scale.
 - Animate only `transform` and `opacity`, and put movement behind `motion-safe:`. Bare `transition` utilities already
