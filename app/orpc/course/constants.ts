@@ -14,6 +14,12 @@ export const COURSE_FAMILIES = [
 
 export type CourseFamily = (typeof COURSE_FAMILIES)[number];
 
+/** The families the Admin can pick: `behavior` is dropped in app-spec. */
+export const SELLABLE_COURSE_FAMILIES = COURSE_FAMILIES.filter((family) => family !== "behavior") as [
+  Exclude<CourseFamily, "behavior">,
+  ...Exclude<CourseFamily, "behavior">[],
+];
+
 /** Only `approved` courses are on sale; `archived` ones can't be bought but their enrollments continue (F8). */
 export const COURSE_STATUSES = ["draft", "approved", "archived"] as const;
 

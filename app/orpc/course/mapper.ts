@@ -1,7 +1,12 @@
-import { COURSE_FAMILIES, COURSE_PLACES } from "~/orpc/course/constants";
-import type { CourseFamily, CoursePlace } from "~/orpc/course/constants";
-import type { Course } from "~/orpc/course/contract";
-import type { CourseRecord, PrerequisiteRecord } from "~/orpc/course/repository";
+import { COURSE_FAMILIES, COURSE_PLACES, COURSE_STATUSES } from "~/orpc/course/constants";
+import type { CourseFamily, CoursePlace, CourseStatus } from "~/orpc/course/constants";
+import type { AdminCourse, Course } from "~/orpc/course/contract";
+import type {
+  CourseRecord,
+  EnrollmentCountRecord,
+  PrerequisiteRecord,
+  RequiredByRecord,
+} from "~/orpc/course/repository";
 
 /*===== Public Course =====*/
 /**
@@ -42,7 +47,42 @@ export function toPublicCourse({
   };
 }
 
+/*===== Admin Course =====*/
+/**
+ * The public shape plus what only the Admin needs: status, catalogue position, enrollment counts and the courses that
+ * need this one. A course nobody enrolled in has no count row, which reads as zero.
+ */
+export function toAdminCourse({
+  record,
+  prerequisites,
+  counts,
+  requiredBy,
+}: {
+  record: CourseRecord;
+  prerequisites: PrerequisiteRecord[];
+  counts: EnrollmentCountRecord | undefined;
+  requiredBy: RequiredByRecord[];
+}): AdminCourse {
+  return {
+    ...toPublicCourse({ record, prerequisites }),
+    // An unknown stored status reads as a draft: not on sale, and the Admin can still open and fix it.
+    status: isCourseStatus(record.status) ? record.status : "draft",
+    position: record.position,
+    activeEnrollmentCount: counts?.active ?? 0,
+    enrollmentCount: counts?.total ?? 0,
+    requiredBy: requiredBy.map(({ slug, title, status }) => ({
+      slug,
+      title,
+      status: isCourseStatus(status) ? status : "draft",
+    })),
+  };
+}
+
 /*===== Type Guards =====*/
+function isCourseStatus(value: string): value is CourseStatus {
+  return (COURSE_STATUSES as readonly string[]).includes(value);
+}
+
 function isCourseFamily(value: string): value is CourseFamily {
   return (COURSE_FAMILIES as readonly string[]).includes(value);
 }
