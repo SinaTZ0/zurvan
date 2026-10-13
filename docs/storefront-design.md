@@ -49,6 +49,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 - The wording and the one main action for each state live in `app/lib/dog-status.ts` (`getDogStatus`), so every page says the same thing.
 - One main action per dog card. The quiet «پس گرفتن درخواست» shows only when the dog is just waiting for its evaluation.
 - The Dashboard (`/account`, `app/routes/account_home/`) has no orchestrated moment. Dog Detail (`/account/dogs/:dogId`, `app/routes/account_dog_detail/`) has one: the header bubble drawing in.
+- The Cart (`/account/cart`) has one orchestrated moment: the dog's bubble drawing in on the payment banner. Purchases (`/account/purchases`) has none.
 
 ## Pieces
 
@@ -58,6 +59,9 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 | `ChalkDoodle`              | `app/components/chalk-doodle.tsx`               | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                |
 | `DogPhoto`                 | `app/components/dog-photo.tsx`                  | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                               |
 | `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                                                |
+| `DogThumb`                 | `app/components/dog-thumb.tsx`                  | A small round photo of the dog, or its first letter on a disc, for lists of dogs.                                                                                                                                                                             |
+| `DogEmptyState`            | `app/components/dog-empty-state.tsx`            | The cut-out dog with a bubble, a title, a sentence and one gold button, for an empty signed-in page.                                                                                                                                                          |
+| `PersonMenu`               | `app/components/person-menu.tsx`                | The signed-in person's pill and menu, shared by the storefront and account headers.                                                                                                                                                                           |
 
 These live in `app/components/` because several routes use them.
 

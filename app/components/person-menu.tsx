@@ -1,6 +1,7 @@
+import { cn } from "cn";
 import { ChevronDownIcon, LogOutIcon } from "lucide-react";
-import { useNavigate } from "react-router";
 
+import { Link } from "~/components/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,31 +11,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { BOTTOM_TABS_FROM, type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
-import { useSignOut } from "~/routes/layout_account/hooks/use-sign-out";
+import { useSignOut } from "~/hooks/use-sign-out";
+
+/*===== Types =====*/
+/** One link in the person menu. */
+export type PersonMenuLink = {
+  label: string;
+  to: string;
+  /** Listed only below `lg`: the account header already shows it as a tab on desktop. */
+  phonesOnly?: boolean;
+};
 
 /*===== Person Menu =====*/
 /**
- * The signed-in person: their initial and first name, opening a menu with their number and «خروج». On phones, while
- * there are too few sections for a bottom tab bar, the menu also lists the sections.
+ * The signed-in person in a header: their initial and first name, opening a menu with their number, the links the
+ * caller passes and «خروج». Shared by the account header and the storefront header, so signing out looks and behaves
+ * the same in both.
  */
 export function PersonMenu({
   firstName,
   phoneNumber,
   roleLabel,
-  navItems,
-  exitLink,
+  links,
 }: {
   firstName: string;
   phoneNumber: string | null;
-  /** Shown under the name where the role isn't obvious, e.g. «مربی ارشد» in the trainer area. */
+  /** Shown under the name where the role isn't obvious, e.g. «مربی ارشد». */
   roleLabel?: string;
-  navItems: readonly DeskNavItem[];
-  exitLink: DeskExitLink;
+  links: readonly PersonMenuLink[];
 }) {
-  const navigate = useNavigate();
   const signOut = useSignOut();
-  const sectionsInMenu = navItems.length < BOTTOM_TABS_FROM;
 
   return (
     <DropdownMenu>
@@ -54,6 +60,7 @@ export function PersonMenu({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-60 p-1.5">
+        {/*------ Who ------*/}
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-2 py-1.5">
             <span className="block text-sm font-bold text-foreground">{firstName}</span>
@@ -66,28 +73,19 @@ export function PersonMenu({
           </DropdownMenuLabel>
         </DropdownMenuGroup>
 
-        {/*------ Sections (phones) ------*/}
-        {sectionsInMenu && (
-          <div className="lg:hidden">
-            <DropdownMenuSeparator />
-            {navItems.map((item) => (
-              <DropdownMenuItem
-                key={item.to}
-                className="px-2 py-2 text-sm"
-                onClick={() => void navigate(item.to, { viewTransition: true })}
-              >
-                {item.label}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem
-              className="px-2 py-2 text-sm"
-              onClick={() => void navigate(exitLink.to, { viewTransition: true })}
-            >
-              {exitLink.label}
-            </DropdownMenuItem>
-          </div>
-        )}
+        {/*------ Links ------*/}
+        {links.length > 0 && <DropdownMenuSeparator className={cn(links.every((l) => l.phonesOnly) && "lg:hidden")} />}
+        {links.map((link) => (
+          <DropdownMenuItem
+            key={link.to}
+            className={cn("px-2 py-2 text-sm", link.phonesOnly && "lg:hidden")}
+            render={<Link to={link.to} />}
+          >
+            {link.label}
+          </DropdownMenuItem>
+        ))}
 
+        {/*------ Sign out ------*/}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

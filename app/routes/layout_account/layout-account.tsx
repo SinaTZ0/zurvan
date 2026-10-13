@@ -1,10 +1,11 @@
 import { Outlet } from "react-router";
 
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
-import { ACCOUNT_EXIT_LINK, ACCOUNT_NAV_ITEMS } from "~/routes/layout_account/account-nav";
+import { ACCOUNT_EXIT_LINK } from "~/routes/layout_account/account-nav";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
 import { AccountHeader } from "~/routes/layout_account/components/account-header";
 import { BottomTabs } from "~/routes/layout_account/components/bottom-tabs";
+import { useAccountNavItems } from "~/routes/layout_account/hooks/use-account-nav-items";
 
 import type { Route } from "./+types/layout-account";
 
@@ -22,12 +23,14 @@ export function loader({ context }: Route.LoaderArgs) {
 /*===== Account Layout =====*/
 /** The signed-in shell for customers and partners at `/account`. */
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
+  const navItems = useAccountNavItems();
+
   return (
     <div className="flex min-h-svh flex-col">
       <AccountHeader
         firstName={loaderData.firstName}
         phoneNumber={loaderData.phoneNumber}
-        navItems={ACCOUNT_NAV_ITEMS}
+        navItems={navItems}
         navLabel="حساب من"
         exitLink={ACCOUNT_EXIT_LINK}
       />
@@ -35,7 +38,7 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
         <Outlet />
       </main>
       <AccountFooter />
-      <BottomTabs items={ACCOUNT_NAV_ITEMS} label="حساب من" />
+      <BottomTabs items={navItems} label="حساب من" />
     </div>
   );
 }

@@ -50,7 +50,7 @@ export function BottomTabs({ items, label }: { items: readonly DeskNavItem[]; la
                 }
               >
                 {item.label}
-                <NavBadge count={item.badge} />
+                <NavBadge count={item.badge} label={item.badgeLabel} />
               </NavLink>
             </li>
           ))}

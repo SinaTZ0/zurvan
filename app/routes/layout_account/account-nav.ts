@@ -1,3 +1,5 @@
+import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
+
 /*===== Account Navigation =====*/
 // The account area's sections, shared by the desktop tabs and the phone menu. Only built pages are listed; add each
 // one here when its page exists (docs/customer-area-design.md, "Shell"). From three sections on, phones get a bottom
@@ -11,15 +13,23 @@ export type DeskNavItem = {
   end?: boolean;
   /** A count shown beside the label, e.g. requests waiting for the Admin. Nothing shows for 0. */
   badge?: number;
+  /** What a screen reader says after the count; «در انتظار» when absent. The Cart's count is items, not waiting requests. */
+  badgeLabel?: string;
 };
 
 /** The link at the end of the header, back out of the desk. */
 export type DeskExitLink = { label: string; to: string };
 
-// The pages of docs/app-spec.md (Dashboard, Cart, Purchases) are listed here as they are rebuilt.
-export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [{ label: "سگ‌های من", to: "/account", end: true }];
+// The pages of docs/app-spec.md (Dashboard, Cart, Purchases). The Cart's count is added at render time by
+// `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
+export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [
+  { label: "سگ‌های من", to: "/account", end: true },
+  { label: "سبد", to: CART_PATH },
+  { label: "خریدها", to: PURCHASES_PATH },
+];
 
-export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };
+// The course catalogue page isn't built, so this goes to the home page's course grid.
+export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/#courses" };
 
 /** Phones show a bottom tab bar once there are this many sections. */
 export const BOTTOM_TABS_FROM = 3;

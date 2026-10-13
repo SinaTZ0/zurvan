@@ -34,7 +34,7 @@ export function AccountTabs({
               }
             >
               {item.label}
-              <NavBadge count={item.badge} />
+              <NavBadge count={item.badge} label={item.badgeLabel} />
             </NavLink>
           </li>
         ))}

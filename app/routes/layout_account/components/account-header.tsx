@@ -1,8 +1,8 @@
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import type { DeskExitLink, DeskNavItem } from "~/routes/layout_account/account-nav";
+import { PersonMenu } from "~/components/person-menu";
+import { BOTTOM_TABS_FROM, type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
 import { AccountTabs } from "~/routes/layout_account/components/account-tabs";
-import { PersonMenu } from "~/routes/layout_account/components/person-menu";
 
 /*===== Account Header =====*/
 /**
@@ -26,6 +26,13 @@ export function AccountHeader({
   navLabel: string;
   exitLink: DeskExitLink;
 }) {
+  // Below three sections phones have no bottom tab bar, so the person menu lists the sections and the exit link for
+  // them. Desktop always shows them in the header.
+  const sectionsInMenu = navItems.length < BOTTOM_TABS_FROM;
+  const menuLinks = sectionsInMenu
+    ? [...navItems, exitLink].map(({ label, to }) => ({ label, to, phonesOnly: true }))
+    : [];
+
   return (
     <header className="border-b border-foreground/10 bg-jet">
       <div className="site-container flex h-16 items-stretch gap-6 lg:h-20">
@@ -45,13 +52,7 @@ export function AccountHeader({
           >
             {exitLink.label}
           </Link>
-          <PersonMenu
-            firstName={firstName}
-            phoneNumber={phoneNumber}
-            roleLabel={roleLabel}
-            navItems={navItems}
-            exitLink={exitLink}
-          />
+          <PersonMenu firstName={firstName} phoneNumber={phoneNumber} roleLabel={roleLabel} links={menuLinks} />
         </div>
       </div>
     </header>
