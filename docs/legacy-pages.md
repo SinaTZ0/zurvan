@@ -24,18 +24,9 @@ When a page is redesigned or rebuilt, remove its row and add it to the "Built in
 
 ## Customer Pages (`/account`)
 
-| URL                           | Route slice        | app-spec page                                            | Verdict      | Notes                                                                                                                                                                                                                               |
-| ----------------------------- | ------------------ | -------------------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/account/dogs/new`, `…/edit` | `account_dog_form` | Dog Form (F2)                                            | **Redesign** | Fields are unchanged. The delete button is gone (dogs are never deleted). Birth date and breed are locked once the dog is evaluated (shown read-only, the stored values submitted unchanged), which is done. Only the look is left. |
-| not built                     | —                  | Profile Settings, Partner Dashboard, Leads and Customers | —            | Build new, in the new look.                                                                                                                                                                                                         |
-
-## Shared Components in the Old Look
-
-In `app/components/`. A component follows the verdicts of the pages that use it: when its last legacy user is gone, retire it or bring it into the new look with the first new page that needs it.
-
-| Component          | Used by            | Verdict      | Notes                                        |
-| ------------------ | ------------------ | ------------ | -------------------------------------------- |
-| `segmented-choice` | `account_dog_form` | **Redesign** | Generic; restyle when their page is rebuilt. |
+| URL       | Route slice | app-spec page                                            | Verdict | Notes                       |
+| --------- | ----------- | -------------------------------------------------------- | ------- | --------------------------- |
+| not built | —           | Profile Settings, Partner Dashboard, Leads and Customers | —       | Build new, in the new look. |
 
 ## Built in the New Look
 
@@ -48,3 +39,4 @@ In `app/components/`. A component follows the verdicts of the pages that use it:
 - Cart (`/account/cart`): `app/routes/account_cart/`. A signed-in customer page: each dog packs its own bag (photo, the dog's bubble saying what it is about to start, its courses), items read fresh from `checkout.review` with unavailable ones marked with the reason and the way out, the server's total, «پرداخت» to the gateway, and the gateway's result as a banner where the dog speaks (the page's one orchestrated moment; `paid` empties the browser cart once).
 - Purchases (`/account/purchases`): `app/routes/account_purchases/`. A signed-in customer page: one slip per payment, with a stub (date, status, total, reference, card) and a line per course with the dog, its enrollment status, or a plain note for a paid item with no enrollment.
 - Account shell (`app/routes/layout_account/`): tabs «سگ‌های من», «سبد» (count badge) and «خریدها», bottom tabs on phones; the person menu is shared with the storefront header (`app/components/person-menu.tsx`). The public header (`app/routes/layout_public/`) knows the session: a signed-in customer sees the cart icon with its count and a person menu instead of «ورود یا ثبت‌نام».
+- Dog Form (`/account/dogs/new`, `/account/dogs/:dogId/edit`): `app/routes/account_dog_form/`. A signed-in customer page where the dog's own page is written as the owner fills the form: a sticky column with its photo (the photo is the picker) or engraved tag, its name stamped in as it is typed, the facts line and a bubble that follows the section; the form in three sections with pill choices; birth date and breed shown as locked plates once the dog is evaluated. `segmented-choice` is retired (the pills live in the slice).

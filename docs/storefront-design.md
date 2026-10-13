@@ -50,6 +50,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 - One main action per dog card. The quiet «پس گرفتن درخواست» shows only when the dog is just waiting for its evaluation.
 - The Dashboard (`/account`, `app/routes/account_home/`) has no orchestrated moment. Dog Detail (`/account/dogs/:dogId`, `app/routes/account_dog_detail/`) has one: the header bubble drawing in.
 - The Cart (`/account/cart`) has one orchestrated moment: the dog's bubble drawing in on the payment banner. Purchases (`/account/purchases`) has none.
+- The Dog Form (`/account/dogs/new` and `…/:dogId/edit`, `app/routes/account_dog_form/`) has one orchestrated moment, the dog's bubble drawing in. The dog column is the dog's own page being written (photo or tag, name stamped as typed, a bubble following the section), not the stock cut-out; short either-or questions are pill radios like Assessment's chips.
 
 ## Pieces
 

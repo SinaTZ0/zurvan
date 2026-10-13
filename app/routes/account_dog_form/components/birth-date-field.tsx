@@ -1,11 +1,11 @@
 import { useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 
+import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
 import { FieldError } from "~/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
 import { isoToJalali, JALALI_MONTHS, jalaliMonthLength, todayIso } from "~/lib/jalali";
 import { DOG_MAX_AGE_YEARS } from "~/orpc/dog/constants";
-import { SegmentedChoice } from "~/components/segmented-choice";
 import {
   AGE_MONTH_OPTIONS,
   AGE_YEAR_OPTIONS,
@@ -38,7 +38,7 @@ export function BirthDateField({
 
   return (
     <div className="flex flex-col gap-3">
-      <SegmentedChoice
+      <ChoicePills
         legend="تاریخ تولد"
         options={[
           { value: "exact", label: "تاریخش را می‌دانم" },

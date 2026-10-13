@@ -1,49 +1,55 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ORPCError } from "@orpc/client";
 import { useState } from "react";
-import { LockIcon } from "lucide-react";
-import { useForm, useWatch, type UseFormSetError } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { FormAlert } from "~/components/form-alert";
-import { Button } from "~/components/ui/button";
+import { Link } from "~/components/link";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "~/components/ui/toast";
-import { Link } from "~/components/link";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { DOG_SEX_LABELS, DOG_SEXES, VACCINATION_STATUS_LABELS, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
-import { errorDataSchema } from "~/orpc/errors";
 import type { Media } from "~/orpc/media/contract";
 import { BREED_SUGGESTIONS } from "~/routes/account_dog_form/breeds";
 import { BirthDateField } from "~/routes/account_dog_form/components/birth-date-field";
-import { DogPreview } from "~/routes/account_dog_form/components/dog-preview";
+import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
+import { DogCard } from "~/routes/account_dog_form/components/dog-card";
 import { FormSection } from "~/routes/account_dog_form/components/form-section";
-import { LockedBirthDate } from "~/routes/account_dog_form/components/locked-birth-date";
-import { PhotoPicker } from "~/routes/account_dog_form/components/photo-picker";
-import { SegmentedChoice } from "~/components/segmented-choice";
+import { LockedFields } from "~/routes/account_dog_form/components/locked-fields";
 import { useSaveDog } from "~/routes/account_dog_form/hooks/use-save-dog";
 import {
   type DogFormInput,
   type DogFormValues,
   dogFormSchema,
-  LOCKED_FIELD_NOTE,
-  SERVER_FIELD_TO_FORM,
   toDogInput,
   toFormDefaults,
 } from "~/routes/account_dog_form/schema";
+import type { DogFormSection } from "~/routes/account_dog_form/sections";
+import { applyServerError } from "~/routes/account_dog_form/server-errors";
 
 /*===== Dog Form =====*/
 /**
- * Adds a dog, or edits one. Three short sections (who it is, its body and health, notes for the trainer) beside a live
- * preview of the dog's tag. Saving a new dog goes to the Dashboard and saving an edit to the dog's page, or either goes
- * back to `redirectTo` when another page sent them here. Once the dog is evaluated its birth date and breed are
- * locked (app-spec F2): shown, not editable, and submitted as stored.
+ * The whole body of the page that adds a dog or edits one: the header the page passes in, the dog's card (its photo,
+ * its name stamped as it is typed, a bubble that follows the section) and the form in three short sections.
+ *
+ * Saving a new dog goes to the Dashboard and saving an edit to the dog's page, or either goes back to `redirectTo`
+ * when another page sent the owner here. Once the dog is evaluated its birth date and breed are locked (app-spec F2):
+ * shown, not editable, and submitted as stored.
  */
-export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: string | null }) {
+export function DogForm({
+  dog,
+  redirectTo,
+  header,
+}: {
+  dog: Dog | null;
+  redirectTo: string | null;
+  header: React.ReactNode;
+}) {
   const navigate = useNavigate();
   const saveDog = useSaveDog({ dogId: dog?.id ?? null });
   const locked = dog?.isEvaluated === true;
@@ -59,14 +65,17 @@ export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: stri
     defaultValues: toFormDefaults(dog),
   });
 
-  /*------ Live Preview ------*/
-  const preview = useWatch({ control });
-  // The form submits only the photo's id; the preview needs the uploaded image itself.
+  /*------ The Dog Card's State ------*/
+  const values = useWatch({ control });
+  // The form submits only the photo's id; the card needs the uploaded image itself.
   const [photo, setPhoto] = useState<Media | null>(dog?.photo ?? null);
+  // Submitting mid-upload would save the dog without the photo that is still on its way.
+  const [busy, setBusy] = useState(false);
+  const [section, setSection] = useState<DogFormSection>("identity");
 
   /*------ Submit ------*/
-  const onSubmit = handleSubmit((values) => {
-    saveDog.mutate(toDogInput({ values, dog }), {
+  const onSubmit = handleSubmit((submitted) => {
+    saveDog.mutate(toDogInput({ values: submitted, dog }), {
       onSuccess: async (saved) => {
         toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
         // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
@@ -79,178 +88,201 @@ export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: stri
   });
 
   const cancelTo = redirectTo ?? (dog ? `/account/dogs/${dog.id}` : "/account");
+  const trainer = HEAD_TRAINER.firstName;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-12 lg:gap-x-16">
-      {/*===== Preview =====*/}
-      {/* First in the DOM so phones see the dog's tag above the form; on desktop it is the end column. */}
-      <aside aria-label="پیش‌نمایش" className="lg:sticky lg:top-8 lg:order-last lg:col-span-5 lg:self-start">
-        <DogPreview values={preview} photo={photo} />
-      </aside>
+    <div className="site-container py-8 lg:py-14">
+      <div className="grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-16">
+        {/*===== Header =====*/}
+        <div className="pb-8 lg:col-start-1 lg:row-start-1 lg:pb-10">{header}</div>
 
-      {/*===== Form =====*/}
-      <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col gap-12 lg:col-span-7">
-        <FormAlert message={errors.root?.message} />
+        {/*===== Dog Card =====*/}
+        {/* Second in the document so phones see the dog between the heading and the form; desktop puts it at the end. */}
+        <DogCard
+          values={values}
+          photo={photo}
+          onPhotoChange={(media) => {
+            setPhoto(media);
+            setValue("photoMediaId", media?.id ?? null, { shouldDirty: true });
+          }}
+          onBusyChange={setBusy}
+          photoError={errors.photoMediaId?.message}
+          section={section}
+          isEdit={dog !== null}
+          isEvaluated={locked}
+          className="mb-10 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:self-start"
+        />
 
-        {/*------ Identity ------*/}
-        <FormSection title="شناسنامه" description="آرمان با همین‌ها سگت را می‌شناسد.">
-          <PhotoPicker
-            media={photo}
-            onChange={(media) => {
-              setPhoto(media);
-              setValue("photoMediaId", media?.id ?? null, { shouldDirty: true });
-            }}
-            error={errors.photoMediaId?.message}
-          />
-
-          <Field data-invalid={!!errors.name}>
-            <FieldLabel htmlFor="dog-name">اسم</FieldLabel>
-            <Input id="dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
-            <FieldError errors={[errors.name]} />
-          </Field>
-
-          <Field data-invalid={!!errors.breed}>
-            <FieldLabel htmlFor="dog-breed">نژاد</FieldLabel>
-            {/* `readOnly`, not `disabled`: the value stays in the form and is submitted as stored. */}
-            <div className="relative">
-              <Input
-                id="dog-breed"
-                list={locked ? undefined : "dog-breed-suggestions"}
-                autoComplete="off"
-                placeholder={locked ? undefined : "مثلاً ژرمن شپرد، یا دورگه"}
-                readOnly={locked}
-                aria-invalid={!!errors.breed}
-                aria-describedby={locked ? "dog-breed-locked-note" : undefined}
-                className={locked ? "bg-sunken pe-11" : undefined}
-                {...register("breed")}
-              />
-              {locked && (
-                <LockIcon
-                  aria-hidden
-                  className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                />
-              )}
-            </div>
-            {!locked && (
-              <datalist id="dog-breed-suggestions">
-                {BREED_SUGGESTIONS.map((breed) => (
-                  <option key={breed} value={breed}>
-                    {breed}
-                  </option>
-                ))}
-              </datalist>
-            )}
-            {locked && <FieldDescription id="dog-breed-locked-note">{LOCKED_FIELD_NOTE}</FieldDescription>}
-            <FieldError errors={[errors.breed]} />
-          </Field>
-
-          <SegmentedChoice
-            legend="جنس"
-            options={DOG_SEXES.map((sex) => ({ value: sex, label: DOG_SEX_LABELS[sex] }))}
-            registration={register("sex")}
-            error={errors.sex}
-          />
-
-          {/* A locked birth date is text; the server's error for it (`birthDate` maps to `birthDay`) shows there. */}
-          {locked ? (
-            <LockedBirthDate dog={dog} error={errors.birthDay ?? errors.ageYears} />
-          ) : (
-            <BirthDateField register={register} control={control} errors={errors} />
-          )}
-        </FormSection>
-
-        {/*------ Body and Health ------*/}
-        <FormSection title="بدن و سلامت" description="برای برنامه‌ی تمرین و ایمنی جلسه‌ها.">
-          <Field data-invalid={!!errors.weight} className="max-w-56">
-            <FieldLabel htmlFor="dog-weight">وزن (کیلو)</FieldLabel>
-            <Input
-              id="dog-weight"
-              inputMode="decimal"
-              autoComplete="off"
-              placeholder="مثلاً ۱۲٫۵"
-              aria-invalid={!!errors.weight}
-              {...register("weight")}
-            />
-            <FieldError errors={[errors.weight]} />
-          </Field>
-
-          <SegmentedChoice
-            legend="عقیم شده؟"
-            options={[
-              { value: "yes", label: "بله" },
-              { value: "no", label: "نه" },
-            ]}
-            registration={register("isNeutered")}
-            error={errors.isNeutered}
-          />
-
-          <SegmentedChoice
-            legend="واکسن‌ها"
-            options={VACCINATION_STATUSES.map((status) => ({
-              value: status,
-              label: VACCINATION_STATUS_LABELS[status],
-            }))}
-            registration={register("vaccinationStatus")}
-            error={errors.vaccinationStatus}
-          />
-
-          <Field data-invalid={!!errors.microchipNumber}>
-            <FieldLabel htmlFor="dog-microchip">
-              شماره میکروچیپ <span className="font-medium text-muted-foreground">(اختیاری)</span>
-            </FieldLabel>
-            <Input
-              id="dog-microchip"
-              dir="ltr"
-              inputMode="numeric"
-              autoComplete="off"
-              className="text-end tabular-nums"
-              aria-invalid={!!errors.microchipNumber}
-              {...register("microchipNumber")}
-            />
-            <FieldDescription>روی کارت واکسن یا مدارک دامپزشک نوشته شده است.</FieldDescription>
-            <FieldError errors={[errors.microchipNumber]} />
-          </Field>
-        </FormSection>
-
-        {/*------ For the Trainer ------*/}
-        <FormSection title="برای مربی" description="این دو را فقط آرمان و مربی سگت می‌بینند، قبل از اولین جلسه.">
-          <Field data-invalid={!!errors.behaviorNotes}>
-            <FieldLabel htmlFor="dog-behavior">رفتارش</FieldLabel>
-            <Textarea
-              id="dog-behavior"
-              placeholder="مثلاً: از سگ‌های بزرگ می‌ترسد، روی مهمان می‌پرد"
-              aria-invalid={!!errors.behaviorNotes}
-              {...register("behaviorNotes")}
-            />
-            <FieldError errors={[errors.behaviorNotes]} />
-          </Field>
-
-          <Field data-invalid={!!errors.medicalNotes}>
-            <FieldLabel htmlFor="dog-medical">سلامتش</FieldLabel>
-            <Textarea
-              id="dog-medical"
-              placeholder="مثلاً: حساسیت غذایی، درد مفصل، داروی روزانه"
-              aria-invalid={!!errors.medicalNotes}
-              {...register("medicalNotes")}
-            />
-            <FieldError errors={[errors.medicalNotes]} />
-          </Field>
-        </FormSection>
-
-        {/*------ Actions ------*/}
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-          <Button type="submit" size="lg" className="w-full sm:w-auto sm:min-w-44" disabled={saveDog.isPending}>
-            {saveDog.isPending && <Spinner data-icon="inline-start" />}
-            {dog ? "ذخیره" : "اضافه کن"}
-          </Button>
-          <Link
-            to={cancelTo}
-            className="flex h-14 items-center justify-center rounded-lg px-5 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
+        {/*===== Form =====*/}
+        <form
+          method="post"
+          onSubmit={onSubmit}
+          noValidate
+          className="flex flex-col gap-12 lg:col-start-1 lg:row-start-2"
+        >
+          {/*------ Identity ------*/}
+          <FormSection
+            id="identity"
+            title="شناسنامه"
+            description={`${trainer} با همین‌ها سگت را می‌شناسد.`}
+            onFocusSection={setSection}
           >
-            انصراف
-          </Link>
-        </div>
-      </form>
+            <Field data-invalid={!!errors.name}>
+              <FieldLabel htmlFor="dog-name">اسم</FieldLabel>
+              <Input id="dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
+              <FieldError errors={[errors.name]} />
+            </Field>
+
+            <ChoicePills
+              legend="جنس"
+              options={DOG_SEXES.map((sex) => ({ value: sex, label: DOG_SEX_LABELS[sex] }))}
+              registration={register("sex")}
+              error={errors.sex}
+            />
+
+            {/* Locked: the breed and the birth date sit together as two plates. The server's error for a locked
+                birth date (`birthDate` maps to `birthDay`) shows under its plate. */}
+            {locked ? (
+              <LockedFields dog={dog} breedError={errors.breed} birthError={errors.birthDay ?? errors.ageYears} />
+            ) : (
+              <>
+                <Field data-invalid={!!errors.breed}>
+                  <FieldLabel htmlFor="dog-breed">نژاد</FieldLabel>
+                  <Input
+                    id="dog-breed"
+                    list="dog-breed-suggestions"
+                    autoComplete="off"
+                    placeholder="مثلاً ژرمن شپرد، یا دورگه"
+                    aria-invalid={!!errors.breed}
+                    {...register("breed")}
+                  />
+                  <datalist id="dog-breed-suggestions">
+                    {BREED_SUGGESTIONS.map((breed) => (
+                      <option key={breed} value={breed}>
+                        {breed}
+                      </option>
+                    ))}
+                  </datalist>
+                  <FieldError errors={[errors.breed]} />
+                </Field>
+
+                <BirthDateField register={register} control={control} errors={errors} />
+              </>
+            )}
+          </FormSection>
+
+          {/*------ Body and Health ------*/}
+          <FormSection
+            id="body"
+            title="بدن و سلامت"
+            description="برای برنامه‌ی تمرین و ایمنی جلسه‌ها."
+            onFocusSection={setSection}
+          >
+            <Field data-invalid={!!errors.weight} className="max-w-56">
+              <FieldLabel htmlFor="dog-weight">وزن (کیلو)</FieldLabel>
+              <Input
+                id="dog-weight"
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="مثلاً ۱۲٫۵"
+                aria-invalid={!!errors.weight}
+                {...register("weight")}
+              />
+              <FieldError errors={[errors.weight]} />
+            </Field>
+
+            <ChoicePills
+              legend="عقیم شده؟"
+              options={[
+                { value: "yes", label: "بله" },
+                { value: "no", label: "نه" },
+              ]}
+              registration={register("isNeutered")}
+              error={errors.isNeutered}
+            />
+
+            <ChoicePills
+              legend="واکسن‌ها"
+              options={VACCINATION_STATUSES.map((status) => ({
+                value: status,
+                label: VACCINATION_STATUS_LABELS[status],
+              }))}
+              registration={register("vaccinationStatus")}
+              error={errors.vaccinationStatus}
+            />
+
+            <Field data-invalid={!!errors.microchipNumber}>
+              <FieldLabel htmlFor="dog-microchip">
+                شماره میکروچیپ <span className="font-medium text-muted-foreground">(اختیاری)</span>
+              </FieldLabel>
+              <Input
+                id="dog-microchip"
+                dir="ltr"
+                inputMode="numeric"
+                autoComplete="off"
+                className="text-end tabular-nums"
+                aria-invalid={!!errors.microchipNumber}
+                {...register("microchipNumber")}
+              />
+              <FieldDescription>روی کارت واکسن یا مدارک دامپزشک نوشته شده است.</FieldDescription>
+              <FieldError errors={[errors.microchipNumber]} />
+            </Field>
+          </FormSection>
+
+          {/*------ For the Trainer ------*/}
+          <FormSection
+            id="trainer"
+            title="برای مربی"
+            description={`این دو را فقط ${trainer} و مربی سگت می‌بینند، قبل از اولین جلسه.`}
+            onFocusSection={setSection}
+          >
+            <Field data-invalid={!!errors.behaviorNotes}>
+              <FieldLabel htmlFor="dog-behavior">رفتارش</FieldLabel>
+              <Textarea
+                id="dog-behavior"
+                placeholder="مثلاً: از سگ‌های بزرگ می‌ترسد، روی مهمان می‌پرد"
+                aria-invalid={!!errors.behaviorNotes}
+                {...register("behaviorNotes")}
+              />
+              <FieldError errors={[errors.behaviorNotes]} />
+            </Field>
+
+            <Field data-invalid={!!errors.medicalNotes}>
+              <FieldLabel htmlFor="dog-medical">سلامتش</FieldLabel>
+              <Textarea
+                id="dog-medical"
+                placeholder="مثلاً: حساسیت غذایی، درد مفصل، داروی روزانه"
+                aria-invalid={!!errors.medicalNotes}
+                {...register("medicalNotes")}
+              />
+              <FieldError errors={[errors.medicalNotes]} />
+            </Field>
+          </FormSection>
+
+          {/*------ Actions ------*/}
+          <div className="flex flex-col gap-4">
+            {/* Directly above the buttons, where the eye is after pressing one. */}
+            <FormAlert message={errors.root?.message} />
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto sm:min-w-44"
+                disabled={saveDog.isPending || busy}
+              >
+                {saveDog.isPending && <Spinner data-icon="inline-start" />}
+                {saveDog.isPending ? (dog ? "در حال ذخیره…" : "در حال اضافه کردن…") : dog ? "ذخیره" : "اضافه کن"}
+              </Button>
+              <Link to={cancelTo} className={buttonVariants({ variant: "ghost", size: "lg" })}>
+                انصراف
+              </Link>
+            </div>
+
+            {busy && <output className="block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -261,58 +293,4 @@ function withDogParam({ redirectTo, dogId }: { redirectTo: string; dogId: string
   const url = new URL(redirectTo, "http://localhost");
   url.searchParams.set("dog", dogId);
   return `${url.pathname}${url.search}${url.hash}`;
-}
-
-/*===== Server Errors =====*/
-const FORM_FIELDS = new Set<string>([
-  "photoMediaId",
-  "name",
-  "breed",
-  "sex",
-  "isNeutered",
-  "vaccinationStatus",
-  "microchipNumber",
-  "behaviorNotes",
-  "medicalNotes",
-]);
-
-/**
- * Puts the server's messages next to their fields, and anything else in the form-level alert. The two procedures
- * share one mutation, so its error isn't typed per procedure; the shared error shape is checked here instead.
- */
-function applyServerError({ error, setError }: { error: Error; setError: UseFormSetError<DogFormInput> }) {
-  const parsed = error instanceof ORPCError ? errorDataSchema.safeParse(error.data) : null;
-  const code = error instanceof ORPCError ? error.code : null;
-
-  if (code === "INVALID_INPUT" && parsed?.success) {
-    for (const [field, message] of Object.entries(parsed.data.fields)) {
-      const target = SERVER_FIELD_TO_FORM[field] ?? (FORM_FIELDS.has(field) ? (field as keyof DogFormInput) : null);
-      if (target) setError(target, { message });
-    }
-    const [general] = parsed.data.errors;
-    if (general) {
-      setError("root", { message: general });
-    } else if ("birthDate" in parsed.data.fields || "breed" in parsed.data.fields) {
-      // Only reachable when the dog was evaluated after this form opened, so the fields were still editable. The page
-      // is stale, and the locked version shows after a refresh.
-      setError("root", {
-        message: `همین حالا ارزیابی ${HEAD_TRAINER.firstName} ثبت شد و تاریخ تولد و نژاد قفل شدند. صفحه را تازه کن تا فرم را قفل‌شده ببینی، بعد دوباره ذخیره کن.`,
-      });
-    }
-    return;
-  }
-  if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
-    return;
-  }
-  if (code === "NOT_FOUND") {
-    setError("root", { message: "این سگ دیگر در حسابت نیست." });
-    return;
-  }
-  if (code === "INTERNAL_SERVER_ERROR") {
-    const errorId = error instanceof ORPCError && typeof error.data?.errorId === "string" ? error.data.errorId : null;
-    setError("root", { message: `ذخیره نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
-    return;
-  }
-  setError("root", { message: "ذخیره نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
 }

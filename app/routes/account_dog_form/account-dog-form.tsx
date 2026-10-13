@@ -1,13 +1,22 @@
 import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
+import { DogEmptyState } from "~/components/dog-empty-state";
 import { Link } from "~/components/link";
+import { buttonVariants } from "~/components/ui/button";
+import { requireSession } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogForm } from "~/routes/account_dog_form/components/dog-form";
+import { PageHeader } from "~/routes/account_dog_form/components/page-header";
 
 import type { Route } from "./+types/account-dog-form";
 
 // One module for two routes (see `routes.ts`): `/account/dogs/new` and `/account/dogs/:dogId/edit`.
+
+/*===== Guard =====*/
+// Customers only: the dogs are a customer's. A partner has none, and the Admin edits dogs in his own area
+// (docs/app-spec.md, F2).
+export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -15,6 +24,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 ];
 
 /*===== Loader =====*/
+// The API answers NOT_FOUND for another owner's dog too, so a made-up id and someone else's dog look the same.
 export async function loader({ request, params }: Route.LoaderArgs) {
   const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
   if (!params.dogId) return { dog: null, redirectTo };
@@ -33,33 +43,15 @@ function safeRedirect(value: string | null) {
   return value?.startsWith("/") && !value.startsWith("//") ? value : null;
 }
 
-/*===== Page =====*/
+/*===== Dog Form =====*/
+/**
+ * F2's form for adding a dog and for editing one. The dog stands beside the form as it will look on its own page and
+ * talks as the owner moves through it; the form itself is `DogForm`.
+ */
 export default function DogFormPage({ loaderData }: Route.ComponentProps) {
   const { dog, redirectTo } = loaderData;
 
-  return (
-    <div className="site-container py-8 lg:py-12">
-      {/*===== Header =====*/}
-      <header className="mb-8 lg:mb-12">
-        <Link
-          to={dog ? `/account/dogs/${dog.id}` : "/account"}
-          className="rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline"
-        >
-          {dog ? dog.name : "سگ‌های من"}
-        </Link>
-        <h1 className="mt-2 text-2xl font-extrabold text-balance lg:text-3xl">
-          {dog ? `ویرایش ${dog.name}` : "معرفی سگ تازه"}
-        </h1>
-        {!dog && (
-          <p className="mt-2 max-w-xl text-pretty text-muted-foreground">
-            چند دقیقه بیشتر طول نمی‌کشد. هر چه را دقیق نمی‌دانی، تقریبی بنویس؛ بعداً هم می‌شود عوضش کرد.
-          </p>
-        )}
-      </header>
-
-      <DogForm dog={dog} redirectTo={redirectTo} />
-    </div>
-  );
+  return <DogForm dog={dog} redirectTo={redirectTo} header={<PageHeader dog={dog} />} />;
 }
 
 /*===== Error Boundary =====*/
@@ -67,17 +59,29 @@ export default function DogFormPage({ loaderData }: Route.ComponentProps) {
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
+  if (notFound) {
+    return (
+      <div className="site-container py-8 lg:py-14">
+        <DogEmptyState
+          bubble="من توی حساب تو نیستم!"
+          title="این سگ پیدا نشد"
+          action={{ label: "سگ‌های من", to: "/account" }}
+        >
+          شاید از حسابت برداشته شده باشد.
+        </DogEmptyState>
+      </div>
+    );
+  }
+
   return (
     <section aria-labelledby="dog-form-error-title" className="site-container py-16">
       <h1 id="dog-form-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این سگ پیدا نشد" : "فرم باز نشد"}
+        فرم باز نشد
       </h1>
       <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        {notFound
-          ? "شاید از حسابت برداشته شده باشد."
-          : "مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
+        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
       </p>
-      <Link to="/account" className="mt-6 inline-block font-bold text-primary underline-offset-4 hover:underline">
+      <Link to="/account" className={buttonVariants({ size: "lg", className: "mt-6" })}>
         برگرد به سگ‌های من
       </Link>
     </section>
