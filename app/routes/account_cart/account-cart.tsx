@@ -107,7 +107,7 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
         <DogEmptyState
           bubble="چیزی توی سبدم نیست! یه دوره برام پیدا کن"
           title="سبد خالیه"
-          action={{ label: "دوره‌ها را ببین", to: "/#courses" }}
+          action={{ label: "دوره‌ها را ببین", to: "/courses" }}
         >
           از صفحه‌ی هر دوره، سگت را انتخاب کن و «افزودن به سبد» را بزن.
         </DogEmptyState>

@@ -47,7 +47,7 @@ export default function AccountPurchasesPage({ loaderData }: Route.ComponentProp
         <DogEmptyState
           bubble="هنوز چیزی نخریدم"
           title="هنوز خریدی نداری"
-          action={{ label: "دوره‌ها را ببین", to: "/#courses" }}
+          action={{ label: "دوره‌ها را ببین", to: "/courses" }}
         >
           بعد از اولین پرداخت، اینجا می‌بینی چه پرداختی کردی و برای کدوم سگ.
         </DogEmptyState>

@@ -191,7 +191,7 @@ export function HomeHero() {
             <Link to="/assessment" className={cn(buttonVariants({ size: "lg" }))}>
               ارزیابی رایگان بگیر
             </Link>
-            <Link to="/#courses" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+            <Link to="/courses" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
               دوره‌ها را ببین
             </Link>
           </div>

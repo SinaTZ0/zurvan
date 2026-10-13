@@ -33,7 +33,7 @@ export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: 
           <p className="font-bold">هنوز دوره‌ای نخریدم</p>
           {isEvaluated && (
             <Link
-              to="/#courses"
+              to="/courses"
               className="mt-2 inline-block rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline"
             >
               دوره‌ها را ببین

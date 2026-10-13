@@ -41,7 +41,7 @@ export function getDogStatus({
   const own = evaluations.filter((evaluation) => evaluation.dog.id === dog.id);
   const waitingEvaluation = own.find((evaluation) => evaluation.status === "requested") ?? null;
   const trainer = HEAD_TRAINER.firstName;
-  const coursesAction = { label: "دوره‌ها را ببین", to: "/#courses" };
+  const coursesAction = { label: "دوره‌ها را ببین", to: "/courses" };
   const evaluationAction = (label: string) => ({ label, to: `/assessment?dog=${dog.id}` });
 
   /*------ Evaluated ------*/

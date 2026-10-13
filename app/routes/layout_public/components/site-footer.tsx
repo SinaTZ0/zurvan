@@ -10,7 +10,7 @@ const FOOTER_GROUPS = [
   {
     title: "دوره‌ها",
     links: [
-      { label: "همه‌ی دوره‌ها", to: "/#courses" },
+      { label: "همه‌ی دوره‌ها", to: "/courses" },
       { label: "ارزیابی رایگان", to: "/assessment" },
     ],
   },

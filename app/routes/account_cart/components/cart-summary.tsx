@@ -88,7 +88,7 @@ export function CartSummary({
           {busy && <Spinner aria-hidden />}
           {busy ? "در حال رفتن به درگاه…" : nothingToPay ? "چیزی برای پرداخت نیست" : "پرداخت"}
         </Button>
-        <Link to="/#courses" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}>
+        <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}>
           افزودن دوره‌ی دیگر
         </Link>
       </div>

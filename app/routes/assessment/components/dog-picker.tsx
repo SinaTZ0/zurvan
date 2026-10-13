@@ -74,7 +74,7 @@ export function DogPicker({
                       <span className="mt-1 text-xs text-pretty text-muted-foreground">
                         ارزیابی شده؛ دوره‌هایش باز است{" "}
                         <Link
-                          to="/#courses"
+                          to="/courses"
                           className="relative z-10 rounded-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                         >
                           دوره‌ها را ببین

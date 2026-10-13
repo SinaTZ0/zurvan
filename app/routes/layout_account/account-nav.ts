@@ -24,8 +24,7 @@ export type DeskExitLink = { label: string; to: string };
 // `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
 export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS;
 
-// The course catalogue page isn't built, so this goes to the home page's course grid.
-export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/#courses" };
+export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };
 
 /** Phones show a bottom tab bar once there are this many sections. */
 export const BOTTOM_TABS_FROM = 3;

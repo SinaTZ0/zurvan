@@ -58,7 +58,7 @@ export function NeedsSection({ onPick }: { onPick: (family: CourseFamily) => voi
           </h2>
           <p className="mt-3 max-w-sm text-pretty text-muted-foreground">بگو دنبال چی هستی؛ دوره‌هاش رو نشونت می‌دم.</p>
           <Link
-            to="/#courses"
+            to="/courses"
             className="group/all mt-5 inline-flex items-center gap-2 font-bold text-primary underline-offset-4 hover:underline"
           >
             همه‌ی دوره‌ها
