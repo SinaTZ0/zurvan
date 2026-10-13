@@ -18,7 +18,7 @@ export function ViewerControls({ viewer }: { viewer: Viewer }) {
   const settings = viewer.role === "admin" ? [] : [PROFILE_LINK];
   const links: readonly PersonMenuLink[] = isCustomer
     ? [...CUSTOMER_MENU_LINKS, ...settings]
-    : // A partner's or the Admin's panel isn't built yet, so `homePath` is null and the menu holds the settings and «خروج».
+    : // A partner or the Admin has a panel to go to (`homePath`); the Admin's menu holds no settings.
       [...(viewer.homePath ? [{ label: "پنل من", to: viewer.homePath }] : []), ...settings];
 
   return (

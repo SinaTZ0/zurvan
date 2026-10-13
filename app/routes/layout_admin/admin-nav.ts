@@ -1,6 +1,7 @@
 import {
   ClipboardCheckIcon,
   GraduationCapIcon,
+  HandshakeIcon,
   LayoutDashboardIcon,
   PawPrintIcon,
   ReceiptTextIcon,
@@ -30,6 +31,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { label: "ارزیابی‌ها", to: "/admin/evaluations", icon: ClipboardCheckIcon },
   { label: "ثبت‌نام‌ها", to: "/admin/enrollments", icon: GraduationCapIcon },
   { label: "پرداخت‌ها", to: "/admin/payments", icon: ReceiptTextIcon },
+  { label: "همکاران", to: "/admin/partners", icon: HandshakeIcon },
   { label: "سگ‌ها", to: "/admin/dogs", icon: PawPrintIcon },
 ];
 

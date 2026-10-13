@@ -22,6 +22,9 @@ export default [
     // One form module for adding and editing, so each route needs its own id.
     route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
     route("dogs/:dogId/edit", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-edit" }),
+    // The partner's pages (F7), under the same shell; their loaders guard to partners only.
+    route("partner", "routes/account_partner/account-partner.tsx"),
+    route("partner/leads", "routes/account_partner_leads/account-partner-leads.tsx"),
   ]),
 
   /*===== Admin =====*/
@@ -33,6 +36,7 @@ export default [
     route("payments", "routes/admin_payments/admin-payments.tsx"),
     route("dogs", "routes/admin_dogs/admin-dogs.tsx"),
     route("dogs/:dogId", "routes/admin_dog_detail/admin-dog-detail.tsx"),
+    route("partners", "routes/admin_partners/admin-partners.tsx"),
   ]),
 
   route("auth", "routes/auth/auth.tsx"),

@@ -54,8 +54,8 @@ function MoneyRow({
 /*===== Money Block =====*/
 /**
  * F11's money, kept plain: what was paid this month and in all, and the commissions still unpaid. «پرداخت‌شده», never
- * «سود»: refunds are not recorded in the app, so these are payments taken, not earnings. Unpaid commissions have no
- * link on purpose: their list is the Partners page, which doesn't exist yet, and a dead link would promise it.
+ * «سود»: refunds are not recorded in the app, so these are payments taken, not earnings. Unpaid commissions link to
+ * the Partners page, where he pays them.
  */
 export function MoneyBlock({ money }: { money: DashboardOverview["money"] }) {
   // The year is written digit by digit: `formatNumberFa` would group it as «۱٬۴۰۵».
@@ -71,9 +71,10 @@ export function MoneyBlock({ money }: { money: DashboardOverview["money"] }) {
         />
         <MoneyRow label="پرداخت‌شده تا امروز" value={formatToman(money.salesTotal)} to="/admin/payments?view=paid" />
         <MoneyRow
-          label="کمیسیون پرداخت‌نشده"
+          label="پورسانت پرداخت‌نشده"
           note={`${formatNumberFa(money.unpaidCommissions.count)} مورد`}
           value={formatToman(money.unpaidCommissions.amount)}
+          to="/admin/partners?view=unpaid"
         />
       </div>
       <p className="mt-3 text-xs text-pretty text-muted-foreground">

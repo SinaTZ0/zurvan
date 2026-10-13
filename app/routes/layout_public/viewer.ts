@@ -7,8 +7,8 @@ export type Viewer = {
   firstName: string;
   phoneNumber: string | null;
   /**
-   * Where a partner or the Admin's own panel is, once it is built; `null` while their role home is the storefront
-   * (`roleHomePath`, server-only, decides). Customers use the fixed account links instead.
+   * Where a partner's or the Admin's own panel is (`roleHomePath`, server-only, decides); `null` for a role whose home
+   * is the storefront. Customers use the fixed account links instead.
    */
   homePath: string | null;
 };

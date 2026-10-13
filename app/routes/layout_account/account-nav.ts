@@ -24,6 +24,12 @@ export type DeskExitLink = { label: string; to: string };
 // `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
 export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS;
 
+/** The partner's pages (F7): the dashboard and the leads. Two sections, so phones list them in the person menu. */
+export const PARTNER_NAV_ITEMS: readonly DeskNavItem[] = [
+  { label: "همکاری من", to: "/account/partner", end: true },
+  { label: "شماره‌ها و مشتری‌ها", to: "/account/partner/leads" },
+];
+
 export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };
 
 /** Phones show a bottom tab bar once there are this many sections. */

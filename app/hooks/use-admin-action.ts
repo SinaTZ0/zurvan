@@ -9,7 +9,7 @@ import { type ApiFailure, describeApiFailure } from "~/lib/api-error";
 /*===== Constants =====*/
 // The API answers these when the row changed under the Admin's hands: another tab, or the customer withdrawing (F12,
 // "statuses only move forward"). They aren't failures to retry; the list is simply stale.
-const CONFLICT_CODES = new Set(["NOT_ANSWERABLE", "NOT_ACTIVE", "NOT_FOUND"]);
+const CONFLICT_CODES = new Set(["NOT_ANSWERABLE", "NOT_ACTIVE", "NOT_FOUND", "ALREADY_PAID"]);
 
 /*===== Admin Action =====*/
 /**
