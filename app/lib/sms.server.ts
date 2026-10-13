@@ -2,22 +2,14 @@ import { and, desc, eq, gt } from "drizzle-orm";
 
 import { db } from "~/db/client.server";
 import { smsOutbox } from "~/db/schema";
+import type { SmsKind } from "~/orpc/sms/constants";
+
+export type { SmsKind };
 
 /*===== SMS =====*/
 // One place that "sends" SMS, so a real provider replaces it without touching callers. In showcase mode (the only
 // mode until a provider is wired) every message is written to `sms_outbox` instead. The outbox is also the send log
 // the sign-in rate limits count, so a real provider must keep writing it.
-
-export type SmsKind =
-  | "sign-in-code"
-  | "evaluation-requested"
-  | "evaluation-evaluated"
-  | "evaluation-rejected"
-  | "payment-paid"
-  | "payment-paid-admin"
-  | "enrollment-completed"
-  | "enrollment-cancelled"
-  | "commission-paid";
 
 /** Queues one SMS. In showcase mode it only lands in the outbox. */
 export async function sendSms({ phoneNumber, kind, body }: { phoneNumber: string; kind: SmsKind; body: string }) {
