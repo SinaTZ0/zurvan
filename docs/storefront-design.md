@@ -79,6 +79,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 The Admin area (`/admin`, `app/routes/layout_admin/`) uses the same tokens, calmer and denser than the signed-in customer pages: plain lists, `card` rows with `border-border`, `text-sm`, targets of at least 40px, one-click buttons. The dog barely speaks (only in `AdminEmptyState`) and there is no orchestrated animation; only what answers a click (a sheet, a dialog) moves. The shell is a short top bar, a rail at the start side on desktop and bottom tabs on phones. Every Admin list loads its whole list once and keeps its filter, page and open drawer as shallow nuqs params; statuses only move forward, so every write goes through `useAdminAction`, which refreshes the list when the row changed under him.
 
 - Payments (`/admin/payments`): a ledger of slips. The idea is the **torn slip**: a paid item with no enrollment is drawn with a dashed destructive outline, never as a debt (no refunds are recorded). Failed and pending payments collapse to one calm line.
+- Enrollments (`/admin/enrollments`): a call sheet. The idea is **one block per customer**, not per enrollment: the customer's number is the first thing in the block (a full call button on phones), and the lines beside it carry the two endings. «لغو» says in its dialog that money goes back outside the app.
 
 ## Pieces
 
