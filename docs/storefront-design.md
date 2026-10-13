@@ -80,6 +80,7 @@ The Admin area (`/admin`, `app/routes/layout_admin/`) uses the same tokens, calm
 
 - Payments (`/admin/payments`): a ledger of slips. The idea is the **torn slip**: a paid item with no enrollment is drawn with a dashed destructive outline, never as a debt (no refunds are recorded). Failed and pending payments collapse to one calm line.
 - Enrollments (`/admin/enrollments`): a call sheet. The idea is **one block per customer**, not per enrollment: the customer's number is the first thing in the block (a full call button on phones), and the lines beside it carry the two endings. «لغو» says in its dialog that money goes back outside the app.
+- Evaluations (`/admin/evaluations`): a contact sheet. The idea is that each row carries up to three of the customer's photos and a video chip, so the Admin skims the queue by faces and opens a request only to call. The drawer is a `Sheet` because the `Drawer` component positions physically and is wrong in RTL. The open request is `?evaluation=<id>` (the new-request SMS links to it), and it stays open on the new status after an answer.
 
 ## Pieces
 
