@@ -32,16 +32,16 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ### Where it sends people
 
-| URL                               | Page                        | Linked from                                      |
-| --------------------------------- | --------------------------- | ------------------------------------------------ |
-| `/assessment`                     | Evaluation Request (F3)     | every «ارزیابی رایگان» button, footer            |
-| `/#evaluation`, `/#trainer`       | home sections               | header nav                                       |
-| `/courses/:slug`                  | Course Detail               | course cards                                     |
-| `/courses`, `/courses?q=`         | Course Catalogue            | header search, nav, footer, buttons              |
-| `/auth`                           | Login / Register            | header                                           |
-| `/help`, `/help#how-buying-works` | Help and FAQ                | footer, account footer, Course Detail's buy card |
-| `/privacy`                        | Privacy (not built)         | footer                                           |
-| `/join/partner`                   | Partner Enquiry (not built) | footer                                           |
+| URL                               | Page                      | Linked from                                      |
+| --------------------------------- | ------------------------- | ------------------------------------------------ |
+| `/assessment`                     | Evaluation Request (F3)   | every «ارزیابی رایگان» button, footer            |
+| `/#evaluation`, `/#trainer`       | home sections             | header nav                                       |
+| `/courses/:slug`                  | Course Detail             | course cards                                     |
+| `/courses`, `/courses?q=`         | Course Catalogue          | header search, nav, footer, buttons              |
+| `/auth`                           | Login / Register          | header                                           |
+| `/help`, `/help#how-buying-works` | Help and FAQ              | footer, account footer, Course Detail's buy card |
+| `/privacy`                        | Privacy (not built)       | footer                                           |
+| `/join/partner`                   | Partner Enquiry (no form) | footer                                           |
 
 ## Course Catalogue
 
@@ -61,7 +61,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ## Partner Enquiry
 
-`/join/partner` (`app/routes/join_partner/`) is for the owner of a clinic, groomer or pet shop, not a customer, so its main action is the phone call, not the free evaluation. **It has no form**: the API has no way to receive an enquiry and the Admin has no screen to read one yet (his Partners page is not built). The hero is the home hero's style with one static photo (the puppy holding its leash) and a bubble addressed to the shop owner («بفرستش پیش آرمان»); below it a three-way strip (link, QR, phone leads), the three steps (call, the Admin creates the account, sign in), the commission card and a phone ask. The commission percent shown is `DEFAULT_PARTNER_COMMISSION_PERCENT`.
+`/join/partner` (`app/routes/join_partner/`) is for the owner of a clinic, groomer or pet shop, not a customer, so its main action is the phone call, not the free evaluation. **It has no form**: the API has no way to receive an enquiry and the Admin has no screen to read one yet (his Partners page is built, but the enquiry table and procedure are not). The hero is the home hero's style with one static photo (the puppy holding its leash) and a bubble addressed to the shop owner («بفرستش پیش آرمان»); below it a three-way strip (link, QR, phone leads), the three steps (call, the Admin creates the account, sign in), the commission card and a phone ask. The commission percent shown is `DEFAULT_PARTNER_COMMISSION_PERCENT`.
 
 ## Signed-in Pages
 
@@ -73,6 +73,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 - The Cart (`/account/cart`) has one orchestrated moment: the dog's bubble drawing in on the payment banner. Purchases (`/account/purchases`) has none.
 - The Dog Form (`/account/dogs/new` and `…/:dogId/edit`, `app/routes/account_dog_form/`) has one orchestrated moment, the dog's bubble drawing in. The dog column is the dog's own page being written (photo or tag, name stamped as typed, a bubble following the section), not the stock cut-out; short either-or questions are pill radios like Assessment's chips.
 - Profile Settings (`/account/profile`, `app/routes/account_profile/`) is shared by customers and partners. It has one orchestrated moment, the bubble drawing in; the tag column is the person's own page being written (their initial, their name as typed, the locked login number), the stock dog leans behind its top edge, and the bubble follows the focused card («ثبت شد!» after a save). Settings are reached from the person menu, not a tab.
+- The partner's pages (`/account/partner`, `/account/partner/leads`) use the account shell with two tabs of their own. The Dashboard's one idea is the **shop card**: the QR must be dark on light, so on a black page it is a printed card laid on the table (an ivory tile) that he copies, downloads and puts by his till. Leads' idea is the **road**: every person is three stops, and a column of gold shows at a glance where each one stopped; a lost lead is grey and dashed and says only «به اسم تو ثبت نشد». The dog speaks once on the Dashboard and in Leads' empty state; neither page has an orchestrated moment (a new lead's row gets a fading gold ring).
 
 ## Admin Pages
 
@@ -84,6 +85,7 @@ The Admin area (`/admin`, `app/routes/layout_admin/`) uses the same tokens, calm
 - Dashboard (`/admin`): an overview that is dark when there is nothing to do. The idea is **only what waits for him is lit**: a tile with something in it has its number in flat gold and a gold ring, a tile at zero is a calm card with a plain sentence, so a good day shows no gold at all. The paid-not-enrolled tile keeps Payments' dashed torn-slip outline. Enrollment, money and course numbers are ivory and never lit.
 - Dogs (`/admin/dogs`): a register read by faces and stamps. Each row starts with the dog's photo and ends with one pill (`DogEvaluationStamp`), so he can run down the edge and know who is where on the road. The whole row is the link (the name carries a stretched link; the owner's number sits above it).
 - Dog Detail (`/admin/dogs/:dogId`): the ladder. Courses are rungs in catalogue order, because courses open one after another: a passed rung is a filled gold check, an open one a gold ring, a locked one a lock with the reason that names the rung to climb first. The few buttons on a rung are the only gold buttons on the page besides «ارزیابی شد».
+- Partners (`/admin/partners`): the pay sheet. Paying a partner is a bank transfer outside the app, so each block is arranged in the order he works: where to send (the Sheba in groups of four, one tap to copy), the sum, then «پرداخت شد» per commission (no bulk button, so each partner SMS is true). A partner who hasn't written his Sheba gets a line and a call button instead. The roster and the partner drawer (`?partner=`) carry his people and the deactivate switch.
 
 ## Pieces
 
@@ -165,5 +167,5 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
 - **Working and sport dogs** have no price and show «بعد از ارزیابی»; they are a future feature (app-spec F8).
 - **Help copy to confirm with the owner:** the answers are written from app-spec F1 to F6; the owner should read them once (especially «اگه آرمان نتونه سگمو بپذیره چی؟», `boarding` and `no-price`).
 - **Privacy is a placeholder** until the owner sends real legal text. To confirm with him: (1) dog and evaluation photos are served by an unguessable link, so anyone with the exact address can open them (only evaluation videos are private), and the page says so; (2) the sign-in page's «به هیچ‌کس نمی‌دهیم» claim, and who the SMS provider and the payment gateway will be once they replace the showcase ones; (3) the «پرداخت‌ها» row says the card number and password never reach the site: true of the redirect design, to re-check with the real gateway; (4) retention and deletion: the page only says dogs and payments are never deleted from an account; (5) a partner sees commission amounts, which at 10% reveal a first purchase's total, while the page lists payments among what a partner doesn't see (F12's wording).
-- **Partner Enquiry has no form.** A form needs a public `partner.enquire` procedure, a `partner_enquiry` table, an SMS to the Admin, a per-IP limit and an app-spec edit; do it together with the Admin's Partners page, where enquiries can be read. The page describes the referral link, QR code and phone leads, which the Partner Dashboard (not built yet) will show. The commission percent is a constant, but the Admin can change the setting: if he does, the page is stale until it reads the setting.
+- **Partner Enquiry has no form.** A form needs a public `partner.enquire` procedure, a `partner_enquiry` table, an SMS to the Admin, a per-IP limit and an app-spec edit; do it together with the Admin's Partners page, where enquiries can be read. The page describes the referral link, QR code and phone leads, which the Partner Dashboard shows. The commission percent is a constant, but the Admin can change the setting: if he does, the page is stale until it reads the setting.
 - **Leftover assets:** most of `public/demo/` and the old files in `public/photo/` (outside `home/`) are unused or only used by legacy pages. Delete them as those pages go.

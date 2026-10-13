@@ -2,8 +2,8 @@ import { cn } from "cn";
 import { Link2Icon, PhoneIncomingIcon, QrCodeIcon, type LucideIcon } from "lucide-react";
 
 /*===== Ways In =====*/
-// The three ways a customer reaches a partner, as app-spec F7 defines them. The dashboard that shows them is not built yet;
-// these cells describe what the partner gets, not a screen they can open today.
+// The three ways a customer reaches a partner, as app-spec F7 defines them. The Partner Dashboard and Leads pages
+// (`/account/partner`) show them once the Admin has created the account; these cells describe what the partner gets.
 const WAYS: { icon: LucideIcon; title: string; detail: string }[] = [
   {
     icon: Link2Icon,

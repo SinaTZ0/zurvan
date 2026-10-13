@@ -179,6 +179,9 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 - A referral link wins over a phone lead.
 - If several partners entered the same phone number, the **earliest** lead wins; the others see it as lost.
 - An inactive partner's link and leads don't attribute anyone.
+- A partner can't enter a number that already has an account (a lead only matters at registration). He can never edit or delete a lead, so earliest-wins can't be gamed. A lead is `lost` when a link or an earlier partner's lead took the customer; the list then shows no name and nobody else.
+- Deactivating a partner is reversible and stops new attributions **and** new commissions, including a first purchase by a customer he already had; written commissions stay payable.
+- The Admin creates the account with the partner's name, phone number and an optional link code. The code never changes, because it is printed on the partner's card and QR.
 
 **Commission.** At a customer's **first paid purchase**, if they have an active partner, the app writes one **commission**: a percentage (setting, default **10%**) of the total of the enrollments that payment created, rounded down to the Rial.
 
