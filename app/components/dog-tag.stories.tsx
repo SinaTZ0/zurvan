@@ -6,10 +6,9 @@ import { DogTag } from "~/components/dog-tag";
 const meta = {
   title: "Account/DogTag",
   component: DogTag,
-  args: { name: "لئو", microchipNumber: "982000412345678", size: "md", finish: "engraved" },
+  args: { name: "لئو", microchipNumber: "982000412345678", size: "md" },
   argTypes: {
-    size: { control: "inline-radio", options: ["sm", "md", "lg"] },
-    finish: { control: "inline-radio", options: ["engraved", "leaf"] },
+    size: { control: "inline-radio", options: ["sm", "portrait", "md", "lg"] },
   },
 } satisfies Meta<typeof DogTag>;
 
@@ -19,13 +18,13 @@ type Story = StoryObj<typeof meta>;
 /*===== Stories =====*/
 export const Playground: Story = {};
 
-export const Finishes: Story = {
+export const Sizes: Story = {
   render: (args) => (
     <div className="flex flex-wrap items-end gap-8">
-      <DogTag {...args} finish="engraved" />
-      <DogTag {...args} finish="leaf" />
-      <DogTag {...args} size="lg" finish="leaf" />
       <DogTag {...args} size="sm" />
+      <DogTag {...args} size="portrait" />
+      <DogTag {...args} size="md" />
+      <DogTag {...args} size="lg" />
     </div>
   ),
 };
@@ -35,7 +34,7 @@ export const LongNames: Story = {
     <div className="flex flex-wrap items-end gap-8">
       <DogTag {...args} name="پسته" microchipNumber={null} />
       <DogTag {...args} name="شاهزاده مکس" />
-      <DogTag {...args} name="بارون فون وایس‌هاوزن سوم" finish="leaf" />
+      <DogTag {...args} name="بارون فون وایس‌هاوزن سوم" />
     </div>
   ),
 };

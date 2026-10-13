@@ -62,6 +62,15 @@ export function formatJalaliDate(iso: string): string {
   return `${toPersianDigits(String(day))} ${JALALI_MONTHS[month - 1]} ${toPersianDigits(String(year))}`;
 }
 
+/**
+ * «۱۲ مهر ۱۴۰۳» for a moment in time (a purchase, a decision). `formatJalaliDate` formats calendar dates, so the moment
+ * is first turned into the day it falls on in Tehran, where the owner and the trainer live: something at 23:30 Tehran
+ * time must not show tomorrow's date because the server runs in UTC.
+ */
+export function formatJalaliTimestamp(moment: Date): string {
+  return formatJalaliDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran" }).format(moment));
+}
+
 /** «مهر ۱۴۰۳», for dates where the day doesn't matter. */
 export function formatJalaliMonthYear(iso: string): string {
   const { year, month } = isoToJalali(iso);

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { formatNumberFa, toLatinDigits } from "~/lib/digits";
 import { ageFromBirthDate, birthDateFromAge } from "~/lib/dog-format";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { isoToJalali, isValidJalali, jalaliToIso, todayIso } from "~/lib/jalali";
 import {
   DOG_BREED_MAX_LENGTH,
@@ -100,18 +101,34 @@ export const dogFormSchema = z
 export type DogFormInput = z.input<typeof dogFormSchema>;
 export type DogFormValues = z.output<typeof dogFormSchema>;
 
+/*===== Locked Fields =====*/
+/**
+ * Shown under the birth date and the breed once the dog is evaluated (app-spec F2): the two decide eligibility, so
+ * only the Admin changes them from then on.
+ */
+export const LOCKED_FIELD_NOTE = `بعد از ارزیابی فقط ${HEAD_TRAINER.firstName} می‌تونه این را عوض کنه. اگه اشتباهی هست، بهش بگو.`;
+
 /*===== To the API =====*/
-/** The values `dog.create` and `dog.update` take. */
-export function toDogInput(values: DogFormValues) {
-  const approximate = values.birthMode === "approximate";
-  const birthDate = approximate
-    ? birthDateFromAge({ years: Number(values.ageYears), months: Number(values.ageMonths) })
-    : jalaliToIso({ year: Number(values.birthYear), month: Number(values.birthMonth), day: Number(values.birthDay) });
+/**
+ * The values `dog.create` and `dog.update` take. `dog` is the dog being edited (null for a new one).
+ *
+ * Once it is evaluated the birth date and breed are locked, and the API rejects any change to them. The form can't
+ * rebuild the stored date exactly (an approximate date is `YYYY-MM-01` made from an age that moves with the calendar),
+ * so the stored values are sent back as they are instead of being rebuilt from the form's fields.
+ */
+export function toDogInput({ values, dog }: { values: DogFormValues; dog: Dog | null }) {
+  const locked = dog?.isEvaluated === true;
+  const approximate = locked ? dog.birthDateApproximate : values.birthMode === "approximate";
+  const birthDate = locked
+    ? dog.birthDate
+    : approximate
+      ? birthDateFromAge({ years: Number(values.ageYears), months: Number(values.ageMonths) })
+      : jalaliToIso({ year: Number(values.birthYear), month: Number(values.birthMonth), day: Number(values.birthDay) });
 
   return {
     photoMediaId: values.photoMediaId,
     name: values.name,
-    breed: values.breed || null,
+    breed: locked ? dog.breed : values.breed || null,
     sex: values.sex,
     birthDate,
     birthDateApproximate: approximate,

@@ -10,10 +10,8 @@ export default [
 
   /*===== Account (customers and partners) =====*/
   route("account", "routes/layout_account/layout-account.tsx", [
-    // Placeholders until the Dashboard and Dog Detail are rebuilt: one module, so each route needs its own id.
-    index("routes/account_home/account-home.tsx", { id: "account-home" }),
-    route("dogs", "routes/account_home/account-home.tsx", { id: "account-dogs" }),
-    route("dogs/:dogId", "routes/account_home/account-home.tsx", { id: "account-dog-detail" }),
+    index("routes/account_home/account-home.tsx"),
+    route("dogs/:dogId", "routes/account_dog_detail/account-dog-detail.tsx"),
     // One form module for adding and editing, so each route needs its own id.
     route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
     route("dogs/:dogId/edit", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-edit" }),

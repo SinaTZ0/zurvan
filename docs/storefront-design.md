@@ -42,14 +42,24 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 | `/help`, `/privacy`                      | Help and FAQ, Privacy (not built)                            | footer                                |
 | `/join/partner`                          | Partner Enquiry (not built)                                  | footer                                |
 
+## Signed-in Pages
+
+- Signed-in pages are calmer and denser than the storefront: less photo, more information per screen.
+- A dog's state is spoken by the dog in its speech bubble, not shown as a label; the status badge is secondary.
+- The wording and the one main action for each state live in `app/lib/dog-status.ts` (`getDogStatus`), so every page says the same thing.
+- One main action per dog card. The quiet «پس گرفتن درخواست» shows only when the dog is just waiting for its evaluation.
+- The Dashboard (`/account`, `app/routes/account_home/`) has no orchestrated moment. Dog Detail (`/account/dogs/:dogId`, `app/routes/account_dog_detail/`) has one: the header bubble drawing in.
+
 ## Pieces
 
 | Piece          | Where                              | Use                                                                                                                                                                                                                                                           |
 | -------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `SpeechBubble` | `app/components/speech-bubble.tsx` | The dog's words in `font-hand`, inside a hand-drawn chalk outline with a tail pointing back at the dog. `tail` (and `lgTail` for desktop) picks the tail's edge and end. Opaque black inside, so it reads over photos. `drawIn` is for the page's one moment. |
 | `ChalkDoodle`  | `app/components/chalk-doodle.tsx`  | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                |
+| `DogPhoto`     | `app/components/dog-photo.tsx`     | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                              |
+| `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                       |
 
-Both live in `app/components/` because several routes use them.
+These live in `app/components/` because several routes use them.
 
 ## Colour and Surfaces
 

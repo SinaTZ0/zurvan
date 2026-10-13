@@ -42,7 +42,7 @@ export default function DogFormPage({ loaderData }: Route.ComponentProps) {
       {/*===== Header =====*/}
       <header className="mb-8 lg:mb-12">
         <Link
-          to={dog ? `/account/dogs/${dog.id}` : "/account/dogs"}
+          to={dog ? `/account/dogs/${dog.id}` : "/account"}
           className="rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline"
         >
           {dog ? dog.name : "سگ‌های من"}
@@ -77,7 +77,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
           ? "شاید از حسابت برداشته شده باشد."
           : "مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
       </p>
-      <Link to="/account/dogs" className="mt-6 inline-block font-bold text-primary underline-offset-4 hover:underline">
+      <Link to="/account" className="mt-6 inline-block font-bold text-primary underline-offset-4 hover:underline">
         برگرد به سگ‌های من
       </Link>
     </section>

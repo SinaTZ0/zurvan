@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ORPCError } from "@orpc/client";
 import { useState } from "react";
+import { LockIcon } from "lucide-react";
 import { useForm, useWatch, type UseFormSetError } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -12,6 +13,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 import { toast } from "~/components/ui/toast";
 import { Link } from "~/components/link";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { DOG_SEX_LABELS, DOG_SEXES, VACCINATION_STATUS_LABELS, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
 import { errorDataSchema } from "~/orpc/errors";
@@ -20,6 +22,7 @@ import { BREED_SUGGESTIONS } from "~/routes/account_dog_form/breeds";
 import { BirthDateField } from "~/routes/account_dog_form/components/birth-date-field";
 import { DogPreview } from "~/routes/account_dog_form/components/dog-preview";
 import { FormSection } from "~/routes/account_dog_form/components/form-section";
+import { LockedBirthDate } from "~/routes/account_dog_form/components/locked-birth-date";
 import { PhotoPicker } from "~/routes/account_dog_form/components/photo-picker";
 import { SegmentedChoice } from "~/components/segmented-choice";
 import { useSaveDog } from "~/routes/account_dog_form/hooks/use-save-dog";
@@ -27,6 +30,7 @@ import {
   type DogFormInput,
   type DogFormValues,
   dogFormSchema,
+  LOCKED_FIELD_NOTE,
   SERVER_FIELD_TO_FORM,
   toDogInput,
   toFormDefaults,
@@ -35,11 +39,14 @@ import {
 /*===== Dog Form =====*/
 /**
  * Adds a dog, or edits one. Three short sections (who it is, its body and health, notes for the trainer) beside a live
- * preview of the dog's tag. Saving goes to the dog's page, or back to `redirectTo` when another page sent them here.
+ * preview of the dog's tag. Saving a new dog goes to the Dashboard and saving an edit to the dog's page, or either goes
+ * back to `redirectTo` when another page sent them here. Once the dog is evaluated its birth date and breed are
+ * locked (app-spec F2): shown, not editable, and submitted as stored.
  */
 export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: string | null }) {
   const navigate = useNavigate();
   const saveDog = useSaveDog({ dogId: dog?.id ?? null });
+  const locked = dog?.isEvaluated === true;
   const {
     register,
     control,
@@ -59,18 +66,19 @@ export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: stri
 
   /*------ Submit ------*/
   const onSubmit = handleSubmit((values) => {
-    saveDog.mutate(toDogInput(values), {
+    saveDog.mutate(toDogInput({ values, dog }), {
       onSuccess: async (saved) => {
         toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
         // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
         const destination = redirectTo ? (dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id })) : null;
-        await navigate(destination ?? `/account/dogs/${saved.id}`, { viewTransition: true });
+        // Without a `redirectTo`, a new dog goes to the Dashboard (where it now appears), an edit to the dog's page.
+        await navigate(destination ?? (dog ? `/account/dogs/${saved.id}` : "/account"), { viewTransition: true });
       },
       onError: (error) => applyServerError({ error, setError }),
     });
   });
 
-  const cancelTo = redirectTo ?? (dog ? `/account/dogs/${dog.id}` : "/account/dogs");
+  const cancelTo = redirectTo ?? (dog ? `/account/dogs/${dog.id}` : "/account");
 
   return (
     <div className="grid gap-10 lg:grid-cols-12 lg:gap-x-16">
@@ -103,21 +111,36 @@ export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: stri
 
           <Field data-invalid={!!errors.breed}>
             <FieldLabel htmlFor="dog-breed">نژاد</FieldLabel>
-            <Input
-              id="dog-breed"
-              list="dog-breed-suggestions"
-              autoComplete="off"
-              placeholder="مثلاً ژرمن شپرد، یا دورگه"
-              aria-invalid={!!errors.breed}
-              {...register("breed")}
-            />
-            <datalist id="dog-breed-suggestions">
-              {BREED_SUGGESTIONS.map((breed) => (
-                <option key={breed} value={breed}>
-                  {breed}
-                </option>
-              ))}
-            </datalist>
+            {/* `readOnly`, not `disabled`: the value stays in the form and is submitted as stored. */}
+            <div className="relative">
+              <Input
+                id="dog-breed"
+                list={locked ? undefined : "dog-breed-suggestions"}
+                autoComplete="off"
+                placeholder={locked ? undefined : "مثلاً ژرمن شپرد، یا دورگه"}
+                readOnly={locked}
+                aria-invalid={!!errors.breed}
+                aria-describedby={locked ? "dog-breed-locked-note" : undefined}
+                className={locked ? "bg-sunken pe-11" : undefined}
+                {...register("breed")}
+              />
+              {locked && (
+                <LockIcon
+                  aria-hidden
+                  className="pointer-events-none absolute end-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                />
+              )}
+            </div>
+            {!locked && (
+              <datalist id="dog-breed-suggestions">
+                {BREED_SUGGESTIONS.map((breed) => (
+                  <option key={breed} value={breed}>
+                    {breed}
+                  </option>
+                ))}
+              </datalist>
+            )}
+            {locked && <FieldDescription id="dog-breed-locked-note">{LOCKED_FIELD_NOTE}</FieldDescription>}
             <FieldError errors={[errors.breed]} />
           </Field>
 
@@ -128,7 +151,12 @@ export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: stri
             error={errors.sex}
           />
 
-          <BirthDateField register={register} control={control} errors={errors} />
+          {/* A locked birth date is text; the server's error for it (`birthDate` maps to `birthDay`) shows there. */}
+          {locked ? (
+            <LockedBirthDate dog={dog} error={errors.birthDay ?? errors.ageYears} />
+          ) : (
+            <BirthDateField register={register} control={control} errors={errors} />
+          )}
         </FormSection>
 
         {/*------ Body and Health ------*/}
@@ -262,7 +290,15 @@ function applyServerError({ error, setError }: { error: Error; setError: UseForm
       if (target) setError(target, { message });
     }
     const [general] = parsed.data.errors;
-    if (general) setError("root", { message: general });
+    if (general) {
+      setError("root", { message: general });
+    } else if ("birthDate" in parsed.data.fields || "breed" in parsed.data.fields) {
+      // Only reachable when the dog was evaluated after this form opened, so the fields were still editable. The page
+      // is stale, and the locked version shows after a refresh.
+      setError("root", {
+        message: `همین حالا ارزیابی ${HEAD_TRAINER.firstName} ثبت شد و تاریخ تولد و نژاد قفل شدند. صفحه را تازه کن تا فرم را قفل‌شده ببینی، بعد دوباره ذخیره کن.`,
+      });
+    }
     return;
   }
   if (code === "UNAUTHORIZED") {

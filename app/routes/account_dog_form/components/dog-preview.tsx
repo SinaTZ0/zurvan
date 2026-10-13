@@ -1,10 +1,11 @@
 import type { DeepPartial } from "react-hook-form";
 
-import { DogPortrait } from "~/components/dog-portrait";
+import { DogPhoto } from "~/components/dog-photo";
 import { DogTag } from "~/components/dog-tag";
 import { MediaImage } from "~/components/media-image";
 import { toLatinDigits } from "~/lib/digits";
 import { birthDateFromAge, describeDogAge, describeWeight } from "~/lib/dog-format";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { isValidJalali, jalaliToIso } from "~/lib/jalali";
 import { DOG_SEX_LABELS } from "~/orpc/dog/constants";
 import type { Media } from "~/orpc/media/contract";
@@ -13,7 +14,7 @@ import type { DogFormInput } from "~/routes/account_dog_form/schema";
 /*===== Dog Preview =====*/
 /**
  * The dog's page header as it will look, built from the form as it is typed: the photo with its tag, the name stamped
- * in, and the facts line. On desktop it also shows what Arman will read first in the notes.
+ * in, and the facts line. On desktop it also shows what the head trainer will read first in the notes.
  */
 export function DogPreview({ values, photo }: { values: DeepPartial<DogFormInput>; photo: Media | null }) {
   // Short on purpose: the tag has room for a name, not a sentence.
@@ -24,7 +25,7 @@ export function DogPreview({ values, photo }: { values: DeepPartial<DogFormInput
   const notes = [values.behaviorNotes, values.medicalNotes].map((note) => note?.trim()).filter(Boolean);
 
   return (
-    <div className="rounded-3xl bg-sunken p-4 shadow-[inset_0_2px_12px_rgb(0_0_0/0.35)] lg:p-8">
+    <div className="rounded-3xl border bg-card p-4 lg:p-8">
       {/*------ Phone Strip ------*/}
       {/* Phones keep the preview short, so the form starts on the first screen. */}
       <div className="flex items-center gap-4 lg:hidden">
@@ -38,13 +39,19 @@ export function DogPreview({ values, photo }: { values: DeepPartial<DogFormInput
 
       {/*------ Desktop Portrait ------*/}
       <div className="hidden lg:block">
-        <DogPortrait name={name} microchipNumber={microchipNumber} photo={photo} stampKey={name} />
-        <p className="mt-6 text-sm text-muted-foreground">{facts || "جنس، سن و وزنش اینجا نوشته می‌شود."}</p>
+        <DogPhoto
+          name={name}
+          microchipNumber={microchipNumber}
+          photo={photo}
+          className="aspect-4/3 w-full rounded-3xl"
+        />
+        <p className="mt-6 font-display text-2xl font-bold">{name}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{facts || "جنس، سن و وزنش اینجا نوشته می‌شود."}</p>
       </div>
 
-      {/*------ What Arman Reads ------*/}
+      {/*------ What The Trainer Reads ------*/}
       <div className="mt-6 hidden border-t pt-5 lg:block">
-        <p className="text-sm font-bold text-saffron-text">آرمان قبل از اولین جلسه می‌خواند</p>
+        <p className="text-sm font-bold text-primary">{HEAD_TRAINER.firstName} قبل از اولین جلسه می‌خواند</p>
         {notes.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-2 text-sm text-pretty">
             {notes.map((note) => (
