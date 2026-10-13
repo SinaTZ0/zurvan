@@ -17,13 +17,17 @@ export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: [
 export function loader({ context }: Route.LoaderArgs) {
   const { user } = context.get(sessionContext);
   // The guard only lets named accounts through, so `firstName` is set.
-  return { firstName: user.firstName ?? "", phoneNumber: user.phoneNumber ?? null };
+  return {
+    firstName: user.firstName ?? "",
+    phoneNumber: user.phoneNumber ?? null,
+    role: user.role === "partner" ? "partner" : "customer",
+  } as const;
 }
 
 /*===== Account Layout =====*/
 /** The signed-in shell for customers and partners at `/account`. */
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
-  const navItems = useAccountNavItems();
+  const navItems = useAccountNavItems(loaderData.role);
 
   return (
     <div className="flex min-h-svh flex-col">

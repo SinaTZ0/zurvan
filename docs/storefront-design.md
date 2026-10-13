@@ -59,6 +59,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 - The Dashboard (`/account`, `app/routes/account_home/`) has no orchestrated moment. Dog Detail (`/account/dogs/:dogId`, `app/routes/account_dog_detail/`) has one: the header bubble drawing in.
 - The Cart (`/account/cart`) has one orchestrated moment: the dog's bubble drawing in on the payment banner. Purchases (`/account/purchases`) has none.
 - The Dog Form (`/account/dogs/new` and `…/:dogId/edit`, `app/routes/account_dog_form/`) has one orchestrated moment, the dog's bubble drawing in. The dog column is the dog's own page being written (photo or tag, name stamped as typed, a bubble following the section), not the stock cut-out; short either-or questions are pill radios like Assessment's chips.
+- Profile Settings (`/account/profile`, `app/routes/account_profile/`) is shared by customers and partners. It has one orchestrated moment, the bubble drawing in; the tag column is the person's own page being written (their initial, their name as typed, the locked login number), the stock dog leans behind its top edge, and the bubble follows the focused card («ثبت شد!» after a save). Settings are reached from the person menu, not a tab.
 
 ## Pieces
 

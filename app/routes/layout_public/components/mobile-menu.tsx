@@ -3,6 +3,7 @@ import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Link } from "~/components/link";
+import { PROFILE_PATH } from "~/lib/account-links";
 import { useSignOut } from "~/hooks/use-sign-out";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
@@ -60,6 +61,15 @@ export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
                   className={cn(buttonVariants({ size: "lg", className: "w-full" }))}
                 >
                   {viewer.role === "customer" ? "حساب من" : "پنل من"}
+                </Link>
+              )}
+              {viewer.role !== "admin" && (
+                <Link
+                  to={PROFILE_PATH}
+                  onClick={close}
+                  className={cn(buttonVariants({ variant: "outline", size: "lg", className: "w-full" }))}
+                >
+                  تنظیمات حساب
                 </Link>
               )}
               <Button

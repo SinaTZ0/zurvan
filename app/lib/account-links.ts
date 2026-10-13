@@ -8,3 +8,10 @@ export const ACCOUNT_LINKS = [
   { label: "سبد", to: CART_PATH },
   { label: "خریدها", to: PURCHASES_PATH },
 ] as const;
+
+/*===== Profile Settings =====*/
+// Shared by customers and partners (docs/app-spec.md, F1). It is not a tab: settings aren't a daily destination, so it
+// sits in the person menu of both headers instead.
+export const PROFILE_PATH = "/account/profile";
+
+export const PROFILE_LINK = { label: "تنظیمات حساب", to: PROFILE_PATH } as const;

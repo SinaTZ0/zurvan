@@ -1,4 +1,5 @@
 import { PersonMenu, type PersonMenuLink } from "~/components/person-menu";
+import { PROFILE_LINK } from "~/lib/account-links";
 import { USER_ROLE_LABELS } from "~/lib/user-constants";
 import { CartLink } from "~/routes/layout_public/components/cart-link";
 import { CUSTOMER_MENU_LINKS } from "~/routes/layout_public/nav-items";
@@ -13,12 +14,12 @@ export function ViewerControls({ viewer }: { viewer: Viewer }) {
   const isCustomer = viewer.role === "customer";
 
   /*------ Menu links ------*/
+  // Settings are for customers and partners; the Admin's own area will carry his.
+  const settings = viewer.role === "admin" ? [] : [PROFILE_LINK];
   const links: readonly PersonMenuLink[] = isCustomer
-    ? CUSTOMER_MENU_LINKS
-    : // Their panels aren't built yet, so `homePath` is null and the menu holds only the name and «خروج».
-      viewer.homePath
-      ? [{ label: "پنل من", to: viewer.homePath }]
-      : [];
+    ? [...CUSTOMER_MENU_LINKS, ...settings]
+    : // A partner's or the Admin's panel isn't built yet, so `homePath` is null and the menu holds the settings and «خروج».
+      [...(viewer.homePath ? [{ label: "پنل من", to: viewer.homePath }] : []), ...settings];
 
   return (
     <>

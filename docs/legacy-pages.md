@@ -23,9 +23,9 @@ When a page is redesigned or rebuilt, remove its row and add it to the "Built in
 
 ## Customer Pages (`/account`)
 
-| URL       | Route slice | app-spec page                                            | Verdict | Notes                       |
-| --------- | ----------- | -------------------------------------------------------- | ------- | --------------------------- |
-| not built | —           | Profile Settings, Partner Dashboard, Leads and Customers | —       | Build new, in the new look. |
+| URL       | Route slice | app-spec page                          | Verdict | Notes                       |
+| --------- | ----------- | -------------------------------------- | ------- | --------------------------- |
+| not built | —           | Partner Dashboard, Leads and Customers | —       | Build new, in the new look. |
 
 ## Built in the New Look
 
@@ -41,3 +41,4 @@ When a page is redesigned or rebuilt, remove its row and add it to the "Built in
 - Dog Form (`/account/dogs/new`, `/account/dogs/:dogId/edit`): `app/routes/account_dog_form/`. A signed-in customer page where the dog's own page is written as the owner fills the form: a sticky column with its photo (the photo is the picker) or engraved tag, its name stamped in as it is typed, the facts line and a bubble that follows the section; the form in three sections with pill choices; birth date and breed shown as locked plates once the dog is evaluated. `segmented-choice` is retired (the pills live in the slice).
 - Login / Register (`/auth`): `app/routes/auth/`. The home hero turned into a form: the dog's photo fills the page, the form sits in its dark half with no box, and a different dog asks at each step (the shepherd for the phone, the Malinois for the code, the puppy for the name); the photo crossfades and the bubble's words change. The flow, redirects and `?ref=` attribution are unchanged (the page now also remembers `?ref=` itself, as Home does).
 - Course Catalogue (`/courses`): `app/routes/course_catalogue/`. A public page: the stock dog stands behind the filter shelf and its bubble is the live result counter («۱۱ تا دوره دارم!», «برای «cgc» یه دوره پیدا کردم»); search (Persian-folded, on title, Latin name and summary), family pills and pages live in the URL (`?q=&family=&page=`); cards show the course a dog must have passed first; a free-evaluation ask closes the page. Shares `CourseCard`, `CourseFamilyFilter`, `Pagination` and `course-families` with the home grid.
+- Profile Settings (`/account/profile`): `app/routes/account_profile/`. Shared by customers and partners. The person's own tag is engraved as they type (the initial disc, the name, the locked login number) with the stock dog leaning behind its top edge and its bubble following the focused card; two independent forms: the name (Better-Auth `updateUser`) and, for partners only, the Sheba (`partner.updateMine`, checked for format and checksum). The link is «تنظیمات حساب» in the person menu of both headers and the phone sheet (`PROFILE_LINK` in `app/lib/account-links.ts`), not a tab; a partner's account shell has no tabs yet.

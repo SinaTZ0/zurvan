@@ -1,4 +1,5 @@
 import { BrandLogo } from "~/components/brand-logo";
+import { PROFILE_LINK } from "~/lib/account-links";
 import { Link } from "~/components/link";
 import { PersonMenu } from "~/components/person-menu";
 import { BOTTOM_TABS_FROM, type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
@@ -29,9 +30,11 @@ export function AccountHeader({
   // Below three sections phones have no bottom tab bar, so the person menu lists the sections and the exit link for
   // them. Desktop always shows them in the header.
   const sectionsInMenu = navItems.length < BOTTOM_TABS_FROM;
-  const menuLinks = sectionsInMenu
+  const sectionLinks = sectionsInMenu
     ? [...navItems, exitLink].map(({ label, to }) => ({ label, to, phonesOnly: true }))
     : [];
+  // Settings are never a tab, so the menu lists them on every screen size.
+  const menuLinks = [...sectionLinks, PROFILE_LINK];
 
   return (
     <header className="border-b border-foreground/10 bg-jet">
