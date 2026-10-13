@@ -7,7 +7,9 @@ import { formatNumberFa } from "~/lib/digits";
 /*===== Pagination =====*/
 /**
  * Page numbers between a back and a forward arrow, centred under the grid. In RTL the pages run right to left, so
- * "next" points left. A hidden live line reads out the page that came up.
+ * "next" points left. A hidden live line reads out the page that came up. Up to five pages are all shown; beyond that
+ * the list is a window (first, last and the current page with its neighbours) with «…» in the gaps, so it still fits a
+ * 390px screen however long the list grows (the SMS outbox runs to dozens of pages).
  */
 export function Pagination({
   page,
@@ -24,9 +26,10 @@ export function Pagination({
   className?: string;
 }) {
   const arrow = cn(buttonVariants({ variant: "outline", size: "icon" }));
+  const items = pageItems({ page, pageCount });
 
   return (
-    <nav aria-label={label} className={cn("flex items-center justify-center gap-2", className)}>
+    <nav aria-label={label} className={cn("flex items-center justify-center gap-1 sm:gap-2", className)}>
       <button
         type="button"
         aria-label="صفحه‌ی قبل"
@@ -37,23 +40,29 @@ export function Pagination({
         <ChevronRightIcon aria-hidden />
       </button>
 
-      <ol className="flex items-center gap-2">
-        {Array.from({ length: pageCount }, (_, index) => (
-          <li key={index}>
-            <button
-              type="button"
-              aria-label={`صفحه‌ی ${formatNumberFa(index + 1)}`}
-              aria-current={index === page ? "page" : undefined}
-              onClick={() => onPick(index)}
-              className={cn(
-                "grid size-11 place-items-center rounded-full border text-sm font-extrabold tabular-nums transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-                index === page
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {formatNumberFa(index + 1)}
-            </button>
+      <ol className="flex items-center gap-1 sm:gap-2">
+        {items.map((index, position) => (
+          <li key={`${position}-${index}`}>
+            {index === "gap" ? (
+              <span aria-hidden className="grid w-4 place-items-center text-muted-foreground">
+                …
+              </span>
+            ) : (
+              <button
+                type="button"
+                aria-label={`صفحه‌ی ${formatNumberFa(index + 1)}`}
+                aria-current={index === page ? "page" : undefined}
+                onClick={() => onPick(index)}
+                className={cn(
+                  "grid size-10 place-items-center rounded-full border text-sm font-extrabold tabular-nums transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:size-11",
+                  index === page
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {formatNumberFa(index + 1)}
+              </button>
+            )}
           </li>
         ))}
       </ol>
@@ -73,4 +82,20 @@ export function Pagination({
       </p>
     </nav>
   );
+}
+
+/*===== Window =====*/
+/** The page indexes to draw, with `"gap"` where pages are skipped. */
+function pageItems({ page, pageCount }: { page: number; pageCount: number }): (number | "gap")[] {
+  if (pageCount <= 5) return Array.from({ length: pageCount }, (_, index) => index);
+
+  const shown = [...new Set([0, page - 1, page, page + 1, pageCount - 1])]
+    .filter((index) => index >= 0 && index < pageCount)
+    // oxlint-disable-next-line unicorn/no-array-sort -- the project's TypeScript lib has no `toSorted`
+    .sort((a, b) => a - b);
+
+  return shown.flatMap((index, position) => {
+    const previous = shown[position - 1];
+    return previous !== undefined && index - previous > 1 ? (["gap", index] as const) : [index];
+  });
 }
