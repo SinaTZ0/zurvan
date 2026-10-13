@@ -7,7 +7,6 @@ import {
   index,
   integer,
   numeric,
-  pgSequence,
   pgTable,
   primaryKey,
   text,
@@ -45,6 +44,8 @@ export const user = pgTable("user", {
   // `app/lib/user-constants.ts`. Only customers can sign themselves up; the Admin creates the rest.
   role: text("role").notNull().default("customer"),
   status: text("status").notNull().default("active"),
+  /** The partner this customer was attributed to when they registered, permanently (F7). Checked against `partner`. */
+  referredByPartnerId: text("referred_by_partner_id").references((): AnyPgColumn => user.id, { onDelete: "restrict" }),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
@@ -114,7 +115,7 @@ export const verification = pgTable(
 
 /*===== SMS Outbox =====*/
 // Showcase mode sends no SMS: every message the app would have sent is written here instead, for the Admin to read
-// (docs/foundations-plan.md, "Showcase Shortcuts").
+// (showcase mode, `SHOWCASE_MODE`).
 export const smsOutbox = pgTable(
   "sms_outbox",
   {
@@ -155,8 +156,9 @@ export const media = pgTable(
 );
 
 /*===== Dogs =====*/
-// A customer's dog (docs/app-phase-one.md, entity 4). Assessments and enrollments will point at a dog, which is why its
-// owner can't be deleted out from under it (`restrict`) and why a removed dog is only marked deleted.
+// A customer's dog (docs/app-spec.md, F2). Evaluations and enrollments point at it, and a dog is never deleted, so its
+// owner can't be deleted out from under it (`restrict`). Whether it is evaluated is not stored: it is evaluated when any
+// of its evaluations is (F3).
 
 export const dog = pgTable(
   "dog",
@@ -166,12 +168,12 @@ export const dog = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
     name: text("name").notNull(),
-    /** Free text; the form suggests common breeds. */
+    /** Free text; the form suggests common breeds. Locked for the customer once the dog is evaluated (F2). */
     breed: text("breed"),
     // Plain text instead of pg enums, so adding a value is a code change, not a migration. Allowed values live in
     // `app/orpc/dog/constants.ts`.
     sex: text("sex").notNull(),
-    /** `YYYY-MM-DD`, Gregorian. Age is calculated from it and never stored. */
+    /** `YYYY-MM-DD`, Gregorian. Age is calculated from it and never stored. Locked once the dog is evaluated (F2). */
     birthDate: date("birth_date", { mode: "string" }).notNull(),
     /** The owner gave an age, not a date ("approximate is fine"), so `birth_date` is an estimate. */
     birthDateApproximate: boolean("birth_date_approximate").notNull().default(false),
@@ -180,16 +182,12 @@ export const dog = pgTable(
     isNeutered: boolean("is_neutered").notNull(),
     microchipNumber: text("microchip_number"),
     vaccinationStatus: text("vaccination_status").notNull().default("unknown"),
-    /** Shown to the trainer, e.g. a fear of other dogs. */
+    /** Shown to the Admin, e.g. a fear of other dogs. */
     behaviorNotes: text("behavior_notes"),
-    /** Shown to the trainer. */
+    /** Shown to the Admin. */
     medicalNotes: text("medical_notes"),
-    /** Set by a trainer or the Admin for a dog they already know, which gives it a record. Customers can't set it. */
-    knownSince: date("known_since", { mode: "string" }),
     /** The dog's photo. Cleared if the media row is ever deleted, so a dog never points at a missing image. */
     photoMediaId: uuid("photo_media_id").references(() => media.id, { onDelete: "set null" }),
-    /** Soft delete: the dog's history (assessments, enrollments) stays. */
-    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
@@ -200,21 +198,8 @@ export const dog = pgTable(
 );
 
 /*===== Courses =====*/
-// The catalogue (docs/app-phase-one.md, entities 5, 6 and 12), with only the fields the public pages read so far. The
-// approval workflow, the owner trainer, the revenue split and the rating averages arrive with their features; until
-// trainer profiles exist, every course is the head trainer's. Rows come from `npm run db:seed`.
-
-export const refundPolicy = pgTable("refund_policy", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  // Unique so the seed can upsert by name.
-  name: text("name").notNull().unique(),
-  /** Plain Persian explanation, shown on the course page and at checkout. */
-  customerDescription: text("customer_description").notNull(),
-  /** Share of the unheld sessions refunded once the first session has been held (spec 3.9). */
-  unheldRefundPercent: integer("unheld_refund_percent").notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+// The catalogue (docs/app-spec.md, F8), with only the fields the public pages read so far. Every course is the head
+// trainer's. Rows come from `npm run db:seed`. The full set of course settings is pending the owner.
 
 export const course = pgTable(
   "course",
@@ -227,8 +212,7 @@ export const course = pgTable(
     // Plain text instead of pg enums, so adding a value is a code change, not a migration. Allowed values live in
     // `app/orpc/course/constants.ts`.
     family: text("family").notNull(),
-    bookingKind: text("booking_kind").notNull().default("standard"),
-    // New courses start as drafts; the seed and the Admin approve them.
+    /** `draft`, `approved` (on sale) or `archived`. */
     status: text("status").notNull().default("draft"),
     /** One or two sentences on what the course is for, in the owner's terms. */
     summary: text("summary").notNull(),
@@ -249,26 +233,12 @@ export const course = pgTable(
     /** Months. Null when the course has no lower bound or it isn't known yet. */
     minAgeMonths: integer("min_age_months"),
     maxAgeMonths: integer("max_age_months"),
-    /** Approximate. Null when the trainer decides it after seeing the dog. */
+    /** Approximate, shown as a description only: lessons aren't tracked. */
     sessionCount: integer("session_count"),
-    /** Null when it is decided after the assessment. */
     place: text("place"),
-    // Money is Rial everywhere. A null price means it isn't sold at a list price: behavior plans are priced per
-    // request, and working and sport dogs after the assessment. A null boarding price is "price on request".
+    // Money is Rial everywhere. A null price means the course isn't sold online (working and sport dogs, F8).
     price: bigint("price", { mode: "number" }),
     boardingPrice: bigint("boarding_price", { mode: "number" }),
-    /** When set, the course offers a test that counts as passing it (spec 3.6). */
-    testPrice: bigint("test_price", { mode: "number" }),
-    refundPolicyId: uuid("refund_policy_id")
-      .notNull()
-      .references(() => refundPolicy.id, { onDelete: "restrict" }),
-    /**
-     * Gets new enrollments. Null means the head trainer (the Admin, docs/business-logic.md B8): the catalogue seed runs
-     * before any account exists, and it is his catalogue. The Admin changes it when an assistant takes a course over.
-     */
-    ownerTrainerId: text("owner_trainer_id").references(() => user.id, { onDelete: "restrict" }),
-    /** The trainer's part of each sale (B1, B2). At most `100 − partner commission`, so the Admin's line is never negative. */
-    trainerSharePercent: integer("trainer_share_percent").notNull().default(70),
     /** Catalogue order. */
     position: integer("position").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -277,13 +247,10 @@ export const course = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [
-    index("course_status_position_idx").on(table.status, table.position),
-    check("course_trainer_share_check", sql`${table.trainerSharePercent} between 0 and 100`),
-  ],
+  (table) => [index("course_status_position_idx").on(table.status, table.position)],
 );
 
-/** A course the dog must have passed, or passed the test of, before booking this one (spec 3.8). */
+/** A course the dog must have passed before buying this one (F4). */
 export const coursePrerequisite = pgTable(
   "course_prerequisite",
   {
@@ -300,122 +267,30 @@ export const coursePrerequisite = pgTable(
   ],
 );
 
-/*===== Assessments =====*/
-// The free assessment (docs/app-phase-one.md, 3.3 and entities 7 and 8): a trainer opens slots, a customer books one
-// for a dog, and the trainer records the outcome and recommends courses. Plain text instead of pg enums, as elsewhere;
-// allowed values live in `app/orpc/assessment/constants.ts`. Rows are never deleted by the app, so every reference is
-// `restrict`: an assessment is part of a dog's history.
-
-export const assessmentSlot = pgTable(
-  "assessment_slot",
+/** A course the Admin marked as passed for a dog he already knows (F2). A completed enrollment counts the same. */
+export const dogPassedCourse = pgTable(
+  "dog_passed_course",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    trainerId: text("trainer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    startsAt: timestamp("starts_at").notNull(),
-    durationMinutes: integer("duration_minutes").notNull().default(60),
-    /** `open`, `booked` or `closed`. */
-    status: text("status").notNull().default("open"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    // Serves the public list of open slots.
-    index("assessment_slot_status_starts_at_idx").on(table.status, table.startsAt),
-    // Opening the same time twice is a no-op. A closed slot doesn't count, so the trainer can open that time again.
-    uniqueIndex("assessment_slot_trainer_starts_at_live_idx")
-      .on(table.trainerId, table.startsAt)
-      .where(sql`${table.status} <> 'closed'`),
-    check("assessment_slot_duration_check", sql`${table.durationMinutes} between 15 and 240`),
-  ],
-);
-
-export const assessment = pgTable(
-  "assessment",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    slotId: uuid("slot_id")
-      .notNull()
-      .references(() => assessmentSlot.id, { onDelete: "restrict" }),
     dogId: uuid("dog_id")
       .notNull()
       .references(() => dog.id, { onDelete: "restrict" }),
-    customerId: text("customer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    /** Copied from the slot, so the trainer's queries don't join it. */
-    trainerId: text("trainer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    /** `home`, `sport` or `work`. */
-    trainingGoal: text("training_goal").notNull(),
-    /** What the owner wants to change. */
-    customerNote: text("customer_note").notNull(),
-    /** `home` or `meeting-point`. */
-    placeKind: text("place_kind").notNull(),
-    /** The address, or a description of the meeting point. */
-    place: text("place").notNull(),
-    /** `booked`, `completed`, `no-show` or `cancelled`. */
-    status: text("status").notNull().default("booked"),
-    cancelledBy: text("cancelled_by").references(() => user.id, { onDelete: "restrict" }),
-    cancellationReason: text("cancellation_reason"),
-    cancelledAt: timestamp("cancelled_at"),
-    /** Shown to the customer. */
-    trainerNotes: text("trainer_notes"),
-    /** When the outcome was recorded, for a completed assessment and a no-show alike. */
-    completedAt: timestamp("completed_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    // The last line of defence against double booking: whatever the service does, a slot has one live assessment.
-    uniqueIndex("assessment_slot_live_idx")
-      .on(table.slotId)
-      .where(sql`${table.status} <> 'cancelled'`),
-    // A dog has at most one upcoming assessment.
-    uniqueIndex("assessment_dog_booked_idx")
-      .on(table.dogId)
-      .where(sql`${table.status} = 'booked'`),
-    index("assessment_customer_id_idx").on(table.customerId),
-    index("assessment_trainer_id_idx").on(table.trainerId),
-    index("assessment_dog_id_idx").on(table.dogId),
-  ],
-);
-
-/** The courses a trainer recommends after an assessment, in the order to take them (a join table keeps the foreign key). */
-export const assessmentRecommendation = pgTable(
-  "assessment_recommendation",
-  {
-    assessmentId: uuid("assessment_id")
-      .notNull()
-      .references(() => assessment.id, { onDelete: "cascade" }),
     courseId: uuid("course_id")
       .notNull()
       .references(() => course.id, { onDelete: "restrict" }),
-    /** 0-based. */
-    position: integer("position").notNull(),
+    markedBy: text("marked_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [
-    primaryKey({ columns: [table.assessmentId, table.courseId] }),
-    unique("assessment_recommendation_position_unique").on(table.assessmentId, table.position),
-  ],
+  (table) => [primaryKey({ columns: [table.dogId, table.courseId] })],
 );
 
-/*===== Behavior Requests =====*/
-// Behavior modification (docs/app-phase-one.md, 3.7 and entity 9): the customer describes a problem and sends videos, the
-// trainer proposes a plan (sessions and a price) or declines, and the customer pays the plan through the order flow,
-// which creates the enrollment. Plain text instead of pg enums, as elsewhere; allowed values live in
-// `app/orpc/behavior-request/constants.ts`. Rows are never deleted by the app, so references are `restrict`.
+/*===== Evaluations =====*/
+// The free first meeting with a dog (F3). The customer requests it; the Admin calls them and records the outcome.
+// Rows are never deleted, so every reference is `restrict`.
 
-export const behaviorRequest = pgTable(
-  "behavior_request",
+export const evaluation = pgTable(
+  "evaluation",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     dogId: uuid("dog_id")
@@ -424,30 +299,25 @@ export const behaviorRequest = pgTable(
     customerId: text("customer_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** Who reviews it and, once paid, teaches it: the behavior course's owner trainer (the head trainer's, by default) when it was sent. */
-    trainerId: text("trainer_id")
+    /** `requested`, then `evaluated`, `rejected` or `withdrawn`, once. Allowed values in `app/orpc/evaluation/constants.ts`. */
+    status: text("status").notNull().default("requested"),
+    /** `YYYY-MM-DD`. Null for an evaluation the Admin recorded himself, with no request behind it. */
+    earliestDate: date("earliest_date", { mode: "string" }),
+    /** When the customer is usually free: weekdays and parts of the day, as two independent lists. */
+    availableDays: text("available_days")
+      .array()
       .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    problemCategory: text("problem_category").notNull(),
-    description: text("description").notNull(),
-    /** Where the sessions would happen, and when it suits the customer: copied into the enrollment when the plan is paid. */
-    address: text("address").notNull(),
-    preferredTimes: text("preferred_times").notNull(),
-    /** `submitted`, `proposed`, `paid`, `declined`, `withdrawn` or `expired`. */
-    status: text("status").notNull().default("submitted"),
-    /*------ The Plan ------*/
-    proposedSessions: integer("proposed_sessions"),
-    /** Rial. */
-    proposedPrice: bigint("proposed_price", { mode: "number" }),
-    /** The plan's explanation, or the reason it was declined. Shown to the customer. */
-    trainerNote: text("trainer_note"),
-    proposedAt: timestamp("proposed_at"),
-    /** The plan can be paid until then (B13). Paying checks it itself, so no job is needed for correctness. */
-    proposalExpiresAt: timestamp("proposal_expires_at"),
-    /** When the trainer declined it. */
-    declinedAt: timestamp("declined_at"),
-    /** Set when the plan is paid. */
-    orderItemId: uuid("order_item_id").references((): AnyPgColumn => orderItem.id, { onDelete: "restrict" }),
+      .default(sql`'{}'::text[]`),
+    availablePeriods: text("available_periods")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** Why the Admin rejected it. Shown to the customer. */
+    rejectionReason: text("rejection_reason"),
+    /** When the Admin evaluated or rejected it. */
+    decidedAt: timestamp("decided_at"),
+    /** The Admin marked a dog he already knew as evaluated, with no request. */
+    createdByAdmin: boolean("created_by_admin").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
@@ -455,33 +325,44 @@ export const behaviorRequest = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    index("behavior_request_customer_id_idx").on(table.customerId),
-    index("behavior_request_trainer_status_idx").on(table.trainerId, table.status),
-    // The expiry sweep looks for proposals that are due.
-    index("behavior_request_status_expires_idx").on(table.status, table.proposalExpiresAt),
-    // A dog has one request being worked on at a time: it keeps the trainer's inbox honest, and a dog can have only one
-    // live behavior enrollment anyway.
-    uniqueIndex("behavior_request_dog_open_idx")
+    // F3: a dog with a `requested` or `evaluated` evaluation can't request another. Held by the database, so a double
+    // click or two tabs can't open two.
+    uniqueIndex("evaluation_dog_open_idx")
       .on(table.dogId)
-      .where(sql`${table.status} in ('submitted', 'proposed')`),
-    check(
-      "behavior_request_plan_check",
-      sql`(${table.proposedSessions} is null or ${table.proposedSessions} between 1 and 100)
-        and (${table.proposedPrice} is null or ${table.proposedPrice} > 0)`,
-    ),
+      .where(sql`${table.status} in ('requested', 'evaluated')`),
+    index("evaluation_customer_id_idx").on(table.customerId),
+    // Serves the Admin's list of requests waiting for an answer.
+    index("evaluation_status_created_at_idx").on(table.status, table.createdAt),
   ],
 );
 
+/** A photo of the dog sent with an evaluation request: an image in the media pipeline (`kind` `evaluation`). */
+export const evaluationPhoto = pgTable(
+  "evaluation_photo",
+  {
+    evaluationId: uuid("evaluation_id")
+      .notNull()
+      .references(() => evaluation.id, { onDelete: "restrict" }),
+    mediaId: uuid("media_id")
+      .notNull()
+      .unique()
+      .references(() => media.id, { onDelete: "restrict" }),
+    /** 0-based, in the order the customer put them. */
+    position: integer("position").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.evaluationId, table.mediaId] })],
+);
+
 /**
- * A video of the behavior. Stored as uploaded in the bucket under `behavior-video/{id}/original.{mp4|mov}`, never
- * served by nginx: only the app streams it, after checking who is asking (docs/media.md, "Videos").
+ * A video of the dog. Stored as uploaded in the bucket under `evaluation-video/{id}/original.{mp4|mov}`, never served
+ * by nginx: only the app streams it, after checking who is asking (docs/media.md, "Videos").
  */
-export const behaviorRequestVideo = pgTable(
-  "behavior_request_video",
+export const evaluationVideo = pgTable(
+  "evaluation_video",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     /** Null until the request is sent: the customer uploads each video as soon as it is picked. */
-    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
+    evaluationId: uuid("evaluation_id").references(() => evaluation.id, { onDelete: "restrict" }),
     /** 0-based, in the order the customer put them. Null until the request is sent. */
     position: integer("position"),
     uploadedBy: text("uploaded_by")
@@ -495,286 +376,33 @@ export const behaviorRequestVideo = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
-    index("behavior_request_video_request_id_idx").on(table.behaviorRequestId),
+    index("evaluation_video_evaluation_id_idx").on(table.evaluationId),
     // Serves the cleanup of videos that were uploaded and never sent.
-    index("behavior_request_video_uploaded_by_idx").on(table.uploadedBy),
+    index("evaluation_video_uploaded_by_idx").on(table.uploadedBy),
   ],
 );
 
-/*===== Wallets and Transactions =====*/
-// The money core (docs/app-phase-one.md, 3.12 and entities 17–19). Every movement of money is a transaction between
-// wallets whose lines add up to 0, written only through `createTransaction` (`app/orpc/wallet/`). The rule is also held
-// by a deferred constraint trigger (`app/db/money-constraints.sql`), so it survives a bug that skips the service.
-// Transactions and their lines are append-only: a mistake is corrected by a new transaction, usually its mirror.
-
-export const wallet = pgTable(
-  "wallet",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    /** A user's wallet. Created the first time the user needs one. */
-    ownerUserId: text("owner_user_id")
-      .unique()
-      .references(() => user.id, { onDelete: "restrict" }),
-    /** `admin`, `gateway`, `bank` or `withdrawal-hold`, one of each. Allowed values in `app/orpc/wallet/constants.ts`. */
-    systemKind: text("system_kind").unique(),
-    /** Rial. The cached sum of the wallet's lines, updated in the same database transaction. Can be negative. */
-    balance: bigint("balance", { mode: "number" }).notNull().default(0),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    check("wallet_owner_xor_system_check", sql`(${table.ownerUserId} is null) <> (${table.systemKind} is null)`),
-  ],
-);
-
-/** Numbers transactions: `TX-140507-0042`. Never reset, so a number is unique however many are made in a day. */
-export const walletTransactionNumberSeq = pgSequence("wallet_transaction_number_seq");
-
-export const walletTransaction = pgTable(
-  "wallet_transaction",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    number: text("number").notNull().unique(),
-    /** `gateway-payment`, `purchase`, `refund`, `withdrawal-hold`, `withdrawal-payout`, `withdrawal-release`, `manual`. */
-    type: text("type").notNull(),
-    /** Rial. The total of the positive lines, cached for lists. */
-    sum: bigint("sum", { mode: "number" }).notNull(),
-    /** Shown to everyone with a line in it. */
-    description: text("description").notNull(),
-    /** Null for system transactions; the Admin for manual ones. */
-    createdById: text("created_by_id").references(() => user.id, { onDelete: "restrict" }),
-    mirrorOfId: uuid("mirror_of_id").references((): AnyPgColumn => walletTransaction.id, { onDelete: "restrict" }),
-    /** For `purchase` and `refund`. */
-    orderItemId: uuid("order_item_id").references((): AnyPgColumn => orderItem.id, { onDelete: "restrict" }),
-    /** For `gateway-payment`. */
-    paymentId: uuid("payment_id").references((): AnyPgColumn => payment.id, { onDelete: "restrict" }),
-    // Append-only, so there is no `updated_at`.
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [
-    // At most one purchase per order item, and one gateway transaction per payment: a repeated payment callback
-    // can't move the money twice even if it gets past the service's checks.
-    uniqueIndex("wallet_transaction_purchase_idx")
-      .on(table.orderItemId)
-      .where(sql`${table.type} = 'purchase'`),
-    uniqueIndex("wallet_transaction_payment_idx")
-      .on(table.paymentId)
-      .where(sql`${table.type} = 'gateway-payment'`),
-    index("wallet_transaction_mirror_of_idx").on(table.mirrorOfId),
-    check("wallet_transaction_sum_check", sql`${table.sum} > 0`),
-  ],
-);
-
-export const walletTransactionLine = pgTable(
-  "wallet_transaction_line",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    transactionId: uuid("transaction_id")
-      .notNull()
-      .references(() => walletTransaction.id, { onDelete: "restrict" }),
-    walletId: uuid("wallet_id")
-      .notNull()
-      .references(() => wallet.id, { onDelete: "restrict" }),
-    /** Rial, signed: negative for a sender, positive for a receiver. Never 0. */
-    amount: bigint("amount", { mode: "number" }).notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-  },
-  (table) => [
-    // Each wallet appears at most once in a transaction.
-    unique("wallet_transaction_line_wallet_unique").on(table.transactionId, table.walletId),
-    // A wallet's history, newest first.
-    index("wallet_transaction_line_wallet_created_idx").on(table.walletId, table.createdAt),
-    check("wallet_transaction_line_amount_check", sql`${table.amount} <> 0`),
-  ],
-);
-
-/*===== Discount Codes =====*/
-// Entity 13 and spec 3.10. Created by the Admin; the checkout applies one per order.
-
-export const discountCode = pgTable(
-  "discount_code",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    /** Stored upper-case; matched case-insensitively. */
-    code: text("code").notNull(),
-    /** For the Admin only. */
-    description: text("description"),
-    /** `percentage` or `fixed`. */
-    type: text("type").notNull(),
-    /** A percentage (1–100), or Rial. */
-    value: bigint("value", { mode: "number" }).notNull(),
-    /** Rial. Optional cap on a percentage code. */
-    maxDiscountAmount: bigint("max_discount_amount", { mode: "number" }),
-    /** Rial. Compared with the order's subtotal. */
-    minOrderAmount: bigint("min_order_amount", { mode: "number" }),
-    startsAt: timestamp("starts_at").notNull(),
-    endsAt: timestamp("ends_at").notNull(),
-    totalUsageLimit: integer("total_usage_limit"),
-    perCustomerLimit: integer("per_customer_limit"),
-    /** Only for a customer who has never had a paid order. */
-    firstOrderOnly: boolean("first_order_only").notNull().default(false),
-    /** `all` or `selected` (the courses in `discount_code_course`). Tests and behavior plans count as their course. */
-    scope: text("scope").notNull().default("all"),
-    /** Paid orders that used it, minus fully refunded ones. */
-    usedCount: integer("used_count").notNull().default(0),
-    isActive: boolean("is_active").notNull().default(true),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    uniqueIndex("discount_code_code_idx").on(sql`upper(${table.code})`),
-    check("discount_code_value_check", sql`${table.value} > 0`),
-  ],
-);
-
-export const discountCodeCourse = pgTable(
-  "discount_code_course",
-  {
-    discountCodeId: uuid("discount_code_id")
-      .notNull()
-      .references(() => discountCode.id, { onDelete: "cascade" }),
-    courseId: uuid("course_id")
-      .notNull()
-      .references(() => course.id, { onDelete: "cascade" }),
-  },
-  (table) => [primaryKey({ columns: [table.discountCodeId, table.courseId] })],
-);
-
-/*===== Orders and Payments =====*/
-// Entities 14–16. Booking creates a pending order with one item per dog and course; paying it creates the enrollments
-// and their purchase transactions in one database transaction (spec 3.12, "Paying for an order").
-
-/** Numbers orders: `ZR-140507-0042`. */
-export const orderNumberSeq = pgSequence("order_number_seq");
-
-export const customerOrder = pgTable(
-  "customer_order",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    number: text("number").notNull().unique(),
-    customerId: text("customer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    /** Snapshot of the customer's partner when the order was paid. Null until referrals exist. */
-    partnerId: text("partner_id").references(() => user.id, { onDelete: "restrict" }),
-    discountCodeId: uuid("discount_code_id").references(() => discountCode.id, { onDelete: "restrict" }),
-    // Rial. `total = subtotal − discount`, and `total = paid from wallet + paid via gateway` once the payment is
-    // started.
-    subtotal: bigint("subtotal", { mode: "number" }).notNull(),
-    discountAmount: bigint("discount_amount", { mode: "number" }).notNull().default(0),
-    totalAmount: bigint("total_amount", { mode: "number" }).notNull(),
-    paidFromWallet: bigint("paid_from_wallet", { mode: "number" }).notNull().default(0),
-    paidViaGateway: bigint("paid_via_gateway", { mode: "number" }).notNull().default(0),
-    refundedAmount: bigint("refunded_amount", { mode: "number" }).notNull().default(0),
-    /** `pending`, `paid`, `failed`, `cancelled`, `refunded`, `partially-refunded`. */
-    paymentStatus: text("payment_status").notNull().default("pending"),
-    paidAt: timestamp("paid_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    index("customer_order_customer_id_idx").on(table.customerId),
-    // The same balance can't be spent twice: a customer has one pending order that uses the wallet at a time.
-    uniqueIndex("customer_order_pending_wallet_idx")
-      .on(table.customerId)
-      .where(sql`${table.paymentStatus} = 'pending' and ${table.paidFromWallet} > 0`),
-    check(
-      "customer_order_amounts_check",
-      sql`${table.discountAmount} >= 0 and ${table.totalAmount} = ${table.subtotal} - ${table.discountAmount}
-        and ${table.paidFromWallet} >= 0 and ${table.paidViaGateway} >= 0
-        and ${table.refundedAmount} between 0 and ${table.totalAmount}`,
-    ),
-  ],
-);
-
-export const orderItem = pgTable(
-  "order_item",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => customerOrder.id, { onDelete: "restrict" }),
-    courseId: uuid("course_id")
-      .notNull()
-      .references(() => course.id, { onDelete: "restrict" }),
-    dogId: uuid("dog_id")
-      .notNull()
-      .references(() => dog.id, { onDelete: "restrict" }),
-    /** `course` or `test`. */
-    kind: text("kind").notNull(),
-    /** The assessment that recommended it, when booked from one. */
-    assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
-    /** The behavior plan this item pays for. Its price and sessions are the plan's (spec 3.7). */
-    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
-    /*------ Booking Details ------*/
-    // Copied into the enrollment when the order is paid.
-    trainingGoal: text("training_goal").notNull(),
-    boarding: boolean("boarding").notNull().default(false),
-    /** Where the sessions happen, for courses at home or outside. Null with boarding. */
-    address: text("address"),
-    /** The days and times that suit the customer, in their words. */
-    preferredTimes: text("preferred_times").notNull(),
-    /** The customer saw that the dog had passed this course and confirmed a retake. */
-    isRetake: boolean("is_retake").notNull().default(false),
-    /*------ Price Snapshot ------*/
-    /** Rial: the course or test price, plus `boardingPrice`. */
-    unitPrice: bigint("unit_price", { mode: "number" }).notNull(),
-    /** Rial, the part of `unitPrice` that is boarding (B14). 0 without boarding. */
-    boardingPrice: bigint("boarding_price", { mode: "number" }).notNull().default(0),
-    /** This item's part of the order discount. */
-    discountAmount: bigint("discount_amount", { mode: "number" }).notNull().default(0),
-    /** `unitPrice − discountAmount`. Refunds are based on this. */
-    paidAmount: bigint("paid_amount", { mode: "number" }).notNull(),
-    /** The refund policy at purchase time (spec 3.9), so later changes to the course don't touch this item. */
-    refundPolicyName: text("refund_policy_name").notNull(),
-    refundPolicyPercent: integer("refund_policy_percent").notNull(),
-    refundedAmount: bigint("refunded_amount", { mode: "number" }).notNull().default(0),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (table) => [
-    index("order_item_order_id_idx").on(table.orderId),
-    index("order_item_behavior_request_id_idx").on(table.behaviorRequestId),
-    check(
-      "order_item_amounts_check",
-      sql`${table.paidAmount} = ${table.unitPrice} - ${table.discountAmount} and ${table.paidAmount} >= 0
-        and ${table.refundedAmount} between 0 and ${table.paidAmount}`,
-    ),
-  ],
-);
+/*===== Payments =====*/
+// Checkout (F5): the browser-side cart becomes one pending payment listing its items, each with the price read at that
+// moment. The gateway's callback settles it once and creates an enrollment per item that is still eligible.
 
 export const payment = pgTable(
   "payment",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
+    customerId: text("customer_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => customerOrder.id, { onDelete: "restrict" }),
-    /** Rial. */
+    /** Rial: the sum of the items' prices. */
     amount: bigint("amount", { mode: "number" }).notNull(),
     /** `demo` in showcase mode. */
     gateway: text("gateway").notNull(),
-    /** The token the payment was started with; the callback finds the payment by it. */
+    /** The gateway's payment id, from starting the payment; the callback finds the payment by it. Unique (F12). */
     authority: text("authority").notNull().unique(),
     /** The gateway's tracking code after success. */
     referenceId: text("reference_id"),
     cardNumberMasked: text("card_number_masked"),
-    /** `pending`, then `succeeded` or `failed` exactly once. Never edited after that. */
+    /** `pending`, then `paid` or `failed` exactly once. Never edited after that. */
     status: text("status").notNull().default("pending"),
     failureReason: text("failure_reason"),
     paidAt: timestamp("paid_at"),
@@ -785,18 +413,38 @@ export const payment = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    index("payment_order_id_idx").on(table.orderId),
-    // An order can have several attempts; only one can succeed.
-    uniqueIndex("payment_order_succeeded_idx")
-      .on(table.orderId)
-      .where(sql`${table.status} = 'succeeded'`),
+    index("payment_customer_id_idx").on(table.customerId),
+    index("payment_status_created_at_idx").on(table.status, table.createdAt),
     check("payment_amount_check", sql`${table.amount} > 0`),
   ],
 );
 
-/*===== Enrollments and Sessions =====*/
-// Entities 10 and 11. Paying an order item creates its enrollment in `scheduling`; the trainer then schedules the
-// sessions one by one, and records the result. An enrollment with a held session gives the dog a record.
+/** One course for one dog in a payment. Its price is the one that was shown at «پرداخت» and never changes (F12). */
+export const paymentItem = pgTable(
+  "payment_item",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payment.id, { onDelete: "restrict" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "restrict" }),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    /** Rial. */
+    price: bigint("price", { mode: "number" }).notNull(),
+  },
+  (table) => [
+    unique("payment_item_dog_course_unique").on(table.paymentId, table.dogId, table.courseId),
+    index("payment_item_payment_id_idx").on(table.paymentId),
+    check("payment_item_price_check", sql`${table.price} > 0`),
+  ],
+);
+
+/*===== Enrollments =====*/
+// One dog taking one course (F6). Created only by a paid payment item; the Admin completes or cancels it.
 
 export const enrollment = pgTable(
   "enrollment",
@@ -811,38 +459,17 @@ export const enrollment = pgTable(
     customerId: text("customer_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** The course's owner trainer at purchase time; the Admin can reassign. */
-    trainerId: text("trainer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    /** `course` or `test`. */
-    kind: text("kind").notNull(),
-    orderItemId: uuid("order_item_id")
+    // Unique: an item makes at most one enrollment. A paid item with none is "paid, not enrolled" (F5).
+    paymentItemId: uuid("payment_item_id")
       .notNull()
       .unique()
-      .references(() => orderItem.id, { onDelete: "restrict" }),
-    assessmentId: uuid("assessment_id").references(() => assessment.id, { onDelete: "restrict" }),
-    /** For a behavior plan: the request it was paid from. A request is paid once. */
-    behaviorRequestId: uuid("behavior_request_id").references(() => behaviorRequest.id, { onDelete: "restrict" }),
-    trainingGoal: text("training_goal").notNull(),
-    boarding: boolean("boarding").notNull().default(false),
-    address: text("address"),
-    preferredTimes: text("preferred_times").notNull(),
-    /** Copied from the course, or from the plan; the trainer can change it. A test has 1. Refunds count unheld sessions against it. */
-    plannedSessions: integer("planned_sessions").notNull(),
-    isRetake: boolean("is_retake").notNull().default(false),
-    /** `scheduling`, `active`, `passed`, `failed`, `cancelled`. */
-    status: text("status").notNull().default("scheduling"),
-    cancelledById: text("cancelled_by_id").references(() => user.id, { onDelete: "restrict" }),
-    /** `customer`, `trainer` or `admin`: decides the refund rule (B11). */
-    cancelledByRole: text("cancelled_by_role"),
-    cancellationReason: text("cancellation_reason"),
-    cancelledAt: timestamp("cancelled_at"),
-    /** When the result was recorded. */
+      .references(() => paymentItem.id, { onDelete: "restrict" }),
+    /** Rial, copied from the payment item. */
+    price: bigint("price", { mode: "number" }).notNull(),
+    /** `active`, `completed` or `cancelled`. Allowed values in `app/orpc/enrollment/constants.ts`. */
+    status: text("status").notNull().default("active"),
     completedAt: timestamp("completed_at"),
-    /** The trainer's final feedback for the customer. */
-    trainerNote: text("trainer_note"),
-    deletedAt: timestamp("deleted_at"),
+    cancelledAt: timestamp("cancelled_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
       .notNull()
@@ -850,52 +477,86 @@ export const enrollment = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
-    // A dog can't have two live enrollments in the same course (spec 3.4).
-    uniqueIndex("enrollment_course_dog_live_idx")
-      .on(table.courseId, table.dogId)
-      .where(sql`${table.status} in ('scheduling', 'active')`),
-    // A request is paid once, so it has at most one enrollment.
-    uniqueIndex("enrollment_behavior_request_idx")
-      .on(table.behaviorRequestId)
-      .where(sql`${table.behaviorRequestId} is not null`),
+    // F12: one active enrollment per dog and course. The loser of a race becomes "paid, not enrolled".
+    uniqueIndex("enrollment_dog_course_active_idx")
+      .on(table.dogId, table.courseId)
+      .where(sql`${table.status} = 'active'`),
     index("enrollment_customer_id_idx").on(table.customerId),
-    index("enrollment_trainer_status_idx").on(table.trainerId, table.status),
     index("enrollment_dog_id_idx").on(table.dogId),
-    check("enrollment_planned_sessions_check", sql`${table.plannedSessions} between 1 and 100`),
+    index("enrollment_status_created_at_idx").on(table.status, table.createdAt),
   ],
 );
 
-// `session` is Better-Auth's table, so a training session is `training_session`.
-export const trainingSession = pgTable(
-  "training_session",
+/*===== Partners =====*/
+// Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`
+// role plus this row, which the Admin creates with the account.
+
+export const partner = pgTable("partner", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "restrict" }),
+  /** In the referral link: `?ref=<code>`. */
+  code: text("code").notNull().unique(),
+  /** Where the Admin sends commissions. The partner enters it. */
+  shebaNumber: text("sheba_number"),
+  /** An inactive partner's link and leads attribute no one. */
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+/** A phone number a partner entered before the customer signed up. The earliest lead wins when several partners did. */
+export const partnerLead = pgTable(
+  "partner_lead",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    enrollmentId: uuid("enrollment_id")
+    partnerId: text("partner_id")
       .notNull()
-      .references(() => enrollment.id, { onDelete: "restrict" }),
-    /** Defaults to the enrollment's trainer. */
-    trainerId: text("trainer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "restrict" }),
-    startsAt: timestamp("starts_at").notNull(),
-    durationMinutes: integer("duration_minutes").notNull(),
-    /** `home`, `outside` or `boarding`. */
-    placeKind: text("place_kind").notNull(),
-    /** The address, the meeting point, or the kennel. */
-    place: text("place").notNull(),
-    /** `scheduled`, `held`, `missed`, `cancelled`. Held and missed both count as used for refunds (B11). */
-    status: text("status").notNull().default("scheduled"),
-    /** Shown to the customer. */
-    trainerNote: text("trainer_note"),
+      .references(() => partner.userId, { onDelete: "restrict" }),
+    phoneNumber: text("phone_number").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
   },
   (table) => [
-    index("training_session_enrollment_id_idx").on(table.enrollmentId),
-    index("training_session_trainer_starts_at_idx").on(table.trainerId, table.startsAt),
-    check("training_session_duration_check", sql`${table.durationMinutes} between 15 and 480`),
+    unique("partner_lead_partner_phone_unique").on(table.partnerId, table.phoneNumber),
+    index("partner_lead_phone_number_idx").on(table.phoneNumber),
   ],
 );
+
+/** The partner's cut of a customer's first paid purchase (F7). The Admin pays it outside the app and marks it paid. */
+export const commission = pgTable(
+  "commission",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    partnerId: text("partner_id")
+      .notNull()
+      .references(() => partner.userId, { onDelete: "restrict" }),
+    // Unique: one commission per customer, ever (F12).
+    customerId: text("customer_id")
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: "restrict" }),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payment.id, { onDelete: "restrict" }),
+    /** Rial: the total of the enrollments that payment created. */
+    baseAmount: bigint("base_amount", { mode: "number" }).notNull(),
+    /** The setting at the time. */
+    percent: integer("percent").notNull(),
+    /** Rial, `baseAmount × percent ÷ 100` rounded down. */
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("commission_partner_id_idx").on(table.partnerId)],
+);
+
+/*===== Platform Settings =====*/
+// Values the Admin can change without a release (F10). A missing key means its default (`app/lib/business-rules.ts`).
+
+export const platformSetting = pgTable("platform_setting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});

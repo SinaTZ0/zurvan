@@ -2,9 +2,9 @@ import { cn } from "cn";
 
 import { Link } from "~/components/link";
 import { SectionHeading } from "~/components/section-heading";
-import { describeAge, describePlace, formatToman } from "~/lib/course-format";
+import { describeAge, describePlace } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
-import type { CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 import type { CourseLane, LaneCourse } from "~/routes/course_detail/lane";
 
 /*===== Ruler =====*/
@@ -24,7 +24,7 @@ function monthColumn(months: number) {
  * came from the course map sees the same picture with this course lit. Below `xl` the columns are too narrow for
  * course names, so the lane becomes a short vertical list with the age written on each course, as on the home page.
  */
-export function CoursePath({ course, lane }: { course: CourseDetail; lane: CourseLane }) {
+export function CoursePath({ course, lane }: { course: Course; lane: CourseLane }) {
   const isLane = lane.courses.length > 1;
 
   return (
@@ -152,7 +152,7 @@ function ListStop({ course, isCurrent }: { course: LaneCourse; isCurrent: boolea
 
 /*===== Path Notes =====*/
 /** Short ruled notes under the ruler: only the ones that apply to this course. */
-function PathNotes({ course, lane }: { course: CourseDetail; lane: CourseLane }) {
+function PathNotes({ course, lane }: { course: Course; lane: CourseLane }) {
   const notes: { term: string; body: React.ReactNode }[] = [];
 
   /*------ Before ------*/
@@ -161,8 +161,7 @@ function PathNotes({ course, lane }: { course: CourseDetail; lane: CourseLane })
       term: "پیش از این دوره",
       body: (
         <>
-          سگت باید <CourseLink slug={required.slug}>{required.title}</CourseLink> را گذرانده باشد
-          {required.hasTest ? "، یا در تست آن قبول شده باشد." : "."}
+          سگت باید <CourseLink slug={required.slug}>{required.title}</CourseLink> را گذرانده باشد.
         </>
       ),
     });
@@ -173,22 +172,6 @@ function PathNotes({ course, lane }: { course: CourseDetail; lane: CourseLane })
     notes.push({
       term: "سن",
       body: `فقط ${describeAge(course)}. برای سگ بزرگ‌تر، در ارزیابی رایگان دوره‌ی مناسبش را پیدا می‌کنیم.`,
-    });
-  }
-
-  /*------ Test ------*/
-  if (course.testPrice !== null) {
-    notes.push({
-      term: "تست این دوره",
-      body: (
-        <>
-          سگت این‌ها را جای دیگری یاد گرفته؟ به‌جای دوره، تستش را بده؛ قبولی در تست همان اعتبار دوره را دارد. هزینه‌ی
-          تست <span className="font-bold text-foreground">{formatToman(course.testPrice)}</span> است.{" "}
-          <Link to="/account/dogs" className="font-bold text-primary underline-offset-4 hover:underline">
-            رزرو تست
-          </Link>
-        </>
-      ),
     });
   }
 

@@ -1,4 +1,13 @@
-import { createDog, getDog, listDogs, removeDog, updateDog } from "~/orpc/dog/service";
+import {
+  adminGetDog,
+  adminListDogs,
+  adminSetPassedCourse,
+  adminUpdateDog,
+  createDog,
+  getDog,
+  listDogs,
+  updateDog,
+} from "~/orpc/dog/service";
 import { base } from "~/orpc/implementer.server";
 import { requireRoleMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
@@ -53,15 +62,39 @@ export const updateDogProcedure = base.dog.update
     return result.dog;
   });
 
-/*===== Remove =====*/
-export const removeDogProcedure = base.dog.remove
-  .use(requireRoleMiddleware("customer"))
+/*===== Admin =====*/
+export const adminListDogsProcedure = base.dog.admin.list
+  .use(requireRoleMiddleware("admin"))
+  .use(provideDbMiddleware)
+  .handler(({ context }) => adminListDogs({ db: context.db }));
+
+export const adminGetDogProcedure = base.dog.admin.get
+  .use(requireRoleMiddleware("admin"))
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await removeDog({ db: context.db, ownerId: context.user.id, id: input.id });
-
+    const result = await adminGetDog({ db: context.db, id: input.id });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
-    if (result.kind === "has-booking") throw errors.HAS_BOOKING({ data: { errors: result.errors, fields: {} } });
+    return result.dog;
+  });
 
-    return { id: result.id };
+export const adminUpdateDogProcedure = base.dog.admin.update
+  .use(requireRoleMiddleware("admin"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const { id, ...details } = input;
+    const result = await adminUpdateDog({ db: context.db, id, input: details });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    if (result.kind === "invalid") {
+      throw errors.INVALID_INPUT({ data: { errors: result.errors, fields: result.fields } });
+    }
+    return result.dog;
+  });
+
+export const setPassedCourseProcedure = base.dog.admin.setPassedCourse
+  .use(requireRoleMiddleware("admin"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await adminSetPassedCourse({ db: context.db, adminId: context.user.id, ...input });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    return result.dog;
   });

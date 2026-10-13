@@ -1,7 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
-import { COURSE_BOOKING_KINDS, COURSE_FAMILIES, COURSE_PLACES } from "~/orpc/course/constants";
+import { COURSE_FAMILIES, COURSE_PLACES } from "~/orpc/course/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 
 /*===== Schemas =====*/
@@ -10,7 +10,6 @@ export const courseSchema = z.object({
   title: z.string(),
   latinName: z.string(),
   family: z.enum(COURSE_FAMILIES),
-  bookingKind: z.enum(COURSE_BOOKING_KINDS),
   summary: z.string(),
   highlights: z.array(z.string()),
   commands: z.array(z.string()),
@@ -19,20 +18,15 @@ export const courseSchema = z.object({
   maxAgeMonths: z.number().int().nullable(),
   sessionCount: z.number().int().nullable(),
   place: z.enum(COURSE_PLACES).nullable(),
-  /** Rial. Null when not sold at a list price. */
+  /** Rial. Null when the course isn't sold online (F8). */
   price: z.number().int().nullable(),
+  /** Rial. Shown only: boarding isn't part of checkout. */
   boardingPrice: z.number().int().nullable(),
-  testPrice: z.number().int().nullable(),
-  /** The courses this one requires; `hasTest` says whether passing that course's test also counts. */
-  prerequisites: z.array(z.object({ slug: z.string(), title: z.string(), hasTest: z.boolean() })),
-});
-
-export const courseDetailSchema = courseSchema.extend({
-  refundPolicy: z.object({ name: z.string(), description: z.string(), unheldRefundPercent: z.number().int() }),
+  /** The courses a dog must have passed before buying this one (F4). */
+  prerequisites: z.array(z.object({ slug: z.string(), title: z.string() })),
 });
 
 export type Course = z.infer<typeof courseSchema>;
-export type CourseDetail = z.infer<typeof courseDetailSchema>;
 
 /*===== Errors =====*/
 // Maps to HTTP 404 through oRPC's default status map.
@@ -49,7 +43,7 @@ export const listCoursesContract = oc.errors(commonErrors).output(z.array(course
 export const getCourseContract = oc
   .errors({ ...commonErrors, ...courseErrors })
   .input(z.strictObject({ slug: z.string() }))
-  .output(courseDetailSchema);
+  .output(courseSchema);
 
 export const courseContract = {
   list: listCoursesContract,

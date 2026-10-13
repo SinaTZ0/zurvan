@@ -1,18 +1,18 @@
 import { DOG_SEXES, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { DogSex, VaccinationStatus } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
-import type { DogRecord } from "~/orpc/dog/repository";
+import type { DogRecord, PassedCourseRecord } from "~/orpc/dog/repository";
 import { toPublicMedia } from "~/orpc/media/mapper";
 
 /*===== Public Dog =====*/
 /**
- * Converts a stored dog into its public shape: drops `ownerId`, `photoMediaId`, `deletedAt` and `updatedAt`, adds the photo, narrows `sex` and
- * `vaccinationStatus`, which are plain text in the database, and calculates `hasRecord`.
+ * Converts a stored dog into its public shape: drops `ownerId`, `photoMediaId` and `updatedAt`, adds the photo and the
+ * passed courses, and narrows `sex` and `vaccinationStatus`, which are plain text in the database.
  *
  * @throws When `sex` isn't a known value. There is no honest fallback for it, and the service only ever writes valid
  * values, so this means corrupted data that should surface instead of being shown as a wrong sex.
  */
-export function toPublicDog(record: DogRecord): Dog {
+export function toPublicDog({ record, passed }: { record: DogRecord; passed: PassedCourseRecord[] }): Dog {
   if (!isDogSex(record.sex)) throw new Error(`Dog ${record.id} has an unknown sex: ${record.sex}`);
 
   return {
@@ -29,10 +29,10 @@ export function toPublicDog(record: DogRecord): Dog {
     vaccinationStatus: isVaccinationStatus(record.vaccinationStatus) ? record.vaccinationStatus : "unknown",
     behaviorNotes: record.behaviorNotes,
     medicalNotes: record.medicalNotes,
-    knownSince: record.knownSince,
-    // Spec: a Completed assessment, an enrollment with a Held session, or `knownSince` set. The first two are read with
-    // the dog as `hasRecordEvent`.
-    hasRecord: record.knownSince !== null || record.hasRecordEvent,
+    isEvaluated: record.isEvaluated,
+    passedCourses: passed
+      .filter((entry) => entry.dogId === record.id)
+      .map(({ slug, title, source }) => ({ slug, title, source })),
     photo: record.photo ? toPublicMedia(record.photo) : null,
     createdAt: record.createdAt,
   };

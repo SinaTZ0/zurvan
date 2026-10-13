@@ -1,91 +1,64 @@
 import {
-  availableSlotsProcedure,
-  bookAssessmentProcedure,
-  cancelAssessmentProcedure,
-  listMyAssessmentsProcedure,
-  trainerCancelAssessmentProcedure,
-  trainerCloseSlotProcedure,
-  trainerCompleteAssessmentProcedure,
-  trainerGetAssessmentProcedure,
-  trainerMarkNoShowProcedure,
-  trainerOpenSlotsProcedure,
-  trainerScheduleProcedure,
-} from "~/orpc/assessment/procedure";
+  adminDogEligibilityProcedure,
+  adminListPaymentsProcedure,
+  dogEligibilityProcedure,
+  listMyPaymentsProcedure,
+  payCartProcedure,
+  reviewCartProcedure,
+} from "~/orpc/checkout/procedure";
 import {
-  behaviorRequestOptionsProcedure,
-  checkoutBehaviorPlanProcedure,
-  listMyBehaviorRequestsProcedure,
-  submitBehaviorRequestProcedure,
-  trainerDeclineBehaviorRequestProcedure,
-  trainerGetBehaviorRequestProcedure,
-  trainerListBehaviorRequestsProcedure,
-  trainerProposeBehaviorPlanProcedure,
-  withdrawBehaviorRequestProcedure,
-} from "~/orpc/behavior-request/procedure";
+  adminListCommissionsProcedure,
+  adminMarkCommissionPaidProcedure,
+  listMyCommissionsProcedure,
+} from "~/orpc/commission/procedure";
 import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
 import {
+  adminGetDogProcedure,
+  adminListDogsProcedure,
+  adminUpdateDogProcedure,
   createDogProcedure,
   getDogProcedure,
   listDogsProcedure,
-  removeDogProcedure,
+  setPassedCourseProcedure,
   updateDogProcedure,
 } from "~/orpc/dog/procedure";
 import {
-  getMyEnrollmentProcedure,
+  adminCancelEnrollmentProcedure,
+  adminCompleteEnrollmentProcedure,
+  adminListEnrollmentsProcedure,
   listMyEnrollmentsProcedure,
-  trainerCancelSessionProcedure,
-  trainerGetEnrollmentProcedure,
-  trainerListEnrollmentsProcedure,
-  trainerMarkSessionProcedure,
-  trainerRecordResultProcedure,
-  trainerRescheduleSessionProcedure,
-  trainerScheduleSessionProcedure,
-  trainerSessionsProcedure,
-  trainerSetPlannedSessionsProcedure,
-  trainerUpdateSessionNoteProcedure,
 } from "~/orpc/enrollment/procedure";
+import {
+  adminEvaluateProcedure,
+  adminGetEvaluationProcedure,
+  adminListEvaluationsProcedure,
+  adminMarkEvaluatedProcedure,
+  adminRejectProcedure,
+  listMyEvaluationsProcedure,
+  requestEvaluationProcedure,
+  withdrawEvaluationProcedure,
+} from "~/orpc/evaluation/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
-import {
-  applyDiscountProcedure,
-  bookingOptionsProcedure,
-  bookProcedure,
-  cancelEnrollmentProcedure,
-  getOrderProcedure,
-  payProcedure,
-  removeDiscountProcedure,
-} from "~/orpc/order/procedure";
-import { myWalletProcedure } from "~/orpc/wallet/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
 export const router = implementer.router({
-  assessment: {
-    availableSlots: availableSlotsProcedure,
-    book: bookAssessmentProcedure,
-    listMine: listMyAssessmentsProcedure,
-    cancel: cancelAssessmentProcedure,
-    trainer: {
-      schedule: trainerScheduleProcedure,
-      openSlots: trainerOpenSlotsProcedure,
-      closeSlot: trainerCloseSlotProcedure,
-      get: trainerGetAssessmentProcedure,
-      complete: trainerCompleteAssessmentProcedure,
-      markNoShow: trainerMarkNoShowProcedure,
-      cancel: trainerCancelAssessmentProcedure,
+  checkout: {
+    eligibility: dogEligibilityProcedure,
+    review: reviewCartProcedure,
+    pay: payCartProcedure,
+    payments: listMyPaymentsProcedure,
+    admin: {
+      payments: adminListPaymentsProcedure,
+      dogEligibility: adminDogEligibilityProcedure,
     },
   },
-  behaviorRequest: {
-    options: behaviorRequestOptionsProcedure,
-    submit: submitBehaviorRequestProcedure,
-    listMine: listMyBehaviorRequestsProcedure,
-    withdraw: withdrawBehaviorRequestProcedure,
-    checkout: checkoutBehaviorPlanProcedure,
-    trainer: {
-      list: trainerListBehaviorRequestsProcedure,
-      get: trainerGetBehaviorRequestProcedure,
-      propose: trainerProposeBehaviorPlanProcedure,
-      decline: trainerDeclineBehaviorRequestProcedure,
+  commission: {
+    listMine: listMyCommissionsProcedure,
+    admin: {
+      list: adminListCommissionsProcedure,
+      markPaid: adminMarkCommissionPaidProcedure,
     },
   },
   course: {
@@ -97,37 +70,34 @@ export const router = implementer.router({
     get: getDogProcedure,
     create: createDogProcedure,
     update: updateDogProcedure,
-    remove: removeDogProcedure,
+    admin: {
+      list: adminListDogsProcedure,
+      get: adminGetDogProcedure,
+      update: adminUpdateDogProcedure,
+      setPassedCourse: setPassedCourseProcedure,
+    },
   },
   enrollment: {
     listMine: listMyEnrollmentsProcedure,
-    get: getMyEnrollmentProcedure,
-    trainer: {
-      list: trainerListEnrollmentsProcedure,
-      get: trainerGetEnrollmentProcedure,
-      sessions: trainerSessionsProcedure,
-      scheduleSession: trainerScheduleSessionProcedure,
-      rescheduleSession: trainerRescheduleSessionProcedure,
-      cancelSession: trainerCancelSessionProcedure,
-      markSession: trainerMarkSessionProcedure,
-      updateSessionNote: trainerUpdateSessionNoteProcedure,
-      setPlannedSessions: trainerSetPlannedSessionsProcedure,
-      recordResult: trainerRecordResultProcedure,
+    admin: {
+      list: adminListEnrollmentsProcedure,
+      complete: adminCompleteEnrollmentProcedure,
+      cancel: adminCancelEnrollmentProcedure,
+    },
+  },
+  evaluation: {
+    request: requestEvaluationProcedure,
+    withdraw: withdrawEvaluationProcedure,
+    listMine: listMyEvaluationsProcedure,
+    admin: {
+      list: adminListEvaluationsProcedure,
+      get: adminGetEvaluationProcedure,
+      evaluate: adminEvaluateProcedure,
+      reject: adminRejectProcedure,
+      markEvaluated: adminMarkEvaluatedProcedure,
     },
   },
   media: {
     upload: uploadMediaProcedure,
-  },
-  order: {
-    bookingOptions: bookingOptionsProcedure,
-    book: bookProcedure,
-    get: getOrderProcedure,
-    applyDiscount: applyDiscountProcedure,
-    removeDiscount: removeDiscountProcedure,
-    pay: payProcedure,
-    cancelEnrollment: cancelEnrollmentProcedure,
-  },
-  wallet: {
-    mine: myWalletProcedure,
   },
 });

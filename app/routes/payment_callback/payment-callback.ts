@@ -2,24 +2,27 @@ import { redirect } from "react-router";
 
 import { db } from "~/db/client.server";
 import { getPaymentGateway } from "~/lib/payment-gateway.server";
-import { completeGatewayPayment } from "~/orpc/order/service";
+import { CART_RESULT_PATH } from "~/orpc/checkout/constants";
+import { completeGatewayPayment } from "~/orpc/checkout/service";
 
 import type { Route } from "./+types/payment-callback";
 
 /*===== Payment Callback =====*/
 /**
  * Where the gateway sends the customer back after paying (`?Authority=…&Status=OK|NOK`, Zarinpal's convention, which
- * the demo gateway follows). The payment is verified server-side and settled exactly once, then the customer lands on
- * the payment result page. No session is needed: the authority token identifies the payment, and the result page
- * checks who is looking.
+ * the demo gateway follows). The payment is verified server-side and settled exactly once (F5), then the customer lands
+ * on the Cart with the result as a banner. No session is needed: the authority token identifies the payment.
  */
 export async function loader({ request }: Route.LoaderArgs) {
   const params = new URL(request.url).searchParams;
   const authority = params.get("Authority");
-  if (!authority) return redirect("/account");
+  if (!authority) return redirect(CART_RESULT_PATH);
 
   const result = await completeGatewayPayment({ db, gateway: getPaymentGateway(), authority, callbackParams: params });
-  if (result.kind === "unknown") return redirect("/account");
+  if (result.kind === "unknown") return redirect(CART_RESULT_PATH);
 
-  return redirect(`/account/checkout/${result.orderId}/result`);
+  // A repeated callback lands on the same banner as the first one did.
+  const failed = result.kind === "failed" || (result.kind === "already-settled" && result.status === "failed");
+  const banner = failed ? "failed" : "paid";
+  return redirect(`${CART_RESULT_PATH}?payment=${banner}`);
 }

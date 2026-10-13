@@ -3,13 +3,11 @@ import { cn } from "cn";
 import { ENROLLMENT_STATUS_LABELS, type EnrollmentStatus } from "~/orpc/enrollment/constants";
 
 /*===== Tones =====*/
-// One look per status, shared by the customer's and the trainer's pages, in the assessment badge's language: gold for
-// what is still going on, green for a pass, and the endings that need nothing from the reader stay quiet.
+// One look per status, shared by the customer's and the Admin's pages, in the evaluation badge's language: gold for
+// what is still going on, green for a finished course, and the ending that needs nothing from the reader stays quiet.
 const TONES: Record<EnrollmentStatus, string> = {
-  scheduling: "border-primary/50 text-primary",
   active: "border-primary/50 bg-primary/10 text-primary",
-  passed: "border-success/40 bg-success/10 text-success",
-  failed: "border-border text-muted-foreground",
+  completed: "border-success/40 bg-success/10 text-success",
   cancelled: "border-transparent bg-muted text-muted-foreground",
 };
 

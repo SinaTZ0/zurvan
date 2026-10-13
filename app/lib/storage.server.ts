@@ -1,7 +1,7 @@
 import { DeleteObjectsCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 import { env } from "~/env.server";
-import type { BehaviorVideoFormat } from "~/orpc/behavior-request/constants";
+import type { EvaluationVideoFormat } from "~/orpc/evaluation/constants";
 import type { MediaKind } from "~/orpc/media/constants";
 
 /*===== S3 Client =====*/
@@ -33,9 +33,9 @@ export function mediaUrl({ kind, mediaId, variant }: { kind: MediaKind; mediaId:
   return `${env.MEDIA_PUBLIC_URL.replace(/\/+$/, "")}/${mediaKey({ kind, mediaId, variant })}`;
 }
 
-/** The bucket key of a behavior request video: `behavior-video/{videoId}/original.{format}`. Never served by nginx. */
-export function videoKey({ videoId, format }: { videoId: string; format: BehaviorVideoFormat }): string {
-  return `behavior-video/${videoId}/original.${format}`;
+/** The bucket key of an evaluation video: `evaluation-video/{videoId}/original.{format}`. Never served by nginx. */
+export function videoKey({ videoId, format }: { videoId: string; format: EvaluationVideoFormat }): string {
+  return `evaluation-video/${videoId}/original.${format}`;
 }
 
 /*===== Writes =====*/

@@ -1,27 +1,4 @@
-import type { CourseBookingKind, CourseFamily, CoursePlace } from "~/orpc/course/constants";
-
-/*===== Refund Policies =====*/
-// The spec's example presets (3.9). The Admin will manage these; the seed only makes sure they exist.
-export const SEED_REFUND_POLICIES = [
-  {
-    name: "منعطف",
-    customerDescription: "تا اولین جلسه، کل مبلغ برمی‌گردد. بعد از آن هم کل سهم جلسه‌های برگزارنشده برمی‌گردد.",
-    unheldRefundPercent: 100,
-  },
-  {
-    name: "متوسط",
-    customerDescription: "تا اولین جلسه، کل مبلغ برمی‌گردد. بعد از آن، نصف سهم جلسه‌های برگزارنشده برمی‌گردد.",
-    unheldRefundPercent: 50,
-  },
-  {
-    name: "سخت‌گیرانه",
-    customerDescription: "تا اولین جلسه، کل مبلغ برمی‌گردد. بعد از آن، مبلغی برنمی‌گردد.",
-    unheldRefundPercent: 0,
-  },
-] as const;
-
-/** Every seeded course uses this preset until the owner picks one per course. */
-export const SEED_DEFAULT_REFUND_POLICY = "متوسط";
+import type { CourseFamily, CoursePlace } from "~/orpc/course/constants";
 
 /*===== Courses =====*/
 type SeedCourse = {
@@ -29,7 +6,6 @@ type SeedCourse = {
   title: string;
   latinName: string;
   family: CourseFamily;
-  bookingKind?: CourseBookingKind;
   summary: string;
   highlights: string[];
   commands: string[];
@@ -41,12 +17,11 @@ type SeedCourse = {
   /** Toman, converted to Rial when seeded. */
   priceToman?: number;
   boardingPriceToman?: number;
-  testPriceToman?: number;
   /** Slugs of the courses this one requires. */
   requires?: string[];
 };
 
-// The owner's eleven course cards (docs/zurvan-courses.md), in catalogue order.
+// The owner's course cards (docs/zurvan-courses.md), in catalogue order.
 //
 // Sample data: the prices and the cover photos are placeholders until the owner sends the real ones. The doc leaves
 // prices out on purpose. A missing boarding price shows as "price on request".
@@ -126,7 +101,6 @@ export const SEED_COURSES: SeedCourse[] = [
     place: "home",
     priceToman: 9_000_000,
     boardingPriceToman: 6_000_000,
-    testPriceToman: 1_800_000,
   },
   {
     slug: "bmc",
@@ -255,7 +229,6 @@ export const SEED_COURSES: SeedCourse[] = [
     place: "home",
     priceToman: 3_500_000,
     boardingPriceToman: 2_500_000,
-    testPriceToman: 1_200_000,
   },
   {
     slug: "companion-2",
@@ -285,7 +258,6 @@ export const SEED_COURSES: SeedCourse[] = [
     place: "home",
     priceToman: 4_000_000,
     boardingPriceToman: 2_500_000,
-    testPriceToman: 1_200_000,
     requires: ["companion-1"],
   },
   {
@@ -315,7 +287,6 @@ export const SEED_COURSES: SeedCourse[] = [
     sessionCount: 5,
     place: "outside",
     priceToman: 4_500_000,
-    testPriceToman: 1_500_000,
     requires: ["companion-2"],
   },
   {
@@ -375,34 +346,6 @@ export const SEED_COURSES: SeedCourse[] = [
       alt: "بوردر کالی در هوا از روی مانع اجیلیتی می‌پرد",
       width: 744,
       height: 496,
-    },
-  },
-  {
-    slug: "behavior-modification",
-    title: "اصلاح رفتار",
-    latinName: "Behavior modification",
-    family: "behavior",
-    bookingKind: "behavior-request",
-    summary:
-      "برای هر سن و هر نژاد. مشکل را انتخاب کن، توضیح بده و ویدیویی از رفتار سگت بفرست تا پیش از اولین جلسه بررسی شود.",
-    highlights: ["اضطراب جدایی", "پرخاشگری به انسان یا حیوان", "خطای دستشویی، مدفوع‌خواری و آشغال‌خواری"],
-    // The problems a request can be about (spec 3.7), in the owner's order. "سایر" is left off the card.
-    commands: [
-      "پرخاشگری به انسان",
-      "پرخاشگری به حیوان",
-      "پرخاشگری به صاحب",
-      "گاز گرفتن بی‌مورد",
-      "گاز گرفتن بازیگوشانه",
-      "اضطراب جدایی",
-      "خطای دستشویی",
-      "مدفوع‌خواری",
-      "آشغال‌خواری",
-    ],
-    cover: {
-      src: "/demo/course-anxiety.jpg",
-      alt: "زنی کنار پنجره سگش را در آغوش گرفته است",
-      width: 300,
-      height: 450,
     },
   },
 ];

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import type { CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 
 /** Each tick starts this long after the one before it, so a long card still finishes in about a second. */
 const TICK_STAGGER_MS = 40;
@@ -17,7 +17,7 @@ const TICK_STAGGER_MS = 40;
  * Behavior modification lists the problems a request can be about, and working and sport dogs their branches, since
  * that is all their cards say so far.
  */
-export function CourseCardBand({ course }: { course: CourseDetail }) {
+export function CourseCardBand({ course }: { course: Course }) {
   const copy = bandCopy(course);
 
   return (
@@ -46,10 +46,9 @@ export function CourseCardBand({ course }: { course: CourseDetail }) {
 }
 
 /*===== Course Card =====*/
-function CourseCard({ course }: { course: CourseDetail }) {
-  const kind =
-    course.bookingKind === "behavior-request" ? "problems" : course.minAgeMonths === null ? "branches" : "commands";
-  const countLabel = { commands: "فرمان", problems: "مشکل", branches: "گرایش" }[kind];
+function CourseCard({ course }: { course: Course }) {
+  const kind = course.minAgeMonths === null ? "branches" : "commands";
+  const countLabel = { commands: "فرمان", branches: "گرایش" }[kind];
 
   return (
     <div className="overflow-hidden rounded-3xl bg-card text-card-foreground shadow-md ring-1 ring-primary/25">
@@ -158,16 +157,7 @@ function TickedList({ items, ticked }: { items: string[]; ticked: boolean }) {
 
 /*===== Band Copy =====*/
 /** The heading and the lines beside the card. Boarding is said here, once on the page, as an option. */
-function bandCopy(course: CourseDetail): { title: string; body: string[] } {
-  if (course.bookingKind === "behavior-request") {
-    return {
-      title: "مشکل‌هایی که با هم حلشان می‌کنیم",
-      body: [
-        `هر سگ و هر مشکلی برنامه‌ی خودش را دارد. ویدیویی از رفتار سگت بفرست؛ ${HEAD_TRAINER.firstName} پیش از اولین جلسه آن را می‌بیند و تعداد جلسه‌ها و هزینه را پیشنهاد می‌دهد.`,
-        "مشکلت در این فهرست نیست؟ باز هم درخواست بفرست و توضیحش بده.",
-      ],
-    };
-  }
+function bandCopy(course: Course): { title: string; body: string[] } {
   if (course.minAgeMonths === null) {
     return {
       title: "گرایش‌ها",

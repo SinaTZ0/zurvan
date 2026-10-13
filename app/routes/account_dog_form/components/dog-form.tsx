@@ -37,16 +37,7 @@ import {
  * Adds a dog, or edits one. Three short sections (who it is, its body and health, notes for the trainer) beside a live
  * preview of the dog's tag. Saving goes to the dog's page, or back to `redirectTo` when another page sent them here.
  */
-export function DogForm({
-  dog,
-  redirectTo,
-  removeSlot,
-}: {
-  dog: Dog | null;
-  redirectTo: string | null;
-  /** The edit page's «remove this dog», rendered at the very end of the form. */
-  removeSlot?: React.ReactNode;
-}) {
+export function DogForm({ dog, redirectTo }: { dog: Dog | null; redirectTo: string | null }) {
   const navigate = useNavigate();
   const saveDog = useSaveDog({ dogId: dog?.id ?? null });
   const {
@@ -231,8 +222,6 @@ export function DogForm({
             انصراف
           </Link>
         </div>
-
-        {removeSlot}
       </form>
     </div>
   );

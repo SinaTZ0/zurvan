@@ -6,34 +6,17 @@ export default [
     index("routes/home/home.tsx"),
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
     route("assessment", "routes/assessment/assessment.tsx"),
-    route("behavior-modification", "routes/behavior_modification/behavior-modification.tsx"),
   ]),
 
-  /*===== Account (customers, trainers, partners) =====*/
+  /*===== Account (customers and partners) =====*/
   route("account", "routes/layout_account/layout-account.tsx", [
-    index("routes/account_home/account-home.tsx"),
-    route("dogs", "routes/account_dogs/account-dogs.tsx"),
-    route("dogs/:dogId", "routes/account_dog_detail/account-dog-detail.tsx"),
+    // Placeholders until the Dashboard and Dog Detail are rebuilt: one module, so each route needs its own id.
+    index("routes/account_home/account-home.tsx", { id: "account-home" }),
+    route("dogs", "routes/account_home/account-home.tsx", { id: "account-dogs" }),
+    route("dogs/:dogId", "routes/account_home/account-home.tsx", { id: "account-dog-detail" }),
     // One form module for adding and editing, so each route needs its own id.
     route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
     route("dogs/:dogId/edit", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-edit" }),
-    route("assessments", "routes/account_assessments/account-assessments.tsx"),
-    route("book/:courseSlug", "routes/account_book/account-book.tsx"),
-    route("checkout/:orderId", "routes/account_checkout/account-checkout.tsx"),
-    route("checkout/:orderId/result", "routes/account_payment_result/account-payment-result.tsx"),
-    route("training", "routes/account_training/account-training.tsx"),
-    route("training/:enrollmentId", "routes/account_enrollment_detail/account-enrollment-detail.tsx"),
-    route("behavior-requests", "routes/account_behavior_requests/account-behavior-requests.tsx"),
-  ]),
-
-  /*===== Trainer (trainers, and the Admin as head trainer) =====*/
-  route("trainer", "routes/layout_trainer/layout-trainer.tsx", [
-    index("routes/trainer_schedule/trainer-schedule.tsx"),
-    route("assessments/:assessmentId", "routes/trainer_assessment_detail/trainer-assessment-detail.tsx"),
-    route("enrollments", "routes/trainer_enrollments/trainer-enrollments.tsx"),
-    route("enrollments/:enrollmentId", "routes/trainer_enrollment_detail/trainer-enrollment-detail.tsx"),
-    route("behavior-requests", "routes/trainer_behavior_requests/trainer-behavior-requests.tsx"),
-    route("behavior-requests/:requestId", "routes/trainer_behavior_request_detail/trainer-behavior-request-detail.tsx"),
   ]),
 
   route("auth", "routes/auth/auth.tsx"),
@@ -41,7 +24,7 @@ export default [
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),
   route("rpc/*", "routes/rpc/rpc.ts"),
-  route("api/behavior-videos", "routes/api_behavior_videos/api-behavior-videos.ts"),
-  route("api/behavior-videos/:id", "routes/api_behavior_video/api-behavior-video.ts"),
+  route("api/evaluation-videos", "routes/api_evaluation_videos/api-evaluation-videos.ts"),
+  route("api/evaluation-videos/:id", "routes/api_evaluation_video/api-evaluation-video.ts"),
   route("payment/callback", "routes/payment_callback/payment-callback.ts"),
 ] satisfies RouteConfig;

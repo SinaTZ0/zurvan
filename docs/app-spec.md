@@ -357,6 +357,7 @@ Not in this version.
 ## Impact on What's Built
 
 - **Retired:** the trainer role and its area, assessment slots, behavior requests and plans, wallets, transactions and their zero-sum trigger, discount codes, training sessions, refund policies, and the share and refund math in `app/lib/business-rules.ts`.
+- **Done** in the backend refactor: everything under _Retired_ is gone from the schema, the API and the demo seed, and the retired and Rebuild route slices were deleted or turned into placeholder notices ([legacy-pages.md](legacy-pages.md)). The API is in `app/orpc/` by feature: `evaluation`, `checkout` (eligibility, cart review, pay, the gateway callback, payments), `enrollment`, `commission`, `dog` and `course`, each with an `admin` part for the Admin.
 - **Kept and adapted:** sign-in, dogs, media (request videos move to evaluations), the catalogue and storefront, the showcase payment gateway, orders and order items (they become the pending payment and its items), referral attribution, the SMS Outbox.
 - Code comments that cite the deleted phase-one docs (`app-phase-one.md`, `business-logic.md`, `foundations-plan.md` and the design briefs) are updated as that code is refactored.
 

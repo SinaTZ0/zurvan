@@ -1,4 +1,4 @@
-import type { Course, CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 
 /*===== Lane =====*/
 // The courses taken one after another with this one, as the home page's course map lays them out: obedience
@@ -27,7 +27,7 @@ function toLaneCourse({ slug, title, minAgeMonths, maxAgeMonths, sessionCount, p
 }
 
 /** The course's lane, or `null` when the course has no age to place it on the ruler. */
-export function getLane({ course, catalogue }: { course: CourseDetail; catalogue: Course[] }): CourseLane | null {
+export function getLane({ course, catalogue }: { course: Course; catalogue: Course[] }): CourseLane | null {
   if (course.minAgeMonths === null) return null;
 
   // The catalogue is already in its order, which is also the order a lane is taken in.

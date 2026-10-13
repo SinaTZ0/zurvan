@@ -27,15 +27,10 @@ export function describePlace(course: Facts): string {
   return course.place === null ? "بعد از ارزیابی" : COURSE_PLACE_LABELS[course.place];
 }
 
-/**
- * "سگ همدم ۱ یا قبولی در تست آن", or `null` when the course has no prerequisite. A required course with a test can be
- * skipped by passing that test (spec 3.6), so the sentence offers both.
- */
+/** "سگ همدم ۱", or `null` when the course has no prerequisite. The dog must have passed each one (F4). */
 export function describePrerequisites(course: Pick<Course, "prerequisites">): string | null {
   if (course.prerequisites.length === 0) return null;
-  return course.prerequisites
-    .map((required) => (required.hasTest ? `${required.title} یا قبولی در تست آن` : required.title))
-    .join("، و ");
+  return course.prerequisites.map((required) => required.title).join("، و ");
 }
 
 /*===== Money =====*/

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
-import type { CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 import { getCourseActions } from "~/routes/course_detail/actions";
 
 /*===== Phone Action Bar =====*/
@@ -19,7 +19,7 @@ export function PhoneActionBar({
   heroActionsRef,
   closingActionsRef,
 }: {
-  course: CourseDetail;
+  course: Course;
   heroActionsRef: React.RefObject<HTMLDivElement | null>;
   closingActionsRef: React.RefObject<HTMLDivElement | null>;
 }) {
@@ -58,11 +58,7 @@ export function PhoneActionBar({
         <p className="min-w-0 leading-snug">
           <span className="block truncate text-sm font-extrabold">{course.title}</span>
           <span className="block text-xs text-muted-foreground">
-            {course.bookingKind === "behavior-request"
-              ? "فرستادن درخواست رایگان است"
-              : course.price !== null
-                ? formatToman(course.price)
-                : "ارزیابی اول رایگان است"}
+            {course.price !== null ? formatToman(course.price) : "ارزیابی اول رایگان است"}
           </span>
         </p>
         <Link to={main.to} className={buttonVariants({ className: "shrink-0 hover:text-primary-foreground" })}>

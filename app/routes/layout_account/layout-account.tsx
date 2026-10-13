@@ -9,8 +9,8 @@ import { BottomTabs } from "~/routes/layout_account/components/bottom-tabs";
 import type { Route } from "./+types/layout-account";
 
 /*===== Guard =====*/
-// Signed in, any role but Admin (docs/foundations-plan.md, "Layouts and guards"). The Admin has his own panel.
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer", "trainer", "partner"] })];
+// Signed in as a customer or a partner. The Admin has his own area (docs/app-spec.md, Pages).
+export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer", "partner"] })];
 
 /*===== Loader =====*/
 export function loader({ context }: Route.LoaderArgs) {
@@ -20,7 +20,7 @@ export function loader({ context }: Route.LoaderArgs) {
 }
 
 /*===== Account Layout =====*/
-/** The signed-in shell for customers, trainers and partners at `/account` (docs/customer-area-design.md). */
+/** The signed-in shell for customers and partners at `/account`. */
 export default function AccountLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex min-h-svh flex-col">

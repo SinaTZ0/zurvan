@@ -1,6 +1,6 @@
 import type { Database } from "~/db/client.server";
-import type { Course, CourseDetail } from "~/orpc/course/contract";
-import { toPublicCourse, toPublicCourseDetail } from "~/orpc/course/mapper";
+import type { Course } from "~/orpc/course/contract";
+import { toPublicCourse } from "~/orpc/course/mapper";
 import {
   findApprovedCourseBySlug,
   findApprovedCourses,
@@ -19,23 +19,19 @@ export async function listCourses({ db }: { db: Database }): Promise<Course[]> {
 }
 
 /*===== Get =====*/
-type GetCourseResult = { kind: "success"; course: CourseDetail } | { kind: "not-found" };
+type GetCourseResult = { kind: "success"; course: Course } | { kind: "not-found" };
 
 /**
- * Returns one approved course with its refund policy.
+ * Returns one approved course.
  *
  * @returns `not-found` when no approved course has the slug; drafts and archived courses are never public.
  */
 export async function getCourse({ db, slug }: { db: Database; slug: string }): Promise<GetCourseResult> {
-  const found = await findApprovedCourseBySlug({ db, slug });
-  if (!found) return { kind: "not-found" };
+  const record = await findApprovedCourseBySlug({ db, slug });
+  if (!record) return { kind: "not-found" };
 
-  const prerequisites = await findPrerequisitesByCourseIds({ db, courseIds: [found.course.id] });
-
-  return {
-    kind: "success",
-    course: toPublicCourseDetail({ record: found.course, refundPolicy: found.refundPolicy, prerequisites }),
-  };
+  const prerequisites = await findPrerequisitesByCourseIds({ db, courseIds: [record.id] });
+  return { kind: "success", course: toPublicCourse({ record, prerequisites }) };
 }
 
 /*===== Helpers =====*/

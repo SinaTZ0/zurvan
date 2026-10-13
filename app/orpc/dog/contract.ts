@@ -22,10 +22,10 @@ export const dogSchema = z.object({
   vaccinationStatus: z.enum(VACCINATION_STATUSES),
   behaviorNotes: z.string().nullable(),
   medicalNotes: z.string().nullable(),
-  /** `YYYY-MM-DD`. Set by a trainer or the Admin for a dog they already know. */
-  knownSince: z.string().nullable(),
-  /** Whether the dog has a record, so it can book its next course directly instead of starting with an assessment. */
-  hasRecord: z.boolean(),
+  /** F3: any of its evaluations is `evaluated`. Courses can only be bought once it is, and the birth date and breed lock. */
+  isEvaluated: z.boolean(),
+  /** F2: completed on the site, or marked by the Admin. Only the Admin edits them. */
+  passedCourses: z.array(z.object({ slug: z.string(), title: z.string(), source: z.enum(["enrollment", "admin"]) })),
   /** Null until the owner adds one. */
   photo: mediaSchema.nullable(),
   createdAt: z.date(),
@@ -33,8 +33,15 @@ export const dogSchema = z.object({
 
 export type Dog = z.infer<typeof dogSchema>;
 
+/** A dog as the Admin sees it: with its owner. */
+export const adminDogSchema = dogSchema.extend({
+  owner: z.object({ id: z.string(), name: z.string(), phoneNumber: z.string().nullable() }),
+});
+
+export type AdminDog = z.infer<typeof adminDogSchema>;
+
 // Structure only. Trimming, empty-to-null, Persian digits, limits, the date rules and the allowed values are checked by
-// `validation.ts`. `knownSince` is deliberately absent: customers can never set it, and `strictObject` rejects it.
+// `validation.ts`. `isEvaluated` and the passed courses are deliberately absent: customers can never set them, and `strictObject` rejects them.
 const dogInputShape = {
   name: z.string(),
   breed: z.string().nullish(),
@@ -51,9 +58,14 @@ const dogInputShape = {
   photoMediaId: z.string().nullish(),
 };
 
+// The Admin edits any dog's details, but not its photo, which is the owner's upload.
+const { photoMediaId: _photoMediaId, ...adminDogInputShape } = dogInputShape;
+
 const createDogInputSchema = z.strictObject(dogInputShape);
 const updateDogInputSchema = z.strictObject({ id: z.string(), ...dogInputShape });
+const adminUpdateDogInputSchema = z.strictObject({ id: z.string(), ...adminDogInputShape });
 const dogIdInputSchema = z.strictObject({ id: z.string() });
+const setPassedCourseInputSchema = z.strictObject({ dogId: z.string(), courseSlug: z.string(), passed: z.boolean() });
 
 /*===== Errors =====*/
 // Maps to HTTP 404 through oRPC's default status map. Also the answer for another owner's dog, a removed one and a
@@ -61,14 +73,6 @@ const dogIdInputSchema = z.strictObject({ id: z.string() });
 const dogErrors = {
   NOT_FOUND: {
     message: "Dog not found.",
-    data: errorDataSchema,
-  },
-};
-
-// Maps to HTTP 409. The message is Persian, in `data.errors`, for the Dog Form to show as it is.
-const removeDogErrors = {
-  HAS_BOOKING: {
-    message: "The dog has a booked assessment.",
     data: errorDataSchema,
   },
 };
@@ -90,15 +94,34 @@ export const updateDogContract = oc
   .input(updateDogInputSchema)
   .output(dogSchema);
 
-export const removeDogContract = oc
-  .errors({ ...baseErrors, ...dogErrors, ...removeDogErrors })
+/*===== Admin Procedures =====*/
+export const adminListDogsContract = oc.errors(baseErrors).output(z.array(adminDogSchema));
+
+export const adminGetDogContract = oc
+  .errors({ ...baseErrors, ...dogErrors })
   .input(dogIdInputSchema)
-  .output(z.object({ id: z.string() }));
+  .output(adminDogSchema);
+
+export const adminUpdateDogContract = oc
+  .errors({ ...baseErrors, ...dogErrors })
+  .input(adminUpdateDogInputSchema)
+  .output(adminDogSchema);
+
+/** Marks a course as passed for a dog the Admin already knows, or takes the mark off. */
+export const setPassedCourseContract = oc
+  .errors({ ...baseErrors, ...dogErrors })
+  .input(setPassedCourseInputSchema)
+  .output(adminDogSchema);
 
 export const dogContract = {
   list: listDogsContract,
   get: getDogContract,
   create: createDogContract,
   update: updateDogContract,
-  remove: removeDogContract,
+  admin: {
+    list: adminListDogsContract,
+    get: adminGetDogContract,
+    update: adminUpdateDogContract,
+    setPassedCourse: setPassedCourseContract,
+  },
 };

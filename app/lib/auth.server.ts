@@ -10,6 +10,7 @@ import { env } from "~/env.server";
 import { DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR, DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR } from "~/lib/business-rules";
 import { isDemoPhoneNumber } from "~/lib/demo-accounts";
 import { isNormalizedPhoneNumber, phonePlaceholderEmail } from "~/lib/phone";
+import { findPartnerForNewCustomer, readReferralCode } from "~/lib/referral.server";
 import { recentSms, sendSms } from "~/lib/sms.server";
 import {
   ACCOUNT_BLOCKED_CODE,
@@ -20,7 +21,7 @@ import {
 
 /*===== Startup Check =====*/
 // There is no SMS provider yet, so outside showcase mode nobody could ever receive a code. Refuse to start rather
-// than run a site nobody can sign in to (docs/foundations-plan.md, "Showcase Shortcuts").
+// than run a site nobody can sign in to (`SHOWCASE_MODE`).
 if (!env.SHOWCASE_MODE) {
   throw new Error(
     "No SMS provider is configured. Set SHOWCASE_MODE=true, or wire a provider in app/lib/sms.server.ts.",
@@ -28,14 +29,14 @@ if (!env.SHOWCASE_MODE) {
 }
 
 /*===== Sign-in Code Rules =====*/
-const CODE_EXPIRES_IN_SECONDS = 120; // spec 2: valid for 2 minutes
-const CODE_ALLOWED_ATTEMPTS = 5; // spec 2
+const CODE_EXPIRES_IN_SECONDS = 120; // F1: valid for 2 minutes
+const CODE_ALLOWED_ATTEMPTS = 5; // F1
 const HOUR_MS = 60 * 60 * 1000;
 
 /*===== Auth Instance =====*/
 /**
  * Better-Auth server instance: phone number + a one-time code by SMS, with database sessions. The same two steps sign
- * a person in or, the first time, sign them up as a customer (spec 2).
+ * a person in or, the first time, sign them up as a customer (F1).
  *
  * Mounted at `/api/auth/*` (see `app/routes/api_auth/`). Server code reads the session with
  * `auth.api.getSession({ headers })`.
@@ -57,11 +58,13 @@ export const auth = betterAuth({
       role: { type: "string", required: false, defaultValue: "customer", input: false },
       status: { type: "string", required: false, defaultValue: "active", input: false },
       lastLoginAt: { type: "date", required: false, input: false },
+      // Set by the sign-up hook below (F7), never from the client.
+      referredByPartnerId: { type: "string", required: false, input: false },
     },
   },
 
   /*------ Rate Limits ------*/
-  // Per IP (business-logic B7). The per-number limits need the send log, so they live in the hook below.
+  // Per IP . The per-number limits need the send log, so they live in the hook below.
   rateLimit: {
     enabled: true,
     customRules: {
@@ -130,6 +133,21 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    user: {
+      create: {
+        /*------ Partner Attribution ------*/
+        // F7: a customer is attributed to one partner, permanently, when they register: by the referral link's
+        // cookie first, then by a phone number a partner entered earlier.
+        before: async (newUser, context) => {
+          const partnerId = await findPartnerForNewCustomer({
+            db,
+            referralCode: context?.headers ? await readReferralCode(context.headers) : null,
+            phoneNumber: typeof newUser.phoneNumber === "string" ? newUser.phoneNumber : null,
+          });
+          return partnerId ? { data: { ...newUser, referredByPartnerId: partnerId } } : undefined;
+        },
+      },
+    },
     session: {
       create: {
         after: async (session) => {

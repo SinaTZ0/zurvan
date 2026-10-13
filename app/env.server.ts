@@ -17,7 +17,7 @@ const envSchema = z.object({
   // Public origin of the app. Better-Auth uses it for callbacks and trusted-origin checks.
   BETTER_AUTH_URL: z.url(),
   // The owner's showcase: no SMS provider (the sign-in code is always 12345 and messages go to the `sms_outbox`
-  // table). With it off, auth refuses to start until a real SMS provider is wired (docs/foundations-plan.md).
+  // table). With it off, auth refuses to start until a real SMS provider is wired (`app/lib/sms.server.ts`).
   SHOWCASE_MODE: z.stringbool().default(false),
   // S3-compatible storage for uploaded images (SeaweedFS; docs/media.md). The app writes through this endpoint.
   S3_ENDPOINT: z.url(),

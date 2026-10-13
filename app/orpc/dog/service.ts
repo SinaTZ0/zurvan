@@ -1,16 +1,23 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
-import type { Dog } from "~/orpc/dog/contract";
+import { findCourseBySlug } from "~/orpc/course/repository";
+import type { AdminDog, Dog } from "~/orpc/dog/contract";
 import { toPublicDog } from "~/orpc/dog/mapper";
 import {
+  deletePassedCourse,
+  findAllDogs,
   findDogByOwner,
-  findDogByOwnerForUpdate,
+  findDogOwner,
   findDogsByOwner,
-  hasBookedAssessment,
+  findDogWithPhoto,
+  findPassedCourses,
   insertDog,
+  insertPassedCourse,
   isDogPhotoInUse,
-  softDeleteDogByOwner,
+  lockDogById,
   updateDogByOwner,
+  updateDogById,
+  type DogRecord,
 } from "~/orpc/dog/repository";
 import { dogInputSchema, isDogId } from "~/orpc/dog/validation";
 import { attachMedia, deleteMedia, isMediaId } from "~/orpc/media/service";
@@ -57,30 +64,64 @@ function requestedPhoto(photoMediaId: string | null | undefined): string | null 
   return photoMediaId === undefined ? undefined : photoMediaId || null;
 }
 
+/*===== Passed Courses =====*/
+/** Converts stored dogs into public ones, reading all their passed courses in one query. */
+async function toPublicDogs({ db, records }: { db: DatabaseOrTransaction; records: DogRecord[] }): Promise<Dog[]> {
+  const passed = await findPassedCourses({ db, dogIds: records.map((record) => record.id) });
+  return records.map((record) => toPublicDog({ record, passed }));
+}
+
+async function toPublicDogOf({ db, record }: { db: DatabaseOrTransaction; record: DogRecord }): Promise<Dog> {
+  const [dog] = await toPublicDogs({ db, records: [record] });
+  if (!dog) throw new Error(`toPublicDogOf: dog ${record.id} was lost`);
+  return dog;
+}
+
+/*===== Locked Fields =====*/
+const LOCKED_MESSAGE = "بعد از ارزیابی فقط مدیر می‌تواند این را تغییر دهد.";
+
+/**
+ * F2: once a dog is evaluated, the fields that decide eligibility (F4) are locked for the customer, or a customer could
+ * change a birth date to get past an age range.
+ *
+ * @returns The locked fields the input tries to change, as field messages; empty when it changes none.
+ */
+function lockedFieldChanges({
+  current,
+  details,
+}: {
+  current: DogRecord;
+  details: { birthDate: string; breed: string | null };
+}): Record<string, string> {
+  if (!current.isEvaluated) return {};
+  const fields: Record<string, string> = {};
+  if (details.birthDate !== current.birthDate) fields.birthDate = LOCKED_MESSAGE;
+  if (details.breed !== current.breed) fields.breed = LOCKED_MESSAGE;
+  return fields;
+}
+
 /*===== List =====*/
 /** Returns the owner's dogs, oldest first. */
 export async function listDogs({ db, ownerId }: { db: DatabaseOrTransaction; ownerId: string }): Promise<Dog[]> {
-  const records = await findDogsByOwner({ db, ownerId });
-  return records.map(toPublicDog);
+  return toPublicDogs({ db, records: await findDogsByOwner({ db, ownerId }) });
 }
 
 /*===== Get =====*/
 type GetDogResult = { kind: "success"; dog: Dog } | NotFoundResult;
 
-/** @returns `not-found` for another owner's dog, a removed one and a malformed id alike. */
+/** @returns `not-found` for another owner's dog and a malformed id alike. */
 export async function getDog({ db, ownerId, id }: Owned & { id: string }): Promise<GetDogResult> {
   if (!isDogId(id)) return { kind: "not-found" };
 
   const record = await findDogByOwner({ db, ownerId, id });
-  return record ? { kind: "success", dog: toPublicDog(record) } : { kind: "not-found" };
+  return record ? { kind: "success", dog: await toPublicDogOf({ db, record }) } : { kind: "not-found" };
 }
 
 /*===== Create =====*/
 type CreateDogResult = { kind: "success"; dog: Dog } | InvalidResult;
 
 /**
- * Validates and stores a new dog for its owner. A customer's dog never has `knownSince`: only a trainer or the Admin
- * sets it, so it isn't part of the input.
+ * Validates and stores a new dog for its owner. A new dog is never evaluated: only an evaluation makes it so.
  *
  * @returns `invalid` with per-field messages when the input breaks a domain rule, or the photo isn't a usable upload.
  */
@@ -95,7 +136,7 @@ export async function createDog({ db, ownerId, input }: Owned & { input: unknown
 
   try {
     const record = await insertDog({ db, ownerId, values: { ...details, photoMediaId: photo } });
-    return { kind: "success", dog: toPublicDog(record) };
+    return { kind: "success", dog: await toPublicDogOf({ db, record }) };
   } catch (error) {
     // The dog wasn't saved, so the photo that was just claimed belongs to nothing.
     if (photo) await discardPhoto({ db, mediaId: photo });
@@ -107,12 +148,12 @@ export async function createDog({ db, ownerId, input }: Owned & { input: unknown
 type UpdateDogResult = { kind: "success"; dog: Dog } | InvalidResult | NotFoundResult;
 
 /**
- * Replaces a dog's details. `knownSince` is left as it is. The photo stays unless `photoMediaId` is given: a new ID
- * replaces it and `null` removes it, and the old image is deleted once the dog is saved.
+ * Replaces a dog's details. The photo stays unless `photoMediaId` is given: a new ID replaces it and `null` removes it,
+ * and the old image is deleted once the dog is saved.
  *
- * @returns `not-found` when the dog isn't the owner's or was removed (checked first, so a stranger learns nothing from
- * validation messages), `invalid` with per-field messages when the input breaks a domain rule, or the photo isn't a
- * usable upload.
+ * @returns `not-found` when the dog isn't the owner's (checked first, so a stranger learns nothing from validation
+ * messages), `invalid` with per-field messages when the input breaks a domain rule, changes a locked field of an
+ * evaluated dog, or the photo isn't a usable upload.
  */
 export async function updateDog({
   db,
@@ -125,6 +166,9 @@ export async function updateDog({
 
   const parsed = dogInputSchema.safeParse(input);
   if (!parsed.success) return { kind: "invalid", ...issuesToErrorData(parsed.error.issues) };
+
+  const locked = lockedFieldChanges({ current, details: parsed.data });
+  if (Object.keys(locked).length > 0) return { kind: "invalid", errors: [], fields: locked };
 
   /*------ Photo ------*/
   const { photoMediaId, ...details } = parsed.data;
@@ -139,7 +183,7 @@ export async function updateDog({
   /*------ Save ------*/
   let record;
   try {
-    // The write repeats the ownership check, so a dog removed in between still reads as not found.
+    // The write repeats the ownership check.
     record = await updateDogByOwner({
       db,
       ownerId,
@@ -159,33 +203,79 @@ export async function updateDog({
   // Only now that the dog points at the new photo (or none) is the old one safe to delete.
   if (changed && oldPhoto) await discardPhoto({ db, mediaId: oldPhoto });
 
-  return { kind: "success", dog: toPublicDog(record) };
+  return { kind: "success", dog: await toPublicDogOf({ db, record }) };
 }
 
-/*===== Remove =====*/
-type RemoveDogResult = { kind: "success"; id: string } | { kind: "has-booking"; errors: string[] } | NotFoundResult;
+/*===== Admin =====*/
+// The Admin sees and edits every dog (F2). A dog is never deleted, by anyone.
 
-/**
- * Soft-deletes one of the owner's dogs; its history stays. The dog's row is locked while it is checked, so a booking
- * can't be made for it in between.
- *
- * TODO: Also refuse while the dog has a Scheduling or Active enrollment, once enrollments exist.
- *
- * @returns `not-found` when the dog isn't the owner's or was already removed, `has-booking` while it has a booked
- * assessment: the owner cancels that first, so a trainer isn't left waiting for a dog that is gone.
- */
-export async function removeDog({ db, ownerId, id }: Owned & { id: string }): Promise<RemoveDogResult> {
+type AdminDogResult = { kind: "success"; dog: AdminDog } | NotFoundResult;
+
+async function toAdminDog({ db, record }: { db: DatabaseOrTransaction; record: DogRecord }): Promise<AdminDogResult> {
+  const owner = await findDogOwner({ db, dogId: record.id });
+  if (!owner) return { kind: "not-found" };
+  return { kind: "success", dog: { ...(await toPublicDogOf({ db, record })), owner } };
+}
+
+/** Every dog with its owner, newest first. */
+export async function adminListDogs({ db }: { db: DatabaseOrTransaction }): Promise<AdminDog[]> {
+  const rows = await findAllDogs({ db });
+  const dogs = await toPublicDogs({ db, records: rows.map((row) => row.record) });
+  return dogs.flatMap((dog, index) => {
+    const owner = rows[index]?.owner;
+    return owner ? [{ ...dog, owner }] : [];
+  });
+}
+
+export async function adminGetDog({ db, id }: { db: DatabaseOrTransaction; id: string }): Promise<AdminDogResult> {
+  if (!isDogId(id)) return { kind: "not-found" };
+  const record = await findDogWithPhoto({ db, id });
+  return record ? toAdminDog({ db, record }) : { kind: "not-found" };
+}
+
+/** The Admin changes the details of any dog, including the fields locked for the customer. Not its photo. */
+export async function adminUpdateDog({
+  db,
+  id,
+  input,
+}: {
+  db: Database;
+  id: string;
+  input: unknown;
+}): Promise<AdminDogResult | InvalidResult> {
   if (!isDogId(id)) return { kind: "not-found" };
 
-  return db.transaction(async (tx): Promise<RemoveDogResult> => {
-    const current = await findDogByOwnerForUpdate({ db: tx, ownerId, id });
-    if (!current) return { kind: "not-found" };
+  const parsed = dogInputSchema.omit({ photoMediaId: true }).safeParse(input);
+  if (!parsed.success) return { kind: "invalid", ...issuesToErrorData(parsed.error.issues) };
 
-    if (await hasBookedAssessment({ db: tx, dogId: id })) {
-      return { kind: "has-booking", errors: ["این سگ یک ارزیابی رزروشده دارد. اول آن را لغو کن."] };
-    }
+  const record = await updateDogById({ db, id, values: parsed.data });
+  return record ? toAdminDog({ db, record }) : { kind: "not-found" };
+}
 
-    const removed = await softDeleteDogByOwner({ db: tx, ownerId, id });
-    return removed ? { kind: "success", id } : { kind: "not-found" };
-  });
+/**
+ * Marks a course as passed for a dog the Admin already knows (it was trained before the site existed), or takes his
+ * mark off. A course the dog passed by completing an enrollment stays passed either way.
+ */
+export async function adminSetPassedCourse({
+  db,
+  adminId,
+  dogId,
+  courseSlug,
+  passed,
+}: {
+  db: Database;
+  adminId: string;
+  dogId: string;
+  courseSlug: string;
+  passed: boolean;
+}): Promise<AdminDogResult> {
+  if (!isDogId(dogId)) return { kind: "not-found" };
+
+  const found = await findCourseBySlug({ db, slug: courseSlug });
+  if (!found || !(await lockDogById({ db, id: dogId }))) return { kind: "not-found" };
+
+  if (passed) await insertPassedCourse({ db, dogId, courseId: found.id, markedBy: adminId });
+  else await deletePassedCourse({ db, dogId, courseId: found.id });
+
+  return adminGetDog({ db, id: dogId });
 }

@@ -4,9 +4,10 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { dog, media, user } from "~/db/schema";
+import { dog, evaluation, media, user } from "~/db/schema";
 import { phonePlaceholderEmail } from "~/lib/phone";
-import { createDog, getDog, listDogs, removeDog, updateDog } from "~/orpc/dog/service";
+import { adminUpdateDog, createDog, getDog, listDogs, updateDog } from "~/orpc/dog/service";
+import { markDogEvaluated } from "~/orpc/evaluation/service";
 
 /*===== Dog Ownership =====*/
 // Runs against the real database: the security boundary is the ownership scoping in the queries, which a mock would
@@ -56,7 +57,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   const ids = [ownerA.id, ownerB.id];
-  // Dogs first: they reference the users.
+  // Evaluations and dogs first: they reference the users.
+  await db.delete(evaluation).where(inArray(evaluation.customerId, ids));
   await db.delete(dog).where(inArray(dog.ownerId, ids));
   await db.delete(media).where(eq(media.id, strangerMediaId));
   await db.delete(user).where(inArray(user.id, ids));
@@ -64,19 +66,18 @@ afterAll(async () => {
 });
 
 describe("dog ownership", () => {
-  it("lets the owner read their dog, with no record until a trainer sets knownSince", async () => {
+  it("lets the owner read their dog, which is not evaluated until an evaluation says so", async () => {
     const result = await getDog({ db, ownerId: ownerA.id, id: dogId });
 
-    expect(result).toMatchObject({ kind: "success", dog: { name: "رکس", weightKg: 28, hasRecord: false } });
+    expect(result).toMatchObject({ kind: "success", dog: { name: "رکس", weightKg: 28, isEvaluated: false } });
     expect(await listDogs({ db, ownerId: ownerA.id })).toHaveLength(1);
   });
 
-  it("hides the dog from another owner for get, update and remove", async () => {
+  it("hides the dog from another owner for get and update", async () => {
     expect(await getDog({ db, ownerId: ownerB.id, id: dogId })).toEqual({ kind: "not-found" });
     expect(await updateDog({ db, ownerId: ownerB.id, id: dogId, input: { ...dogInput, name: "دزد" } })).toEqual({
       kind: "not-found",
     });
-    expect(await removeDog({ db, ownerId: ownerB.id, id: dogId })).toEqual({ kind: "not-found" });
     expect(await listDogs({ db, ownerId: ownerB.id })).toEqual([]);
 
     // Nothing changed for the real owner.
@@ -106,11 +107,29 @@ describe("dog ownership", () => {
     expect(await getDog({ db, ownerId: ownerA.id, id: "not-a-uuid" })).toEqual({ kind: "not-found" });
   });
 
-  it("removes a dog from list and get once it is removed", async () => {
-    expect(await removeDog({ db, ownerId: ownerA.id, id: dogId })).toEqual({ kind: "success", id: dogId });
+  it("locks the birth date and breed once the dog is evaluated, for the customer but not the Admin", async () => {
+    const evaluated = await markDogEvaluated({ db, dogId });
+    expect(evaluated.kind).toBe("success");
 
-    expect(await listDogs({ db, ownerId: ownerA.id })).toEqual([]);
-    expect(await getDog({ db, ownerId: ownerA.id, id: dogId })).toEqual({ kind: "not-found" });
-    expect(await removeDog({ db, ownerId: ownerA.id, id: dogId })).toEqual({ kind: "not-found" });
+    const moved = await updateDog({
+      db,
+      ownerId: ownerA.id,
+      id: dogId,
+      input: { ...dogInput, birthDate: "2020-01-01" },
+    });
+    expect(moved).toMatchObject({ kind: "invalid", fields: { birthDate: expect.any(String) } });
+    const rebred = await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, breed: "پودل" } });
+    expect(rebred).toMatchObject({ kind: "invalid", fields: { breed: expect.any(String) } });
+
+    // Other fields still change, and so does the Admin's edit of the locked ones.
+    expect(await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, weightKg: 30 } })).toMatchObject({
+      kind: "success",
+      dog: { weightKg: 30, isEvaluated: true },
+    });
+    const { photoMediaId: _photo, ...adminInput } = { ...dogInput, birthDate: "2020-01-01", photoMediaId: null };
+    expect(await adminUpdateDog({ db, id: dogId, input: adminInput })).toMatchObject({
+      kind: "success",
+      dog: { birthDate: "2020-01-01" },
+    });
   });
 });

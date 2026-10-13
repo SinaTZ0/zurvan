@@ -1,17 +1,14 @@
-import { and, asc, eq, exists, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
-import { assessment, dog, enrollment, media, trainingSession } from "~/db/schema";
+import { course, dog, dogPassedCourse, enrollment, evaluation, media, user } from "~/db/schema";
 import type { MediaRecord } from "~/orpc/media/repository";
 
 /*===== Types =====*/
-/**
- * A stored dog with its photo's media row, and whether it has a record event: a completed assessment, or an enrollment
- * with a held session. Both are read in the same query.
- */
-export type DogRecord = typeof dog.$inferSelect & { photo: MediaRecord | null; hasRecordEvent: boolean };
+/** A stored dog with its photo's media row, and whether it is evaluated (F3). Both are read in the same query. */
+export type DogRecord = typeof dog.$inferSelect & { photo: MediaRecord | null; isEvaluated: boolean };
 
-/** What an owner may write. Never `knownSince`, `ownerId` or `deletedAt`. */
+/** What an owner may write. Never `ownerId`. */
 export type DogValues = Pick<
   typeof dog.$inferInsert,
   | "name"
@@ -29,13 +26,23 @@ export type DogValues = Pick<
   | "photoMediaId"
 >;
 
-/*===== Selection =====*/
-// One query returns the dog, its photo and whether it has a record through an assessment or a session, so a list never
-// costs a query per dog.
-type DogRow = { dog: typeof dog.$inferSelect; photo: MediaRecord | null; hasRecordEvent: boolean };
+/** A course a dog has passed, and how: finished on the site, or marked by the Admin (F2). */
+export type PassedCourseRecord = {
+  dogId: string;
+  courseId: string;
+  slug: string;
+  title: string;
+  source: "enrollment" | "admin";
+};
 
-function toRecord({ dog: row, photo, hasRecordEvent }: DogRow): DogRecord {
-  return { ...row, photo, hasRecordEvent };
+export type DogOwnerRecord = { id: string; name: string; phoneNumber: string | null };
+
+/*===== Selection =====*/
+// One query returns the dog, its photo and whether it is evaluated, so a list never costs a query per dog.
+type DogRow = { dog: typeof dog.$inferSelect; photo: MediaRecord | null; isEvaluated: boolean };
+
+function toRecord({ dog: row, photo, isEvaluated }: DogRow): DogRecord {
+  return { ...row, photo, isEvaluated };
 }
 
 /** The columns every dog read selects. `db` only builds the subquery. */
@@ -43,25 +50,17 @@ function dogSelection(db: DatabaseOrTransaction) {
   return {
     dog,
     photo: media,
-    // Spec: a completed assessment, an enrollment with a held session, or `knownSince` (checked by the mapper).
-    hasRecordEvent: sql<boolean>`${exists(
+    // F3: a dog is evaluated when any of its evaluations is.
+    isEvaluated: sql<boolean>`${exists(
       db
         .select({ one: sql`1` })
-        .from(assessment)
-        .where(and(eq(assessment.dogId, dog.id), eq(assessment.status, "completed"))),
-    )} or ${exists(
-      db
-        .select({ one: sql`1` })
-        .from(trainingSession)
-        .innerJoin(enrollment, eq(trainingSession.enrollmentId, enrollment.id))
-        .where(and(eq(enrollment.dogId, dog.id), eq(trainingSession.status, "held"))),
+        .from(evaluation)
+        .where(and(eq(evaluation.dogId, dog.id), eq(evaluation.status, "evaluated"))),
     )}`,
   };
 }
 
-/**
- * Reads one dog with its photo by ID alone, removed or not. Callers that need ownership checked have already done it.
- */
+/** Reads one dog with its photo by ID alone. Callers that need ownership checked have already done it. */
 export async function findDogWithPhoto({
   db,
   id,
@@ -80,7 +79,7 @@ export async function findDogWithPhoto({
 }
 
 /*===== Reads =====*/
-// Every query is scoped to the owner and skips removed dogs, so a service cannot forget either.
+// The owner's queries are scoped to the owner, so a service cannot forget it.
 
 /** Lists one owner's dogs, oldest first, so a family's first dog stays first. */
 export function findDogsByOwner({ db, ownerId }: { db: DatabaseOrTransaction; ownerId: string }): Promise<DogRecord[]> {
@@ -89,20 +88,20 @@ export function findDogsByOwner({ db, ownerId }: { db: DatabaseOrTransaction; ow
       .select(dogSelection(db))
       .from(dog)
       .leftJoin(media, eq(dog.photoMediaId, media.id))
-      .where(and(eq(dog.ownerId, ownerId), isNull(dog.deletedAt)))
+      .where(eq(dog.ownerId, ownerId))
       // `id` breaks ties between dogs added in the same instant.
       .orderBy(asc(dog.createdAt), asc(dog.id))
       .then((rows) => rows.map(toRecord))
   );
 }
 
-/** Finds one of the owner's dogs. Another owner's dog and a removed one read the same: not there. */
+/** Finds one of the owner's dogs. Another owner's dog reads as not there. */
 export async function findDogByOwner({
   db,
   ownerId,
   id,
 }: {
-  db: Database;
+  db: DatabaseOrTransaction;
   ownerId: string;
   id: string;
 }): Promise<DogRecord | undefined> {
@@ -110,15 +109,15 @@ export async function findDogByOwner({
     .select(dogSelection(db))
     .from(dog)
     .leftJoin(media, eq(dog.photoMediaId, media.id))
-    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId), isNull(dog.deletedAt)))
+    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId)))
     .limit(1);
 
   return row && toRecord(row);
 }
 
 /**
- * Same as {@link findDogByOwner}, and locks the dog's row until the transaction ends. Booking an assessment and
- * removing the dog both take this lock, so one can't slip a booking in while the other checks for it.
+ * Same as {@link findDogByOwner}, and locks the dog's row until the transaction ends. Requesting an evaluation, marking
+ * it evaluated and checking out all take this lock, so one can't slip past the check of another.
  */
 export async function findDogByOwnerForUpdate({
   db,
@@ -133,7 +132,7 @@ export async function findDogByOwnerForUpdate({
     .select(dogSelection(db))
     .from(dog)
     .leftJoin(media, eq(dog.photoMediaId, media.id))
-    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId), isNull(dog.deletedAt)))
+    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId)))
     .limit(1)
     // Postgres can't lock the nullable side of the outer join, so only the dog row is locked.
     .for("update", { of: dog });
@@ -141,29 +140,82 @@ export async function findDogByOwnerForUpdate({
   return row && toRecord(row);
 }
 
-/** Whether the dog has an assessment that is booked and still to come. */
-export async function hasBookedAssessment({
+/** Locks a dog by ID alone, for the Admin's actions. */
+export async function lockDogById({ db, id }: { db: DatabaseOrTransaction; id: string }): Promise<boolean> {
+  const rows = await db.select({ id: dog.id }).from(dog).where(eq(dog.id, id)).for("update");
+  return rows.length > 0;
+}
+
+/** Every dog with its owner, newest first, for the Admin. */
+export async function findAllDogs({
+  db,
+}: {
+  db: DatabaseOrTransaction;
+}): Promise<{ record: DogRecord; owner: DogOwnerRecord }[]> {
+  const rows = await db
+    .select({ ...dogSelection(db), owner: { id: user.id, name: user.name, phoneNumber: user.phoneNumber } })
+    .from(dog)
+    .innerJoin(user, eq(dog.ownerId, user.id))
+    .leftJoin(media, eq(dog.photoMediaId, media.id))
+    .orderBy(desc(dog.createdAt), asc(dog.id));
+
+  return rows.map(({ owner, ...row }) => ({ record: toRecord(row), owner }));
+}
+
+/** The owner of a dog, for the Admin. */
+export async function findDogOwner({
   db,
   dogId,
 }: {
   db: DatabaseOrTransaction;
   dogId: string;
-}): Promise<boolean> {
-  const rows = await db
-    .select({ id: assessment.id })
-    .from(assessment)
-    .where(and(eq(assessment.dogId, dogId), eq(assessment.status, "booked")))
-    .limit(1);
-  return rows.length > 0;
+}): Promise<DogOwnerRecord | undefined> {
+  const [row] = await db
+    .select({ id: user.id, name: user.name, phoneNumber: user.phoneNumber })
+    .from(dog)
+    .innerJoin(user, eq(dog.ownerId, user.id))
+    .where(eq(dog.id, dogId));
+  return row;
 }
 
 /**
- * Whether any dog, removed ones included, uses this media as its photo. Keeps one upload from becoming the photo of two
- * dogs, which would make replacing it on one delete it from the other.
+ * Whether any dog uses this media as its photo. Keeps one upload from becoming the photo of two dogs, which would make
+ * replacing it on one delete it from the other.
  */
 export async function isDogPhotoInUse({ db, mediaId }: { db: Database; mediaId: string }): Promise<boolean> {
   const rows = await db.select({ id: dog.id }).from(dog).where(eq(dog.photoMediaId, mediaId)).limit(1);
   return rows.length > 0;
+}
+
+/**
+ * The courses these dogs have passed (F2): completed enrollments and the ones the Admin marked. A course that is both
+ * is listed once, as an enrollment.
+ */
+export async function findPassedCourses({
+  db,
+  dogIds,
+}: {
+  db: DatabaseOrTransaction;
+  dogIds: string[];
+}): Promise<PassedCourseRecord[]> {
+  if (dogIds.length === 0) return [];
+
+  const finished = await db
+    .selectDistinct({ dogId: enrollment.dogId, courseId: course.id, slug: course.slug, title: course.title })
+    .from(enrollment)
+    .innerJoin(course, eq(enrollment.courseId, course.id))
+    .where(and(inArray(enrollment.dogId, dogIds), eq(enrollment.status, "completed")));
+  const marked = await db
+    .select({ dogId: dogPassedCourse.dogId, courseId: course.id, slug: course.slug, title: course.title })
+    .from(dogPassedCourse)
+    .innerJoin(course, eq(dogPassedCourse.courseId, course.id))
+    .where(inArray(dogPassedCourse.dogId, dogIds));
+
+  const records = new Map<string, PassedCourseRecord>();
+  for (const row of marked) records.set(`${row.dogId}:${row.courseId}`, { ...row, source: "admin" });
+  for (const row of finished) records.set(`${row.dogId}:${row.courseId}`, { ...row, source: "enrollment" });
+  // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
+  return [...records.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
 
 /*===== Writes =====*/
@@ -203,28 +255,52 @@ export async function updateDogByOwner({
   const [updated] = await db
     .update(dog)
     .set(values)
-    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId), isNull(dog.deletedAt)))
+    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId)))
     .returning({ id: dog.id });
 
   if (!updated) return undefined;
   return findDogWithPhoto({ db, id: updated.id });
 }
 
-/** Marks one of the owner's dogs as deleted. Returns whether a dog was removed. */
-export async function softDeleteDogByOwner({
+/** The Admin's update: any dog, and never its photo. */
+export async function updateDogById({
   db,
-  ownerId,
   id,
+  values,
+}: {
+  db: Database;
+  id: string;
+  values: Omit<DogValues, "photoMediaId">;
+}): Promise<DogRecord | undefined> {
+  const [updated] = await db.update(dog).set(values).where(eq(dog.id, id)).returning({ id: dog.id });
+  if (!updated) return undefined;
+  return findDogWithPhoto({ db, id: updated.id });
+}
+
+/** Marks a course as passed for a dog; marking it twice changes nothing. */
+export async function insertPassedCourse({
+  db,
+  dogId,
+  courseId,
+  markedBy,
 }: {
   db: DatabaseOrTransaction;
-  ownerId: string;
-  id: string;
-}): Promise<boolean> {
-  const rows = await db
-    .update(dog)
-    .set({ deletedAt: new Date() })
-    .where(and(eq(dog.id, id), eq(dog.ownerId, ownerId), isNull(dog.deletedAt)))
-    .returning({ id: dog.id });
+  dogId: string;
+  courseId: string;
+  markedBy: string;
+}): Promise<void> {
+  await db.insert(dogPassedCourse).values({ dogId, courseId, markedBy }).onConflictDoNothing();
+}
 
-  return rows.length > 0;
+/** Takes the Admin's mark off. A course passed by completing an enrollment stays passed. */
+export async function deletePassedCourse({
+  db,
+  dogId,
+  courseId,
+}: {
+  db: DatabaseOrTransaction;
+  dogId: string;
+  courseId: string;
+}): Promise<void> {
+  await db.delete(dogPassedCourse).where(and(eq(dogPassedCourse.dogId, dogId), eq(dogPassedCourse.courseId, courseId)));
 }

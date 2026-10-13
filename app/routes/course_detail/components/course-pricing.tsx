@@ -2,11 +2,8 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { describeSessions, formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import type { CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 import { getCourseActions } from "~/routes/course_detail/actions";
-
-/** How long a behavior plan can be paid for (business-logic B13). */
-const PLAN_VALID_DAYS = "۷ روز";
 
 /*===== Course Pricing =====*/
 /**
@@ -18,12 +15,11 @@ export function CoursePricing({
   course,
   actionsRef,
 }: {
-  course: CourseDetail;
+  course: Course;
   /** Watched by the phone action bar, which steps aside while these buttons are on screen. */
   actionsRef: React.Ref<HTMLDivElement>;
 }) {
   const actions = getCourseActions(course);
-  const isBehavior = course.bookingKind === "behavior-request";
 
   return (
     <section
@@ -34,16 +30,10 @@ export function CoursePricing({
         {/*------ The Ask ------*/}
         <div>
           <h2 id="pricing-title" className="font-display text-h2 font-bold text-balance">
-            {isBehavior
-              ? `اول ویدیو، بعد برنامه‌ای که ${HEAD_TRAINER.firstName} پیشنهاد می‌دهد`
-              : `قبل از این دوره، ${HEAD_TRAINER.firstName} سگت را می‌بیند`}
+            قبل از این دوره، {HEAD_TRAINER.firstName} سگت را می‌بیند
           </h2>
           <p className="mt-4 max-w-[34rem] text-lead text-pretty text-muted-foreground">
-            {isBehavior
-              ? "درخواست فرستادن هزینه‌ای ندارد. پیشنهاد را می‌بینی و اگر خواستی، پرداخت می‌کنی."
-              : actions.alternative
-                ? "ارزیابی اول رایگان است و تعهدی نمی‌آورد. سگت قبلاً این‌جا دوره دیده؟ این دوره را مستقیم رزرو کن."
-                : "ارزیابی اول رایگان است و تعهدی نمی‌آورد. بعد از آن می‌دانی سگت از کجا شروع می‌کند."}
+            ارزیابی اول رایگان است و تعهدی نمی‌آورد. بعد از آن می‌دانی سگت از کجا شروع می‌کند.
           </p>
           <div ref={actionsRef} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
@@ -78,12 +68,7 @@ export function CoursePricing({
         {/*------ Price Sheet ------*/}
         <div className="rounded-3xl bg-card p-6 text-card-foreground shadow-sm sm:p-8">
           <dl className="divide-y">
-            {isBehavior ? (
-              <>
-                <Row term="هزینه">بعد از دیدن ویدیو، همراه تعداد جلسه‌ها پیشنهاد می‌شود.</Row>
-                <Row term="اعتبار پیشنهاد">{PLAN_VALID_DAYS} برای پرداخت. بعد از آن می‌توانی درخواست تازه بفرستی.</Row>
-              </>
-            ) : course.price === null ? (
+            {course.price === null ? (
               <Row term="هزینه">بعد از ارزیابی رایگان، برای گرایشی که انتخاب می‌کنید.</Row>
             ) : (
               <>
@@ -101,24 +86,8 @@ export function CoursePricing({
                     <span className="text-muted-foreground">اختیاری. برای قیمتش تماس بگیر.</span>
                   )}
                 </Row>
-                {course.testPrice !== null && (
-                  <Row term="تست به‌جای دوره">
-                    <span className="font-bold">{formatToman(course.testPrice)}</span>
-                  </Row>
-                )}
               </>
             )}
-
-            {/*------ Refund ------*/}
-            <Row term="اگر منصرف شدی">
-              <span className="text-pretty">{course.refundPolicy.description}</span>
-              <Link
-                to="/help/refunds"
-                className="mt-1 block w-fit text-sm font-bold text-primary underline-offset-4 hover:underline"
-              >
-                قوانین لغو و بازگشت پول
-              </Link>
-            </Row>
           </dl>
         </div>
       </div>

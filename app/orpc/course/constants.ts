@@ -1,7 +1,7 @@
 /*===== Course Constants =====*/
 // Browser-safe values shared by the API, the seed and the storefront. Stored as plain text (see `app/db/schema.ts`).
 
-/** The catalogue's families (spec 3.1). */
+/** The catalogue's families (docs/zurvan-courses.md). */
 export const COURSE_FAMILIES = [
   "basics",
   "obedience",
@@ -14,20 +14,8 @@ export const COURSE_FAMILIES = [
 
 export type CourseFamily = (typeof COURSE_FAMILIES)[number];
 
-/** Behavior modification starts from a request with a video, every other course from booking. */
-export const COURSE_BOOKING_KINDS = ["standard", "behavior-request"] as const;
-
-export type CourseBookingKind = (typeof COURSE_BOOKING_KINDS)[number];
-
-/** Only `approved` courses are public. The rest belong to the approval workflow (spec 3.2). */
-export const COURSE_STATUSES = [
-  "draft",
-  "pending-approval",
-  "awaiting-trainer-confirmation",
-  "rejected",
-  "approved",
-  "archived",
-] as const;
+/** Only `approved` courses are on sale; `archived` ones can't be bought but their enrollments continue (F8). */
+export const COURSE_STATUSES = ["draft", "approved", "archived"] as const;
 
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 

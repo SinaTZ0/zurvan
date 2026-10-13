@@ -11,14 +11,12 @@ import type { UserRole } from "~/lib/user-constants";
 export const sessionContext = createContext<AuthSession>();
 
 /*===== Role Homes =====*/
-// Where a signed-in person belongs when they open a page their role can't use. Trainers and the Admin (the head
-// trainer) land on the trainer area; the Admin panel will take over the Admin's home when it exists. The partner panel
-// isn't built yet, so partners go to the storefront until it is.
+// Where a signed-in person belongs when they open a page their role can't use. The Admin's area and the partner's
+// panel aren't built yet (app-spec, Pages), so both go to the storefront until they are.
 const ROLE_HOME: Record<UserRole, string> = {
   customer: "/account",
-  trainer: "/trainer",
   partner: "/",
-  admin: "/trainer",
+  admin: "/",
 };
 
 /** The landing page for a role. Unknown roles (a value removed from the list) go to the storefront. */
@@ -28,7 +26,7 @@ export function roleHomePath(role: string | null | undefined): string {
 
 /*===== Guard =====*/
 /**
- * Route middleware for a guarded layout (docs/foundations-plan.md, "Layouts and guards"). Loads the session once and
+ * Route middleware for a guarded layout (docs/app-spec.md, Roles). Loads the session once and
  * puts it in the router context for every child loader and action.
  *
  * - Signed out, or a new account that hasn't given its name yet: redirect to `/auth?redirectTo=<this page>`. The

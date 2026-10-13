@@ -10,17 +10,14 @@ import { smsOutbox } from "~/db/schema";
 
 export type SmsKind =
   | "sign-in-code"
-  | "assessment-booked"
-  | "assessment-cancelled"
-  | "enrollment-created"
+  | "evaluation-requested"
+  | "evaluation-evaluated"
+  | "evaluation-rejected"
+  | "payment-paid"
+  | "payment-paid-admin"
+  | "enrollment-completed"
   | "enrollment-cancelled"
-  | "enrollment-result"
-  | "session-scheduled"
-  | "session-rescheduled"
-  | "session-cancelled"
-  | "behavior-request-created"
-  | "behavior-plan-proposed"
-  | "behavior-request-declined";
+  | "commission-paid";
 
 /** Queues one SMS. In showcase mode it only lands in the outbox. */
 export async function sendSms({ phoneNumber, kind, body }: { phoneNumber: string; kind: SmsKind; body: string }) {

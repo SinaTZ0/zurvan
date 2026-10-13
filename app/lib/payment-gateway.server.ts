@@ -1,15 +1,15 @@
 import { randomInt, randomUUID } from "node:crypto";
 
 import { env } from "~/env.server";
-import { DEMO_GATEWAY } from "~/orpc/order/constants";
+import { DEMO_GATEWAY } from "~/orpc/checkout/constants";
 
 /*===== Payment Gateway =====*/
 // One place that talks to the card gateway, so a real one (Zarinpal, IDPay, …) replaces the demo without touching the
-// order flow. The flow is the usual Iranian one: start a payment for an amount and get an authority token and a URL to
+// checkout flow. The flow is the usual Iranian one: start a payment for an amount and get an authority token and a URL to
 // send the customer to; the gateway sends them back to our callback, where the payment is verified server-side before
 // anything is trusted.
 //
-// Showcase mode has no gateway (docs/foundations-plan.md): "starting" returns our own callback URL straight away, and
+// Showcase mode has no gateway : "starting" returns our own callback URL straight away, and
 // verifying always succeeds, so a demo payment runs exactly the success path a real verified callback would.
 
 export type StartedPayment = {

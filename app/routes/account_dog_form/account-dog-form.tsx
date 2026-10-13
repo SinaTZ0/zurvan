@@ -4,7 +4,6 @@ import { data, isRouteErrorResponse } from "react-router";
 import { Link } from "~/components/link";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogForm } from "~/routes/account_dog_form/components/dog-form";
-import { RemoveDog } from "~/routes/account_dog_form/components/remove-dog";
 
 import type { Route } from "./+types/account-dog-form";
 
@@ -58,11 +57,7 @@ export default function DogFormPage({ loaderData }: Route.ComponentProps) {
         )}
       </header>
 
-      <DogForm
-        dog={dog}
-        redirectTo={redirectTo}
-        removeSlot={dog ? <RemoveDog dogId={dog.id} name={dog.name} /> : undefined}
-      />
+      <DogForm dog={dog} redirectTo={redirectTo} />
     </div>
   );
 }

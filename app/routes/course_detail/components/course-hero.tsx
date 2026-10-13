@@ -1,4 +1,4 @@
-import { CakeIcon, ChevronLeftIcon, ClockIcon, KeyRoundIcon, MapPinIcon, PawPrintIcon } from "lucide-react";
+import { CakeIcon, ChevronLeftIcon, ClockIcon, KeyRoundIcon, MapPinIcon } from "lucide-react";
 
 import { Fact } from "~/components/fact";
 import { Link } from "~/components/link";
@@ -7,7 +7,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { describeAge, describePlace, describePrerequisites, describeSessions, formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import type { CourseDetail } from "~/orpc/course/contract";
+import type { Course } from "~/orpc/course/contract";
 import { getCourseActions } from "~/routes/course_detail/actions";
 import type { RatingSummary } from "~/routes/course_detail/discussion";
 
@@ -26,7 +26,7 @@ export function CourseHero({
   ratings,
   actionsRef,
 }: {
-  course: CourseDetail;
+  course: Course;
   ratings: RatingSummary | null;
   /** Watched by the phone action bar, which takes over once these buttons scroll away. */
   actionsRef: React.Ref<HTMLDivElement>;
@@ -151,19 +151,7 @@ export function CourseHero({
 
 /*===== Facts =====*/
 /** The course's facts, worded as on every storefront page. Courses without ages yet say so once, not four times. */
-function CourseFacts({ course }: { course: CourseDetail }) {
-  if (course.bookingKind === "behavior-request") {
-    return (
-      <>
-        <Fact icon={PawPrintIcon} label="برای">
-          هر سن و هر نژاد
-        </Fact>
-        <Fact icon={ClockIcon} label="تعداد جلسه‌ها">
-          بعد از دیدن ویدیو
-        </Fact>
-      </>
-    );
-  }
+function CourseFacts({ course }: { course: Course }) {
   if (course.minAgeMonths === null) {
     return (
       <Fact icon={ClockIcon} label="سن، جلسه‌ها و محل تمرین">
@@ -194,14 +182,7 @@ function CourseFacts({ course }: { course: CourseDetail }) {
 
 /*===== Price Line =====*/
 /** The price in one sentence, with what happens before paying: the free assessment comes first. */
-function PriceLine({ course }: { course: CourseDetail }) {
-  if (course.bookingKind === "behavior-request") {
-    return (
-      <span className="text-muted-foreground">
-        {HEAD_TRAINER.firstName} ویدیوی سگت را می‌بیند و بعد تعداد جلسه‌ها و هزینه را پیشنهاد می‌دهد.
-      </span>
-    );
-  }
+function PriceLine({ course }: { course: Course }) {
   if (course.price === null) {
     return <span className="text-muted-foreground">هزینه‌ی هر گرایش بعد از ارزیابی رایگان مشخص می‌شود.</span>;
   }

@@ -4,7 +4,7 @@ import type { UserRole } from "~/lib/user-constants";
 // Browser-safe values shared by the upload API, the image component and the forms. See docs/media.md.
 
 /*===== Kinds =====*/
-export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate"] as const;
+export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation"] as const;
 
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -37,6 +37,11 @@ export const MEDIA_VARIANTS = {
   certificate: {
     thumb: { mode: "cover", width: 320, height: 240 },
     full: { mode: "inside", width: 2000, height: 2000 },
+  },
+  // A photo the customer sends with an evaluation request (F3).
+  evaluation: {
+    thumb: { mode: "cover", width: 320, height: 240 },
+    full: { mode: "inside", width: 1600, height: 1600 },
   },
 } as const satisfies Record<MediaKind, Record<string, MediaVariantSpec>>;
 
@@ -82,8 +87,7 @@ export const MEDIA_ACCEPTED_TYPES = "image/jpeg,image/png,image/webp";
 /*===== Who Uploads What =====*/
 /** The kinds each role may upload: only the ones its pages use (customers have no course covers, for example). */
 export const MEDIA_UPLOAD_KINDS_BY_ROLE: Record<UserRole, readonly MediaKind[]> = {
-  customer: ["avatar", "dog"],
-  trainer: ["avatar", "certificate", "course"],
+  customer: ["avatar", "dog", "evaluation"],
   partner: ["avatar"],
   admin: MEDIA_KINDS,
 };
