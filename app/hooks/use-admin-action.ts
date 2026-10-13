@@ -19,13 +19,15 @@ const CONFLICT_CODES = new Set(["NOT_ANSWERABLE", "NOT_ACTIVE", "NOT_FOUND"]);
  * - **Success:** toasts `success`, reloads the loaders, then calls `onSuccess` (close the dialog, keep the drawer).
  * - **Already changed** (`NOT_ANSWERABLE`, `NOT_ACTIVE`, `NOT_FOUND`): toasts the API's own Persian message, reloads the
  *   loaders so the stale row updates, then calls `onConflict` (close the dialog).
- * - **Anything else:** `failure` holds the message and per-field messages for the dialog to show, and a toast says it
- *   too unless the failure belongs to a field (`INVALID_INPUT` with `fields`). The caller's input is kept.
+ * - **Anything else:** `failure` holds the message and per-field messages for the dialog to show. A toast says it too
+ *   unless the failure belongs to a field (`INVALID_INPUT` with `fields`) or the caller shows `failure` itself
+ *   (`toastFailure: false`, for a dialog with its own alert). The caller's input is kept.
  */
 export function useAdminAction<Vars, Out>({
   mutationFn,
   success,
   failureFallback = "انجام نشد. دوباره امتحان کن.",
+  toastFailure = true,
   onSuccess,
   onConflict,
 }: {
@@ -33,6 +35,8 @@ export function useAdminAction<Vars, Out>({
   /** The toast on success, or a function of the result when it names the dog or course. */
   success: string | ((result: Out, vars: Vars) => string);
   failureFallback?: string;
+  /** Set to false when the caller shows `failure` in the dialog itself, so the message isn't said twice. */
+  toastFailure?: boolean;
   onSuccess?: (result: Out, vars: Vars) => void;
   onConflict?: () => void;
 }) {
@@ -58,7 +62,7 @@ export function useAdminAction<Vars, Out>({
       }
 
       setFailure(described);
-      if (Object.keys(described.fields).length === 0) {
+      if (toastFailure && Object.keys(described.fields).length === 0) {
         toast.add({ title: described.message ?? failureFallback, type: "error" });
       }
     },

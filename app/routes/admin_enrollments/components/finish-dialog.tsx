@@ -77,6 +77,7 @@ export function FinishDialog({
       kind === "complete" ? client.enrollment.admin.complete({ id }) : client.enrollment.admin.cancel({ id }),
     success: copy.toast(names),
     failureFallback: "انجام نشد. دوباره امتحان کن.",
+    toastFailure: false,
     onSuccess: () => onOpenChange(false),
     onConflict: () => onOpenChange(false),
   });
