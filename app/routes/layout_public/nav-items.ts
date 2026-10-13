@@ -1,4 +1,4 @@
-import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
+import { ACCOUNT_LINKS } from "~/lib/account-links";
 
 /*===== Storefront Navigation =====*/
 // Shared by the desktop header and the phone menu, so both always list the same pages.
@@ -10,10 +10,5 @@ export const NAV_ITEMS = [
 ] as const;
 
 /*===== Signed-in Links =====*/
-// The customer's account pages, listed in the person menu of the storefront header. The account area keeps its own
-// copy (`layout_account/account-nav.ts`): a route slice never imports another's files.
-export const CUSTOMER_MENU_LINKS = [
-  { label: "سگ‌های من", to: "/account" },
-  { label: "سبد", to: CART_PATH },
-  { label: "خریدها", to: PURCHASES_PATH },
-] as const;
+// The customer's account pages, listed in the person menu of the storefront header.
+export const CUSTOMER_MENU_LINKS = ACCOUNT_LINKS.map(({ label, to }) => ({ label, to }));

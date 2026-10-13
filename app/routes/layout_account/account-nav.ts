@@ -1,4 +1,4 @@
-import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
+import { ACCOUNT_LINKS } from "~/lib/account-links";
 
 /*===== Account Navigation =====*/
 // The account area's sections, shared by the desktop tabs and the phone menu. Only built pages are listed; add each
@@ -22,11 +22,7 @@ export type DeskExitLink = { label: string; to: string };
 
 // The pages of docs/app-spec.md (Dashboard, Cart, Purchases). The Cart's count is added at render time by
 // `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
-export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = [
-  { label: "سگ‌های من", to: "/account", end: true },
-  { label: "سبد", to: CART_PATH },
-  { label: "خریدها", to: PURCHASES_PATH },
-];
+export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS;
 
 // The course catalogue page isn't built, so this goes to the home page's course grid.
 export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/#courses" };
