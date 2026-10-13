@@ -1,0 +1,74 @@
+import { ORPCError } from "@orpc/client";
+import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
+import { useRevalidator } from "react-router";
+
+import { toast } from "~/components/ui/toast";
+import { type ApiFailure, describeApiFailure } from "~/lib/api-error";
+
+/*===== Constants =====*/
+// The API answers these when the row changed under the Admin's hands: another tab, or the customer withdrawing (F12,
+// "statuses only move forward"). They aren't failures to retry; the list is simply stale.
+const CONFLICT_CODES = new Set(["NOT_ANSWERABLE", "NOT_ACTIVE", "NOT_FOUND"]);
+
+/*===== Admin Action =====*/
+/**
+ * A one-click Admin button wired to a mutation: a success toast, then the route's loaders reload so the list shows the
+ * new state. Used by «ارزیابی شد», «رد», «تمام شد» and «لغو».
+ *
+ * - **Success:** toasts `success`, reloads the loaders, then calls `onSuccess` (close the dialog, keep the drawer).
+ * - **Already changed** (`NOT_ANSWERABLE`, `NOT_ACTIVE`, `NOT_FOUND`): toasts the API's own Persian message, reloads the
+ *   loaders so the stale row updates, then calls `onConflict` (close the dialog).
+ * - **Anything else:** `failure` holds the message and per-field messages for the dialog to show, and a toast says it
+ *   too unless the failure belongs to a field (`INVALID_INPUT` with `fields`). The caller's input is kept.
+ */
+export function useAdminAction<Vars, Out>({
+  mutationFn,
+  success,
+  failureFallback = "انجام نشد. دوباره امتحان کن.",
+  onSuccess,
+  onConflict,
+}: {
+  mutationFn: (vars: Vars) => Promise<Out>;
+  /** The toast on success, or a function of the result when it names the dog or course. */
+  success: string | ((result: Out, vars: Vars) => string);
+  failureFallback?: string;
+  onSuccess?: (result: Out, vars: Vars) => void;
+  onConflict?: () => void;
+}) {
+  const revalidator = useRevalidator();
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
+
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: async (result, vars) => {
+      setFailure(null);
+      toast.add({ title: typeof success === "function" ? success(result, vars) : success, type: "success" });
+      await revalidator.revalidate();
+      onSuccess?.(result, vars);
+    },
+    onError: (error) => {
+      const described = describeApiFailure({ error, fallback: failureFallback });
+
+      if (error instanceof ORPCError && CONFLICT_CODES.has(error.code)) {
+        toast.add({ title: described.message ?? failureFallback, type: "error" });
+        void revalidator.revalidate();
+        onConflict?.();
+        return;
+      }
+
+      setFailure(described);
+      if (Object.keys(described.fields).length === 0) {
+        toast.add({ title: described.message ?? failureFallback, type: "error" });
+      }
+    },
+  });
+
+  return {
+    run: (vars: Vars) => mutation.mutate(vars),
+    isPending: mutation.isPending,
+    failure,
+    /** Clears a shown failure, e.g. when the dialog is reopened. */
+    reset: () => setFailure(null),
+  };
+}

@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { useMatches } from "react-router";
 
 import { NavLink } from "~/components/nav-link";
-import { NavBadge } from "~/routes/layout_account/components/nav-badge";
+import { NavBadge } from "~/components/nav-badge";
 import { BOTTOM_TABS_FROM, type DeskNavItem } from "~/routes/layout_account/account-nav";
 
 /*===== Bottom Tabs =====*/

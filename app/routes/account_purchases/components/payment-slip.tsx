@@ -5,7 +5,7 @@ import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { Payment } from "~/orpc/checkout/contract";
 
 import { PaymentLine } from "./payment-line";
-import { PaymentStatusBadge } from "./payment-status-badge";
+import { PaymentStatusBadge } from "~/components/payment-status-badge";
 
 /*===== Payment Slip =====*/
 /**
