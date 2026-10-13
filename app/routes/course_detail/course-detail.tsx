@@ -4,14 +4,15 @@ import { data, isRouteErrorResponse } from "react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { auth } from "~/lib/auth.server";
 import { createServerClient } from "~/orpc/server-client.server";
-import { CourseCardBand } from "~/routes/course_detail/components/course-card-band";
-import { CourseDiscussion } from "~/routes/course_detail/components/course-discussion";
+import { BuyCard } from "~/routes/course_detail/components/buy-card";
+import { ClosingBand } from "~/routes/course_detail/components/closing-band";
 import { CourseHero } from "~/routes/course_detail/components/course-hero";
-import { CoursePath } from "~/routes/course_detail/components/course-path";
-import { CoursePricing } from "~/routes/course_detail/components/course-pricing";
+import { LaneRail } from "~/routes/course_detail/components/lane-rail";
+import { LearnSection } from "~/routes/course_detail/components/learn-section";
 import { PhoneActionBar } from "~/routes/course_detail/components/phone-action-bar";
-import { getDiscussion, summarizeRatings } from "~/routes/course_detail/discussion";
+import { useBuyCard, type Viewer } from "~/routes/course_detail/components/use-buy-card";
 import { getLane } from "~/routes/course_detail/lane";
 
 import type { Route } from "./+types/course-detail";
@@ -24,41 +25,68 @@ export const meta: Route.MetaFunction = ({ loaderData }) => {
 };
 
 /*===== Loader =====*/
+// Public: a visitor reads the course, so there is no guard. The session is only read to know who is looking.
 // Working and sport dogs (`/courses/working-dogs`, `/courses/sport`) are course rows too, so they land here.
 export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
-  const [course, catalogue] = await Promise.all([
+  const [course, catalogue, session] = await Promise.all([
     client.course.get({ slug: params.slug }).catch((error: unknown) => {
       if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
       throw error;
     }),
     client.course.list(),
+    auth.api.getSession({ headers: request.headers }),
   ]);
 
-  const discussion = getDiscussion(course.slug);
-  return {
-    course,
-    lane: getLane({ course, catalogue }),
-    discussion,
-    ratings: summarizeRatings(discussion),
-  };
+  /*------ Viewer ------*/
+  // A customer who hasn't given a name yet is still finishing sign-up: for this page they are a visitor, and the sign-in
+  // page asks for the name before sending them back here.
+  const viewer: Viewer = !session
+    ? "visitor"
+    : session.user.role !== "customer"
+      ? "other"
+      : session.user.firstName
+        ? "customer"
+        : "visitor";
+
+  /*------ Which Dogs Can Buy ------*/
+  // Only a customer, and only for a course that has a price (a working or sport course isn't sold online).
+  const eligibility =
+    viewer === "customer" && course.price !== null
+      ? await client.checkout.eligibility({ courseSlug: course.slug })
+      : [];
+
+  return { course, lane: getLane({ course, catalogue }), viewer, eligibility };
 }
 
 /*===== Page =====*/
 export default function CourseDetailPage({ loaderData }: Route.ComponentProps) {
-  const { course, lane, discussion, ratings } = loaderData;
-  // The phone action bar shows once the hero's own buttons have scrolled away, and steps aside for the closing ones.
-  const heroActionsRef = useRef<HTMLDivElement>(null);
-  const closingActionsRef = useRef<HTMLDivElement>(null);
+  const { course, lane, viewer, eligibility } = loaderData;
+  // The card and the phone bar draw the same state, so it is worked out once here.
+  const buy = useBuyCard({ course, viewer, eligibility });
+  const cardRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
-      <CourseHero course={course} ratings={ratings} actionsRef={heroActionsRef} />
-      <CourseCardBand course={course} />
-      {lane && <CoursePath course={course} lane={lane} />}
-      <CourseDiscussion entries={discussion} ratings={ratings} />
-      <CoursePricing course={course} actionsRef={closingActionsRef} />
-      <PhoneActionBar course={course} heroActionsRef={heroActionsRef} closingActionsRef={closingActionsRef} />
+      {/*===== Hero and Buy Card =====*/}
+      <CourseHero course={course}>
+        <BuyCard course={course} buy={buy} cardRef={cardRef} />
+      </CourseHero>
+
+      {/*===== What You Learn and What Comes Next =====*/}
+      {/* 7/5 when the lane has something to say; a course with no lane content (CGC, working dogs) gets the whole width
+          rather than an empty end column. `LaneRail` renders nothing for those, so the grid asks for its heading. */}
+      <div className="site-container grid gap-y-section-sm pt-section-sm lg:has-[#lane-title]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:has-[#lane-title]:gap-x-16 xl:has-[#lane-title]:gap-x-24">
+        <LearnSection course={course} />
+        {lane && <LaneRail course={course} lane={lane} />}
+      </div>
+
+      {/*===== Closing =====*/}
+      <div className="mt-section-md">
+        <ClosingBand />
+      </div>
+
+      <PhoneActionBar course={course} buy={buy} cardRef={cardRef} />
     </>
   );
 }

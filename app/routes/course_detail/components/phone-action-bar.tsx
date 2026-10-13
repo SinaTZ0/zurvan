@@ -5,65 +5,66 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
 import type { Course } from "~/orpc/course/contract";
-import { getCourseActions } from "~/routes/course_detail/actions";
+import { BuyButton } from "~/routes/course_detail/components/buy-card";
+import type { BuyCardState } from "~/routes/course_detail/components/use-buy-card";
 
 /*===== Phone Action Bar =====*/
 /**
- * Phones only: once the hero's buttons have scrolled off the top, the main action follows along the bottom edge, so
- * a visitor reading the card or the reviews can act without scrolling back. It steps aside while the closing
- * section's own buttons are on screen, so there are never two of the same ask in view. Desktop has the room to keep
- * the page calm without it.
+ * Phones only: once the buy card has scrolled off the top, the price and the same main action follow along the bottom
+ * edge, so a visitor reading what the course teaches can buy without scrolling back. It steps aside while the card is
+ * on screen, so the same ask is never in view twice. Desktop has the room to keep the page calm without it.
+ *
+ * It draws the card's own state, so the two can't disagree. The two states that need the dog list (nothing picked,
+ * or a dog that can't buy) send the visitor up to the card instead of showing a dead button.
  */
 export function PhoneActionBar({
   course,
-  heroActionsRef,
-  closingActionsRef,
+  buy,
+  cardRef,
 }: {
   course: Course;
-  heroActionsRef: React.RefObject<HTMLDivElement | null>;
-  closingActionsRef: React.RefObject<HTMLDivElement | null>;
+  buy: BuyCardState;
+  cardRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const [heroPassed, setHeroPassed] = useState(false);
-  const [closingInView, setClosingInView] = useState(false);
-  const visible = heroPassed && !closingInView;
-  const { main } = getCourseActions(course);
+  const [cardPassed, setCardPassed] = useState(false);
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target === heroActionsRef.current) {
-          // Only "scrolled past": above the viewport, not still waiting below it.
-          setHeroPassed(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-        } else {
-          setClosingInView(entry.isIntersecting);
-        }
-      }
+    const card = cardRef.current;
+    if (!card) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      // Only "scrolled past": above the viewport, not still waiting below it.
+      setCardPassed(!entry!.isIntersecting && entry!.boundingClientRect.top < 0);
     });
-    if (heroActionsRef.current) observer.observe(heroActionsRef.current);
-    if (closingActionsRef.current) observer.observe(closingActionsRef.current);
+    observer.observe(card);
     return () => observer.disconnect();
-  }, [heroActionsRef, closingActionsRef]);
+  }, [cardRef]);
+
+  const needsTheList = buy.action.kind === "pick" || buy.action.kind === "blocked";
 
   return (
     <div
       // Hidden bars stay out of the tab order and the accessibility tree.
-      inert={!visible}
+      inert={!cardPassed}
       className={cn(
         "fixed inset-x-0 bottom-0 z-40 border-t bg-popover/95 pb-[env(safe-area-inset-bottom)] text-popover-foreground shadow-lg backdrop-blur-md lg:hidden",
         "motion-safe:transition-[translate,opacity] motion-safe:duration-300",
-        visible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
+        cardPassed ? "translate-y-0 opacity-100" : "translate-y-full opacity-0",
       )}
     >
       <div className="site-container flex items-center justify-between gap-4 py-3">
         <p className="min-w-0 leading-snug">
           <span className="block truncate text-sm font-extrabold">{course.title}</span>
-          <span className="block text-xs text-muted-foreground">
-            {course.price !== null ? formatToman(course.price) : "ارزیابی اول رایگان است"}
+          <span className="block text-sm font-bold text-primary">
+            {course.price !== null ? formatToman(course.price) : "بعد از ارزیابی"}
           </span>
         </p>
-        <Link to={main.to} className={buttonVariants({ className: "shrink-0 hover:text-primary-foreground" })}>
-          {main.label}
-        </Link>
+        {needsTheList ? (
+          <Link to="#buy-card" className={buttonVariants({ variant: "solid", className: "shrink-0" })}>
+            {buy.action.kind === "pick" ? "انتخاب سگ" : "دلیلش را ببین"}
+          </Link>
+        ) : (
+          <BuyButton buy={buy} size="default" className="shrink-0" />
+        )}
       </div>
     </div>
   );

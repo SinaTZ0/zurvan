@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Button } from "~/components/ui/button";
 import { Receipt, ReceiptLine, ReceiptLines, ReceiptTotal } from "~/components/receipt";
-import { Stamp } from "~/components/stamp";
 
 /*===== Meta =====*/
 const meta = {
@@ -58,10 +57,7 @@ export const Checkout: Story = {
 export const Paid: Story = {
   args: {
     children: (
-      <>
-        <Stamp lines={["پرداخت", "شد"]} />
-        {lines}
-      </>
+      <>{lines}</>
     ),
   },
 };

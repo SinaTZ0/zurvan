@@ -9,7 +9,7 @@ import { formatToman } from "~/lib/course-format";
 
 /**
  * The receipt's plate. Holds `ReceiptLine`s and a `ReceiptTotal`, and anything else the page puts under them (the
- * refund sentence, the button). Relative, so a `Stamp` can land on its corner.
+ * refund sentence, the button). Relative, so a mark can sit on its corner.
  */
 export function Receipt({
   title,

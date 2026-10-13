@@ -52,12 +52,12 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ## Pieces
 
-| Piece          | Where                              | Use                                                                                                                                                                                                                                                           |
-| -------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SpeechBubble` | `app/components/speech-bubble.tsx` | The dog's words in `font-hand`, inside a hand-drawn chalk outline with a tail pointing back at the dog. `tail` (and `lgTail` for desktop) picks the tail's edge and end. Opaque black inside, so it reads over photos. `drawIn` is for the page's one moment. |
-| `ChalkDoodle`  | `app/components/chalk-doodle.tsx`  | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                |
-| `DogPhoto`     | `app/components/dog-photo.tsx`     | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                              |
-| `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                       |
+| Piece                      | Where                                           | Use                                                                                                                                                                                                                                                           |
+| -------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SpeechBubble`             | `app/components/speech-bubble.tsx`              | The dog's words in `font-hand`, inside a hand-drawn chalk outline with a tail pointing back at the dog. `tail` (and `lgTail` for desktop) picks the tail's edge and end. Opaque black inside, so it reads over photos. `drawIn` is for the page's one moment. |
+| `ChalkDoodle`              | `app/components/chalk-doodle.tsx`               | White marker doodles (heart, paw, crown, arrows, bone, sparkles, swoosh, exclamation) from `public/photo/home/doodle-*.webp`. Decoration only. One or two per section, near a dog or a bubble.                                                                |
+| `DogPhoto`                 | `app/components/dog-photo.tsx`                  | A dog's photo in its frame; when there is no photo, the flat engraved `DogTag` on a sunken box.                                                                                                                                                               |
+| `WithdrawEvaluationButton` | `app/components/withdraw-evaluation-button.tsx` | The quiet «پس گرفتن درخواست» for an evaluation request that is still waiting, on the Dashboard and Dog Detail.                                                                                                                                                |
 
 These live in `app/components/` because several routes use them.
 
@@ -123,6 +123,5 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
 ## Loose Ends
 
 - **Placeholders:** the head trainer's name, years and photo; the other two trainers' names, focuses and years; the course prices; the footer phone number. The photos are generated stand-ins until the owner has real ones.
-- **Links to pages not rebuilt yet:** the course cards go to the old Course Detail ([legacy-pages.md](legacy-pages.md)).
 - **Working and sport dogs** have no price and show «بعد از ارزیابی»; they are a future feature (app-spec F8).
 - **Leftover assets:** most of `public/demo/` and the old files in `public/photo/` (outside `home/`) are unused or only used by legacy pages. Delete them as those pages go.
