@@ -4,6 +4,7 @@ export default [
   /*===== Storefront =====*/
   layout("routes/layout_public/layout-public.tsx", [
     index("routes/home/home.tsx"),
+    route("courses", "routes/course_catalogue/course-catalogue.tsx"),
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
     route("assessment", "routes/assessment/assessment.tsx"),
   ]),
@@ -13,6 +14,7 @@ export default [
     index("routes/account_home/account-home.tsx"),
     route("cart", "routes/account_cart/account-cart.tsx"),
     route("purchases", "routes/account_purchases/account-purchases.tsx"),
+    route("profile", "routes/account_profile/account-profile.tsx"),
     route("dogs/:dogId", "routes/account_dog_detail/account-dog-detail.tsx"),
     // One form module for adding and editing, so each route needs its own id.
     route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
