@@ -13,6 +13,7 @@ export const DEMO_ACCOUNTS: {
 }[] = [
   { phoneNumber: "09120000001", role: "admin", firstName: "آرمان", lastName: "رستمی", note: "مدیر سایت و مربی ارشد" },
   { phoneNumber: "09120000003", role: "partner", firstName: "بهرام", lastName: "کاظمی", note: "پت‌شاپ همکار" },
+  { phoneNumber: "09120000007", role: "partner", firstName: "نیلوفر", lastName: "صادقی", note: "کلینیک همکار" },
   { phoneNumber: "09120000004", role: "customer", firstName: "سارا", lastName: "محمدی", note: "مشتری با دو سگ" },
   { phoneNumber: "09120000005", role: "customer", firstName: "علی", lastName: "نوری", note: "مشتری تازه، بدون سگ" },
   {

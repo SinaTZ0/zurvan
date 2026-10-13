@@ -16,6 +16,7 @@ import {
   evaluationPhoto,
   evaluationVideo,
   partner,
+  partnerLead,
   payment,
   paymentItem,
   user,
@@ -119,6 +120,11 @@ async function uploadDogPhoto({ ownerId, photoFile }: { ownerId: string; photoFi
 /*===== Reset =====*/
 const PARTNER_PHONE = "09120000003";
 const PARTNER_CODE = "bahram-petshop";
+// A made-up Sheba with correct check digits, so Bahram's pay block has something to copy.
+const PARTNER_SHEBA = "IR050170000000123456789012";
+// The second partner has no Sheba yet, so the Admin sees both kinds of pay block.
+const SECOND_PARTNER_PHONE = "09120000007";
+const SECOND_PARTNER_CODE = "niloofar-clinic";
 
 /**
  * Removes the demo customers' commissions, enrollments, payments, evaluations and passed courses, in the order their
@@ -273,7 +279,12 @@ async function seedDemo() {
 
   // Photos are uploaded and removed outside the transaction: they need the accounts committed (the media rows point at
   // their uploader), and the bucket can't be rolled back anyway.
-  const { oldPhotoIds, oldVideoKeys, seededDogs, idByPhone: accountIds } = await db.transaction(async (tx) => {
+  const {
+    oldPhotoIds,
+    oldVideoKeys,
+    seededDogs,
+    idByPhone: accountIds,
+  } = await db.transaction(async (tx) => {
     /*------ Accounts ------*/
     const accounts = await tx
       .insert(user)
@@ -314,8 +325,32 @@ async function seedDemo() {
     if (!partnerId) throw new Error("seedDemo: the demo partner account is missing.");
     await tx
       .insert(partner)
-      .values({ userId: partnerId, code: PARTNER_CODE, isActive: true })
-      .onConflictDoUpdate({ target: partner.userId, set: { code: PARTNER_CODE, isActive: true } });
+      .values({ userId: partnerId, code: PARTNER_CODE, shebaNumber: PARTNER_SHEBA, isActive: true })
+      .onConflictDoUpdate({
+        target: partner.userId,
+        set: { code: PARTNER_CODE, shebaNumber: PARTNER_SHEBA, isActive: true },
+      });
+
+    const secondPartnerId = idByPhone.get(SECOND_PARTNER_PHONE);
+    if (!secondPartnerId) throw new Error("seedDemo: the second demo partner account is missing.");
+    await tx
+      .insert(partner)
+      .values({ userId: secondPartnerId, code: SECOND_PARTNER_CODE, shebaNumber: null, isActive: true })
+      .onConflictDoUpdate({
+        target: partner.userId,
+        set: { code: SECOND_PARTNER_CODE, shebaNumber: null, isActive: true },
+      });
+
+    // Phone leads: two of Bahram's are waiting; the second partner entered one of those numbers later (so it is lost
+    // to her) and one of her own. Replaced on every run, like the rest of the demo.
+    await tx.delete(partnerLead).where(inArray(partnerLead.partnerId, [partnerId, secondPartnerId]));
+    const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    await tx.insert(partnerLead).values([
+      { partnerId, phoneNumber: "09125550101", createdAt: daysAgo(6) },
+      { partnerId, phoneNumber: "09125550102", createdAt: daysAgo(4) },
+      { partnerId: secondPartnerId, phoneNumber: "09125550102", createdAt: daysAgo(2) },
+      { partnerId: secondPartnerId, phoneNumber: "09125550103", createdAt: daysAgo(1) },
+    ]);
 
     // Sara came in through the partner's link; the others were not brought in by anyone.
     await tx.update(user).set({ referredByPartnerId: null }).where(inArray(user.id, customerIds));
