@@ -17,7 +17,7 @@ export const listMyEnrollmentsProcedure = base.enrollment.listMine
 export const adminListEnrollmentsProcedure = base.enrollment.admin.list
   .use(requireRoleMiddleware("admin"))
   .use(provideDbMiddleware)
-  .handler(({ context, input }) => adminListEnrollments({ db: context.db, status: input.status }));
+  .handler(({ context, input }) => adminListEnrollments({ db: context.db, status: input.status, dogId: input.dogId }));
 
 export const adminCompleteEnrollmentProcedure = base.enrollment.admin.complete
   .use(requireRoleMiddleware("admin"))

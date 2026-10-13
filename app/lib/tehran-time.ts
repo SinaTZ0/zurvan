@@ -1,5 +1,5 @@
 import { toPersianDigits } from "~/lib/digits";
-import { isoToJalali, JALALI_MONTHS } from "~/lib/jalali";
+import { isoToJalali, jalaliToIso, JALALI_MONTHS } from "~/lib/jalali";
 
 /*===== Tehran Time =====*/
 // Appointments are set by people living in Tehran and stored as UTC instants. Iran dropped daylight saving in 2022, so
@@ -58,6 +58,25 @@ export function utcToTehranParts(date: Date): TehranParts {
     time: iso.slice(11, 16),
     // JS counts Sunday as 0; moving the start of the week to Saturday adds one.
     weekday: (shifted.getUTCDay() + 1) % 7,
+  };
+}
+
+/*===== Month Range =====*/
+/**
+ * The Jalali month that contains `now` on the Tehran clock, as the half-open range `[start, end)` of UTC instants.
+ * `start` is Tehran midnight of day 1 and `end` is Tehran midnight of day 1 of the next month, so a moment at
+ * 23:59:59 on the last day belongs to this month and one at 00:00:00 of day 1 to the next. Month 12 rolls over to
+ * month 1 of the next year.
+ */
+export function tehranJalaliMonthRange(now: Date): { year: number; month: number; start: Date; end: Date } {
+  const { year, month } = isoToJalali(utcToTehranParts(now).date);
+  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 };
+
+  return {
+    year,
+    month,
+    start: tehranToUtc({ date: jalaliToIso({ year, month, day: 1 }), time: "00:00" }),
+    end: tehranToUtc({ date: jalaliToIso({ ...next, day: 1 }), time: "00:00" }),
   };
 }
 

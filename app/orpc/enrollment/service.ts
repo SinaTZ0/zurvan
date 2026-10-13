@@ -55,11 +55,15 @@ export async function listMyEnrollments({
 export async function adminListEnrollments({
   db,
   status,
+  dogId,
 }: {
   db: DatabaseOrTransaction;
   status?: EnrollmentStatus;
+  /** One dog's enrollments. A malformed id matches nothing, instead of asking Postgres for a bad uuid. */
+  dogId?: string;
 }): Promise<AdminEnrollment[]> {
-  return (await findEnrollments({ db, status })).map(toAdminEnrollment);
+  if (dogId !== undefined && !isDogId(dogId)) return [];
+  return (await findEnrollments({ db, status, dogId })).map(toAdminEnrollment);
 }
 
 /*===== Complete and Cancel =====*/

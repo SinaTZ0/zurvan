@@ -66,7 +66,11 @@ const requestEvaluationInputSchema = z.strictObject({
 });
 const idInputSchema = z.strictObject({ id: z.string() });
 const listMineInputSchema = z.strictObject({ dogId: z.string().optional() });
-const adminListInputSchema = z.strictObject({ status: z.enum(EVALUATION_STATUSES).optional() });
+const adminListInputSchema = z.strictObject({
+  status: z.enum(EVALUATION_STATUSES).optional(),
+  /** One dog's evaluations, for the Admin's Dog Detail. */
+  dogId: z.string().optional(),
+});
 const rejectInputSchema = z.strictObject({ id: z.string(), reason: z.string() });
 const markEvaluatedInputSchema = z.strictObject({ dogId: z.string() });
 

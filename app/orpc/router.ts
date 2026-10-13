@@ -12,6 +12,7 @@ import {
   listMyCommissionsProcedure,
 } from "~/orpc/commission/procedure";
 import { getCourseProcedure, listCoursesProcedure } from "~/orpc/course/procedure";
+import { adminOverviewProcedure } from "~/orpc/dashboard/procedure";
 import {
   adminGetDogProcedure,
   adminListDogsProcedure,
@@ -65,6 +66,11 @@ export const router = implementer.router({
   course: {
     list: listCoursesProcedure,
     get: getCourseProcedure,
+  },
+  dashboard: {
+    admin: {
+      overview: adminOverviewProcedure,
+    },
   },
   dog: {
     list: listDogsProcedure,

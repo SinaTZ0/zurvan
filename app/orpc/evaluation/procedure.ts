@@ -61,7 +61,7 @@ export const listMyEvaluationsProcedure = base.evaluation.listMine
 export const adminListEvaluationsProcedure = base.evaluation.admin.list
   .use(requireRoleMiddleware("admin"))
   .use(provideDbMiddleware)
-  .handler(({ context, input }) => adminListEvaluations({ db: context.db, status: input.status }));
+  .handler(({ context, input }) => adminListEvaluations({ db: context.db, status: input.status, dogId: input.dogId }));
 
 export const adminGetEvaluationProcedure = base.evaluation.admin.get
   .use(requireRoleMiddleware("admin"))

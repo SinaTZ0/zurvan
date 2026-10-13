@@ -30,7 +30,11 @@ export type AdminEnrollment = z.infer<typeof adminEnrollmentSchema>;
 
 const idInputSchema = z.strictObject({ id: z.string() });
 const listMineInputSchema = z.strictObject({ dogId: z.string().optional() });
-const adminListInputSchema = z.strictObject({ status: z.enum(ENROLLMENT_STATUSES).optional() });
+const adminListInputSchema = z.strictObject({
+  status: z.enum(ENROLLMENT_STATUSES).optional(),
+  /** One dog's enrollments, for the Admin's Dog Detail. */
+  dogId: z.string().optional(),
+});
 
 /*===== Errors =====*/
 const notFoundError = {

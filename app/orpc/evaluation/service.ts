@@ -256,11 +256,15 @@ export async function withdrawEvaluation({
 export async function adminListEvaluations({
   db,
   status,
+  dogId,
 }: {
   db: DatabaseOrTransaction;
   status?: EvaluationStatus;
+  /** One dog's evaluations. A malformed id matches nothing, instead of asking Postgres for a bad uuid. */
+  dogId?: string;
 }): Promise<AdminEvaluation[]> {
-  return adminViews({ db, rows: await findEvaluations({ db, status }) });
+  if (dogId !== undefined && !isDogId(dogId)) return [];
+  return adminViews({ db, rows: await findEvaluations({ db, status, dogId }) });
 }
 
 export async function adminGetEvaluation({
