@@ -41,7 +41,15 @@ import {
 } from "~/orpc/evaluation/procedure";
 import { implementer } from "~/orpc/implementer.server";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
-import { getMyPartnerProfileProcedure, updateMyPartnerProfileProcedure } from "~/orpc/partner/procedure";
+import {
+  addLeadProcedure,
+  adminCreatePartnerProcedure,
+  adminListPartnersProcedure,
+  adminSetPartnerActiveProcedure,
+  getMyPartnerProfileProcedure,
+  listMyLeadsProcedure,
+  updateMyPartnerProfileProcedure,
+} from "~/orpc/partner/procedure";
 
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
@@ -110,5 +118,14 @@ export const router = implementer.router({
   partner: {
     getMine: getMyPartnerProfileProcedure,
     updateMine: updateMyPartnerProfileProcedure,
+    leads: {
+      list: listMyLeadsProcedure,
+      add: addLeadProcedure,
+    },
+    admin: {
+      list: adminListPartnersProcedure,
+      create: adminCreatePartnerProcedure,
+      setActive: adminSetPartnerActiveProcedure,
+    },
   },
 });

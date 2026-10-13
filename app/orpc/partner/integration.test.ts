@@ -4,10 +4,20 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { partner, user } from "~/db/schema";
+import { commission, partner, partnerLead, payment, user } from "~/db/schema";
 import { toPersianDigits } from "~/lib/digits";
 import { phonePlaceholderEmail } from "~/lib/phone";
-import { getPartnerProfile, updatePartnerProfile } from "~/orpc/partner/service";
+import { findPartnerForNewCustomer } from "~/lib/referral.server";
+import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
+import {
+  addLead,
+  adminListPartners,
+  createPartner,
+  getPartnerProfile,
+  listMyPeople,
+  setPartnerActive,
+  updatePartnerProfile,
+} from "~/orpc/partner/service";
 import { SHEBA_CHECKSUM_MESSAGE, SHEBA_FORMAT_MESSAGE } from "~/orpc/partner/validation";
 
 /*===== Partner Sheba =====*/
@@ -49,6 +59,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await cleanUpPeopleFixtures();
+
   const ids = [partnerA.id, partnerB.id, orphan.id];
   // Partner rows first: they reference the users.
   await db.delete(partner).where(inArray(partner.userId, ids));
@@ -60,7 +72,7 @@ describe("partner sheba number", () => {
   it("reads null until the partner writes it, and not-found without a partner row", async () => {
     expect(await getPartnerProfile({ db, userId: partnerA.id })).toEqual({
       kind: "success",
-      profile: { shebaNumber: null },
+      profile: { shebaNumber: null, code: `ta${runId}`, isActive: true, commissionPercent: expect.any(Number) },
     });
     expect(await getPartnerProfile({ db, userId: orphan.id })).toEqual({ kind: "not-found" });
     expect(await updatePartnerProfile({ db, userId: orphan.id, input: { shebaNumber: shebaA } })).toEqual({
@@ -82,7 +94,7 @@ describe("partner sheba number", () => {
     const typed = toPersianDigits(shebaA.slice(2)).replace(/(.{4})/g, "$1 ");
     const result = await updatePartnerProfile({ db, userId: partnerA.id, input: { shebaNumber: ` ${typed} ` } });
 
-    expect(result).toEqual({ kind: "success", profile: { shebaNumber: shebaA } });
+    expect(result).toMatchObject({ kind: "success", profile: { shebaNumber: shebaA } });
     expect(await getPartnerProfile({ db, userId: partnerA.id })).toMatchObject({ profile: { shebaNumber: shebaA } });
   });
 
@@ -99,5 +111,296 @@ describe("partner sheba number", () => {
 
     expect(stored).toEqual({ [partnerA.id]: shebaA, [partnerB.id]: shebaB });
     expect(await db.select().from(partner).where(eq(partner.userId, orphan.id))).toEqual([]);
+  });
+});
+
+/*===== Partner People =====*/
+// The stage of each lead is computed, not stored, so these tests prove the lists say what `findPartnerForNewCustomer`
+// and `recordFirstPurchaseCommission` actually do. Every test uses its own phone numbers, so the shared partners below
+// never see each other's people.
+
+const phoneBase = `097${Math.floor(10000 + Math.random() * 89999)}`;
+let phoneCounter = 0;
+const newPhone = () => `${phoneBase}${String(phoneCounter++).padStart(3, "0")}`;
+
+const peoplePartners = ["a", "b", "c", "d"].map((letter) => ({
+  id: `test-people-${letter}-${runId}`,
+  phone: newPhone(),
+  code: `tp-${letter}-${runId}`,
+}));
+const [pA, pB, pC, pD] = peoplePartners as [
+  (typeof peoplePartners)[number],
+  (typeof peoplePartners)[number],
+  (typeof peoplePartners)[number],
+  (typeof peoplePartners)[number],
+];
+const customerIds: string[] = [];
+const createdPhones: string[] = [];
+let customerCounter = 0;
+
+beforeAll(async () => {
+  await db.insert(user).values(
+    peoplePartners.map((entry) => ({
+      id: entry.id,
+      name: `Test partner ${entry.code}`,
+      email: phonePlaceholderEmail(entry.phone),
+      phoneNumber: entry.phone,
+      role: "partner",
+    })),
+  );
+  await db.insert(partner).values(peoplePartners.map((entry) => ({ userId: entry.id, code: entry.code })));
+});
+
+/** Everything the people tests wrote, in foreign-key order. Runs inside the file's single `afterAll`. */
+async function cleanUpPeopleFixtures() {
+  const partnerIds = peoplePartners.map((entry) => entry.id);
+  // Partners the Admin-create test made.
+  const created = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(inArray(user.phoneNumber, createdPhones.length > 0 ? createdPhones : ["-"]));
+  const allPartnerIds = [...partnerIds, ...created.map((row) => row.id)];
+
+  await db.delete(commission).where(inArray(commission.customerId, customerIds));
+  await db.delete(payment).where(inArray(payment.customerId, customerIds));
+  await db.delete(partnerLead).where(inArray(partnerLead.partnerId, allPartnerIds));
+  await db.delete(user).where(inArray(user.id, customerIds));
+  await db.delete(partner).where(inArray(partner.userId, allPartnerIds));
+  await db.delete(user).where(inArray(user.id, allPartnerIds));
+}
+
+/** A customer, written the way the sign-up hook leaves one: attributed to whoever `findPartnerForNewCustomer` said. */
+async function makeCustomer({ phone, referredBy }: { phone: string; referredBy: string | null }): Promise<string> {
+  const id = `test-people-customer-${customerCounter++}-${runId}`;
+  customerIds.push(id);
+  await db.insert(user).values({
+    id,
+    name: `Customer ${id}`,
+    email: phonePlaceholderEmail(phone),
+    phoneNumber: phone,
+    referredByPartnerId: referredBy,
+  });
+  return id;
+}
+
+/** A lead with an explicit time, so "earlier" is not left to the clock. */
+async function makeLead({ partnerId, phone, minutesAgo }: { partnerId: string; phone: string; minutesAgo: number }) {
+  await db
+    .insert(partnerLead)
+    .values({ partnerId, phoneNumber: phone, createdAt: new Date(Date.now() - minutesAgo * 60_000) });
+}
+
+/** The customer's first paid purchase, written the way the callback does: a paid payment, then the commission. */
+async function buy({ customerId, baseAmount }: { customerId: string; baseAmount: number }): Promise<boolean> {
+  const [paid] = await db
+    .insert(payment)
+    .values({
+      customerId,
+      amount: baseAmount,
+      gateway: "demo",
+      authority: `test-people-${runId}-${customerId}`,
+      status: "paid",
+      paidAt: new Date(),
+    })
+    .returning({ id: payment.id });
+  if (!paid) throw new Error("Could not insert the test payment.");
+  return recordFirstPurchaseCommission({ db, customerId, paymentId: paid.id, baseAmount });
+}
+
+async function peopleOf(partnerId: string) {
+  const result = await listMyPeople({ db, userId: partnerId });
+  if (result.kind !== "success") throw new Error("Expected the partner's people.");
+  return result.people;
+}
+
+async function personOnPhone({ partnerId, phone }: { partnerId: string; phone: string }) {
+  return (await peopleOf(partnerId)).find((person) => person.phoneNumber === phone);
+}
+
+describe("partner people", () => {
+  it("the earliest lead wins, and the lists say what attribution did", async () => {
+    const phone = newPhone();
+    await makeLead({ partnerId: pB.id, phone, minutesAgo: 10 });
+    await makeLead({ partnerId: pA.id, phone, minutesAgo: 5 });
+
+    const winner = await findPartnerForNewCustomer({ db, referralCode: null, phoneNumber: phone });
+    expect(winner).toBe(pB.id);
+    expect(await personOnPhone({ partnerId: pB.id, phone })).toMatchObject({ stage: "lead", customerName: null });
+    expect(await personOnPhone({ partnerId: pA.id, phone })).toMatchObject({ stage: "lost", customerName: null });
+
+    // The customer registers: attributed to the winner, as the hook does.
+    const customerId = await makeCustomer({ phone, referredBy: winner });
+    expect(await personOnPhone({ partnerId: pB.id, phone })).toMatchObject({
+      stage: "registered",
+      customerName: `Customer ${customerId}`,
+      boughtAt: null,
+    });
+
+    expect(await buy({ customerId, baseAmount: 5_000_000 })).toBe(true);
+    const bought = await personOnPhone({ partnerId: pB.id, phone });
+    expect(bought).toMatchObject({ stage: "bought", customerName: `Customer ${customerId}` });
+    expect(bought?.boughtAt).toBeInstanceOf(Date);
+
+    // The loser learns nothing of the customer: no name, no dates, and not who won.
+    expect(await personOnPhone({ partnerId: pA.id, phone })).toMatchObject({
+      stage: "lost",
+      customerName: null,
+      registeredAt: null,
+      boughtAt: null,
+    });
+
+    // The Admin's view agrees, with the commission only on the partner who earned it.
+    const all = await adminListPartners({ db });
+    expect(all.find((entry) => entry.id === pB.id)?.commissions).toMatchObject({ unpaidCount: 1, paidCount: 0 });
+    expect(all.find((entry) => entry.id === pA.id)?.commissions).toMatchObject({ unpaidCount: 0, unpaidAmount: 0 });
+    expect(all.find((entry) => entry.id === pB.id)?.counts.bought).toBe(1);
+    expect(all.find((entry) => entry.id === pA.id)?.counts.lost).toBe(1);
+  });
+
+  it("a referral link beats a lead, and a partner never sees the other's customers", async () => {
+    const phone = newPhone();
+    await makeLead({ partnerId: pA.id, phone, minutesAgo: 10 });
+
+    const winner = await findPartnerForNewCustomer({ db, referralCode: pB.code, phoneNumber: phone });
+    expect(winner).toBe(pB.id);
+    const customerId = await makeCustomer({ phone, referredBy: winner });
+
+    expect(await personOnPhone({ partnerId: pA.id, phone })).toMatchObject({ stage: "lost", customerName: null });
+
+    const bPeople = await peopleOf(pB.id);
+    expect(bPeople.find((person) => person.id === customerId)).toMatchObject({
+      source: "link",
+      phoneNumber: null,
+      stage: "registered",
+      customerName: `Customer ${customerId}`,
+    });
+    // B has no lead on this phone, so the customer is listed once, as a link person.
+    expect(bPeople.filter((person) => person.phoneNumber === phone || person.id === customerId)).toHaveLength(1);
+    expect((await peopleOf(pA.id)).map((person) => person.id)).not.toContain(customerId);
+  });
+
+  it("an inactive partner attributes no one, cannot add, and earns no commission", async () => {
+    const phone = newPhone();
+    await makeLead({ partnerId: pC.id, phone, minutesAgo: 10 });
+    await makeLead({ partnerId: pD.id, phone, minutesAgo: 5 });
+    // Brought in earlier by C's link, while C was active.
+    const customerId = await makeCustomer({ phone: newPhone(), referredBy: pC.id });
+
+    expect((await setPartnerActive({ db, id: pC.id, isActive: false })).kind).toBe("success");
+    // Repeating it is fine: it is a state, not a one-way step.
+    expect((await setPartnerActive({ db, id: pC.id, isActive: false })).kind).toBe("success");
+
+    // Neither C's code nor C's earlier lead attributes anyone: D's lead is the next earliest active one.
+    expect(await findPartnerForNewCustomer({ db, referralCode: pC.code, phoneNumber: phone })).toBe(pD.id);
+    expect(await personOnPhone({ partnerId: pD.id, phone })).toMatchObject({ stage: "lead" });
+
+    expect(await addLead({ db, userId: pC.id, input: { phoneNumber: newPhone() } })).toMatchObject({
+      kind: "invalid",
+      errors: [expect.stringContaining("متوقف")],
+    });
+
+    expect(await buy({ customerId, baseAmount: 3_000_000 })).toBe(false);
+    expect(await db.select().from(commission).where(eq(commission.customerId, customerId))).toEqual([]);
+
+    expect(await setPartnerActive({ db, id: "no-such-partner", isActive: true })).toEqual({ kind: "not-found" });
+    expect(await setPartnerActive({ db, id: customerId, isActive: true })).toEqual({ kind: "not-found" });
+  });
+
+  it("leads.add normalizes the number and refuses an account, and the partner's own repeat", async () => {
+    const phone = newPhone();
+
+    // Persian digits, spaces and a country code all land on the stored shape.
+    const typed = `+${toPersianDigits(`98 ${phone.slice(1, 4)} ${phone.slice(4)}`)}`;
+    const added = await addLead({ db, userId: pA.id, input: { phoneNumber: typed } });
+    expect(added).toMatchObject({ kind: "success", person: { source: "phone", phoneNumber: phone, stage: "lead" } });
+
+    expect(await addLead({ db, userId: pA.id, input: { phoneNumber: "۰۹۱۲" } })).toMatchObject({
+      kind: "invalid",
+      fields: { phoneNumber: expect.any(String) },
+    });
+
+    // The same partner again, however it is typed.
+    expect(await addLead({ db, userId: pA.id, input: { phoneNumber: phone } })).toEqual({
+      kind: "invalid",
+      errors: [],
+      fields: { phoneNumber: "این شماره را قبلاً ثبت کرده‌ای." },
+    });
+    expect(await db.select().from(partnerLead).where(eq(partnerLead.phoneNumber, phone))).toHaveLength(1);
+
+    // Another partner entering it later is accepted and is behind A at once.
+    const later = await addLead({ db, userId: pB.id, input: { phoneNumber: phone } });
+    expect(later).toMatchObject({ kind: "success", person: { stage: "lost", customerName: null } });
+
+    // A number that already has an account cannot be entered by anyone.
+    const registered = newPhone();
+    await makeCustomer({ phone: registered, referredBy: null });
+    expect(await addLead({ db, userId: pA.id, input: { phoneNumber: registered } })).toEqual({
+      kind: "invalid",
+      errors: [],
+      fields: { phoneNumber: "این شماره قبلاً در سایت ثبت‌نام کرده؛ دیگر نمی‌شود به نام تو ثبت شود." },
+    });
+    expect(await db.select().from(partnerLead).where(eq(partnerLead.phoneNumber, registered))).toEqual([]);
+  });
+
+  it("admin.create writes the user and the partner together, and refuses a taken phone or code with nothing written", async () => {
+    const phone = newPhone();
+    createdPhones.push(phone);
+
+    const created = await createPartner({
+      db,
+      input: { firstName: " سارا ", lastName: "احمدی", phoneNumber: toPersianDigits(phone), code: "  " },
+    });
+    if (created.kind !== "success") throw new Error("Expected the partner to be created.");
+
+    expect(created.partner).toMatchObject({
+      name: "سارا احمدی",
+      phoneNumber: phone,
+      isActive: true,
+      shebaNumber: null,
+      people: [],
+      counts: { lead: 0, registered: 0, bought: 0, lost: 0 },
+    });
+    expect(created.partner.code).toMatch(/^p-[a-km-np-z2-9]{6}$/);
+    const [row] = await db.select().from(user).where(eq(user.id, created.partner.id));
+    expect(row).toMatchObject({
+      role: "partner",
+      firstName: "سارا",
+      lastName: "احمدی",
+      phoneNumber: phone,
+      phoneNumberVerified: false,
+      email: phonePlaceholderEmail(phone),
+    });
+
+    // A phone that already belongs to a customer, or to the partner just made, is refused whatever the role.
+    const customerPhone = newPhone();
+    await makeCustomer({ phone: customerPhone, referredBy: null });
+    const base = { firstName: "علی", lastName: "رضایی" };
+    for (const taken of [customerPhone, phone]) {
+      expect(await createPartner({ db, input: { ...base, phoneNumber: taken } })).toEqual({
+        kind: "invalid",
+        errors: [],
+        fields: { phoneNumber: "این شماره قبلاً در سایت ثبت‌نام کرده. هر شماره یک نقش دارد." },
+      });
+    }
+
+    // A taken code is refused, and the user written first in the transaction is undone with it.
+    const freshPhone = newPhone();
+    createdPhones.push(freshPhone);
+    expect(await createPartner({ db, input: { ...base, phoneNumber: freshPhone, code: pA.code } })).toEqual({
+      kind: "invalid",
+      errors: [],
+      fields: { code: "این کد قبلاً گرفته شده." },
+    });
+    expect(await db.select().from(user).where(eq(user.phoneNumber, freshPhone))).toEqual([]);
+
+    // A bad code never reaches the database; a good typed one is kept as is.
+    expect(await createPartner({ db, input: { ...base, phoneNumber: freshPhone, code: "Shop One" } })).toMatchObject({
+      kind: "invalid",
+      fields: { code: expect.any(String) },
+    });
+    const typedCode = `shop-${runId}`;
+    const withCode = await createPartner({ db, input: { ...base, phoneNumber: freshPhone, code: typedCode } });
+    expect(withCode).toMatchObject({ kind: "success", partner: { code: typedCode } });
+    expect(await db.select({ id: user.id }).from(user).where(eq(user.phoneNumber, freshPhone))).toHaveLength(1);
   });
 });

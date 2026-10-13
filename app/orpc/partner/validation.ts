@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { toLatinDigits } from "~/lib/digits";
+import { formatNumberFa, toLatinDigits } from "~/lib/digits";
+import { isNormalizedPhoneNumber, normalizePhoneNumber } from "~/lib/phone";
 
 /*===== Messages =====*/
 export const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع شود و ۲۴ رقم بعد از آن داشته باشد.";
@@ -50,3 +51,50 @@ export const shebaNumberSchema = z
 
 /** The partner profile as the service accepts it. Messages are user-facing because they surface as field errors. */
 export const partnerProfileInputSchema = z.object({ shebaNumber: shebaNumberSchema });
+
+/*===== Phone =====*/
+export const PHONE_NUMBER_MESSAGE = "شماره‌ی موبایل درست نیست؛ مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس.";
+
+/** What a partner typed, normalized to `09xxxxxxxxx` (Persian digits, spaces and `+98` are fine). */
+export const phoneNumberSchema = z
+  .string()
+  .transform((value) => normalizePhoneNumber(value) ?? value)
+  .refine(isNormalizedPhoneNumber, PHONE_NUMBER_MESSAGE);
+
+/** A phone lead as the service accepts it. */
+export const addLeadInputSchema = z.object({ phoneNumber: phoneNumberSchema });
+
+/*===== New Partner =====*/
+export const PARTNER_NAME_MAX_LENGTH = 40;
+export const PARTNER_CODE_FORMAT_MESSAGE =
+  "کد فقط از حرف کوچک انگلیسی، رقم و خط تیره ساخته می‌شود و ۳ تا ۳۲ نویسه است.";
+
+const nameSchema = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(1, `${label} را بنویس.`)
+    .max(PARTNER_NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(PARTNER_NAME_MAX_LENGTH)} حرف است.`);
+
+// Blank means "generate one". The code is matched case-sensitively by the referral cookie and printed on a card and a
+// QR, so an uppercase code is refused instead of silently lowercased.
+const codeSchema = z
+  .string()
+  .optional()
+  .transform((value) => value?.trim() || undefined)
+  .pipe(
+    z
+      .string()
+      .regex(/^[a-z0-9-]{3,32}$/, PARTNER_CODE_FORMAT_MESSAGE)
+      .optional(),
+  );
+
+/** The Admin's form for a new partner account, as the service accepts it. */
+export const createPartnerInputSchema = z.object({
+  firstName: nameSchema("نام"),
+  lastName: nameSchema("نام خانوادگی"),
+  phoneNumber: phoneNumberSchema,
+  code: codeSchema,
+});
+
+export type CreatePartnerInput = z.output<typeof createPartnerInputSchema>;
