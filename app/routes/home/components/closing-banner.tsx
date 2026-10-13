@@ -1,53 +1,62 @@
+import { cn } from "cn";
+
 import { Link } from "~/components/link";
-import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { buttonVariants } from "~/components/ui/button";
+import { ChalkDoodle } from "~/routes/home/components/chalk-doodle";
+import { SpeechBubble } from "~/routes/home/components/speech-bubble";
 
 /*===== Closing Banner =====*/
 /**
- * The last ask on the page: a park photo with a deep charcoal fade from the text side, so the headline stays readable
- * while the dogs stay visible. It asks the two kinds of visitor for their own next step: a new dog books the free
- * assessment, and a dog with a record here books its next course straight from its page.
+ * The last ask. A German shepherd peeks up over the bottom edge of the band, ears first, as if over the edge of the
+ * page, and asks whether we're starting. The photo's top third is empty black, so the words sit there with no box.
+ *
+ * The photo is shown whole, never cropped to a band: a crop cut through the ears and left a hard edge under the words.
+ * On wide screens it stops at a width where the head still fits under the words, and its sides fade into the page.
  */
 export function ClosingBanner() {
   return (
-    <section aria-labelledby="closing-title" className="relative isolate site-container pt-section-md">
-      {/* Light spilling out from behind the banner, so the last ask looks like the page's lit window. */}
-      <div aria-hidden className="absolute inset-x-12 inset-y-0 -z-10 rounded-full bg-foreground/6 blur-3xl" />
-      <div className="relative flex min-h-96 items-center overflow-hidden rounded-4xl surface-inverse ring-1 ring-primary/30">
-        <img
-          src="/photo/cta-park.jpg"
-          alt="زنی روی چمن پارک کنار دو سگ نشسته است"
-          width={1400}
-          height={934}
-          loading="lazy"
-          className="absolute inset-0 size-full object-cover object-[30%_60%]"
+    <section aria-labelledby="closing-title" className="relative isolate mt-section-lg overflow-hidden bg-jet">
+      {/*------ Words ------*/}
+      <div className="relative z-10 site-container flex flex-col items-center pt-section-sm text-center">
+        <h2 id="closing-title" className="font-display text-h1 font-black text-balance">
+          یه قدم تا یه زندگی بهتر
+        </h2>
+        <p className="mt-3 max-w-md text-pretty text-muted-foreground">ارزیابی اول رایگانه. فقط کافیه بگی من کی‌ام.</p>
+        <Link to="/assessment" className={cn(buttonVariants({ size: "lg" }), "mt-6")}>
+          ارزیابی رایگان بگیر
+        </Link>
+      </div>
+
+      {/*------ Photo ------*/}
+      {/* From `sm` up, pulled under the words by part of its empty top (the top 30% of the photo is black), so the
+          ears start just below the button. Phones crop it a little closer, so the head isn't tiny, and keep all of
+          the black top for the bubble. */}
+      <div className="relative mx-auto mt-4 max-w-[72rem] sm:-mt-16 lg:-mt-36">
+        <picture>
+          <source media="(min-width: 64rem)" srcSet="/photo/home/peek-1536.webp" />
+          <img
+            src="/photo/home/peek-900.webp"
+            alt="یک ژرمن‌شپرد از لبه‌ی میز سرک می‌کشد؛ فقط گوش‌ها، چشم‌ها و پنجه‌هایش پیداست"
+            width={1536}
+            height={1024}
+            loading="lazy"
+            decoding="async"
+            className="block aspect-[5/4] w-full object-cover object-bottom sm:aspect-auto sm:h-auto lg:[mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]"
+          />
+        </picture>
+
+        {/*------ Bubble ------*/}
+        {/* In the black beside the dog's head, at the start, its tail curling down toward the ear. */}
+        <SpeechBubble
+          tail="bottom-end"
+          className="absolute start-[2%] top-0 max-w-[12rem] sm:top-[6%] lg:start-[4%] lg:top-[36%] lg:max-w-[15rem]"
+        >
+          آماده‌ای شروع کنیم؟ من که مشتاقم!
+        </SpeechBubble>
+        <ChalkDoodle
+          name="paw"
+          className="absolute end-[16%] top-[28%] w-10 -rotate-12 opacity-80 max-sm:hidden lg:w-14"
         />
-        {/* Fades from the start edge, where the text is, to almost nothing at the far side. */}
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-inverse/60 bg-linear-to-l from-inverse/95 from-30% via-inverse/55 via-60% to-inverse/5 sm:bg-transparent"
-        />
-        <div className="relative flex max-w-xl flex-col gap-4 p-8 sm:p-14">
-          <h2 id="closing-title" className="font-display text-h2 font-bold text-balance">
-            قبل از هر دوره، {HEAD_TRAINER.firstName} سگت را می‌بیند
-          </h2>
-          <p className="text-lead text-pretty text-inverse-foreground/90">
-            ارزیابی اول رایگان است. سگت قبلاً این‌جا دوره دیده؟ دوره‌ی بعدی‌اش را مستقیم رزرو کن.
-          </p>
-          <div className="mt-2 flex flex-wrap gap-3">
-            <Link
-              to="/assessment"
-              className="inline-flex h-13 items-center rounded-2xl gold-leaf px-7 text-base font-extrabold transition-[filter] hover:brightness-110"
-            >
-              ارزیابی رایگان رزرو کن
-            </Link>
-            <Link
-              to="/account/dogs"
-              className="inline-flex h-13 items-center rounded-2xl border border-saffron/60 px-6 text-base font-bold text-saffron transition-colors hover:bg-saffron/10"
-            >
-              رزرو دوره‌ی بعدی
-            </Link>
-          </div>
-        </div>
       </div>
     </section>
   );

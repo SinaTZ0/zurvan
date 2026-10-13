@@ -1,14 +1,18 @@
+import { useState } from "react";
 import { data } from "react-router";
 
 import { referralCookieFromUrl } from "~/lib/referral.server";
+import type { CourseFamily } from "~/orpc/course/constants";
 import { createServerClient } from "~/orpc/server-client.server";
-import { BrowseSection } from "~/routes/home/components/browse-section";
-import { ClosingBanner } from "~/routes/home/components/closing-banner";
-import { CourseMap } from "~/routes/home/components/course-map";
-import { HomeHero } from "~/routes/home/components/home-hero";
-import { HowItWorks } from "~/routes/home/components/how-it-works";
-import { TrainerIntro } from "~/routes/home/components/trainer-intro";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { ClosingBanner } from "~/routes/home/components/closing-banner";
+import { CourseGrid } from "~/routes/home/components/course-grid";
+import { EvaluationPanel } from "~/routes/home/components/evaluation-panel";
+import { HomeHero } from "~/routes/home/components/home-hero";
+import { NeedsSection } from "~/routes/home/components/needs-section";
+import { PromiseStrip } from "~/routes/home/components/promise-strip";
+import { TeamSection } from "~/routes/home/components/team-section";
+import { TrainerSection } from "~/routes/home/components/trainer-section";
 
 import type { Route } from "./+types/home";
 
@@ -23,8 +27,8 @@ export const meta: Route.MetaFunction = () => [
 
 /*===== Loader =====*/
 // The catalogue is render-critical, so it comes from the database here and the page renders fully on the server.
-// Reviews, problems and photos are still sample data (docs/foundations-plan.md). The loader also remembers a partner's
-// referral code from `?ref=`, so signup can attribute the customer later (spec 3.11).
+// The photos and the trainer's details are still placeholders. The loader also remembers a partner's referral code
+// from `?ref=`, so signup can attribute the customer later (app-spec F7).
 export async function loader({ request }: Route.LoaderArgs) {
   const [courses, referralCookie] = await Promise.all([
     createServerClient(request).course.list(),
@@ -36,14 +40,18 @@ export async function loader({ request }: Route.LoaderArgs) {
 /*===== Page =====*/
 export default function HomePage({ loaderData }: Route.ComponentProps) {
   const { courses } = loaderData;
+  // Shared by the needs cards, which pick a family, and the course grid, which shows it.
+  const [family, setFamily] = useState<CourseFamily | "all">("all");
 
   return (
     <>
       <HomeHero />
-      <TrainerIntro />
-      <BrowseSection courses={courses} />
-      <CourseMap courses={courses} />
-      <HowItWorks />
+      <PromiseStrip />
+      <EvaluationPanel />
+      <NeedsSection onPick={setFamily} />
+      <CourseGrid courses={courses} family={family} onFamilyChange={setFamily} />
+      <TrainerSection />
+      <TeamSection />
       <ClosingBanner />
     </>
   );

@@ -1,391 +1,207 @@
 import { cn } from "cn";
-import { GiftIcon, HouseIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { PauseIcon, PlayIcon } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { HeroDoodles, HeroReviewDoodle, HeroSideDoodles } from "~/components/doodles";
-import { ReviewCard } from "~/routes/home/components/review-card";
-import { REVIEWS } from "~/routes/home/reviews";
+import { ChalkDoodle } from "~/routes/home/components/chalk-doodle";
+import { SpeechBubble } from "~/routes/home/components/speech-bubble";
 
-/*===== Scroll Choreography =====*/
-// Progress runs 0 → 1 from the top of the page to the end of the hero's scroll runway.
-/** The photo has filled the screen by this point. */
-const EXPAND_END = 0.4;
-/** Where each review pops in, after the photo has settled. The rest of the runway holds the finished scene. */
-const REVEAL_AT = REVIEWS.map((_, index) => 0.44 + index * 0.1);
-/** Reduced motion swaps the zoom for a cut at this point. */
-const REDUCED_CUT = 0.2;
-
-// Desktop places the cards in two staggered columns: each card spans two rows, the second column starts a row lower.
-const DESKTOP_PLACEMENT = [
-  "lg:col-start-1 lg:row-[1/span_2]",
-  "lg:col-start-2 lg:row-[2/span_2]",
-  "lg:col-start-1 lg:row-[3/span_2]",
-  "lg:col-start-2 lg:row-[4/span_2]",
-  "lg:col-start-1 lg:row-[5/span_2]",
-];
-/** Degrees each card settles at, so the pile reads as notes rather than a grid. */
-const TILT = [-2, 1.5, 1, -1.5, -1];
-// Where each card's doodle pops in on desktop, wherever the pile leaves the photo free: perched on the first card of
-// each column, off the outer side of the middle card, and under the last card of each column.
-const DESKTOP_DOODLE_PLACEMENT = [
-  "lg:bottom-full lg:end-8 lg:-mb-0.5 lg:origin-bottom",
-  "lg:bottom-full lg:start-10 lg:-mb-0.5 lg:origin-bottom",
-  "lg:-top-8 lg:-start-20 lg:origin-left",
-  "lg:top-full lg:end-10 lg:mt-3 lg:origin-top",
-  "lg:top-full lg:start-12 lg:mt-2 lg:origin-top",
+/*===== Slides =====*/
+// Three dogs take turns greeting the visitor, each with its own line in the bubble. Every photo is composed the same way
+// (the dog's head a quarter in from the left, the right half dark), so the headline and the bubble's tail fit them all.
+// `position` is the crop: the dog's face on a phone's narrow band, the dog's half on desktop.
+const SLIDES = [
+  {
+    name: "hero",
+    alt: "یک ژرمن‌شپرد روی مبل چرمی دراز کشیده و مستقیم به دوربین نگاه می‌کند",
+    line: "سلام! من اینجام که زندگی من و تو با هم بهتر بشه :)",
+    position: "object-[24%_30%] lg:object-[20%_40%]",
+  },
+  {
+    name: "hero-2",
+    alt: "یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند",
+    line: "توی خیابون هم حواسم فقط به توئه.",
+    position: "object-[8%_50%] lg:object-[0%_4%]",
+  },
+  {
+    name: "hero-3",
+    alt: "یک توله گلدن رتریور کنار در خانه دراز کشیده و قلاده‌اش را به دهان گرفته",
+    line: "قلاده‌مو آوردم! بریم تمرین؟",
+    position: "object-[4%_50%] lg:object-[0%_35%]",
+  },
 ];
 
-// The photo's starting frame, as insets from the pinned panel. Measured from the layout once mounted; these fallbacks
-// only cover the moment before hydration, while the photo is still hidden.
-const FRAME_CLIP =
-  "inset(calc(var(--frame-top, 40%) * (1 - var(--expand, 0))) calc(var(--frame-right, 1rem) * (1 - var(--expand, 0))) calc(var(--frame-bottom, 6rem) * (1 - var(--expand, 0))) calc(var(--frame-left, 1rem) * (1 - var(--expand, 0))) round calc(1.75rem * (1 - var(--expand, 0))))";
-
-/*===== Side Doodles =====*/
-/** Grows with the margin, from the frieze's stroke scale at the narrowest margin that shows it, up to a cap. */
-const SIDE_DOODLE_SIZE = "h-auto w-[clamp(15.625rem,calc((100vw-80rem)/2-4rem),22rem)] shrink-0";
-
-/*===== Photo =====*/
-const PHOTO = { src: "/demo/hero.webp", width: 1536, height: 1024 };
-/** Between the man's face and the dog's face, as a fraction of the photo's height. The starting frame centres on it. */
-const PHOTO_FOCUS_Y = 0.28;
-/** The photo starts zoomed in and settles to 1 as it fills the screen. */
-const PHOTO_START_SCALE = 1.15;
+/** `useSyncExternalStore` needs a subscription; whether we've hydrated never changes afterwards. */
+const subscribeToNothing = () => () => {};
 
 /*===== Home Hero =====*/
 /**
- * A plain headline over a framed photo. Scrolling pins the hero: the photo grows until it fills the screen, covering
- * the headline as it shrinks and fades, then owners' reviews pop in over it one by one. The section's height is the
- * scroll runway for this; after it the page scrolls on as usual.
+ * The first screen: a dog looks straight at the visitor and says hello. The photo fills the band; the dog sits in its
+ * left half (the end, in RTL) and the right half is already dark, so the headline goes there with no box behind it. On
+ * phones the photo shows the dog's face on top and the words follow below on black.
  *
- * Scroll position drives `--expand` on the panel directly, so the zoom never waits on React. Only the number of
- * revealed reviews goes through state, and it changes five times in the whole runway.
+ * Three photos crossfade, and the bubble's line changes with the dog. The headline stays put and stays ivory: big gold
+ * on the first screen read as a gold shop. The bubble drawing itself on load is the page's one orchestrated moment.
  */
 export function HomeHero() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLDivElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
-  const [revealed, setRevealed] = useState(0);
-  const [measured, setMeasured] = useState(false);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  useEffect(() => {
-    const section = sectionRef.current!;
-    const panel = panelRef.current!;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    // The page scrolled before the section reaches the top (the site header). Counting it lets the zoom start at
-    // the very top of the page instead of after the header has gone.
-    let sectionTop = 0;
+  // The progress bar drives the slideshow (it advances when the bar's animation ends). Rendered only after hydration:
+  // an animation that ended before React attached its handler would leave the slideshow stuck on the first photo.
+  const hydrated = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
 
-    /*------ Measure ------*/
-    const measure = () => {
-      const panelBox = panel.getBoundingClientRect();
-      const frameBox = frameRef.current!.getBoundingClientRect();
-      panel.style.setProperty("--frame-top", `${frameBox.top - panelBox.top}px`);
-      panel.style.setProperty("--frame-right", `${panelBox.right - frameBox.right}px`);
-      panel.style.setProperty("--frame-bottom", `${panelBox.bottom - frameBox.bottom}px`);
-      panel.style.setProperty("--frame-left", `${frameBox.left - panelBox.left}px`);
-      panel.style.setProperty("--photo-shift", `${photoShift({ panelBox, frameBox })}px`);
-      sectionTop = section.getBoundingClientRect().top + window.scrollY;
-      setMeasured(true);
-      update();
-    };
-
-    /*------ Update ------*/
-    const update = () => {
-      // The pin lets go once the page has scrolled past the header and the whole runway.
-      const runway = section.offsetHeight - window.innerHeight;
-      const progress = clamp(window.scrollY / (sectionTop + runway));
-      const expand = reducedMotion.matches
-        ? Number(progress >= REDUCED_CUT)
-        : easeInOutCubic(clamp(progress / EXPAND_END));
-      panel.style.setProperty("--expand", expand.toFixed(4));
-      setRevealed(REVEAL_AT.filter((at) => progress >= at).length);
-    };
-
-    // The heading's height decides where the frame starts, and it changes with the viewport and once the font loads.
-    const resizeObserver = new ResizeObserver(measure);
-    resizeObserver.observe(panel);
-    resizeObserver.observe(headingRef.current!);
-    // Lenis scrolls the window itself, so plain scroll events arrive once per eased frame.
-    window.addEventListener("scroll", update, { passive: true });
-    reducedMotion.addEventListener("change", update);
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("scroll", update);
-      reducedMotion.removeEventListener("change", update);
-    };
-  }, []);
+  const next = () => setActive((index) => (index + 1) % SLIDES.length);
 
   return (
-    <section ref={sectionRef} aria-labelledby="hero-title" className="h-[300svh] bg-jet lg:h-[340svh]">
-      <div ref={panelRef} className="sticky top-0 flex h-svh flex-col overflow-hidden">
-        {/*===== Glow =====*/}
-        {/* Plain black, lit only by a faint ivory pool behind the headline, like a single lamp in a dark room. Tinted
-            light on black turns muddy, so it carries no gold or green. It fades out with the headline as the photo
-            takes over. */}
+    <section aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-jet">
+      {/*===== Photos =====*/}
+      <div className="relative h-[58svh] max-h-[34rem] min-h-80 lg:absolute lg:inset-0 lg:h-auto lg:max-h-none">
+        {SLIDES.map((slide, index) => (
+          <div
+            key={slide.name}
+            aria-hidden={index !== active}
+            className={cn(
+              "absolute inset-0 transition-opacity duration-1200 ease-in-out",
+              index === active ? "opacity-100" : "opacity-0",
+            )}
+          >
+            <picture>
+              <source media="(min-width: 64rem)" srcSet={`/photo/home/${slide.name}-1536.webp`} />
+              <img
+                src={`/photo/home/${slide.name}-900.webp`}
+                alt={slide.alt}
+                width={1536}
+                height={1024}
+                // The first photo is the page's largest paint; the others are only needed seconds later.
+                fetchPriority={index === 0 ? "high" : "low"}
+                decoding={index === 0 ? undefined : "async"}
+                // A slow push-in while the photo is up. It eases back out unseen, during the fade.
+                className={cn(
+                  "size-full object-cover transition-transform duration-[8s] ease-out",
+                  slide.position,
+                  index === active && "motion-safe:scale-[1.05]",
+                )}
+              />
+            </picture>
+          </div>
+        ))}
+
+        {/* Phones: the photo melts into the black the words sit on. Desktop: the dark half deepens toward the text, and
+            the bottom edge settles into the strip below. */}
         <div
           aria-hidden
-          style={{
-            opacity: "calc(1 - var(--expand, 0) * 1.6)",
-            backgroundImage: "radial-gradient(ellipse 48rem 26rem at 72% 20%, rgb(244 237 220 / 0.06), transparent)",
-          }}
-          className="pointer-events-none absolute inset-0"
+          className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-jet to-transparent lg:hidden"
         />
-
-        {/*===== Heading =====*/}
-        {/* Sits under the photo, so the growing frame covers it while it shrinks away. */}
         <div
-          ref={headingRef}
-          style={{
-            opacity: "calc(1 - var(--expand, 0) * 1.6)",
-            transform: "translateY(calc(var(--expand, 0) * -3rem)) scale(calc(1 - var(--expand, 0) * 0.08))",
-          }}
-          className="site-container origin-top pt-8 lg:pt-14"
-        >
-          <div className="grid gap-y-6 lg:grid-cols-[auto_minmax(0,22rem)] lg:items-stretch lg:justify-start lg:gap-x-12 xl:grid-cols-[auto_26rem] xl:gap-x-16">
-            {/* The page's one loud thing: the promise in two fixed lines of the display face, in ivory. Naskh needs room
-                for its tall ascenders and deep descenders, hence the generous line height. */}
-            <h1
-              id="hero-title"
-              className="pb-[0.15em] font-display text-[clamp(2.5rem,1.3rem+4.6vw,5.5rem)] leading-[1.25] font-bold text-balance text-foreground"
-            >
-              <span className="lg:block">
-                به سگت{" "}
-                {/* A flat gold marker stroke wipes in behind the word, in the same hand as the doodles and the same gold
-                    as the button. Light letters would not hold on gold, so it is a full highlighter block and the word
-                    turns dark ink. */}
-                <span className="relative isolate whitespace-nowrap text-primary-foreground">
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 200 40"
-                    preserveAspectRatio="none"
-                    className="absolute inset-x-[-0.12em] top-[16%] -z-10 h-[74%] w-[calc(100%+0.24em)] animate-marker-swipe fill-primary motion-reduce:animate-none"
-                  >
-                    <path d="M3 10 C28 3 66 12 108 6 S178 3 197 9 L199 29 C172 37 132 28 92 34 S26 37 2 32 Z" />
-                  </svg>
-                  وقت
-                </span>{" "}
-                بده،
-              </span>{" "}
-              <span className="lg:block">نتیجه‌اش را می‌بینی</span>
-            </h1>
+          aria-hidden
+          className="absolute inset-0 hidden bg-linear-to-l from-jet from-25% via-jet/60 via-45% to-transparent to-65% lg:block"
+        />
+        <div aria-hidden className="absolute inset-x-0 bottom-0 hidden h-32 bg-linear-to-t from-jet lg:block" />
 
-            {/*------ Pitch ------*/}
-            {/* On desktop the pitch is as tall as the headline: the sentence starts level with its first line and the
-                buttons end level with its last, so the two columns read as one block. */}
-            <div className="flex flex-col gap-8 lg:justify-between lg:py-3">
-              {/* The first sentence says who and where, in ivory; the second only lists what is taught, so it steps
-                  back. A thin gold rule on the reading edge ties the pair together as one statement. */}
-              <div className="max-w-[28rem] border-s-2 border-primary/70 ps-5">
-                <p className="text-[clamp(1.125rem,1rem+0.4vw,1.375rem)] leading-[1.8] font-semibold text-balance text-foreground">
-                  آموزش خصوصی سگ با <span className="whitespace-nowrap">{HEAD_TRAINER.name}</span>، در خانه‌ی خودت یا
-                  بیرون.
-                </p>
-                <p className="mt-2 text-base leading-[1.9] font-normal text-pretty text-foreground/65">
-                  از ادب خانگی و فرمان‌پذیری تا سگ‌های کار و ورزشی.
-                </p>
-              </div>
-              {/* One main action and one quieter way in, so the choice is never a coin toss. Every new dog starts
-                  with the free assessment, so that is the main action. The second is a same-height outline, not bare
-                  text, so it reads as a button without competing with the gold. */}
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  to="/assessment"
-                  className={buttonVariants({
-                    variant: "solid",
-                    size: "lg",
-                    className: "flex-[1_1_13rem] px-6 text-xl font-black",
-                  })}
-                >
-                  ارزیابی رایگان رزرو کن
-                </Link>
-                <Link
-                  to="/#courses"
-                  className={cn(
-                    buttonVariants({ size: "lg", variant: "ghost" }),
-                    "flex-[1_1_8rem] border-foreground/25 px-6 text-base font-semibold text-foreground hover:border-foreground/40",
+        {/*------ Controls ------*/}
+        {/* Above the words layer, which overlaps the photo's bottom on phones. Phones: the start corner, clear of the
+            bubble at the end. Desktop: under the dog, at the container's end. */}
+        <div className="absolute inset-x-0 bottom-24 z-10 lg:bottom-8">
+          <fieldset className="site-container flex items-center gap-1 lg:justify-end">
+            <legend className="sr-only">عکس‌های بالای صفحه</legend>
+            {SLIDES.map((slide, index) => (
+              <button
+                key={slide.name}
+                type="button"
+                aria-label={`عکس ${formatNumberFa(index + 1)} از ${formatNumberFa(SLIDES.length)}`}
+                aria-current={index === active}
+                onClick={() => setActive(index)}
+                className="group/dot grid h-8 w-9 place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              >
+                <span className="relative block h-1 w-7 overflow-hidden rounded-full bg-chalk/30 transition-colors group-hover/dot:bg-chalk/50">
+                  {index === active && (
+                    <span
+                      // A new key restarts the fill whenever the photo changes, by a click or on its own.
+                      key={active}
+                      onAnimationEnd={next}
+                      className={cn(
+                        // Fills from the right: the side Persian starts reading on.
+                        "absolute inset-0 origin-right bg-primary",
+                        hydrated && "motion-safe:animate-slide-progress",
+                        // Important: the `animate-` shorthand would otherwise reset the play state to running.
+                        paused && "[animation-play-state:paused]!",
+                      )}
+                    />
                   )}
-                >
-                  دوره‌ها را ببین
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          {/*===== Ground Row =====*/}
-          {/* The guarantees stand on the same ground as the marching frieze. From `sm` they sit at the start of the
-              row and the frieze fills the rest; the cropped ends fade out rather than ending in a half-drawn figure,
-              and `mask-no-clip` lets that fade reach the part of the frieze above and below its box. */}
-          <div className="mt-4 flex items-center gap-x-8 sm:mt-6">
-            <ul className="hidden shrink-0 flex-wrap gap-x-6 gap-y-2 text-sm font-medium sm:flex">
-              <li className="flex items-center gap-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-foreground/15 text-primary">
-                  <HouseIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
                 </span>
-                جلسه‌ی خصوصی، فقط تو و سگت
-              </li>
-              <li className="flex items-center gap-2.5">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full border border-foreground/15 text-primary">
-                  <GiftIcon strokeWidth={1.7} className="size-[1.125rem]" aria-hidden />
-                </span>
-                اولین ارزیابی رایگان است
-              </li>
-            </ul>
-
-            <div className="relative h-12 min-w-0 flex-1 overflow-x-clip mask-r-from-[calc(100%-3rem)] mask-l-from-[calc(100%-3rem)] mask-no-clip sm:h-14">
-              <HeroDoodles className="absolute bottom-0 left-0 h-full" />
-            </div>
-          </div>
+              </button>
+            ))}
+            {/* Reduced motion never advances on its own, so there's nothing to pause. */}
+            <button
+              type="button"
+              aria-label={paused ? "ادامه‌ی عکس‌ها" : "توقف عکس‌ها"}
+              onClick={() => setPaused((value) => !value)}
+              className="grid size-8 place-items-center rounded-full text-chalk/70 outline-none hover:text-chalk focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:hidden"
+            >
+              {paused ? <PlayIcon aria-hidden className="size-3.5" /> : <PauseIcon aria-hidden className="size-3.5" />}
+            </button>
+          </fieldset>
         </div>
+      </div>
 
-        {/*===== Side Doodles =====*/}
-        {/* Wide screens leave empty margins beside the page, as tall as the hero. Each holds a scene pinned to the
-            page's edge; when the margin is narrower than the scene, it overflows toward the screen's edge, where it
-            is cropped and faded. Laid out left to right, so `justify-end` means the right edge in Persian too. They
-            fade with the heading, and the growing photo covers them. */}
-        <div
-          dir="ltr"
-          style={{ opacity: "calc(1 - var(--expand, 0) * 1.6)" }}
-          className="pointer-events-none absolute inset-0 hidden min-[100rem]:block"
-        >
-          <div className="absolute inset-y-0 left-0 flex w-[calc((100%-var(--container-page))/2)] items-start justify-end overflow-hidden mask-l-from-[calc(100%-6rem)] pt-10 pr-8">
-            <HeroSideDoodles side="left" className={SIDE_DOODLE_SIZE} />
-          </div>
-          <div className="absolute inset-y-0 right-0 flex w-[calc((100%-var(--container-page))/2)] items-start overflow-hidden mask-r-from-[calc(100%-6rem)] pt-10 pl-8">
-            <HeroSideDoodles side="right" className={SIDE_DOODLE_SIZE} />
-          </div>
-        </div>
-
-        {/*===== Frame =====*/}
-        {/* Marks where the photo starts. The bottom padding adds the header's height, so the frame's lower edge is on
-            screen at the top of the page, before the header has scrolled away. Until the photo is measured into place
-            (it needs the heading's final height, which isn't known on the server), the frame is a soft placeholder in
-            exactly its spot, so the page never has a hole and the photo fades in over it without moving. */}
-        <div className="site-container flex flex-1 flex-col pt-gutter pb-[calc(var(--spacing-gutter)+4rem)] lg:pb-[calc(var(--spacing-gutter)+5rem)]">
-          <div
-            ref={frameRef}
-            className={cn(
-              "flex-1 rounded-[1.75rem] transition-colors duration-700 ease-silk",
-              measured ? "bg-transparent" : "bg-sunken",
-            )}
-          />
-        </div>
-
-        {/*===== Photo =====*/}
-        {/* Covers the whole panel and is clipped back to the frame; `--expand` opens the clip to the screen's edges.
-            Once measured, the framed photo rises from the bottom of the screen: the clip moves with it, so the frame
-            arrives whole, and the panel's overflow hides it until it is in. */}
-        <div
-          style={{ clipPath: FRAME_CLIP }}
-          className={cn("absolute inset-0 z-10", measured ? "animate-rise-in motion-reduce:animate-none" : "opacity-0")}
-        >
-          <img
-            src={PHOTO.src}
-            alt="مردی با کاپشن زرد خندان سگ سفیدش را در آغوش گرفته است"
-            width={PHOTO.width}
-            height={PHOTO.height}
-            fetchPriority="high"
-            // Pans from the faces (inside the small frame) to the photo's centre as it grows, while zooming out.
-            style={{
-              transform: `translateY(calc(var(--photo-shift, 0px) * (1 - var(--expand, 0)))) scale(calc(${PHOTO_START_SCALE} - var(--expand, 0) * ${PHOTO_START_SCALE - 1}))`,
-            }}
-            // The man and his dog sit right of centre. A tall phone crop shows only a third of the photo's width, so it
-            // leans further right to keep both faces in; on desktop the dark wall on the left is where the cards land.
-            className="size-full object-cover object-[74%_50%] lg:object-[64%_50%]"
-          />
-          {/* Settles the dark wall where the cards land (the bottom on phones, the left on desktop). The photo is already
-              dark there, so this stays light and leaves the faces and the yellow jacket bright. */}
-          <div
-            aria-hidden
-            style={{ opacity: "var(--expand, 0)" }}
-            className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent lg:bg-linear-to-r lg:from-black/35 lg:via-black/10"
-          />
-        </div>
-
-        {/*===== Reviews =====*/}
-        <section
-          aria-labelledby="reviews-title"
-          className="pointer-events-none absolute inset-0 z-20 site-container lg:flex lg:items-center lg:justify-end"
-        >
-          <h2 id="reviews-title" className="sr-only">
-            نظر صاحبان سگ‌ها
-          </h2>
-          {/* Phones run the cards top to bottom in a zig-zag. The spacer below the list keeps it at the top while it
-              fits; once it outgrows the screen the spacer is gone and `justify-end` lets it overflow upward instead,
-              so the newest card stays in view. Desktop gives each card its own place in a two-column pile. */}
-          <div className="absolute inset-x-site top-gutter bottom-gutter flex flex-col justify-end sm:end-auto sm:w-md lg:contents">
-            <ul className="flex shrink-0 flex-col lg:grid lg:w-[40rem] lg:grid-cols-2 lg:gap-x-4 lg:gap-y-2">
-              {REVIEWS.map((review, index) => {
-                const shown = index < revealed;
-                return (
-                  <li
-                    key={review.id}
-                    style={{ "--tilt": `${TILT[index]}deg`, zIndex: index } as React.CSSProperties}
+      {/*===== Words =====*/}
+      <div className="relative site-container lg:flex lg:min-h-[min(46rem,calc(100svh-5rem))] lg:items-center">
+        <div className="relative -mt-20 pb-section-sm lg:mt-0 lg:w-[46%] lg:py-section-md">
+          {/*------ Bubble ------*/}
+          {/* Above the headline, at its end, so the tail points back at the dog: up at its face on a phone, across
+              at it on desktop. Every dog's line sits in the same grid cell, so the bubble keeps the size of the
+              longest and doesn't jump when the line changes. */}
+          <div className="flex justify-end">
+            <SpeechBubble tail="top-end" lgTail="bottom-end" drawIn className="max-w-[17rem] lg:max-w-[19rem]">
+              <span className="grid">
+                {SLIDES.map((slide, index) => (
+                  <span
+                    key={slide.name}
+                    aria-hidden={index !== active}
                     className={cn(
-                      // On phones the row opens from nothing, so the list grows smoothly as each card lands.
-                      "grid-rows-[0fr] transition-[opacity,translate,scale,rotate,grid-template-rows] duration-700 ease-silk motion-reduce:transition-opacity max-lg:grid max-lg:w-[82%] max-lg:odd:self-start max-lg:even:self-end lg:self-center",
-                      DESKTOP_PLACEMENT[index],
-                      shown ? "rotate-(--tilt) grid-rows-[1fr]" : "translate-y-10 scale-90 opacity-0",
+                      "transition-opacity duration-700 [grid-area:1/1]",
+                      index === active ? "opacity-100 delay-500" : "opacity-0",
                     )}
                   >
-                    <div className="relative min-h-0 max-lg:pb-3">
-                      <ReviewCard review={review} />
-
-                      {/*------ Doodle ------*/}
-                      {/* Mounts with its card, so it pops and draws in as the card lands. On phones it sits in the gap
-                          the zig-zag leaves beside the card. */}
-                      {shown && (
-                        <div
-                          className={cn(
-                            "absolute animate-in duration-500 zoom-in-50 fade-in motion-reduce:animate-none max-lg:top-6",
-                            index % 2 === 0 ? "max-lg:start-full max-lg:ms-1" : "max-lg:end-full max-lg:me-1",
-                            DESKTOP_DOODLE_PLACEMENT[index],
-                          )}
-                        >
-                          <HeroReviewDoodle index={index} />
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className="grow lg:hidden" />
+                    {slide.line}
+                  </span>
+                ))}
+              </span>
+            </SpeechBubble>
           </div>
-        </section>
+
+          {/*------ Headline ------*/}
+          <h1 id="hero-title" className="mt-8 font-display text-display font-black text-balance lg:mt-10">
+            من فقط فرمان نمی‌برم؛ می‌فهمم.
+          </h1>
+          <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
+            آموزش خصوصی با {HEAD_TRAINER.firstName}، توی خونه‌ی خودمون یا بیرون. اولین دیدارمون رایگانه.
+          </p>
+
+          {/*------ Actions ------*/}
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/assessment" className={cn(buttonVariants({ size: "lg" }))}>
+              ارزیابی رایگان بگیر
+            </Link>
+            <Link to="/#courses" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+              دوره‌ها را ببین
+            </Link>
+          </div>
+
+          <ChalkDoodle
+            name="sparkles"
+            className="absolute start-0 -top-2 w-10 -rotate-6 opacity-70 max-lg:hidden lg:top-[18%]"
+          />
+        </div>
       </div>
     </section>
   );
-}
-
-/*===== Helpers =====*/
-/**
- * How far to move the photo down (or up) so the starting frame shows its faces instead of its middle, which a short
- * frame would otherwise cut through. Clamped so the photo still covers the whole frame; the shift and the frame both
- * shrink linearly to nothing as the photo expands, so it stays covered all the way.
- */
-function photoShift({ panelBox, frameBox }: { panelBox: DOMRect; frameBox: DOMRect }) {
-  // The rendered photo: `object-cover` fills the panel, then the starting zoom scales it about the panel's centre.
-  const coverScale = Math.max(panelBox.width / PHOTO.width, panelBox.height / PHOTO.height);
-  const photoHeight = PHOTO.height * coverScale * PHOTO_START_SCALE;
-  const panelCentre = panelBox.height / 2;
-  const focus = panelCentre + (PHOTO_FOCUS_Y - 0.5) * photoHeight;
-  const frameTop = frameBox.top - panelBox.top;
-  const frameBottom = frameBox.bottom - panelBox.top;
-  const wanted = (frameTop + frameBottom) / 2 - focus;
-  // Keep the photo's top edge above the frame and its bottom edge below it.
-  const min = frameBottom - (panelCentre + photoHeight / 2);
-  const max = frameTop - (panelCentre - photoHeight / 2);
-  return Math.min(Math.max(wanted, min), max);
-}
-
-function clamp(value: number) {
-  return Math.min(Math.max(value, 0), 1);
-}
-
-function easeInOutCubic(t: number) {
-  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 }

@@ -1,7 +1,7 @@
 /*===== Head Trainer =====*/
-// The center is one trainer's practice: he teaches the courses himself, sometimes with an assistant, and the site
-// exists to sell him and his name. The storefront, the footer and the auth page all speak about him, so his details
-// live in one place.
+// The center is his practice: he founded it, runs the evaluations and is the app's only Admin. The home page also
+// shows two colleagues as equals (`routes/home/components/team-section.tsx`), but the storefront, the footer and the
+// auth page speak about him, so his details live in one place.
 //
 // Sample data: the name, years and photo are placeholders until the owner sends the real ones.
 export const HEAD_TRAINER = {

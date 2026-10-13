@@ -11,18 +11,25 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* The display face: Amiri, a classical Naskh with real thick-and-thin contrast. It is only for the hero headline and
-   the section headers (`font-display`); the headings and text inside a section stay in Vazirmatn. Vazirmatn's even
-   strokes read as UI; Amiri's read as a printed book or an engraved card. Its letters sit small on the body, so it is
-   scaled up here to stand level with Vazirmatn at the same font size, and the type scale works for both faces. Only
-   the bold is loaded: every display heading uses it, so pair `font-display` with `font-bold`. */
+/* The display face: Estedad, a heavy geometric Persian sans with open counters (OFL, app/fonts/estedad-OFL.txt). It
+   sets the hero headline and the section headers (`font-display`, at 800–900); headings and text inside a section stay
+   in Vazirmatn. */
 @font-face {
-  font-family: "Amiri Display";
+  font-family: "Estedad";
   font-style: normal;
-  font-weight: 700;
+  font-weight: 100 900;
   font-display: swap;
-  size-adjust: 116%;
-  src: url("../node_modules/@fontsource/amiri/files/amiri-arabic-700-normal.woff2") format("woff2");
+  src: url("./fonts/estedad-vf.woff2") format("woff2-variations");
+}
+
+/* The dog's voice: Marhey, a bouncy, rounded hand (OFL, app/fonts/marhey-OFL.txt). Only for the speech bubbles
+   (`font-hand`), where the dog talks to the visitor; never for UI or body text. */
+@font-face {
+  font-family: "Marhey";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("./fonts/marhey-vf.woff2") format("woff2-variations");
 }
 
 @theme {
@@ -195,11 +202,24 @@
       transform: translateY(-6px) rotate(1.5deg);
     }
   }
+
+  /* Fills a slideshow's progress bar once, over the time a photo stays up. The home hero moves to the next photo when
+     it ends, so pausing the animation pauses the slideshow, and reduced motion (no animation) never advances it */
+  --animate-slide-progress: slide-progress 7s linear both;
+  @keyframes slide-progress {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
 }
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-display: "Amiri Display", "Vazirmatn Variable", serif;
+  --font-display: "Estedad", "Vazirmatn Variable", sans-serif;
+  --font-hand: "Marhey", "Vazirmatn Variable", sans-serif;
   --font-sans: "Vazirmatn Variable", Tahoma, sans-serif;
   --font-stencil: "Big Shoulders Stencil", Impact, sans-serif;
 
@@ -246,6 +266,7 @@
   --color-saffron-foreground: var(--saffron-foreground);
   --color-success: var(--success);
   --color-faint: var(--faint);
+  --color-chalk: var(--chalk);
 
   /* Radius: 8 small, 12 icon boxes, 14 buttons/inputs, 16 cards, 20+ photos and bands */
   --radius-sm: 0.5rem;
@@ -265,24 +286,20 @@
   --shadow-lg: var(--elevation-lg);
 }
 
-/*===== Palette: Lacquer & Gold Leaf =====*/
-/* One theme, and it is dark. The page is a cool blue-slate (`--base`, never brown: warm black under gold reads as
-   mud, and near-black reads as depressing), and gold leaf leads: actions, links, the selected state, hairlines. `saffron` is the brighter
-   champagne gold for the small bright notes: stars, icons beside a value and the hero's scribbles. Text is ivory,
-   never white. Slate and gold read as authority and trust, and the grass in the photos sits well against the blue.
+/*===== Palette: Black & Flat Gold =====*/
+/* One theme, and it is dark: pure black under dark, warm-lit dog photos, with flat amber gold for actions, icons and
+   small accents (image-reference/). The photos carry the warmth, so the surfaces stay neutral: a warm or tinted black
+   under gold reads as mud. Gold is never a large headline on the first screen (it reads as a gold shop); headlines are
+   ivory. Chalk white is for the dog's speech bubbles and the doodles, never body text.
 
-   Layers, from back to front. Each step is a lighter surface plus a deeper shadow, so depth reads on black:
+   Layers, from back to front. Each step is a lighter neutral surface plus a deeper shadow:
      sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)
      background  the page
      card        raised content: cards, lists, panels                                   + shadow-sm
      popover     overlays: menus, sheets, dialogs, things floating over a photo         + shadow-lg
-   `inverse` is the one emphasis band per page: charcoal with only a trace of the green (see `surface-inverse` below).
-   A real emerald there floods the band and reads as green, not black.
-   `jet` is the header and home hero surface; it is the same slate as the page, so the first screen is flat colour
-   with quiet, flat gold, and the site opens looking like a professional, not a jeweller.
+   `inverse` is the one emphasis band per page (see `surface-inverse` below). `jet` is the header and hero surface.
 
-   Metal: flat gold is mustard. Large gold fills and display gold text below the hero use the `gold-leaf` gradient,
-   which has a highlight and a shadow in it, so it reads as metal catching light.
+   The `gold-leaf` names are kept so existing pages keep working, but they are flat amber now: no metal sheen.
 
    The document always carries `.dark` (root.tsx), so the `dark:` variants inside the shadcn components apply. */
 
@@ -291,83 +308,77 @@
   --radius: 0.75rem;
 
   /*------ Surfaces ------*/
-  /* One slate carries every dark surface; the rest are lifted or sunk from it so they stay the same hue. The
-     BaseColorPicker trial overrides `--base` inline on <html>. */
-  --base: #171d24;
-  --jet: var(--base);
-  --sunken: color-mix(in oklab, var(--base), black 40%);
+  --base: #000000;
+  --jet: #000000;
+  --sunken: #070707;
   --background: var(--base);
-  --card: color-mix(in oklab, var(--base), white 5%);
-  --popover: color-mix(in oklab, var(--base), white 9%);
+  --card: #121212;
+  --popover: #1a1a1a;
 
   /*------ Text ------*/
-  --foreground: #f4eddc;
-  --card-foreground: #f4eddc;
-  --popover-foreground: #f4eddc;
-  --muted-foreground: #b5b09c;
-  --faint: #59625b; /* disabled items and decoration, never text */
+  --foreground: #f3eee4;
+  --card-foreground: #f3eee4;
+  --popover-foreground: #f3eee4;
+  --muted-foreground: #a8a297;
+  --faint: #4a4a4a; /* disabled items and decoration, never text */
+  --chalk: #ffffff; /* speech bubbles and doodles */
 
   /*------ Action ------*/
-  --primary: #d9b562;
-  --primary-foreground: #1a1306;
-  --ring: #e6c77e;
+  --primary: #f5b83d;
+  --primary-foreground: #140d00;
+  --ring: #f7c862;
 
   /*------ Fills ------*/
-  --muted: color-mix(in oklab, var(--base), white 7%);
+  --muted: #1c1c1c;
   --secondary: var(--muted);
-  --secondary-foreground: #f4eddc;
-  --accent: #1d2419; /* hover and selected rows: a gold tint on the green */
-  --accent-foreground: #f4eddc;
+  --secondary-foreground: #f3eee4;
+  --accent: #1f1a10; /* hover and selected rows: a trace of the gold on black */
+  --accent-foreground: #f3eee4;
 
   /*------ Edges ------*/
-  --border: rgb(217 181 98 / 0.17); /* a gold hairline */
-  /* Pale champagne rather than the action gold: the shadcn controls also fill with `bg-input/30`, and a saturated gold
-     that thin turns brown over the black. */
-  --input: rgb(226 214 178 / 0.34);
+  --border: rgb(245 184 61 / 0.16); /* a gold hairline */
+  /* Neutral, not gold: the shadcn controls also fill with `bg-input/30`, and gold that thin turns brown on black. */
+  --input: rgb(243 238 228 / 0.28);
 
   /*------ Accents and status ------*/
-  --saffron: #f0d38b; /* champagne gold */
-  --saffron-text: #f0d38b;
-  --saffron-foreground: #1a1306;
+  --saffron: #f5b83d;
+  --saffron-text: #f7c35a;
+  --saffron-foreground: #140d00;
   --success: #6cc48f;
   --destructive: #ee7080;
 
-  /*------ Gold leaf ------*/
-  /* Pale highlight, rich body, a dark fold, then light again: the bands a gilded edge shows under one light source. */
-  --gold-leaf: linear-gradient(160deg, #fbeec0 0%, #e9c879 22%, #c99a43 48%, #9c7128 62%, #d8b061 80%, #f3dc9c 100%);
-  /* Text needs a gentler sweep than fills: a deep fold inside a letter reads as a smudge. */
-  --gold-leaf-text: linear-gradient(175deg, #fff3cc 0%, #f0d38b 35%, #d4a851 62%, #b88834 78%, #ecd08a 100%);
+  /*------ Gold (flat) ------*/
+  --gold-leaf: linear-gradient(#f5b83d, #f5b83d);
+  --gold-leaf-text: linear-gradient(#f7c35a, #f7c35a);
 
   /*------ Emphasis band ------*/
-  --inverse: #121815;
-  --inverse-foreground: #f4eddc;
-  --inverse-muted: #bdbaab;
-  --inverse-border: rgb(240 211 139 / 0.22);
+  --inverse: #0e0e0e;
+  --inverse-foreground: #f3eee4;
+  --inverse-muted: #b3ada2;
+  --inverse-border: rgb(245 184 61 / 0.22);
 
   /*------ Elevation ------*/
-  /* Two layers each: a tight contact shadow for the edge, a wide soft one for the height. Raised ones also get a faint
-     gold top highlight, the way light catches an edge. Shadows alone barely show on black, so the highlight does the
-     work. */
-  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.5);
-  --elevation-sm: inset 0 1px 0 rgb(240 211 139 / 0.07), 0 1px 2px rgb(0 0 0 / 0.55), 0 4px 12px -2px rgb(0 0 0 / 0.45);
-  --elevation-md: inset 0 1px 0 rgb(240 211 139 / 0.09), 0 2px 4px rgb(0 0 0 / 0.5), 0 16px 32px -8px rgb(0 0 0 / 0.65);
+  /* Shadows barely show on black, so raised layers also get a faint light top edge. */
+  --elevation-xs: 0 1px 2px rgb(0 0 0 / 0.6);
+  --elevation-sm: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 1px 2px rgb(0 0 0 / 0.6), 0 4px 12px -2px rgb(0 0 0 / 0.5);
+  --elevation-md: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 2px 4px rgb(0 0 0 / 0.6), 0 16px 32px -8px rgb(0 0 0 / 0.7);
   --elevation-lg:
-    inset 0 1px 0 rgb(240 211 139 / 0.11), 0 4px 10px rgb(0 0 0 / 0.5), 0 32px 64px -12px rgb(0 0 0 / 0.8);
+    inset 0 1px 0 rgb(255 255 255 / 0.08), 0 4px 10px rgb(0 0 0 / 0.6), 0 32px 64px -12px rgb(0 0 0 / 0.85);
 
-  --chart-1: #d9b562;
-  --chart-2: #f0d38b;
-  --chart-3: #a87d33;
-  --chart-4: #f7e4b0;
-  --chart-5: #b5b09c;
+  --chart-1: #f5b83d;
+  --chart-2: #f7d488;
+  --chart-3: #b8862a;
+  --chart-4: #fbe7bd;
+  --chart-5: #a8a297;
 
-  --sidebar: #0e1814;
-  --sidebar-foreground: #f4eddc;
-  --sidebar-primary: #d9b562;
-  --sidebar-primary-foreground: #1a1306;
-  --sidebar-accent: #1d2419;
-  --sidebar-accent-foreground: #f4eddc;
-  --sidebar-border: rgb(217 181 98 / 0.17);
-  --sidebar-ring: #e6c77e;
+  --sidebar: #0a0a0a;
+  --sidebar-foreground: #f3eee4;
+  --sidebar-primary: #f5b83d;
+  --sidebar-primary-foreground: #140d00;
+  --sidebar-accent: #1f1a10;
+  --sidebar-accent-foreground: #f3eee4;
+  --sidebar-border: rgb(245 184 61 / 0.16);
+  --sidebar-ring: #f7c862;
 }
 
 @layer base {
@@ -388,7 +399,7 @@
     @apply font-heading font-extrabold;
   }
   ::selection {
-    background-color: rgb(217 181 98 / 0.35);
+    background-color: rgb(245 184 61 / 0.35);
     color: var(--foreground);
   }
 }
@@ -402,11 +413,9 @@
   padding-inline: var(--spacing-site);
 }
 
-/* A pool of light behind a section's content, for the places the page should feel lit from within: emerald with a
-   gold core, never gold alone, which turns olive over the green black. It sits on the
-   section's own box, so aim it with `--glow-at`, size it with `--glow-w` / `--glow-h` (ellipse radii as a share of the
-   box) and set its strength with `--glow-alpha`. It fades to nothing by the ellipse edge, so keep the ellipse inside the
-   box unless the section is a band with its own edge to hide the cut. */
+/* A pool of warm light behind a section's content. It sits on the section's own box, so aim it with `--glow-at`, size it
+   with `--glow-w` / `--glow-h` (ellipse radii as a share of the box) and set its strength with `--glow-alpha`. Keep it
+   faint: amber at high alpha on black turns brown. */
 @utility glow {
   position: relative;
   isolation: isolate;
@@ -416,17 +425,11 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    background-image:
-      radial-gradient(
-        ellipse calc(var(--glow-w, 60%) * 0.5) calc(var(--glow-h, 60%) * 0.5) at var(--glow-at, 50% 50%),
-        rgb(240 211 139 / calc(var(--glow-alpha, 0.1) * 0.5)),
-        transparent
-      ),
-      radial-gradient(
-        ellipse var(--glow-w, 60%) var(--glow-h, 60%) at var(--glow-at, 50% 50%),
-        rgb(36 110 82 / calc(var(--glow-alpha, 0.1) * 2.2)),
-        transparent
-      );
+    background-image: radial-gradient(
+      ellipse var(--glow-w, 60%) var(--glow-h, 60%) at var(--glow-at, 50% 50%),
+      rgb(245 184 61 / calc(var(--glow-alpha, 0.1) * 0.6)),
+      transparent
+    );
   }
 }
 
@@ -442,26 +445,15 @@
   color: var(--inverse-foreground);
 }
 
-/* Gold leaf as a fill: buttons, the one gold panel, badges. A hairline of light along the top edge and a dark one
-   along the bottom make it a struck plate rather than a flat colour. */
+/* Flat gold as a fill: buttons, the one gold panel, badges. */
 @utility gold-leaf {
-  background-image: var(--gold-leaf);
-  background-size: 100% 100%;
+  background-color: var(--primary);
   color: var(--primary-foreground);
-  box-shadow:
-    inset 0 1px 0 rgb(255 248 220 / 0.55),
-    inset 0 -1px 0 rgb(90 60 15 / 0.45),
-    0 1px 2px rgb(0 0 0 / 0.5),
-    0 8px 22px -8px rgb(201 154 67 / 0.45);
 }
 
-/* Gold leaf on display type. Only for large headings and numerals: small text loses the sweep and just looks muddy. */
+/* Gold text, for numerals and small accents. Never a large headline on the first screen. */
 @utility text-gold-leaf {
-  background-image: var(--gold-leaf-text);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: var(--saffron-text);
 }
 
 /* Page fade on client navigations. Links opt in through ~/components/link (docs/view-transitions.md); without these

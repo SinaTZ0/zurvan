@@ -5,14 +5,13 @@ import { Link } from "~/components/link";
 import { CENTER_PHONE } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
-// The pages behind these links come later in phase one; the structure is what matters for now.
+// Some pages behind these links aren't built yet (app-spec, Pages); the structure is what matters for now.
 const FOOTER_GROUPS = [
   {
     title: "دوره‌ها",
     links: [
-      { label: "همه‌ی دوره‌ها", to: "/courses" },
+      { label: "همه‌ی دوره‌ها", to: "/#courses" },
       { label: "ارزیابی رایگان", to: "/assessment" },
-      { label: "اصلاح رفتار", to: "/behavior-modification" },
     ],
   },
   {
@@ -22,7 +21,6 @@ const FOOTER_GROUPS = [
   {
     title: "راهنما",
     links: [
-      { label: "قوانین لغو و بازپرداخت", to: "/help/refunds" },
       { label: "سؤال‌های پرتکرار", to: "/help" },
       { label: "حریم خصوصی", to: "/privacy" },
     ],
