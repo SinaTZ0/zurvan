@@ -3,16 +3,25 @@ import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 
 import { Link } from "~/components/link";
+import { useSignOut } from "~/hooks/use-sign-out";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
 import { SiteSearch } from "~/routes/layout_public/components/site-search";
 import { NAV_ITEMS } from "~/routes/layout_public/nav-items";
+import type { Viewer } from "~/routes/layout_public/viewer";
 
 /*===== Mobile Menu =====*/
-/** Below `lg`, the nav and search live in a sheet that slides in from the menu button's side (the left, in RTL). */
-export function MobileMenu() {
+/**
+ * Below `lg`, the nav and search live in a sheet that slides in from the menu button's side (the left, in RTL). The
+ * sheet's last block is the sign-in button for a visitor, or «حساب من» and «خروج» for a signed-in `viewer`.
+ */
+export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const signOut = useSignOut();
+
+  // A customer's account is `/account`; a partner or the Admin has a link only once their panel exists.
+  const accountPath = viewer?.role === "customer" ? "/account" : viewer?.homePath;
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -41,9 +50,36 @@ export function MobileMenu() {
             </ul>
           </nav>
 
-          <Link to="/auth" onClick={close} className={cn(buttonVariants({ size: "lg", className: "w-full" }))}>
-            ورود یا ثبت‌نام
-          </Link>
+          {/*------ Account ------*/}
+          {viewer ? (
+            <div className="flex flex-col gap-2">
+              {accountPath && (
+                <Link
+                  to={accountPath}
+                  onClick={close}
+                  className={cn(buttonVariants({ size: "lg", className: "w-full" }))}
+                >
+                  {viewer.role === "customer" ? "حساب من" : "پنل من"}
+                </Link>
+              )}
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                disabled={signOut.isPending}
+                onClick={() => {
+                  close();
+                  signOut.mutate();
+                }}
+              >
+                خروج
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth" onClick={close} className={cn(buttonVariants({ size: "lg", className: "w-full" }))}>
+              ورود یا ثبت‌نام
+            </Link>
+          )}
         </div>
       </SheetContent>
     </Sheet>

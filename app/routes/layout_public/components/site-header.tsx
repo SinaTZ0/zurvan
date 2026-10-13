@@ -5,14 +5,17 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { MobileMenu } from "~/routes/layout_public/components/mobile-menu";
 import { SiteSearch } from "~/routes/layout_public/components/site-search";
+import { ViewerControls } from "~/routes/layout_public/components/viewer-controls";
 import { NAV_ITEMS } from "~/routes/layout_public/nav-items";
+import type { Viewer } from "~/routes/layout_public/viewer";
 
 /*===== Site Header =====*/
 /**
  * Storefront header. Desktop: logo, nav, search and sign-in in one row. Phones keep the logo and sign-in in
- * view and move the nav and search into a sheet.
+ * view and move the nav and search into a sheet. A signed-in `viewer` gets their cart and person menu in place of the
+ * sign-in button; the bar keeps its height and surface either way.
  */
-export function SiteHeader() {
+export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
   return (
     <header className="border-b border-foreground/10 bg-jet">
       <div className="site-container flex h-16 items-center gap-6 lg:h-20">
@@ -40,10 +43,14 @@ export function SiteHeader() {
         {/*------ Actions ------*/}
         <div className="ms-auto flex items-center gap-1 lg:gap-2">
           <SiteSearch className="hidden w-64 xl:block xl:w-72" />
-          <Link to="/auth" className={cn(buttonVariants({ variant: "outline", className: "hidden sm:inline-flex" }))}>
-            ورود یا ثبت‌نام
-          </Link>
-          <MobileMenu />
+          {viewer ? (
+            <ViewerControls viewer={viewer} />
+          ) : (
+            <Link to="/auth" className={cn(buttonVariants({ variant: "outline", className: "hidden sm:inline-flex" }))}>
+              ورود یا ثبت‌نام
+            </Link>
+          )}
+          <MobileMenu viewer={viewer} />
         </div>
       </div>
     </header>
