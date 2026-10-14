@@ -27,9 +27,9 @@ export function AuthPhotos({ step }: { step: AuthStepName }) {
             )}
           >
             <picture>
-              <source media="(min-width: 64rem)" srcSet={`/photo/home/${scene.photo}-1536.webp`} />
+              <source media="(min-width: 64rem)" srcSet={`/photo/${scene.photo}-1536.webp`} />
               <img
-                src={`/photo/home/${scene.photo}-900.webp`}
+                src={`/photo/${scene.photo}-900.webp`}
                 alt={scene.alt}
                 width={1536}
                 height={1024}

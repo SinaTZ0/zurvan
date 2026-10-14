@@ -3,7 +3,7 @@
 export type AuthStepName = "phone" | "code" | "name";
 
 type AuthScene = {
-  /** File stem in `public/photo/home/` (`<name>-900.webp` for phones, `<name>-1536.webp` from `lg`). */
+  /** File stem under `public/photo/` (`<name>-900.webp` for phones, `<name>-1536.webp` from `lg`). */
   photo: string;
   alt: string;
   /** What the dog says in the bubble. */
@@ -13,24 +13,23 @@ type AuthScene = {
 };
 
 /*===== Scenes =====*/
-// The home hero's three photos, one per step. They are composed alike (the dog's head a quarter in from the left, the
-// right half dark), so the form fits the dark half and the bubble's tail points back at the dog on every one. The crops
-// are tuned per photo, as in `home-hero.tsx`.
+// A dedicated welcome portrait, then the home hero's other two dogs. Their heads sit a quarter in from the left and the
+// right half stays dark for the form. Each crop keeps the face visible in the phone's narrow photo band.
 export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
   phone: {
-    photo: "hero",
-    alt: "یک ژرمن‌شپرد روی مبل چرمی دراز کشیده و مستقیم به دوربین نگاه می‌کند",
+    photo: "auth/welcome",
+    alt: "یک ژرمن‌شپرد کنار پنجره، پنجه‌هایش را روی لبه‌ی چوبی گذاشته و با سر کج به دوربین نگاه می‌کند",
     line: "سلام! شمارتو بده تا بشناسمت.",
     position: "object-[24%_30%] lg:object-[20%_40%]",
   },
   code: {
-    photo: "hero-2",
+    photo: "home/hero-2",
     alt: "یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند",
     line: "پیامک رسید؟ کد پنج‌رقمی رو بگو.",
     position: "object-[8%_50%] lg:object-[0%_4%]",
   },
   name: {
-    photo: "hero-3",
+    photo: "home/hero-3",
     alt: "یک توله گلدن رتریور کنار در خانه دراز کشیده و قلاده‌اش را به دهان گرفته",
     line: "حالا اسمتو بگو، می‌خوام صدات کنم.",
     position: "object-[4%_50%] lg:object-[0%_35%]",

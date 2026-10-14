@@ -5,8 +5,8 @@ import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName } from "~/routes/auth/a
 
 /*===== Auth Bubble =====*/
 /**
- * What the step's dog says. The bubble sits where the tail points back at the dog's face: on a phone it straddles the
- * photo band's bottom edge at the end side with the tail up. On desktop the tail points down toward the dog's head: from
+ * What the step's dog says. The welcome portrait's bubble sits beside its muzzle on phones; the other dogs' bubbles
+ * straddle the photo band's bottom edge with the tail up. On desktop the tail points down toward the dog's head: from
  * `xl` the bubble floats in the dark gap between the dog and the form; on a narrow laptop there is no such gap, so it sits
  * above the headline at the form column's end, as the home hero's does.
  *
@@ -17,7 +17,14 @@ import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName } from "~/routes/auth/a
  */
 export function AuthBubble({ step }: { step: AuthStepName }) {
   return (
-    <div className="pointer-events-none z-10 -mt-20 flex justify-end lg:mt-0 lg:mb-9 xl:absolute xl:end-[47%] xl:top-[17%] xl:mb-0 xl:block">
+    <div
+      className={cn(
+        "pointer-events-none z-10 -mt-20 flex justify-end lg:mt-0 lg:mb-9 xl:absolute xl:end-[47%] xl:top-[17%] xl:mb-0 xl:block",
+        // Keep the same space in the form flow while lifting this bubble beside the welcome dog's face.
+        step === "phone" &&
+          "-mt-40 mb-20 justify-start lg:mt-0 lg:mb-9 lg:justify-end xl:end-[40%] xl:top-[23%] xl:mb-0",
+      )}
+    >
       <SpeechBubble tail="top-end" lgTail="bottom-end" drawIn className="max-w-[16rem] lg:max-w-[15rem]">
         <span className="grid">
           {AUTH_STEP_NAMES.map((name) => (
