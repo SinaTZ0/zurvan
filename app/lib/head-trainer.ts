@@ -5,9 +5,9 @@
 //
 // Sample data: the name, years and photo are placeholders until the owner sends the real ones.
 export const HEAD_TRAINER = {
-  name: "آرمان رستمی",
-  /** Used where the page speaks about him casually: "ارزیابی رایگان با آرمان". */
-  firstName: "آرمان",
+  name: "طلا راستی",
+  /** Used where the page speaks about him casually: "ارزیابی رایگان با طلا". */
+  firstName: "طلا",
   role: "مربی و بنیان‌گذار آموزش K9",
   years: 12,
   photo: {

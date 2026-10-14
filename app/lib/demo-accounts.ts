@@ -11,7 +11,7 @@ export const DEMO_ACCOUNTS: {
   /** What the owner will find behind this account, shown next to the number. */
   note: string;
 }[] = [
-  { phoneNumber: "09120000001", role: "admin", firstName: "آرمان", lastName: "رستمی", note: "مدیر سایت و مربی ارشد" },
+  { phoneNumber: "09120000001", role: "admin", firstName: "طلا", lastName: "راستی", note: "مدیر سایت و مربی ارشد" },
   { phoneNumber: "09120000003", role: "partner", firstName: "بهرام", lastName: "کاظمی", note: "پت‌شاپ همکار" },
   { phoneNumber: "09120000007", role: "partner", firstName: "نیلوفر", lastName: "صادقی", note: "کلینیک همکار" },
   { phoneNumber: "09120000004", role: "customer", firstName: "سارا", lastName: "محمدی", note: "مشتری با دو سگ" },

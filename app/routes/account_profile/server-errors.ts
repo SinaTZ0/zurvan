@@ -40,7 +40,7 @@ export function applyShebaServerError({
     return;
   }
   if (code === "FORBIDDEN" || code === "NOT_FOUND") {
-    setError("root", { message: "برای این حساب شبا ثبت نمی‌شود. اگر فکر می‌کنی اشتباه است، به آرمان خبر بده." });
+    setError("root", { message: "برای این حساب شبا ثبت نمی‌شود. اگر فکر می‌کنی اشتباه است، به طلا خبر بده." });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {

@@ -5,25 +5,24 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Trainers =====*/
-// The three trainers, shown as equals. Each portrait has the trainer's own dog at the bottom left, and the dog says one
-// line about its person. Arman's details come from `HEAD_TRAINER`; the other two names, focuses, years and all three
-// photos are placeholders until the owner sends the real ones. They have no accounts in the app (app-spec).
+// Each portrait has the trainer's own dog at the bottom left, and the dog says one line about its person.
+// The middle trainer's details come from `HEAD_TRAINER`; the other trainers are placeholders with no app accounts.
 const TRAINERS = [
-  {
-    key: "arman",
-    name: HEAD_TRAINER.name,
-    focus: "فرمان‌پذیری و سگ‌های کار",
-    years: HEAD_TRAINER.years,
-    line: `${HEAD_TRAINER.firstName} از یه نگاه می‌فهمه چمه.`,
-    alt: `${HEAD_TRAINER.firstName} ایستاده و ژرمن‌شپردش کنار پایش نشسته`,
-  },
   {
     key: "sara",
     name: "سارا مقدم",
     focus: "سگ خونگی و توله‌ها",
-    years: 8,
+    years: 5,
     line: "سارا با حوصله یادم می‌ده؛ با یه عالمه تشویق!",
     alt: "سارا کنار در خانه زانو زده و بوردر کالی‌اش کنارش نشسته",
+  },
+  {
+    key: "tala",
+    name: HEAD_TRAINER.name,
+    focus: "آموزش و همراهی سگ‌ها",
+    years: HEAD_TRAINER.years,
+    line: `${HEAD_TRAINER.firstName} کمکم می‌کنه بهترین نسخه‌ی خودم باشم.`,
+    alt: `${HEAD_TRAINER.name} کنار سگش در فضای مرکز K9 Training`,
   },
   {
     key: "nima",
@@ -65,8 +64,17 @@ export function TeamSection() {
         {TRAINERS.map((trainer, index) => (
           <li
             key={trainer.key}
-            className={cn("w-[80%] shrink-0 snap-start sm:w-[20rem] lg:w-auto", index === 1 && "lg:translate-y-12")}
+            className={cn(
+              "w-[80%] shrink-0 snap-start sm:w-[20rem] lg:w-auto",
+              index === 1 && "relative isolate lg:-translate-y-12",
+            )}
           >
+            {index === 1 && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-full bg-primary/25 blur-3xl"
+              />
+            )}
             <TrainerCard trainer={trainer} />
           </li>
         ))}
