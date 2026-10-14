@@ -21,6 +21,9 @@
 # Local SeaweedFS (media storage) Docker config, kept per developer
 /SeaweedFS/
 
+# Deployment lock and database backups.
+/.deploy/
+
 # Generated photo originals (exported to public/photo/) and page screenshots, kept locally
 /image-reference/generated/
 /image-reference/localhost_*.png

@@ -44,6 +44,19 @@ npm run build
 
 ## Deployment
 
+### Server demo at k9.zurvann.ir
+
+Use [deploy.sh](deploy.sh) with the separate [compose.server.yaml](compose.server.yaml) stack: Caddy handles HTTPS, and PostgreSQL and SeaweedFS keep their data in Docker volumes. Only Caddy exposes public ports. See [docs/deploy.md](docs/deploy.md) for server prerequisites, bootstrap instructions, backups, and troubleshooting.
+
+```bash
+# First deployment (after these files have been pushed to GitHub):
+curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/zurvan-deploy.sh
+sudo bash /tmp/zurvan-deploy.sh --db-push --seed
+
+# Later updates; preserves .env and data, without pushing the schema or resetting demos:
+sudo bash /opt/zurvan/deploy.sh
+```
+
 ### Run with Docker Compose (local testing)
 
 Only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed. Node and Postgres are not. For a step-by-step guide in Persian for non-developers, see [docs/run-with-docker.fa.md](docs/run-with-docker.fa.md).

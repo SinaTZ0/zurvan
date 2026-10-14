@@ -14,3 +14,11 @@ test-results
 storybook-static
 .tmp-claude
 .tmp-codex
+
+# Server state, backups, and developer-only storage configuration.
+.deploy
+SeaweedFS
+.agents
+.codex
+.aws
+image-reference
