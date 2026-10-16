@@ -66,7 +66,7 @@ export function TeamSection() {
             key={trainer.key}
             className={cn(
               "w-[80%] shrink-0 snap-start sm:w-[20rem] lg:w-auto",
-              index === 1 && "relative isolate lg:-translate-y-12",
+              index === 1 && "relative isolate -order-1 lg:order-none lg:-translate-y-12",
             )}
           >
             {index === 1 && (
