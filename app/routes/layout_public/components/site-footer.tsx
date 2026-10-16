@@ -39,7 +39,7 @@ const FOOTER_GROUPS = [
 /*===== Site Footer =====*/
 export function SiteFooter() {
   return (
-    <footer className="mt-section-md surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
+    <footer className="relative isolate mt-section-md overflow-hidden surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
@@ -79,18 +79,12 @@ export function SiteFooter() {
         ))}
       </div>
 
-      {/*===== Name =====*/}
-      {/* The stencil K9 as big as the page allows, engraved as a gold outline, standing on the bottom rule with its foot
-          cut off, beside where the name comes from. A name with a story is easier to remember than one that is only repeated. */}
-      <div className="site-container -mt-6 flex flex-col gap-6 overflow-hidden lg:-mt-16 lg:flex-row-reverse lg:items-end lg:justify-between">
-        <p className="max-w-xs text-sm leading-[1.9] text-pretty text-muted-foreground lg:mb-10">
-          K9 در دنیای سگ‌ها نام سگ‌های کار و پلیس است. ما همه‌ی سگ‌ها را با همان جدیت آموزش می‌دهیم، از ادب خانگی تا
-          آمادگی آزمون IGP.
-        </p>
+      {/* Decorative stencil sits behind the content without adding height to the footer. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 site-container flex flex-col lg:flex-row-reverse">
         <p
           aria-hidden
           dir="ltr"
-          className="-mb-[0.12em] font-stencil text-[clamp(9rem,45vw,24rem)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)]"
+          className="mb-[0.16em] font-stencil text-[clamp(9rem,45vw,24rem)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)]"
         >
           K9
         </p>
