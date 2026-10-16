@@ -12,7 +12,7 @@ On the first run, use --db-push --seed. Later, run without flags to update.
   --dir PATH        Checkout directory (this script's repo, otherwise /opt/zurvan)
   --repo URL        Git remote (default: https://github.com/SinaTZ0/zurvan.git)
   --branch NAME     Branch to deploy (default: main)
-  --domain HOST     Domain on first setup (default: k9.zurvann.ir)
+  --domain HOST     Domain on first setup (default: k9training.zurvann.ir)
   --db-push         Push Drizzle schema; auto-approves potentially destructive SQL
   --seed            Seed catalogue and reset demo accounts' history/photos
   --seed-catalogue  Seed only the course catalogue (exclusive with --seed)
@@ -39,7 +39,7 @@ main() {
   fi
   repo=https://github.com/SinaTZ0/zurvan.git
   branch=main
-  domain=k9.zurvann.ir
+  domain=k9training.zurvann.ir
   domain_requested=false
   local db_push=false seed=false seed_catalogue=false backup=false
   local no_pull=false no_cache=false pull_images=false
@@ -67,7 +67,7 @@ main() {
     esac
   done
   if $seed && $seed_catalogue; then die "Choose --seed or --seed-catalogue."; fi
-  [[ "$domain" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && "$domain" == *.* && "$domain" != *..* ]] || die "Use a bare lowercase domain, such as k9.zurvann.ir."
+  [[ "$domain" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && "$domain" == *.* && "$domain" != *..* ]] || die "Use a bare lowercase domain, such as k9training.zurvann.ir."
   local dependency
   for dependency in git openssl flock docker; do
     command -v "$dependency" >/dev/null || die "Install $dependency first."

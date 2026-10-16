@@ -1,12 +1,12 @@
 # Server demo deployment
 
-The server stack is `compose.server.yaml`. It runs the production Node app, PostgreSQL, SeaweedFS, and Caddy on one Linux server. The default domain is **https://k9.zurvann.ir**. The existing `compose.yaml` remains the localhost testing stack.
+The server stack is `compose.server.yaml`. It runs the production Node app, PostgreSQL, SeaweedFS, and Caddy on one Linux server. The default domain is **https://k9training.zurvann.ir**. The existing `compose.yaml` remains the localhost testing stack.
 
 ## Server prerequisites
 
 - A Linux server with Bash, Git, OpenSSL, `flock` (usually supplied by `util-linux`), and curl for downloading the script. Node/npm on the host are unnecessary.
 - Docker Engine and the Docker Compose plugin **v2.20 or later**. Follow [Docker's installation instructions](https://docs.docker.com/engine/install/) for your distribution. Docker must start on boot.
-- DNS A (and AAAA, if present) records for `k9.zurvann.ir` pointing to this server. Remove an AAAA record if the server cannot receive IPv6 traffic.
+- DNS A (and AAAA, if present) records for `k9training.zurvann.ir` pointing to this server. Remove an AAAA record if the server cannot receive IPv6 traffic.
 - Inbound **TCP 80 and 443** open in both the server and provider firewalls; UDP 443 is optional for HTTP/3. Ports 80 and 443 must be available for Caddy. If nginx or another proxy already owns them, integrate with that proxy or free the ports before using this stack.
 - Outbound access to GitHub, npm, Docker image registries, and the certificate authority. Builds happen on the server. A small VPS with around 4 GB RAM is a reasonable starting point for building the app alongside the demo services; memory use depends on traffic and uploads.
 
@@ -26,7 +26,7 @@ The script clones `https://github.com/SinaTZ0/zurvan.git`, branch `main`, into `
 The generated `.env` contains three Compose settings:
 
 ```dotenv
-DOMAIN=k9.zurvann.ir
+DOMAIN=k9training.zurvann.ir
 POSTGRES_PASSWORD=<random 64-character hex value>
 BETTER_AUTH_SECRET=<random 64-character hex value>
 ```
@@ -50,6 +50,8 @@ sudo bash /opt/zurvan/deploy.sh
 This fetches the configured branch, fast-forwards the checkout, builds using Docker's layer cache, recreates the app, and reloads Caddy. The old app stays up while images build. There is a short interruption when the app is replaced. `.env`, database contents, uploaded media, and TLS certificates survive updates and server restarts.
 
 Git updates refuse to overwrite modified tracked files or divergent local commits. Keep server configuration in `.env`. The script uses a lock to prevent simultaneous deployments. An updated version of the script takes effect on its next invocation.
+
+To change an existing deployment's domain, point the new hostname's DNS records at the server, edit `/opt/zurvan/.env` to set `DOMAIN=k9training.zurvann.ir`, and rerun the update command above. Compose uses this value for both Caddy and `BETTER_AUTH_URL`; the deployment updates the app and proxy configuration, and Caddy obtains the new HTTPS certificate. Changing the script's default or passing `--domain` does not overwrite an existing `.env`.
 
 If a change includes a schema update:
 

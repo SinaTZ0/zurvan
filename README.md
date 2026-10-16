@@ -44,7 +44,7 @@ npm run build
 
 ## Deployment
 
-### Server demo at k9.zurvann.ir
+### Server demo at k9training.zurvann.ir
 
 Use [deploy.sh](deploy.sh) with the separate [compose.server.yaml](compose.server.yaml) stack: Caddy handles HTTPS, and PostgreSQL and SeaweedFS keep their data in Docker volumes. Only Caddy exposes public ports. See [docs/deploy.md](docs/deploy.md) for server prerequisites, bootstrap instructions, backups, and troubleshooting.
 
