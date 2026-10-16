@@ -1,0 +1,10 @@
+Tool: built-in image_gen (edit)
+Outputs: public/photo/home/trainer-1536.webp, public/photo/home/trainer-900.webp
+Post-processing: Sharp resize, WebP quality 85, effort 6.
+
+Use case: identity-preserve
+Asset type: photorealistic landscape photo for a dog trainer website, 3:2 aspect ratio.
+Input images: Image 1 (trainer-1536.webp) is the edit target and controls pose, dog, scene, framing and lighting. Image 2 (team-tala.webp) is the identity reference for Tala, the woman.
+Primary request: Replace the male trainer in Image 1 with Tala from Image 2. Her face must be recognizably the same woman as the reference: same face shape, eyebrows, eyes, nose, lips, skin tone and long brown hair pulled back into a ponytail. Adapt her facial expression naturally to laughing with joy, eyes slightly narrowed, as the German shepherd licks her cheek.
+Keep the original seated/crouched body pose, head angle, arm around the dog's chest, hand placement and black training clothes, naturally fitted to Tala. Remove the man's beard, masculine face and baseball cap; show Tala's ponytail and hairline. Retain her reference makeup naturally under the outdoor lighting.
+Constraints: preserve the original German shepherd, its pose and cheek-licking interaction, outdoor woodland backdrop, golden sunlight from the left, camera position and landscape composition. Keep the trainer and dog in the left 60 percent, and the dark softly blurred right third empty for the website speech bubble. Match the original photographic realism and natural skin texture. No extra people, dogs, objects, lettering, logos or watermark. Output a single full-frame edited photograph.

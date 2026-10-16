@@ -11,8 +11,8 @@ import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Trainer Section =====*/
 /**
- * The head trainer and founder, introduced by his dog, before the whole team (`TeamSection`). The one wide photo band
- * below the hero: him laughing while a German shepherd licks his cheek, with the dog's line over the photo's dark end.
+ * The head trainer and founder, introduced by her dog, before the whole team (`TeamSection`). The one wide photo band
+ * below the hero: Tala laughing while a German shepherd licks her cheek, with the dog's line over the photo's dark end.
  * Credentials come from the owner's business card; the photo remains illustrative.
  */
 export function TrainerSection() {
