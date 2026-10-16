@@ -21,7 +21,7 @@ curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /t
 sudo bash /tmp/zurvan-deploy.sh --db-push --seed
 ```
 
-The script clones `https://github.com/SinaTZ0/zurvan.git`, branch `main`, into `/opt/zurvan`. It creates a private `.env` once, builds the images, starts storage, creates the media bucket if missing, saves a database dump, pushes the schema, seeds the showcase, and starts the app and proxy. It waits for the app's home page to respond successfully; that page reads the database. Initial HTTPS issuance may take another minute.
+The script clones `https://github.com/SinaTZ0/zurvan.git`, branch `main`, into `/opt/k9training`. It creates a private `.env` once, builds the images, starts storage, creates the media bucket if missing, saves a database dump, pushes the schema, seeds the showcase, and starts the app and proxy. It waits for the app's home page to respond successfully; that page reads the database. Initial HTTPS issuance may take another minute.
 
 The generated `.env` contains three Compose settings:
 
@@ -44,19 +44,19 @@ Use the same user and directory for subsequent deployments. Run one instance of 
 ## Update
 
 ```bash
-sudo bash /opt/zurvan/deploy.sh
+sudo bash /opt/k9training/deploy.sh
 ```
 
 This fetches the configured branch, fast-forwards the checkout, builds using Docker's layer cache, recreates the app, and reloads Caddy. The old app stays up while images build. There is a short interruption when the app is replaced. `.env`, database contents, uploaded media, and TLS certificates survive updates and server restarts.
 
 Git updates refuse to overwrite modified tracked files or divergent local commits. Keep server configuration in `.env`. The script uses a lock to prevent simultaneous deployments. An updated version of the script takes effect on its next invocation.
 
-To change an existing deployment's domain, point the new hostname's DNS records at the server, edit `/opt/zurvan/.env` to set `DOMAIN=k9training.zurvann.ir`, and rerun the update command above. Compose uses this value for both Caddy and `BETTER_AUTH_URL`; the deployment updates the app and proxy configuration, and Caddy obtains the new HTTPS certificate. Changing the script's default or passing `--domain` does not overwrite an existing `.env`.
+To change an existing deployment's domain, point the new hostname's DNS records at the server, edit `/opt/k9training/.env` to set `DOMAIN=k9training.zurvann.ir`, and rerun the update command above. Compose uses this value for both Caddy and `BETTER_AUTH_URL`; the deployment updates the app and proxy configuration, and Caddy obtains the new HTTPS certificate. Changing the script's default or passing `--domain` does not overwrite an existing `.env`.
 
 If a change includes a schema update:
 
 ```bash
-sudo bash /opt/zurvan/deploy.sh --db-push
+sudo bash /opt/k9training/deploy.sh --db-push
 ```
 
 **`--db-push` automatically approves schema changes, including changes that drop data.** It uses Drizzle Kit's schema push API with `--force`, equivalent to the CLI's forced push. The API lets SQL errors propagate reliably, because the installed CLI can exit successfully after logging an error. The script stops the app and saves a database dump before pushing. Review schema changes before deploying them. A failed database operation leaves the app stopped; resolve the error and rerun the script. This is a demo workflow, not a versioned production migration system.
@@ -64,9 +64,9 @@ sudo bash /opt/zurvan/deploy.sh --db-push
 Reset the demo story when needed:
 
 ```bash
-sudo bash /opt/zurvan/deploy.sh --seed
+sudo bash /opt/k9training/deploy.sh --seed
 # Or combine schema and demo updates:
-sudo bash /opt/zurvan/deploy.sh --db-push --seed
+sudo bash /opt/k9training/deploy.sh --db-push --seed
 ```
 
 `--seed` runs `npm run db:seed:demo`: it updates the catalogue and replaces the demo customers' dogs, purchases, evaluations, and media. It is repeatable, but intentionally resets their activity. Use `--seed-catalogue` to update only the course catalogue. Both seed options save a database dump first.
@@ -79,7 +79,7 @@ Other options:
 | `--no-pull`     | Build/deploy the existing clean checkout without fetching GitHub.                                                   |
 | `--no-cache`    | Rebuild Docker layers without cache.                                                                                |
 | `--pull-images` | Refresh service images and build base images.                                                                       |
-| `--dir PATH`    | Select a checkout directory; defaults to the script's repo if run from a checkout, otherwise `/opt/zurvan`.         |
+| `--dir PATH`    | Select a checkout directory; defaults to the script's repo if run from a checkout, otherwise `/opt/k9training`.         |
 | `--branch NAME` | Deploy another branch; pass it on every update of that checkout. Existing checkouts must already be on that branch. |
 | `--repo URL`    | Select another Git remote; pass it again on subsequent updates.                                                     |
 | `--domain HOST` | Choose a domain on initial setup. To change an existing deployment, edit `DOMAIN` in `.env` and rerun.              |
@@ -104,7 +104,7 @@ Showcase mode uses the public sign-in code **12345**, simulated payments, and th
 ## Logs and status
 
 ```bash
-cd /opt/zurvan
+cd /opt/k9training
 sudo docker compose --env-file .env -f compose.server.yaml ps
 sudo docker compose --env-file .env -f compose.server.yaml logs --tail=100 app caddy
 sudo docker compose --env-file .env -f compose.server.yaml logs --tail=100 db seaweedfs
@@ -114,7 +114,7 @@ If HTTPS fails, inspect Caddy logs and check DNS, port availability, and both fi
 
 ## Backups and data
 
-Database dumps are stored under `/opt/zurvan/.deploy/backups/` in PostgreSQL custom format (`*.dump`). A temporary `.dump.tmp` file indicates an incomplete dump. Backups stay on the server; copy them elsewhere if you need protection from server loss, and remove old dumps manually when no longer needed.
+Database dumps are stored under `/opt/k9training/.deploy/backups/` in PostgreSQL custom format (`*.dump`). A temporary `.dump.tmp` file indicates an incomplete dump. Backups stay on the server; copy them elsewhere if you need protection from server loss, and remove old dumps manually when no longer needed.
 
 These dumps **do not back up media**. A demo reset can delete old bucket objects, so a database dump alone cannot fully undo a media-changing seed. For a complete snapshot, stop the app, save a database dump and `.env`, stop SeaweedFS, and back up the `zurvan-demo_media` Docker volume before starting services again. Keep credentials private.
 
@@ -122,7 +122,7 @@ To restore a database dump (replaces the current database objects), after checki
 
 ```bash
 sudo -i
-cd /opt/zurvan
+cd /opt/k9training
 docker compose --env-file .env -f compose.server.yaml stop app
 docker compose --env-file .env -f compose.server.yaml exec -T db \
   pg_restore -U zurvan -d zurvan --clean --if-exists --exit-on-error < .deploy/backups/YOUR_BACKUP.dump

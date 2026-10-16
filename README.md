@@ -54,7 +54,7 @@ curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /t
 sudo bash /tmp/zurvan-deploy.sh --db-push --seed
 
 # Later updates; preserves .env and data, without pushing the schema or resetting demos:
-sudo bash /opt/zurvan/deploy.sh
+sudo bash /opt/k9training/deploy.sh
 ```
 
 ### Run with Docker Compose (local testing)

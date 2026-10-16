@@ -9,7 +9,7 @@ Usage: bash deploy.sh [options]
 Clone/update GitHub, build, and deploy the showcase with Docker Compose.
 On the first run, use --db-push --seed. Later, run without flags to update.
 
-  --dir PATH        Checkout directory (this script's repo, otherwise /opt/zurvan)
+  --dir PATH        Checkout directory (this script's repo, otherwise /opt/k9training)
   --repo URL        Git remote (default: https://github.com/SinaTZ0/zurvan.git)
   --branch NAME     Branch to deploy (default: main)
   --domain HOST     Domain on first setup (default: k9training.zurvann.ir)
@@ -33,7 +33,7 @@ log() { printf '\n%s\n' "$*"; }
 main() {
   local script_dir deploy_dir repo branch domain domain_requested
   script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-  deploy_dir=/opt/zurvan
+  deploy_dir=/opt/k9training
   if [[ -d "$script_dir/.git" && -f "$script_dir/compose.server.yaml" ]]; then
     deploy_dir="$script_dir"
   fi
