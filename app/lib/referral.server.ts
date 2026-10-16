@@ -4,6 +4,7 @@ import { createCookie } from "react-router";
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { partner, partnerLead } from "~/db/schema";
 import { env } from "~/env.server";
+import { resolvePublicOrigin } from "~/lib/public-origin";
 
 /*===== Referral Cookie =====*/
 // A partner's link or QR code lands on the home page with `?ref=<code>`. The code is kept for 30 days so a visitor
@@ -25,10 +26,14 @@ const REFERRAL_CODE_PATTERN = /^[A-Za-z0-9_-]{3,32}$/;
  *
  * @returns The header value, or `null` when the URL has no valid `ref` code.
  */
-export async function referralCookieFromUrl(requestUrl: string): Promise<string | null> {
+export async function referralCookieFromUrl(requestUrl: string, headers: Headers): Promise<string | null> {
   const code = new URL(requestUrl).searchParams.get("ref")?.trim();
   if (!code || !REFERRAL_CODE_PATTERN.test(code)) return null;
-  return referralCookie.serialize(code);
+  return referralCookie.serialize(code, {
+    secure:
+      env.NODE_ENV === "production" &&
+      resolvePublicOrigin(headers, env.BETTER_AUTH_URL, env.HTTP_IP).startsWith("https:"),
+  });
 }
 
 /** Reads the remembered referral code from a request's headers, for signup attribution. */

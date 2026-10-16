@@ -1,6 +1,6 @@
 import { createContext, redirect, type MiddlewareFunction } from "react-router";
 
-import { auth, type AuthSession, revokeUserSessions } from "~/lib/auth.server";
+import { authForHeaders, type AuthSession, revokeUserSessions } from "~/lib/auth.server";
 import type { UserRole } from "~/lib/user-constants";
 
 /*===== Session Context =====*/
@@ -39,7 +39,7 @@ export function roleHomePath(role: string | null | undefined): string {
  */
 export function requireSession({ roles }: { roles: readonly UserRole[] }): MiddlewareFunction<Response> {
   return async ({ request, context }) => {
-    const session = await auth.api.getSession({ headers: request.headers });
+    const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
     const signIn = signInRedirect(request);
 
     if (!session) throw signIn;

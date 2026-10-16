@@ -1,5 +1,6 @@
 import { env } from "~/env.server";
 import { getPaymentGateway } from "~/lib/payment-gateway.server";
+import { resolvePublicOrigin } from "~/lib/public-origin";
 import {
   adminGetDogEligibility,
   adminListPayments,
@@ -11,8 +12,6 @@ import {
 import { base } from "~/orpc/implementer.server";
 import { requireRoleMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
-
-const PAYMENT_CALLBACK_URL = `${env.BETTER_AUTH_URL}/payment/callback`;
 
 // The customer's procedures are scoped to the signed-in customer's own dogs and payments; `admin` ones are for the
 // Admin.
@@ -47,7 +46,7 @@ export const payCartProcedure = base.checkout.pay
       gateway: getPaymentGateway(),
       customerId: context.user.id,
       input,
-      callbackUrl: PAYMENT_CALLBACK_URL,
+      callbackUrl: `${resolvePublicOrigin(context.headers, env.BETTER_AUTH_URL, env.HTTP_IP)}/payment/callback`,
     });
 
     if (result.kind === "invalid") {

@@ -16,6 +16,8 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   // Public origin of the app. Better-Auth uses it for callbacks and trusted-origin checks.
   BETTER_AUTH_URL: z.url(),
+  // Optional IPv4 address serving the showcase over HTTP alongside the HTTPS domain.
+  HTTP_IP: z.union([z.ipv4(), z.literal("")]).optional(),
   // The owner's showcase: no SMS provider (the sign-in code is always 12345 and messages go to the `sms_outbox`
   // table). With it off, auth refuses to start until a real SMS provider is wired (`app/lib/sms.server.ts`).
   SHOWCASE_MODE: z.stringbool().default(false),

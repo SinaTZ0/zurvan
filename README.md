@@ -55,6 +55,9 @@ sudo bash /tmp/k9training-deploy.sh --db-push --seed
 
 # Later updates; preserves .env and data, without pushing the schema or resetting demos:
 sudo bash /opt/k9training/deploy.sh
+
+# Also enable HTTP access by the VPS's public IPv4 address (saved for later updates):
+sudo bash /opt/k9training/deploy.sh --ip YOUR_SERVER_IP
 ```
 
 ### Run with Docker Compose (local testing)

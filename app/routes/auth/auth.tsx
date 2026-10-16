@@ -4,7 +4,7 @@ import { data, redirect } from "react-router";
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { env } from "~/env.server";
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 import { referralCookieFromUrl } from "~/lib/referral.server";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { AuthBubble } from "~/routes/auth/components/auth-bubble";
@@ -27,9 +27,9 @@ export const meta: Route.MetaFunction = () => [
 export async function loader({ request }: Route.LoaderArgs) {
   const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
   const [session, referralCookie] = await Promise.all([
-    auth.api.getSession({ headers: request.headers }),
+    authForHeaders(request.headers).api.getSession({ headers: request.headers }),
     // A partner's link can land here too: remember its `?ref=` code so signup can attribute the customer (F7).
-    referralCookieFromUrl(request.url),
+    referralCookieFromUrl(request.url, request.headers),
   ]);
 
   // Signed-in people have nothing to do here, unless their new account still has no name.

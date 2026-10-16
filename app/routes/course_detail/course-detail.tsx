@@ -4,7 +4,7 @@ import { data, isRouteErrorResponse } from "react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { BuyCard } from "~/routes/course_detail/components/buy-card";
 import { ClosingBand } from "~/routes/course_detail/components/closing-band";
@@ -35,7 +35,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       throw error;
     }),
     client.course.list(),
-    auth.api.getSession({ headers: request.headers }),
+    authForHeaders(request.headers).api.getSession({ headers: request.headers }),
   ]);
 
   /*------ Viewer ------*/

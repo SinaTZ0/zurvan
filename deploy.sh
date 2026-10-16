@@ -13,6 +13,7 @@ On the first run, use --db-push --seed. Later, run without flags to update.
   --repo URL        Git remote (default: https://github.com/SinaTZ0/zurvan.git)
   --branch NAME     Branch to deploy (default: main)
   --domain HOST     Domain on first setup (default: k9training.zurvann.ir)
+  --ip ADDRESS      Also serve HTTP on this IPv4 address (saved in .env)
   --db-push         Push Drizzle schema; auto-approves potentially destructive SQL
   --seed            Seed catalogue and reset demo accounts' history/photos
   --seed-catalogue  Seed only the course catalogue (exclusive with --seed)
@@ -30,8 +31,18 @@ HELP
 die() { printf 'Error: %s\n' "$*" >&2; exit 1; }
 log() { printf '\n%s\n' "$*"; }
 
+valid_ipv4() {
+  [[ "$1" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || return 1
+  local octet
+  local -a octets
+  IFS=. read -r -a octets <<< "$1"
+  for octet in "${octets[@]}"; do
+    [[ "$octet" == 0 || "$octet" != 0* ]] && ((10#$octet <= 255)) || return 1
+  done
+}
+
 main() {
-  local script_dir deploy_dir repo branch domain domain_requested
+  local script_dir deploy_dir repo branch domain domain_requested http_ip=""
   script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
   deploy_dir=/opt/k9training
   if [[ -d "$script_dir/.git" && -f "$script_dir/compose.server.yaml" ]]; then
@@ -46,13 +57,14 @@ main() {
 
   while (($#)); do
     case "$1" in
-      --dir|--repo|--branch|--domain)
+      --dir|--repo|--branch|--domain|--ip)
         [[ $# -ge 2 && -n "$2" && "$2" != --* ]] || die "$1 requires a value."
         case "$1" in
           --dir) deploy_dir="$2" ;;
           --repo) repo="$2" ;;
           --branch) branch="$2" ;;
           --domain) domain="$2"; domain_requested=true ;;
+          --ip) http_ip="$2" ;;
         esac
         shift 2 ;;
       --db-push) db_push=true; shift ;;
@@ -68,6 +80,7 @@ main() {
   done
   if $seed && $seed_catalogue; then die "Choose --seed or --seed-catalogue."; fi
   [[ "$domain" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ && "$domain" == *.* && "$domain" != *..* ]] || die "Use a bare lowercase domain, such as k9training.zurvann.ir."
+  [[ -z "$http_ip" ]] || valid_ipv4 "$http_ip" || die "--ip requires a bare IPv4 address, such as 203.0.113.10."
   local dependency
   for dependency in git openssl flock docker; do
     command -v "$dependency" >/dev/null || die "Install $dependency first."
@@ -121,6 +134,7 @@ main() {
     cat > .env <<ENV
 # Created by deploy.sh; preserved on subsequent deployments. Keep this file private.
 DOMAIN=$domain
+HTTP_IP=$http_ip
 POSTGRES_PASSWORD=$db_password
 BETTER_AUTH_SECRET=$auth_secret
 ENV
@@ -135,6 +149,19 @@ ENV
     die "Existing .env uses DOMAIN=$saved_domain. Edit that file to change the domain."
   fi
   domain="$saved_domain"
+  local saved_ip
+  saved_ip="$(sed -n 's/^HTTP_IP=//p' .env)"
+  [[ -z "$saved_ip" ]] || valid_ipv4 "$saved_ip" || die ".env needs HTTP_IP to be a bare IPv4 address."
+  if [[ -n "$http_ip" && "$http_ip" != "$saved_ip" ]]; then
+    [[ -z "$saved_ip" ]] || die "Existing .env uses HTTP_IP=$saved_ip. Edit that file to change the IP."
+    if [[ -n "$(sed -n '/^HTTP_IP=/p' .env)" ]]; then
+      sed -i "s/^HTTP_IP=.*/HTTP_IP=$http_ip/" .env
+    else
+      printf '\nHTTP_IP=%s\n' "$http_ip" >> .env
+    fi
+    log "Saved HTTP_IP=$http_ip in $deploy_dir/.env."
+  fi
+  http_ip="$(sed -n 's/^HTTP_IP=//p' .env)"
   # Compose constructs the DB URL; the generated hex password is URL-safe.
   local saved_password
   saved_password="$(sed -n 's/^POSTGRES_PASSWORD=//p' .env)"
@@ -142,7 +169,7 @@ ENV
 
   # Explicit server settings come from the saved file, even if the invoking shell
   # happens to export variables with the same names.
-  local -a compose=(env -u DOMAIN -u POSTGRES_PASSWORD -u BETTER_AUTH_SECRET docker compose --project-name zurvan-demo --project-directory "$deploy_dir" --env-file "$deploy_dir/.env" -f "$deploy_dir/compose.server.yaml")
+  local -a compose=(env -u DOMAIN -u HTTP_IP -u POSTGRES_PASSWORD -u BETTER_AUTH_SECRET docker compose --project-name zurvan-demo --project-directory "$deploy_dir" --env-file "$deploy_dir/.env" -f "$deploy_dir/compose.server.yaml")
   "${compose[@]}" config --quiet
   trap 'printf "\nDeployment failed. Inspect: docker compose --env-file .env -f compose.server.yaml logs --tail=100\nIf database work had started, the app may be stopped; fix the issue and rerun deploy.sh.\n" >&2' ERR
   local -a build_args=()
@@ -190,6 +217,7 @@ ENV
   "${compose[@]}" exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
   "${compose[@]}" ps
   log "Deployed commit $(git rev-parse --short HEAD). URL: https://$domain"
+  [[ -z "$http_ip" ]] || printf 'IP URL: http://%s\n' "$http_ip"
   printf 'Caddy obtains HTTPS automatically; first certificate issuance can take a minute.\n'
 }
 

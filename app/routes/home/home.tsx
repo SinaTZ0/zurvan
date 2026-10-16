@@ -35,7 +35,7 @@ export const meta: Route.MetaFunction = () => [
 export async function loader({ request }: Route.LoaderArgs) {
   const [courses, referralCookie] = await Promise.all([
     createServerClient(request).course.list(),
-    referralCookieFromUrl(request.url),
+    referralCookieFromUrl(request.url, request.headers),
   ]);
   return data({ courses }, referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined);
 }

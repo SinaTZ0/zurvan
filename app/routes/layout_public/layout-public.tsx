@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
 
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 import { roleHomePath } from "~/lib/session-guard.server";
 import { SiteFooter } from "~/routes/layout_public/components/site-footer";
 import { SiteHeader } from "~/routes/layout_public/components/site-header";
@@ -14,7 +14,7 @@ import type { Route } from "./+types/layout-public";
  * account that hasn't given its name yet all look like a visitor, and the page itself still renders for them.
  */
 export async function loader({ request }: Route.LoaderArgs): Promise<{ viewer: Viewer | null }> {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
   const user = session?.user;
 
   if (!user || user.status === "blocked" || !user.firstName) return { viewer: null };

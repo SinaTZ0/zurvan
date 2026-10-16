@@ -1,5 +1,5 @@
 import { db } from "~/db/client.server";
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 import type { UserRole } from "~/lib/user-constants";
 import { EVALUATION_VIDEO_MAX_BYTES } from "~/orpc/evaluation/constants";
 import { uploadEvaluationVideo } from "~/orpc/evaluation/service";
@@ -31,7 +31,7 @@ export async function action({ request }: Route.ActionArgs) {
   if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: { Allow: "POST" } });
 
   /*------ Who ------*/
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
   if (!session || session.user.status === "blocked") return json({ errors: ["اول وارد شو."], fields: {} }, 401);
   // Better-Auth types additional fields as optional, but the column is NOT NULL with a default.
   const role = session.user.role as UserRole;

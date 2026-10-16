@@ -1,5 +1,5 @@
 import { db } from "~/db/client.server";
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 import { getObject, videoKey } from "~/lib/storage.server";
 import type { UserRole } from "~/lib/user-constants";
 import { EVALUATION_VIDEO_CONTENT_TYPES } from "~/orpc/evaluation/constants";
@@ -18,7 +18,7 @@ function notFound() {
 }
 
 async function getViewer(request: Request): Promise<{ id: string; role: UserRole } | null> {
-  const session = await auth.api.getSession({ headers: request.headers });
+  const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
   if (!session || session.user.status === "blocked") return null;
   // Better-Auth types additional fields as optional, but the column is NOT NULL with a default.
   return { id: session.user.id, role: session.user.role as UserRole };

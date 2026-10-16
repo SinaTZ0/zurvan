@@ -1,4 +1,4 @@
-import { auth } from "~/lib/auth.server";
+import { authForHeaders } from "~/lib/auth.server";
 
 import type { Route } from "./+types/api-auth";
 
@@ -6,9 +6,9 @@ import type { Route } from "./+types/api-auth";
 // Resource route (no default export): Better-Auth answers every `/api/auth/*` request itself.
 
 export function loader({ request }: Route.LoaderArgs) {
-  return auth.handler(request);
+  return authForHeaders(request.headers).handler(request);
 }
 
 export function action({ request }: Route.ActionArgs) {
-  return auth.handler(request);
+  return authForHeaders(request.headers).handler(request);
 }

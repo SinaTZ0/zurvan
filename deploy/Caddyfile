@@ -1,4 +1,4 @@
-{$DOMAIN} {
+(application) {
 	encode zstd gzip
 	request_body {
 		max_size 110MB
@@ -31,4 +31,13 @@
 	handle {
 		reverse_proxy app:3000
 	}
+}
+
+{$DOMAIN} {
+	import application
+}
+
+# IP access stays on HTTP; the domain keeps automatic HTTPS and redirects.
+http://{$HTTP_IP:127.0.0.1} {
+	import application
 }

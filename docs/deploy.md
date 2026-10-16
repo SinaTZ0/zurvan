@@ -10,7 +10,7 @@ The server stack is `compose.server.yaml`. It runs the production Node app, Post
 - Inbound **TCP 80 and 443** open in both the server and provider firewalls; UDP 443 is optional for HTTP/3. Ports 80 and 443 must be available for Caddy. If nginx or another proxy already owns them, integrate with that proxy or free the ports before using this stack.
 - Outbound access to GitHub, npm, Docker image registries, and the certificate authority. Builds happen on the server. A small VPS with around 4 GB RAM is a reasonable starting point for building the app alongside the demo services; memory use depends on traffic and uploads.
 
-Caddy obtains and renews HTTPS certificates and redirects HTTP to HTTPS automatically ([Caddy documentation](https://caddyserver.com/docs/automatic-https)). No Certbot or manual certificate configuration is needed. If using Cloudflare, use DNS-only during initial setup; when enabling the proxy afterward, use Full (strict) TLS.
+Caddy obtains and renews HTTPS certificates and redirects the domain's HTTP requests to HTTPS automatically ([Caddy documentation](https://caddyserver.com/docs/automatic-https)). An optional IPv4 address can also serve the site over plain HTTP. No Certbot or manual certificate configuration is needed. If using Cloudflare, use DNS-only during initial setup; when enabling the proxy afterward, use Full (strict) TLS.
 
 ## First deployment
 
@@ -23,10 +23,11 @@ sudo bash /tmp/k9training-deploy.sh --db-push --seed
 
 The script clones `https://github.com/SinaTZ0/zurvan.git`, branch `main`, into `/opt/k9training`. It creates a private `.env` once, builds the images, starts storage, creates the media bucket if missing, saves a database dump, pushes the schema, seeds the showcase, and starts the app and proxy. It waits for the app's home page to respond successfully; that page reads the database. Initial HTTPS issuance may take another minute.
 
-The generated `.env` contains three Compose settings:
+The generated `.env` contains these Compose settings:
 
 ```dotenv
 DOMAIN=k9training.zurvann.ir
+HTTP_IP=
 POSTGRES_PASSWORD=<random 64-character hex value>
 BETTER_AUTH_SECRET=<random 64-character hex value>
 ```
@@ -40,6 +41,25 @@ bash /tmp/k9training-deploy.sh --dir "$HOME/k9training" --db-push --seed
 ```
 
 Use the same user and directory for subsequent deployments. Run one instance of this stack per Docker host: its Compose project name is fixed to `zurvan-demo` so volume names stay stable.
+
+## Open the site by IP
+
+Pass the VPS's public IPv4 address once to enable `http://YOUR_SERVER_IP` alongside the HTTPS domain:
+
+```bash
+# Download the latest script so an older checkout can recognize --ip.
+curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/k9training-deploy.sh
+
+# Existing deployment: no schema push or reseeding needed.
+sudo bash /tmp/k9training-deploy.sh --dir /opt/k9training --ip YOUR_SERVER_IP
+
+# On first deployment, combine it with the database setup flags:
+sudo bash /tmp/k9training-deploy.sh --ip YOUR_SERVER_IP --db-push --seed
+```
+
+Replace `YOUR_SERVER_IP` with the actual address, without a protocol or port. The script saves it as `HTTP_IP` in `.env`, including when upgrading an existing deployment. Later updates need no `--ip` flag. To change the address, edit `HTTP_IP` in `.env` and redeploy; leave it empty to disable public IP access. Without an address, HTTP access is limited to the loopback host `127.0.0.1`.
+
+Sign-in, media, referral cookies, and demo payment returns work on either address. Domain cookies remain secure; IP cookies use HTTP and sessions are separate between the two addresses, so sign in separately on each. HTTP traffic is unencrypted; use it for this demo and use the HTTPS domain for private data. IP access needs TCP 80 available, but does not need DNS or a certificate.
 
 ## Update
 
@@ -83,6 +103,7 @@ Other options:
 | `--branch NAME` | Deploy another branch; pass it on every update of that checkout. Existing checkouts must already be on that branch. |
 | `--repo URL`    | Select another Git remote; pass it again on subsequent updates.                                                     |
 | `--domain HOST` | Choose a domain on initial setup. To change an existing deployment, edit `DOMAIN` in `.env` and rerun.              |
+| `--ip ADDRESS`  | Enable HTTP on this IPv4 address and save it as `HTTP_IP`. Edit `.env` to change or disable it later.               |
 | `--help`        | Print available options.                                                                                            |
 
 ## Media exposure
