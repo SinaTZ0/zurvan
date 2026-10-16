@@ -50,8 +50,8 @@ Use [deploy.sh](deploy.sh) with the separate [compose.server.yaml](compose.serve
 
 ```bash
 # First deployment (after these files have been pushed to GitHub):
-curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/zurvan-deploy.sh
-sudo bash /tmp/zurvan-deploy.sh --db-push --seed
+curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/k9training-deploy.sh
+sudo bash /tmp/k9training-deploy.sh --db-push --seed
 
 # Later updates; preserves .env and data, without pushing the schema or resetting demos:
 sudo bash /opt/k9training/deploy.sh

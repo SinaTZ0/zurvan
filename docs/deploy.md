@@ -17,8 +17,8 @@ Caddy obtains and renews HTTPS certificates and redirects HTTP to HTTPS automati
 First commit and push the deployment files to the public GitHub repository. Then run on the **server**:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/zurvan-deploy.sh
-sudo bash /tmp/zurvan-deploy.sh --db-push --seed
+curl -fsSL https://raw.githubusercontent.com/SinaTZ0/zurvan/main/deploy.sh -o /tmp/k9training-deploy.sh
+sudo bash /tmp/k9training-deploy.sh --db-push --seed
 ```
 
 The script clones `https://github.com/SinaTZ0/zurvan.git`, branch `main`, into `/opt/k9training`. It creates a private `.env` once, builds the images, starts storage, creates the media bucket if missing, saves a database dump, pushes the schema, seeds the showcase, and starts the app and proxy. It waits for the app's home page to respond successfully; that page reads the database. Initial HTTPS issuance may take another minute.
@@ -36,7 +36,7 @@ Compose supplies the remaining application variables, including the internal dat
 If running as a non-root user with Docker access, use a directory you own:
 
 ```bash
-bash /tmp/zurvan-deploy.sh --dir "$HOME/zurvan-demo" --db-push --seed
+bash /tmp/k9training-deploy.sh --dir "$HOME/k9training" --db-push --seed
 ```
 
 Use the same user and directory for subsequent deployments. Run one instance of this stack per Docker host: its Compose project name is fixed to `zurvan-demo` so volume names stay stable.
@@ -79,7 +79,7 @@ Other options:
 | `--no-pull`     | Build/deploy the existing clean checkout without fetching GitHub.                                                   |
 | `--no-cache`    | Rebuild Docker layers without cache.                                                                                |
 | `--pull-images` | Refresh service images and build base images.                                                                       |
-| `--dir PATH`    | Select a checkout directory; defaults to the script's repo if run from a checkout, otherwise `/opt/k9training`.         |
+| `--dir PATH`    | Select a checkout directory; defaults to the script's repo if run from a checkout, otherwise `/opt/k9training`.     |
 | `--branch NAME` | Deploy another branch; pass it on every update of that checkout. Existing checkouts must already be on that branch. |
 | `--repo URL`    | Select another Git remote; pass it again on subsequent updates.                                                     |
 | `--domain HOST` | Choose a domain on initial setup. To change an existing deployment, edit `DOMAIN` in `.env` and rerun.              |
