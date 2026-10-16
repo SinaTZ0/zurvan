@@ -16,9 +16,9 @@ When a page is redesigned or rebuilt, remove its row and add it to the "Built in
 
 ## Public Pages
 
-| URL            | Route slice     | app-spec page       | Verdict      | Notes                                                                                                                                                                |
-| -------------- | --------------- | ------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| header, footer | `layout_public` | (every public page) | **Redesign** | The nav links and footer links were updated, and the header shows the signed-in person and the cart. The references have a gold «ارزیابی رایگان» pill in the header. |
+| URL            | Route slice     | app-spec page       | Verdict      | Notes                                                                                                                                                                                                                                                                 |
+| -------------- | --------------- | ------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| header, footer | `layout_public` | (every public page) | **Redesign** | The footer includes owner-supplied contact links and Tehran coverage within its existing layout. The nav links and footer links were updated, and the header shows the signed-in person and the cart. The references have a gold «ارزیابی رایگان» pill in the header. |
 
 ## Built in the New Look
 

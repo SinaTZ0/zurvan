@@ -1,10 +1,11 @@
 import { cn } from "cn";
-import { CalendarHeartIcon, GiftIcon, MapPinnedIcon } from "lucide-react";
+import { AwardIcon, CalendarHeartIcon, GiftIcon, MapPinnedIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { ChalkDoodle } from "~/components/chalk-doodle";
 import { SpeechBubble } from "~/components/speech-bubble";
 
@@ -12,12 +13,13 @@ import { SpeechBubble } from "~/components/speech-bubble";
 /**
  * The head trainer and founder, introduced by his dog, before the whole team (`TeamSection`). The one wide photo band
  * below the hero: him laughing while a German shepherd licks his cheek, with the dog's line over the photo's dark end.
- * His name, years and photo are placeholders (`app/lib/head-trainer.ts`).
+ * Credentials come from the owner's business card; the photo remains illustrative.
  */
 export function TrainerSection() {
   const points = [
-    { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال کار با سگ‌ها` },
-    { icon: MapPinnedIcon, label: "جلسه‌ها توی زندگی واقعی: خونه، خیابون، پارک" },
+    { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای` },
+    { icon: AwardIcon, label: HEAD_TRAINER.credential },
+    { icon: MapPinnedIcon, label: `فعال در ${CENTER_SERVICE_AREA}؛ توی خونه یا بیرون` },
     { icon: GiftIcon, label: "قبل از هر دوره، یه ارزیابی رایگان" },
   ];
 

@@ -5,12 +5,15 @@ import { referralCookieFromUrl } from "~/lib/referral.server";
 import type { CourseFamily } from "~/orpc/course/constants";
 import { createServerClient } from "~/orpc/server-client.server";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { CENTER_SERVICE_AREA } from "~/lib/contact";
+import { formatNumberFa } from "~/lib/digits";
 import { ClosingBanner } from "~/routes/home/components/closing-banner";
 import { CourseGrid } from "~/routes/home/components/course-grid";
 import { EvaluationPanel } from "~/routes/home/components/evaluation-panel";
 import { HomeHero } from "~/routes/home/components/home-hero";
 import { NeedsSection } from "~/routes/home/components/needs-section";
 import { PromiseStrip } from "~/routes/home/components/promise-strip";
+import { ServicesSection } from "~/routes/home/components/services-section";
 import { TeamSection } from "~/routes/home/components/team-section";
 import { TrainerSection } from "~/routes/home/components/trainer-section";
 
@@ -21,13 +24,13 @@ export const meta: Route.MetaFunction = () => [
   { title: `آموزش K9 | آموزش خصوصی سگ با ${HEAD_TRAINER.name}` },
   {
     name: "description",
-    content: `آموزش خصوصی سگ با ${HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون. از سگ خونگی و CGC تا سگ همدم، سگ‌های کار و ورزشی. ارزیابی اول رایگان است.`,
+    content: `آموزش خصوصی سگ با ${HEAD_TRAINER.name}، با ${formatNumberFa(HEAD_TRAINER.years)} سال تجربه در ${CENTER_SERVICE_AREA}. آموزش پایه و پیشرفته، رفتارشناسی و اصلاح رفتار، آموزش تخصصی و آمادگی مسابقه برای تمامی نژادها و سنین. ارزیابی اول رایگان است.`,
   },
 ];
 
 /*===== Loader =====*/
 // The catalogue is render-critical, so it comes from the database here and the page renders fully on the server.
-// The photos and the trainer's details are still placeholders. The loader also remembers a partner's referral code
+// The photos are still illustrative. The loader also remembers a partner's referral code
 // from `?ref=`, so signup can attribute the customer later (app-spec F7).
 export async function loader({ request }: Route.LoaderArgs) {
   const [courses, referralCookie] = await Promise.all([
@@ -50,6 +53,7 @@ export default function HomePage({ loaderData }: Route.ComponentProps) {
       <EvaluationPanel />
       <NeedsSection onPick={setFamily} />
       <CourseGrid courses={courses} family={family} onFamilyChange={setFamily} />
+      <ServicesSection />
       <TrainerSection />
       <TeamSection />
       <ClosingBanner />

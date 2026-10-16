@@ -2,7 +2,7 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { CENTER_PHONE } from "~/lib/contact";
+import { CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 const FOOTER_GROUPS = [
@@ -14,8 +14,18 @@ const FOOTER_GROUPS = [
     ],
   },
   {
-    title: "همراه آموزش K9",
-    links: [{ label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" }],
+    title: "ارتباط با آموزش K9",
+    links: [
+      { label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" },
+      ...CENTER_LINKS.map((link) => ({
+        label: (
+          <>
+            {link.label}: <bdi>{link.handle}</bdi>
+          </>
+        ),
+        to: link.href,
+      })),
+    ],
   },
   {
     title: "راهنما",
@@ -37,7 +47,7 @@ export function SiteFooter() {
             <BrandLogo className="text-[1.875rem]" />
           </Link>
           <p className="text-sm text-pretty text-muted-foreground">
-            آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون.
+            آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون، در {CENTER_SERVICE_AREA}.
           </p>
           <a
             href={`tel:${CENTER_PHONE.tel}`}
