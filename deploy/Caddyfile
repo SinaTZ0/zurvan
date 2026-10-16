@@ -4,6 +4,16 @@
 		max_size 110MB
 	}
 
+	# Public images keep stable filenames, so refresh their browser cache daily.
+	# Match successful responses only, and override the app's max-age=0 on write.
+	@staticImages {
+		method GET HEAD
+		path /photo/* /brand/* /demo/* /favicon.ico /favicon-*.png /apple-touch-icon.png
+	}
+	header @staticImages Cache-Control "public, max-age=86400" {
+		match status 2xx 304
+	}
+
 	# The unauthenticated S3 service has no public ports. Only generated image
 	# variants are public; videos go through the app's authenticated routes.
 	@media path /media /media/*
