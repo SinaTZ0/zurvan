@@ -9,6 +9,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { requireSession } from "~/lib/session-guard.server";
 import { CART_PATH } from "~/orpc/checkout/constants";
 import { orpc } from "~/orpc/client";
+import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
 import { selectCartItems, groupByDog, summarize } from "~/routes/account_cart/cart-groups";
 import { CartError } from "~/routes/account_cart/components/cart-error";
 import { CartSkeleton } from "~/routes/account_cart/components/cart-skeleton";
@@ -16,6 +17,7 @@ import { CartSummary } from "~/routes/account_cart/components/cart-summary";
 import { DogGroupCard } from "~/routes/account_cart/components/dog-group";
 import { OrphanGroup } from "~/routes/account_cart/components/orphan-group";
 import { PaymentBanner } from "~/routes/account_cart/components/payment-banner";
+import { WhenFree } from "~/routes/account_cart/components/when-free";
 import { useCartItems } from "~/routes/account_cart/hooks/use-cart-items";
 import { useCartPay } from "~/routes/account_cart/hooks/use-cart-pay";
 import { useCartRemoval } from "~/routes/account_cart/hooks/use-cart-removal";
@@ -60,6 +62,11 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
   const needsRules = consent.data?.siteRules != null && !consent.data.siteRules.accepted;
   const [rulesTicked, setRulesTicked] = useState(false);
   const { containerRef, remove, message: removalMessage } = useCartRemoval();
+
+  /*------ When Free ------*/
+  // Optional, for the call that arranges the lessons (F5). Sent with «پرداخت»; nothing is booked by it.
+  const [availableDays, setAvailableDays] = useState<EvaluationWeekday[]>([]);
+  const [availablePeriods, setAvailablePeriods] = useState<EvaluationPeriod[]>([]);
 
   /*------ Payment Result ------*/
   // Seeded once from the loader: the param is stripped below, so a refresh never shows the banner again, and the
@@ -130,6 +137,12 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
               <DogGroupCard key={group.dog.id} group={group} onRemove={remove} />
             ))}
             {orphans.length > 0 && <OrphanGroup items={orphans} onRemove={remove} />}
+            <WhenFree
+              days={availableDays}
+              periods={availablePeriods}
+              onDaysChange={setAvailableDays}
+              onPeriodsChange={setAvailablePeriods}
+            />
           </div>
 
           {/*------ Summary ------*/}
@@ -150,7 +163,7 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
               onPay={() =>
                 pay.start(
                   summary.payable.map(({ courseSlug, dogId }) => ({ courseSlug, dogId })),
-                  { acceptRules: needsRules },
+                  { acceptRules: needsRules, availableDays, availablePeriods },
                 )
               }
             />

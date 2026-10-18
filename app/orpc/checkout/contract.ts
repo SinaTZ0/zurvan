@@ -4,6 +4,7 @@ import { z } from "zod";
 import { INELIGIBILITY_KINDS } from "~/lib/eligibility";
 import { PAYMENT_STATUSES } from "~/orpc/checkout/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
+import { EVALUATION_PERIODS, EVALUATION_WEEKDAYS } from "~/orpc/evaluation/constants";
 import { mediaSchema } from "~/orpc/media/contract";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
 
@@ -17,6 +18,13 @@ const ineligibilitySchema = z.object({
 });
 
 const dogSummarySchema = z.object({ id: z.string(), name: z.string(), photo: mediaSchema.nullable() });
+
+/**
+ * When the customer is usually free, for the call that arranges the lessons (F5): the weekdays and the parts of the day, in
+ * the same words as an evaluation request. A preference, never a booked time. Bounded so a request can't be padded.
+ */
+const availableDaysSchema = z.array(z.enum(EVALUATION_WEEKDAYS)).max(EVALUATION_WEEKDAYS.length);
+const availablePeriodsSchema = z.array(z.enum(EVALUATION_PERIODS)).max(EVALUATION_PERIODS.length);
 
 /** F4: whether one dog can take a course, and why not. */
 const verdictSchema = z.object({ eligible: z.boolean(), problems: z.array(ineligibilitySchema) });
@@ -77,6 +85,9 @@ export const paymentSchema = z.object({
   totalAmount: z.number().int(),
   /** The deposit percent the payment was made with (100: the whole price). */
   depositPercent: z.number().int(),
+  /** When the customer said they are usually free, for coordination; empty when they gave none. */
+  availableDays: availableDaysSchema,
+  availablePeriods: availablePeriodsSchema,
   referenceId: z.string().nullable(),
   cardNumberMasked: z.string().nullable(),
   failureReason: z.string().nullable(),
@@ -109,6 +120,12 @@ export const adminDogEligibilitySchema = z.array(
 // Structure only; the item limit and meaning are checked by `validation.ts`.
 const eligibilityInputSchema = z.strictObject({ courseSlug: z.string() });
 const itemsInputSchema = z.strictObject({ items: z.array(cartItemSchema) });
+/** «پرداخت»: the items, and optionally when the customer is usually free (F5). */
+export const payInputSchema = z.strictObject({
+  items: z.array(cartItemSchema),
+  availableDays: availableDaysSchema.optional(),
+  availablePeriods: availablePeriodsSchema.optional(),
+});
 const adminPaymentsInputSchema = z.strictObject({ status: z.enum(PAYMENT_STATUSES).optional() });
 const adminDogEligibilityInputSchema = z.strictObject({ dogId: z.string() });
 
@@ -161,7 +178,7 @@ export const reviewCartContract = oc.errors(baseErrors).input(itemsInputSchema).
  */
 export const payCartContract = oc
   .errors({ ...baseErrors, ...payErrors })
-  .input(itemsInputSchema)
+  .input(payInputSchema)
   .output(z.object({ url: z.string() }));
 
 export const listMyPaymentsContract = oc.errors(baseErrors).output(z.array(paymentSchema));

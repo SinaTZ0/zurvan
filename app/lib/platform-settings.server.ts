@@ -50,4 +50,3 @@ export async function readDepositPercent({ db }: { db: DatabaseOrTransaction }):
     return SETTING_DEFINITIONS[DEPOSIT_PERCENT_KEY].defaultValue;
   }
 }
-

@@ -7,6 +7,7 @@ import { readDepositPercent } from "~/lib/platform-settings.server";
 import type { PaymentGateway } from "~/lib/payment-gateway.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { utcToTehranParts } from "~/lib/tehran-time";
+import { normalizeWhenFree } from "~/lib/when-free-format";
 import type {
   AdminPayment,
   CartReview,
@@ -304,7 +305,12 @@ export async function payCart({
   db: Database;
   gateway: PaymentGateway;
   customerId: string;
-  input: { items: { courseSlug: string; dogId: string }[] };
+  input: {
+    items: { courseSlug: string; dogId: string }[];
+    /** When the customer is usually free, for coordination (F5). Optional; unknown values are dropped. */
+    availableDays?: readonly string[];
+    availablePeriods?: readonly string[];
+  };
   /** The absolute URL of the payment callback route. */
   callbackUrl: string;
   /** The site rules in force; the registry's by default. A test passes its own to switch the gate on. */
@@ -340,6 +346,8 @@ export async function payCart({
   const depositPercent = await readDepositPercent({ db });
   const amount = calculateDeposit({ total, percent: depositPercent });
   const courses = await findCoursesBySlugs({ db, slugs: priced.map((item) => item.courseSlug) });
+  // A preference for the call that arranges the lessons: kept in the week's order, once each, never a booked time.
+  const whenFree = normalizeWhenFree({ days: input.availableDays ?? [], periods: input.availablePeriods ?? [] });
 
   /*------ Gateway ------*/
   // Started outside the database transaction: a real gateway is an HTTP call, and no lock should wait on it.
@@ -353,6 +361,8 @@ export async function payCart({
         amount,
         totalAmount: total,
         depositPercent,
+        availableDays: whenFree.days,
+        availablePeriods: whenFree.periods,
         gateway: gateway.name,
         authority: started.authority,
         createdAt: now,
@@ -574,6 +584,8 @@ function toPayment(row: { payment: PaymentRecord; items: PaymentItemRow[] }): Pa
   if (payment.status !== "pending" && payment.status !== "paid" && payment.status !== "failed") {
     throw new Error(`Payment ${payment.id} has an unknown status: ${payment.status}`);
   }
+  // Read back through the filter that wrote them, so a stray value in the column can't reach a page.
+  const whenFree = normalizeWhenFree({ days: payment.availableDays, periods: payment.availablePeriods });
   return {
     id: payment.id,
     status: payment.status,
@@ -581,6 +593,8 @@ function toPayment(row: { payment: PaymentRecord; items: PaymentItemRow[] }): Pa
     // A payment made before deposits existed was the whole price.
     totalAmount: payment.totalAmount ?? payment.amount,
     depositPercent: payment.depositPercent,
+    availableDays: whenFree.days,
+    availablePeriods: whenFree.periods,
     referenceId: payment.referenceId,
     cardNumberMasked: payment.cardNumberMasked,
     failureReason: payment.failureReason,

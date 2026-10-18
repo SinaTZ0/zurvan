@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { CartItem } from "~/orpc/checkout/contract";
 import { client, orpc } from "~/orpc/client";
+import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
 
 /*===== Messages =====*/
 const CHANGED_MESSAGE = "وضعیت بعضی موردها عوض شده؛ سبد را دوباره بررسی کردیم. چیزی پرداخت نشد.";
@@ -19,15 +20,26 @@ const RULES_MESSAGE = "اول قوانین سایت را بپذیر؛ بعد پ�
  * `NOT_ELIGIBLE` means the cart changed under the customer (an evaluation was withdrawn, a price stopped being sold):
  * the review is asked again so the page shows the new state, and nothing was charged. `RULES_NOT_ACCEPTED` means site rules
  * are published and this customer hasn't accepted them (F13): the consent status is asked again so the tick appears.
- * With `acceptRules` the acceptance is recorded first, so the tick and «پرداخت» are one press.
+ * With `acceptRules` the acceptance is recorded first, so the tick and «پرداخت» are one press. `availableDays` and
+ * `availablePeriods` are when the customer said they are usually free (F5), sent with the items for the call that follows.
  */
 export function useCartPay() {
   const queryClient = useQueryClient();
 
   const pay = useMutation({
-    mutationFn: async ({ items, acceptRules }: { items: CartItem[]; acceptRules: boolean }) => {
+    mutationFn: async ({
+      items,
+      acceptRules,
+      availableDays,
+      availablePeriods,
+    }: {
+      items: CartItem[];
+      acceptRules: boolean;
+      availableDays: EvaluationWeekday[];
+      availablePeriods: EvaluationPeriod[];
+    }) => {
       if (acceptRules) await client.consent.acceptSiteRules();
-      return client.checkout.pay({ items });
+      return client.checkout.pay({ items, availableDays, availablePeriods });
     },
     // A relative or absolute gateway address both work with `assign`; the callback comes back as a document request.
     onSuccess: ({ url }) => window.location.assign(url),
@@ -51,8 +63,20 @@ export function useCartPay() {
     : undefined;
 
   return {
-    start: (items: CartItem[], options: { acceptRules?: boolean } = {}) =>
-      pay.mutate({ items, acceptRules: options.acceptRules ?? false }),
+    start: (
+      items: CartItem[],
+      options: {
+        acceptRules?: boolean;
+        availableDays?: EvaluationWeekday[];
+        availablePeriods?: EvaluationPeriod[];
+      } = {},
+    ) =>
+      pay.mutate({
+        items,
+        acceptRules: options.acceptRules ?? false,
+        availableDays: options.availableDays ?? [],
+        availablePeriods: options.availablePeriods ?? [],
+      }),
     busy: pay.isPending || pay.isSuccess,
     message,
   };

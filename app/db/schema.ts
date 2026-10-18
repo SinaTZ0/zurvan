@@ -427,6 +427,19 @@ export const payment = pgTable(
     totalAmount: bigint("total_amount", { mode: "number" }),
     /** The deposit percent in force when the payment was made (100: the whole price). */
     depositPercent: integer("deposit_percent").notNull().default(100),
+    /**
+     * When the customer said they are usually free, for the call that arranges the lessons: weekdays and parts of the
+     * day, two independent lists in the same words as an evaluation request. A preference for coordination, never a
+     * booked time; empty when they gave none.
+     */
+    availableDays: text("available_days")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    availablePeriods: text("available_periods")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     /** `demo` in showcase mode. */
     gateway: text("gateway").notNull(),
     /** The gateway's payment id, from starting the payment; the callback finds the payment by it. Unique (F12). */

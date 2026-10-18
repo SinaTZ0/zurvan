@@ -5,6 +5,7 @@ import { PaymentStatusBadge } from "~/components/payment-status-badge";
 import { formatToman } from "~/lib/course-format";
 import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
+import { describeWhenFree } from "~/lib/when-free-format";
 import type { AdminPayment } from "~/orpc/checkout/contract";
 import type { Refund } from "~/orpc/refund/contract";
 
@@ -22,6 +23,7 @@ export function PaymentSlip({ payment, refunds }: { payment: AdminPayment; refun
   const titleId = useId();
   const moment = payment.paidAt ?? payment.createdAt;
   const flagged = isFlagged(payment);
+  const whenFree = describeWhenFree({ days: payment.availableDays, periods: payment.availablePeriods });
 
   return (
     <article aria-labelledby={titleId} className="relative overflow-hidden rounded-2xl border border-border bg-card">
@@ -61,6 +63,13 @@ export function PaymentSlip({ payment, refunds }: { payment: AdminPayment; refun
           </p>
         )}
       </div>
+
+      {/*===== When The Customer Is Free =====*/}
+      {whenFree && (
+        <p className="-mt-1 px-4 pb-4 text-sm text-muted-foreground sm:px-5">
+          <span className="font-bold text-foreground">وقت‌های آزاد مشتری برای هماهنگی:</span> {whenFree}
+        </p>
+      )}
 
       {/*===== Items =====*/}
       <ul className="divide-y divide-border border-t border-dashed border-border px-4 sm:px-5">

@@ -7,6 +7,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 
+import { ChoiceChip } from "~/components/choice-chip";
 import { FieldError } from "~/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
 import { toPersianDigits, formatNumberFa } from "~/lib/digits";
@@ -17,7 +18,6 @@ import {
   EVALUATION_WEEKDAY_LABELS,
   EVALUATION_WEEKDAYS,
 } from "~/orpc/evaluation/constants";
-import { ChoiceChip } from "~/routes/assessment/components/choice-chip";
 import type { EvaluationRequestInput, EvaluationRequestValues } from "~/routes/assessment/schema";
 
 /*===== When Free Fields =====*/

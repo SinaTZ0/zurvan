@@ -3,6 +3,7 @@ import { useId } from "react";
 import { formatToman } from "~/lib/course-format";
 import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
+import { describeWhenFree } from "~/lib/when-free-format";
 import type { Payment } from "~/orpc/checkout/contract";
 import type { MyRefund } from "~/orpc/refund/contract";
 import { REFUND_STATUS_LABELS } from "~/orpc/refund/constants";
@@ -21,6 +22,7 @@ export function PaymentSlip({ payment, refunds }: { payment: Payment; refunds: r
   const shownRefunds = refunds.filter((entry) => entry.status !== "cancelled");
   const titleId = useId();
   const moment = payment.paidAt ?? payment.createdAt;
+  const whenFree = describeWhenFree({ days: payment.availableDays, periods: payment.availablePeriods });
 
   return (
     <article
@@ -45,6 +47,13 @@ export function PaymentSlip({ payment, refunds }: { payment: Payment; refunds: r
             </p>
           )}
         </div>
+
+        {/*------ When I'm Free ------*/}
+        {whenFree && (
+          <p className="text-sm text-pretty text-muted-foreground">
+            <span className="font-bold text-foreground">وقت‌های آزاد برای هماهنگی:</span> {whenFree}
+          </p>
+        )}
 
         {/*------ Failure ------*/}
         {payment.status === "failed" && (

@@ -129,9 +129,10 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 1. **Add to cart.** On Course Detail the customer picks one of their dogs and presses «افزودن به سبد». Picking a dog needs signing in. The same course for the same dog can't be in the cart twice.
 2. **Cart.** It shows each item with the course's **current price** and its eligibility ([F4](#f4-eligibility)), read fresh from the server; an item that isn't eligible any more is marked and can't be paid for. The total is the sum of the eligible items.
-3. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price) and sends the amount due now to the gateway: the total, or, if the Admin has set a **deposit** ([F10](#f10-settings)), that share of it.
-4. **Result.** The gateway returns the customer to the Cart with a banner showing the result.
-   - **Success:** in one database transaction, the payment becomes **paid**, an **enrollment** is created for each item at the price saved in step 3, and the partner commission is written when it's due ([F7](#f7-partners)). The cart is emptied. The customer sees «پرداخت انجام شد؛ برای هماهنگی با شما تماس می‌گیریم» (paid; we'll call you), and the Admin gets an SMS ([F9](#f9-notifications)).
+3. **When are you free? (optional).** Under the dogs' bags the cart asks «کی هماهنگ کنیم؟»: the weekdays and the parts of the day the customer is usually free, as two lists of chips in the same words as the evaluation request ([F3](#f3-evaluation)). It is a **preference for the call, not a booking**: nothing is reserved and the page says so. It is sent with «پرداخت», kept on the payment (`available_days`, `available_periods`; only the known words, once each, in the order of the week), shown to the Admin beside the customer's name and number on the Payments page and to the customer on their Purchases page. Leaving it empty is fine and changes nothing about what can be bought.
+4. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price) and sends the amount due now to the gateway: the total, or, if the Admin has set a **deposit** ([F10](#f10-settings)), that share of it.
+5. **Result.** The gateway returns the customer to the Cart with a banner showing the result.
+   - **Success:** in one database transaction, the payment becomes **paid**, an **enrollment** is created for each item at the price saved in step 4, and the partner commission is written when it's due ([F7](#f7-partners)). The cart is emptied. The customer sees «پرداخت انجام شد؛ برای هماهنگی با شما تماس می‌گیریم» (paid; we'll call you), and the Admin gets an SMS ([F9](#f9-notifications)).
    - **Failure or abandoned:** the pending payment becomes **failed**; the cart is unchanged.
 
 Prices are fixed by the course. Discounts and changing a price for one customer are not in this version.
@@ -368,15 +369,15 @@ Each page and the features on it: **34 pages**. A list and its form or detail ar
 
 **Customer (7)**
 
-| Page                                                                               | Features   |
-| ---------------------------------------------------------------------------------- | ---------- |
-| Dashboard: my dogs, open evaluation requests, my enrollments                       | F2, F3, F6 |
-| Dog Form                                                                           | F2         |
-| Dog Detail: evaluated or not, passed courses, evaluations, enrollments             | F2, F3, F6 |
-| Evaluation Request: dog, photos and videos, earliest date, when I'm free           | F3         |
-| Buy a Course: pick a dog, then its courses with the server's verdict on each       | F5, F4     |
-| Cart: items with price and eligibility, «پرداخت», the gateway's result as a banner | F5, F4     |
-| Purchases: past payments and the enrollments each one bought                       | F5         |
+| Page                                                                                                           | Features   |
+| -------------------------------------------------------------------------------------------------------------- | ---------- |
+| Dashboard: my dogs, open evaluation requests, my enrollments                                                   | F2, F3, F6 |
+| Dog Form                                                                                                       | F2         |
+| Dog Detail: evaluated or not, passed courses, evaluations, enrollments                                         | F2, F3, F6 |
+| Evaluation Request: dog, photos and videos, earliest date, when I'm free                                       | F3         |
+| Buy a Course: pick a dog, then its courses with the server's verdict on each                                   | F5, F4     |
+| Cart: items with price and eligibility, optional «کی هماهنگ کنیم؟», «پرداخت», the gateway's result as a banner | F5, F4     |
+| Purchases: past payments and the enrollments each one bought                                                   | F5         |
 
 **Shared (1)**
 
