@@ -223,11 +223,11 @@ export const FAQ_GROUPS: FaqGroupData[] = [
       {
         id: "cant-take",
         question: `اگه ${TRAINER} نتونه سگمو بپذیره چی؟`,
-        // Exactly this and nothing more: no timing, no policy. The site doesn't record refunds.
+        // Exactly this and nothing more: no timing, no policy. The money goes back outside the site; the site records it.
         answer: (
           <p>
             اگه وقتش پر باشه یا معلوم بشه سگ برای این دوره مناسب نیست، {TRAINER} دوره رو لغو می‌کنه و پولت رو بیرون از
-            سایت بهت برمی‌گردونه. سایت برگشت پول رو ثبت نمی‌کنه.
+            سایت بهت برمی‌گردونه. بازپرداخت توی صفحه‌ی «خریدها»ی حسابت هم نشون داده می‌شه.
           </p>
         ),
       },

@@ -14,7 +14,7 @@ The source of truth for how the app works. The course catalog's content comes fr
 
 The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where he gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over he marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on a customer's first purchase.
 
-**The app doesn't run the business.** Lesson times, sessions and everything in between are handled by the Admin in real life, by phone. The app records what was requested, bought and finished, and shows him the general picture. There is no calendar, no lesson tracking, no trainer earnings, no refunds, no deadlines and no automatic expiries.
+**The app doesn't run the business.** Lesson times, sessions and everything in between are handled by the Admin in real life, by phone. The app records what was requested, bought and finished, and shows him the general picture. There is no calendar, no lesson tracking, no trainer earnings, no refund policies, no deadlines and no automatic expiries. A refund the Admin decides is recorded ([F5](#f5-cart-and-checkout)); the money itself moves outside the app.
 
 ## Roles
 
@@ -134,12 +134,14 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 Prices are fixed by the course. Discounts and changing a price for one customer are not in this version.
 
+**Refunds.** The money is always sent back **outside the app** (a bank transfer), but the decision is recorded in the app, with its state, amount, transfer reference and who did it. On a **paid** payment the Admin presses «ثبت بازپرداخت»: an amount in Toman (shown and stored as Rial), optionally for one of the payment's courses, and a reason of his own. The refund starts `pending`; once he has sent the money he presses «پرداخت شد» and writes the transfer's **reference** (required), which is kept and sent to the customer in an SMS; a refund decided by mistake is **cancelled** before it is paid. Each refund is answered once and nothing is deleted. **The refunds that stand (pending or paid) can never add up to more than the payment charged** (with a deposit, what was charged, not the full price), checked under a lock on the payment so two refunds made at the same moment can't both fit. Every step writes a line in the **audit trail** (`audit_event`: who, what, when and the few facts worth keeping; the certificates' issue and revocation are written there too). The customer sees each refund on the Purchases page with its amount, state and reference, never the Admin's reason, and never one that was cancelled. A refund does not by itself cancel an enrollment, and the app states no refund policy: what is refunded, and when, is the Admin's decision (`docs/overnight/03-DECISIONS-NEEDED.md`).
+
 **The deposit.** The Admin's setting «پیش‌پرداخت» is the share of the price taken when the customer pays: **100 (the whole price) until the owner approves a deposit** (the owner mentioned 50%). With a deposit set, the cart shows the amount due now as the big number and says «پیش‌پرداخت ٪۵۰ از …؛ … را موقع هماهنگی می‌دهی»; the gateway is charged the deposit **rounded up to the Rial** and no more; each payment item and the enrollment keep the **full price**; the payment records the full price, the amount charged and the percent it was made with, and keeps that percent when the setting changes later. The Purchases page and the Admin's payments say what was taken and what is left. The balance is settled **outside the app**, when the lessons are arranged: the app shows how much is left and does not collect it. A failed deposit payment enrolls nothing, as any failed payment. The partner's commission stays on the price of what was bought, as before (not on the deposit).
 
 **Edge cases:**
 
 - **The gateway calls back twice:** a unique index on the gateway's payment id, and a pending payment that can be settled only once, reject the second one.
-- **An item stops being eligible between checkout and the callback** (the same course bought for the same dog in another tab, or the Admin archives the course): the payment is still recorded as paid, but that item gets **no enrollment**. It is flagged on the Admin Dashboard as **paid, not enrolled**, and the Admin gives that money back outside the app.
+- **An item stops being eligible between checkout and the callback** (the same course bought for the same dog in another tab, or the Admin archives the course): the payment is still recorded as paid, but that item gets **no enrollment**. It is flagged on the Admin Dashboard as **paid, not enrolled**, and the Admin gives that money back outside the app and records the refund on the payment (see **Refunds** below).
 - **A price changes while the course is in the cart:** the cart always shows the current price; the customer pays what it showed at «پرداخت».
 - **Another browser or device:** the cart is the account's, so it is there on any device. It is read again when the tab is used, so what was added elsewhere appears. A cart a browser held from before carts lived in the account is merged in once; after that the account's cart wins, so an item bought or removed elsewhere isn't put back by an out-of-date copy. Signing out empties the browser's copy and keeps the account's.
 - **A payment settles:** the items it bought leave the cart, on every device.
@@ -275,13 +277,14 @@ Money is integer **Rial**. At this scale every number is a simple indexed query;
 
 **Safeguards**, enforced by the database:
 
-| Safeguard                   | How                                                                                                                             |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Paid prices never change    | Each item's price is saved on the pending payment at checkout and copied onto its enrollment.                                   |
-| A payment settles once      | A unique index on the gateway's payment id; a pending payment becomes paid or failed by a conditional update, once.             |
-| No double enrollment        | A partial unique index: one **active** enrollment per dog and course. The loser of a race becomes **paid, not enrolled**.       |
-| One commission per customer | A unique index on the customer.                                                                                                 |
-| Statuses only move forward  | Each status change is a conditional update (e.g. evaluate only a `requested` evaluation; complete only an `active` enrollment). |
+| Safeguard                         | How                                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Paid prices never change          | Each item's price is saved on the pending payment at checkout and copied onto its enrollment.                                   |
+| A payment settles once            | A unique index on the gateway's payment id; a pending payment becomes paid or failed by a conditional update, once.             |
+| No double enrollment              | A partial unique index: one **active** enrollment per dog and course. The loser of a race becomes **paid, not enrolled**.       |
+| One commission per customer       | A unique index on the customer.                                                                                                 |
+| A refund never exceeds the charge | The sum of the refunds that stand is checked under a lock on the payment.                                                       |
+| Statuses only move forward        | Each status change is a conditional update (e.g. evaluate only a `requested` evaluation; complete only an `active` enrollment). |
 
 **Tests** (focused, per the repository's testing rules): eligibility blocking each rule; a duplicate gateway callback rejected; two payments for the same dog and course leaving one enrollment and one flagged item; one commission per customer.
 
@@ -410,7 +413,7 @@ Not in this version.
 
 1. **Staff trainers**, with lessons assigned to them, their share of each course, and payouts.
 2. **A calendar and lesson tracking**: planning lessons, confirming them with the customer, and showing progress («۳ از ۸ جلسه»).
-3. **Cancellations and refunds**: refund policies per course, recorded refunds.
+3. **Cancellations and refunds**: refund policies per course (refunds themselves are recorded now, see F5).
 4. **The Admin selling by hand**: enrolling a dog himself, at his own price, for a customer who pays him directly.
 5. **Discount codes.**
 6. **Notes on a dog** that build up its history, visible to the customer or private to the Admin.
