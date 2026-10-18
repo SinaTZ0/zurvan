@@ -10,6 +10,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { buildDogFileCard } from "~/lib/dog-file.server";
 import { createServerClient } from "~/orpc/server-client.server";
+import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
 import { DetailsSection } from "~/routes/admin_dog_detail/components/details-section";
 import { DogHeader } from "~/routes/admin_dog_detail/components/dog-header";
@@ -38,12 +39,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
   const dogId = params.dogId;
 
-  const [dog, eligibility, evaluations, enrollments, logbook] = await Promise.all([
+  const [dog, eligibility, evaluations, enrollments, logbook, certificates] = await Promise.all([
     client.dog.admin.get({ id: dogId }),
     client.checkout.admin.dogEligibility({ dogId }),
     client.evaluation.admin.list({ dogId }),
     client.enrollment.admin.list({ dogId }),
     client.logbook.admin.list({ dogId }),
+    client.certificate.admin.list({ dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
@@ -55,6 +57,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     evaluations,
     enrollments,
     logbook,
+    certificates,
     fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
   };
 }
@@ -66,7 +69,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * beside the ladder, enrollments, evaluations and details; phones read them in that order.
  */
 export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, eligibility, evaluations, enrollments, logbook, fileCard } = loaderData;
+  const { dog, eligibility, evaluations, enrollments, logbook, certificates, fileCard } = loaderData;
 
   /*------ URL State ------*/
   const [{ edit, session }, setParams] = useQueryStates(adminDogDetailSearchParams);
@@ -117,6 +120,7 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
         <div className="flex flex-col gap-6 lg:col-span-7">
           <CourseLadder dog={dog} rungs={rungs} />
           <EnrollmentsSection enrollments={enrollments} />
+          <CertificatesSection enrollments={enrollments} certificates={certificates} />
           <LogbookSection
             entries={logbook}
             onAdd={() => setParams({ session: "new" })}

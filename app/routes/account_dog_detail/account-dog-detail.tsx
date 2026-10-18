@@ -4,10 +4,12 @@ import { data, isRouteErrorResponse } from "react-router";
 import { DogFileCard } from "~/components/dog-file-card";
 import { DogProfile } from "~/components/dog-profile";
 import { Link } from "~/components/link";
+import { buildCertificateCard } from "~/lib/certificate.server";
 import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogHeader } from "~/routes/account_dog_detail/components/dog-header";
+import { CertificatesSection } from "~/routes/account_dog_detail/components/certificates-section";
 import { EnrollmentsSection } from "~/routes/account_dog_detail/components/enrollments-section";
 import { EvaluationsSection } from "~/routes/account_dog_detail/components/evaluations-section";
 import { LogbookSection } from "~/routes/account_dog_detail/components/logbook-section";
@@ -26,17 +28,28 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
   const dogId = params.dogId;
 
-  const [dog, evaluations, enrollments, logbook] = await Promise.all([
+  const [dog, evaluations, enrollments, logbook, certificates] = await Promise.all([
     client.dog.get({ id: dogId }),
     client.evaluation.listMine({ dogId }),
     client.enrollment.listMine({ dogId }),
     client.logbook.list({ dogId }),
+    client.certificate.listMine({ dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
   });
 
-  return { dog, evaluations, enrollments, logbook, fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }) };
+  return {
+    dog,
+    evaluations,
+    enrollments,
+    logbook,
+    certificates: certificates.map((certificate) => ({
+      certificate,
+      ...buildCertificateCard({ number: certificate.number }),
+    })),
+    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+  };
 }
 
 /*===== Dog Detail =====*/
@@ -46,7 +59,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * column.
  */
 export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments, logbook, fileCard } = loaderData;
+  const { dog, evaluations, enrollments, logbook, certificates, fileCard } = loaderData;
   const status = getDogStatus({ dog, evaluations, enrollments });
 
   return (
@@ -58,6 +71,7 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
         {/*===== Courses and Evaluations =====*/}
         <div className="flex flex-col gap-8 lg:gap-10">
           <EnrollmentsSection enrollments={enrollments} isEvaluated={dog.isEvaluated} />
+          <CertificatesSection certificates={certificates} />
           <LogbookSection entries={logbook} />
           <EvaluationsSection evaluations={evaluations} />
         </div>

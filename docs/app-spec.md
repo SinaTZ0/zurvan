@@ -319,29 +319,34 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 **No photos or videos in the diary yet.** Dog and evaluation photos are served to anyone with their unguessable link, and an evaluation video is streamed only after a check of who asks; an image added to a diary would be as public as its link, which is not private. Media waits for the owner's decision on public records and a private route for diary images (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
-**Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Dog Detail (the file card and the diary) · Dog Detail (Admin) (the file card, the diary and the session form)
+**The course certificate.** When the Admin has marked an enrollment **completed** ([F6](#f6-enrollments)), he can **issue its certificate** from the dog's admin page («گواهی‌ها»): one per enrollment, with a public number `ZC-` and ten random hexadecimal characters made by the database. Nothing issues one by itself, and an enrollment that is active or cancelled can't have one. The owner sees it on the dog's page with the link and the QR code that verify it. A certificate is never deleted: if it was issued by mistake the Admin **revokes** it with a reason (his own, kept private); the row stays and nothing can issue it anew. What a certificate says, who signs it and whether it needs anything beyond «completed» are the owner's to define (`docs/overnight/03-DECISIONS-NEEDED.md`); until then there is a record and a check, **no printable certificate design**.
+
+`/certificate/<number>` is public and says only: valid (the course, the day, the head trainer, the number), revoked (the number and when; not the course, not the reason), or not found (the same for a number that isn't any certificate's and for text that isn't a number). It never shows the owner, and the dog's name only if its owner has made the dog's record public, which cannot be done yet. It is never cached, since a cached «valid» would outlive a revocation, and never indexed.
+
+**Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Certificate Check (`/certificate/:number`) · Dog Detail (the file card, the diary, the certificates) · Dog Detail (Admin) (the file card, the diary, the session form, issuing and revoking certificates)
 
 ---
 
 ## Pages
 
-Each page and the features on it: **32 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **33 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
-**Public (11)**
+**Public (12)**
 
-| Page             | Features                                          |
-| ---------------- | ------------------------------------------------- |
-| Home             | F8, F7 (`?ref=`)                                  |
-| Course Catalogue | F8                                                |
-| Course Detail    | F8, F4, F5 (which dogs qualify, «افزودن به سبد»)  |
-| Login / Register | F1, F7                                            |
-| Help and FAQ     | — (how buying works: pay first, then we call you) |
-| Privacy          | —                                                 |
-| About            | —                                                 |
-| Contact          | —                                                 |
-| Partner Enquiry  | F7                                                |
-| Rules            | F13 (a 404 until the owner approves the wording)  |
-| Dog Record       | F14 (private unless its owner says otherwise)     |
+| Page              | Features                                          |
+| ----------------- | ------------------------------------------------- |
+| Home              | F8, F7 (`?ref=`)                                  |
+| Course Catalogue  | F8                                                |
+| Course Detail     | F8, F4, F5 (which dogs qualify, «افزودن به سبد»)  |
+| Login / Register  | F1, F7                                            |
+| Help and FAQ      | — (how buying works: pay first, then we call you) |
+| Privacy           | —                                                 |
+| About             | —                                                 |
+| Contact           | —                                                 |
+| Partner Enquiry   | F7                                                |
+| Rules             | F13 (a 404 until the owner approves the wording)  |
+| Dog Record        | F14 (private unless its owner says otherwise)     |
+| Certificate Check | F14 (valid, revoked or not found)                 |
 
 **Customer (6)**
 

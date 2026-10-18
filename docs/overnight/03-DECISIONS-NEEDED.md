@@ -35,7 +35,7 @@ Facts only the owner or the client has. Each one says what the site does **until
 - **Photos and videos in the diary.** Images in this app are public to anyone with their link and videos are streamed after a check; a diary photo would not be private. Needs a private route for diary media (the same check the evaluation videos use) and the owner's decision on what may ever be public. Interim: text only.
 
 - **Public by default?** The client wants public histories unless hidden; the brief says privacy first. Interim: private by default, public only after the owner of the dog opts in and the opt-in is recorded with a time (revocable).
-- **Certificate wording, signatory and issuance requirements.** Interim: the Admin records a certificate for a **completed** enrollment; the verification page states only the number, dog, course and date.
+- **Certificate wording and design, the signatory, and any issuance requirement beyond «completed».** Interim: the Admin issues a certificate (only for a completed enrollment, once; revocable with a private reason); the public check says valid with the course, the day and the head trainer, revoked, or not found, and never the owner or the dog's name. There is no printable certificate design. A revoked certificate can't be re-issued; say if the owner wants an undo.
 - **Who may write logbook entries.** Only the head trainer exists as staff; no other trainer role was invented.
 
 ## Partners

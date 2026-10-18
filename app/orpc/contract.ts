@@ -1,4 +1,5 @@
 import { cartContract } from "~/orpc/cart/contract";
+import { certificateContract } from "~/orpc/certificate/contract";
 import { checkoutContract } from "~/orpc/checkout/contract";
 import { commissionContract } from "~/orpc/commission/contract";
 import { consentContract } from "~/orpc/consent/contract";
@@ -19,6 +20,7 @@ import { userContract } from "~/orpc/user/contract";
 // Source of truth for the API. The browser client is typed from this, never from the router.
 export const contract = {
   cart: cartContract,
+  certificate: certificateContract,
   checkout: checkoutContract,
   commission: commissionContract,
   consent: consentContract,

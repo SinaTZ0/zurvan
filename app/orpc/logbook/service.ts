@@ -2,6 +2,7 @@ import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { normalizeFileNumber } from "~/lib/dog-file";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import type { UserRole } from "~/lib/user-constants";
+import { isUuid } from "~/lib/uuid";
 import { isDogId } from "~/orpc/dog/validation";
 import type { LogbookEntry } from "~/orpc/logbook/contract";
 import { toLogbookEntry } from "~/orpc/logbook/mapper";
@@ -95,7 +96,7 @@ async function checkEnrollment({
 }): Promise<InvalidResult | null> {
   if (enrollmentId === null) return null;
   // A malformed id would make Postgres throw, and it can't be this dog's enrollment either way.
-  if (!isDogId(enrollmentId) || !(await enrollmentBelongsToDog({ db, enrollmentId, dogId }))) {
+  if (!isUuid(enrollmentId) || !(await enrollmentBelongsToDog({ db, enrollmentId, dogId }))) {
     return { kind: "invalid", errors: [], fields: { enrollmentId: "این دوره مال این سگ نیست." } };
   }
   return null;
@@ -134,7 +135,7 @@ export async function adminUpdateEntry({
   db: Database;
   input: { id: string } & Record<string, unknown>;
 }): Promise<WriteResult> {
-  if (!isDogId(input.id)) return { kind: "not-found" };
+  if (!isUuid(input.id)) return { kind: "not-found" };
   const existing = await findEntryById({ db, id: input.id });
   if (!existing) return { kind: "not-found" };
 

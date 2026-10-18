@@ -609,6 +609,32 @@ export const logbookEntry = pgTable(
   (table) => [index("logbook_entry_dog_id_occurred_on_idx").on(table.dogId, table.occurredOn)],
 );
 
+/*===== Certificates =====*/
+// A course-completion certificate (docs/app-spec.md, F14): a record that the Admin issues for an enrollment he has marked
+// completed, one per enrollment. Its number is what a certificate's QR code and its public verification page carry. A
+// certificate is never deleted; if it was issued by mistake it is revoked (the row stays, with when and why), and the
+// verification page then says so.
+
+export const certificate = pgTable("certificate", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** `ZC-` and ten random hexadecimal characters, made by the database: unique, never edited. */
+  number: text("number")
+    .notNull()
+    .unique()
+    .default(sql`'ZC-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))`),
+  enrollmentId: uuid("enrollment_id")
+    .notNull()
+    .unique()
+    .references(() => enrollment.id, { onDelete: "restrict" }),
+  issuedBy: text("issued_by")
+    .notNull()
+    .references(() => user.id, { onDelete: "restrict" }),
+  issuedAt: timestamp("issued_at").notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at"),
+  /** Why the Admin revoked it. Private: the verification page says only that it is revoked. */
+  revokedReason: text("revoked_reason"),
+});
+
 /*===== Partners =====*/
 // Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`
 // role plus this row, which the Admin creates with the account.

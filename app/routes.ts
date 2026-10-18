@@ -15,6 +15,8 @@ export default [
     route("rules", "routes/rules/rules.tsx"),
     // A dog's record: the lookup, and what its QR code opens (private unless its owner says otherwise).
     route("logbook/:fileNumber?", "routes/logbook/logbook.tsx"),
+    // Checks a certificate: what its QR code opens.
+    route("certificate/:number", "routes/certificate/certificate.tsx"),
     route("join/partner", "routes/join_partner/join-partner.tsx"),
   ]),
 

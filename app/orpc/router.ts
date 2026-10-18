@@ -6,6 +6,13 @@ import {
   removeFromCartProcedure,
 } from "~/orpc/cart/procedure";
 import {
+  adminIssueCertificateProcedure,
+  adminListCertificatesProcedure,
+  adminRevokeCertificateProcedure,
+  listMyCertificatesProcedure,
+  verifyCertificateProcedure,
+} from "~/orpc/certificate/procedure";
+import {
   adminDogEligibilityProcedure,
   adminListPaymentsProcedure,
   dogEligibilityProcedure,
@@ -92,6 +99,15 @@ export const router = implementer.router({
     remove: removeFromCartProcedure,
     clear: clearCartProcedure,
     merge: mergeCartProcedure,
+  },
+  certificate: {
+    listMine: listMyCertificatesProcedure,
+    verify: verifyCertificateProcedure,
+    admin: {
+      list: adminListCertificatesProcedure,
+      issue: adminIssueCertificateProcedure,
+      revoke: adminRevokeCertificateProcedure,
+    },
   },
   checkout: {
     eligibility: dogEligibilityProcedure,
