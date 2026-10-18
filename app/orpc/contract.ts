@@ -12,6 +12,7 @@ import { logbookContract } from "~/orpc/logbook/contract";
 import { mediaContract } from "~/orpc/media/contract";
 import { partnerContract } from "~/orpc/partner/contract";
 import { passwordContract } from "~/orpc/password/contract";
+import { refundContract } from "~/orpc/refund/contract";
 import { settingContract } from "~/orpc/setting/contract";
 import { smsContract } from "~/orpc/sms/contract";
 import { userContract } from "~/orpc/user/contract";
@@ -33,6 +34,7 @@ export const contract = {
   media: mediaContract,
   partner: partnerContract,
   password: passwordContract,
+  refund: refundContract,
   setting: settingContract,
   sms: smsContract,
   user: userContract,

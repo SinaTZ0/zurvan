@@ -6,9 +6,11 @@ import { formatToman } from "~/lib/course-format";
 import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { AdminPayment } from "~/orpc/checkout/contract";
+import type { Refund } from "~/orpc/refund/contract";
 
 import { isFlagged } from "../payment-views";
 import { PaymentItemRow } from "./payment-item-row";
+import { RefundSection } from "./refund-section";
 
 /*===== Payment Slip =====*/
 /**
@@ -16,7 +18,7 @@ import { PaymentItemRow } from "./payment-item-row";
  * dashed rule; on phones the date and status form the header, the total and customer follow, and the gateway details
  * close the slip. A slip with a flagged item gets a 2px destructive mark on its start edge so it shows while scrolling.
  */
-export function PaymentSlip({ payment }: { payment: AdminPayment }) {
+export function PaymentSlip({ payment, refunds }: { payment: AdminPayment; refunds: readonly Refund[] }) {
   const titleId = useId();
   const moment = payment.paidAt ?? payment.createdAt;
   const flagged = isFlagged(payment);
@@ -66,6 +68,9 @@ export function PaymentSlip({ payment }: { payment: AdminPayment }) {
           <PaymentItemRow key={item.id} item={item} customer={payment.customer} />
         ))}
       </ul>
+
+      {/*===== Refunds =====*/}
+      <RefundSection payment={payment} refunds={refunds} />
     </article>
   );
 }

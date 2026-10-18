@@ -100,15 +100,20 @@ export async function insertCertificate({
   return rows.length > 0;
 }
 
-/** Marks a certificate revoked, once: a conditional update, so an already revoked one keeps its first time and reason. */
+/**
+ * Marks a certificate revoked, once: a conditional update, so an already revoked one keeps its first time and reason.
+ * Returns whether this call revoked it.
+ */
 export async function markRevoked({
   db,
   id,
   reason,
   revokedAt,
-}: Executor & { id: string; reason: string; revokedAt: Date }): Promise<void> {
-  await db
+}: Executor & { id: string; reason: string; revokedAt: Date }): Promise<boolean> {
+  const rows = await db
     .update(certificate)
     .set({ revokedAt, revokedReason: reason })
-    .where(and(eq(certificate.id, id), isNull(certificate.revokedAt)));
+    .where(and(eq(certificate.id, id), isNull(certificate.revokedAt)))
+    .returning({ id: certificate.id });
+  return rows.length > 0;
 }

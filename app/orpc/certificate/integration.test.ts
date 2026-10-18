@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { certificate, course, dog, enrollment, payment, paymentItem, user } from "~/db/schema";
+import { auditEvent, certificate, course, dog, enrollment, payment, paymentItem, user } from "~/db/schema";
 import { CERTIFICATE_PREFIX } from "~/lib/certificate";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import {
@@ -153,6 +153,7 @@ beforeAll(async () => {
 afterAll(async () => {
   const ids = people.map((who) => who.id);
   const paymentIds = db.select({ id: payment.id }).from(payment).where(inArray(payment.customerId, ids));
+  await db.delete(auditEvent).where(inArray(auditEvent.actorId, ids));
   await db.delete(certificate).where(inArray(certificate.issuedBy, ids));
   await db.delete(enrollment).where(inArray(enrollment.customerId, ids));
   await db.delete(paymentItem).where(inArray(paymentItem.paymentId, paymentIds));
@@ -242,11 +243,11 @@ describe("revoking a certificate", () => {
     if (issued.kind !== "success") throw new Error("Could not issue the certificate.");
     const { id, number } = issued.certificate;
 
-    const refused = await adminRevokeCertificate({ db, id, reason: "   " });
+    const refused = await adminRevokeCertificate({ db, adminId: admin.id, id, reason: "   " });
     expect(refused).toMatchObject({ kind: "invalid", fields: { reason: expect.any(String) } });
     expect((await verifyCertificate({ db, number })).kind).toBe("valid");
 
-    const revoked = await adminRevokeCertificate({ db, id, reason: "صادر شدن اشتباهی" });
+    const revoked = await adminRevokeCertificate({ db, adminId: admin.id, id, reason: "صادر شدن اشتباهی" });
     expect(revoked).toMatchObject({ kind: "success", certificate: { id, revokedAt: expect.any(Date) } });
 
     const check = await verifyCertificate({ db, number });
@@ -256,6 +257,14 @@ describe("revoking a certificate", () => {
 
     const [row] = await db.select().from(certificate).where(eq(certificate.id, id));
     expect(row?.revokedReason).toBe("صادر شدن اشتباهی");
+
+    // The trail says it was issued and revoked, by the Admin, and keeps the reason out.
+    const trail = await db.select().from(auditEvent).where(eq(auditEvent.entityId, id));
+    expect(trail.map((entry) => entry.action)).toEqual(
+      expect.arrayContaining(["certificate.issued", "certificate.revoked"]),
+    );
+    expect(trail).toHaveLength(2);
+    expect(JSON.stringify(trail)).not.toContain("اشتباهی");
   });
 
   it("keeps the first time and reason when revoked again, is not found for an unknown id, and can't be issued anew", async () => {
@@ -263,7 +272,7 @@ describe("revoking a certificate", () => {
     const before = row?.revokedAt?.getTime();
     expect(before).toBeDefined();
 
-    const again = await adminRevokeCertificate({ db, id: row?.id ?? "", reason: "دلیل دوم" });
+    const again = await adminRevokeCertificate({ db, adminId: admin.id, id: row?.id ?? "", reason: "دلیل دوم" });
     expect(again.kind).toBe("success");
     const [after] = await db
       .select()
@@ -272,8 +281,12 @@ describe("revoking a certificate", () => {
     expect(after?.revokedAt?.getTime()).toBe(before);
     expect(after?.revokedReason).toBe("صادر شدن اشتباهی");
 
-    expect(await adminRevokeCertificate({ db, id: randomUUID(), reason: "x" })).toEqual({ kind: "not-found" });
-    expect(await adminRevokeCertificate({ db, id: "nope", reason: "x" })).toEqual({ kind: "not-found" });
+    expect(await adminRevokeCertificate({ db, adminId: admin.id, id: randomUUID(), reason: "x" })).toEqual({
+      kind: "not-found",
+    });
+    expect(await adminRevokeCertificate({ db, adminId: admin.id, id: "nope", reason: "x" })).toEqual({
+      kind: "not-found",
+    });
 
     // Issuing again returns the revoked certificate: revocation is final.
     const reissued = await issue(enrollmentIds.completed);

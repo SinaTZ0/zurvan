@@ -25,18 +25,20 @@ export const meta: Route.MetaFunction = () => [{ title: "پرداخت‌ها | �
 // The whole list, newest first, from the API. Filtering and paging happen in the component (URL state), so the loader
 // doesn't read any search params.
 export async function loader({ request }: Route.LoaderArgs) {
-  const payments = await createServerClient(request).checkout.admin.payments({});
+  const client = createServerClient(request);
+  const [payments, refunds] = await Promise.all([client.checkout.admin.payments({}), client.refund.admin.list({})]);
 
-  return { payments };
+  return { payments, refunds };
 }
 
 /*===== Page =====*/
 /**
- * F5's Admin ledger: every payment, with the items that were paid for but got no enrollment pulled to the top. The
- * Admin gives that money back outside the app; this page writes nothing.
+ * F5's Admin ledger: every payment, with the items that were paid for but got no enrollment pulled to the top. Money is
+ * given back outside the app, but the decision, the amount, the transfer's reference and who did it are recorded here:
+ * each paid payment has its refunds.
  */
 export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) {
-  const { payments } = loaderData;
+  const { payments, refunds } = loaderData;
 
   /*------ URL State ------*/
   // Shallow: the list is already here, so a filter or a page only changes what is shown.
@@ -105,7 +107,11 @@ export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) 
         ) : (
           visible.map((payment) =>
             payment.status === "paid" ? (
-              <PaymentSlip key={payment.id} payment={payment} />
+              <PaymentSlip
+                key={payment.id}
+                payment={payment}
+                refunds={refunds.filter((entry) => entry.paymentId === payment.id)}
+              />
             ) : (
               <CollapsedPayment key={payment.id} payment={payment} />
             ),

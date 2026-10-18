@@ -85,6 +85,13 @@ import {
   updateMyPartnerProfileProcedure,
 } from "~/orpc/partner/procedure";
 import { passwordStatusProcedure, setPasswordProcedure } from "~/orpc/password/procedure";
+import {
+  adminCancelRefundProcedure,
+  adminCreateRefundProcedure,
+  adminListRefundsProcedure,
+  adminMarkRefundPaidProcedure,
+  listMyRefundsProcedure,
+} from "~/orpc/refund/procedure";
 import { adminListSmsProcedure } from "~/orpc/sms/procedure";
 import {
   adminGetSettingsProcedure,
@@ -213,6 +220,15 @@ export const router = implementer.router({
   password: {
     status: passwordStatusProcedure,
     set: setPasswordProcedure,
+  },
+  refund: {
+    listMine: listMyRefundsProcedure,
+    admin: {
+      list: adminListRefundsProcedure,
+      create: adminCreateRefundProcedure,
+      markPaid: adminMarkRefundPaidProcedure,
+      cancel: adminCancelRefundProcedure,
+    },
   },
   sms: {
     admin: {

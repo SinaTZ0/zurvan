@@ -15,8 +15,8 @@ function isEnrollmentStatus(status: string): status is EnrollmentStatus {
 /*===== Torn Slip =====*/
 /**
  * A paid item that got no enrollment: the torn part of the slip, under its line. The wording names what happened and
- * what to do, and never says the customer owes anything: the money was paid, and the app records no refunds, so the
- * flag can't be cleared from here.
+ * what to do, and never says the customer owes anything: the money was paid. The flag stays while the item has no
+ * enrollment; giving the money back is recorded under «بازپرداخت‌ها» at the foot of the slip.
  */
 function TornSlip({ customer }: { customer: AdminPayment["customer"] }) {
   return (
@@ -25,7 +25,7 @@ function TornSlip({ customer }: { customer: AdminPayment["customer"] }) {
       <div>
         <p className="text-sm font-bold">پرداخت شد ولی ثبت‌نام نشد</p>
         <p className="mt-1 text-sm text-pretty text-muted-foreground">
-          پول این مورد گرفته شده ولی دوره ثبت نشد. پولش را بیرون از برنامه برگردان.
+          پول این مورد گرفته شده ولی دوره ثبت نشد. برای برگرداندن پولش، پایین همین کارت «ثبت بازپرداخت» را بزن.
         </p>
       </div>
       <div className="mt-3 shrink-0 lg:mt-0">

@@ -1,4 +1,5 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
+import { recordAudit } from "~/lib/audit.server";
 import { normalizeCertificateNumber } from "~/lib/certificate";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { z } from "zod";
@@ -79,9 +80,23 @@ export async function adminIssueCertificate({
   if (!found) return { kind: "not-found" };
   if (found.status !== "completed") return { kind: "not-completed" };
 
-  await insertCertificate({ db, enrollmentId, issuedBy: issuerId, issuedAt: now });
-  const saved = await findCertificateByEnrollment({ db, enrollmentId });
-  if (!saved) throw new Error(`adminIssueCertificate: certificate for ${enrollmentId} could not be read back`);
+  // The certificate and its line in the audit trail stand or fall together; a second press writes neither again.
+  const saved = await db.transaction(async (tx) => {
+    const written = await insertCertificate({ db: tx, enrollmentId, issuedBy: issuerId, issuedAt: now });
+    const row = await findCertificateByEnrollment({ db: tx, enrollmentId });
+    if (!row) throw new Error(`adminIssueCertificate: certificate for ${enrollmentId} could not be read back`);
+    if (written) {
+      await recordAudit({
+        db: tx,
+        actorId: issuerId,
+        action: "certificate.issued",
+        entityType: "certificate",
+        entityId: row.certificate.id,
+        data: { number: row.certificate.number, enrollmentId },
+      });
+    }
+    return row;
+  });
   return { kind: "success", certificate: toCertificate(saved) };
 }
 
@@ -96,11 +111,13 @@ const reasonSchema = z
 /** Revokes a certificate with a reason. Revoking again keeps the first time and reason. */
 export async function adminRevokeCertificate({
   db,
+  adminId,
   id,
   reason,
   now = new Date(),
 }: {
   db: Database;
+  adminId: string;
   id: string;
   reason: string;
   now?: Date;
@@ -114,9 +131,23 @@ export async function adminRevokeCertificate({
     return { kind: "invalid", errors, fields };
   }
 
-  await markRevoked({ db, id, reason: parsed.data, revokedAt: now });
-  const saved = await findCertificateById({ db, id });
-  if (!saved) throw new Error(`adminRevokeCertificate: certificate ${id} could not be read back`);
+  const saved = await db.transaction(async (tx) => {
+    const revoked = await markRevoked({ db: tx, id, reason: parsed.data, revokedAt: now });
+    const row = await findCertificateById({ db: tx, id });
+    if (!row) throw new Error(`adminRevokeCertificate: certificate ${id} could not be read back`);
+    // The reason is the Admin's own and stays out of the trail; the trail says that it was revoked, by whom and when.
+    if (revoked) {
+      await recordAudit({
+        db: tx,
+        actorId: adminId,
+        action: "certificate.revoked",
+        entityType: "certificate",
+        entityId: id,
+        data: { number: row.certificate.number },
+      });
+    }
+    return row;
+  });
   return { kind: "success", certificate: toCertificate(saved) };
 }
 

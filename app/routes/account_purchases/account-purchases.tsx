@@ -19,20 +19,24 @@ export const meta: Route.MetaFunction = () => [{ title: "خریدها | آموز
 
 /*===== Loader =====*/
 export async function loader({ request }: Route.LoaderArgs) {
-  const payments = await createServerClient(request).checkout.payments();
+  const client = createServerClient(request);
+  const [payments, refunds] = await Promise.all([client.checkout.payments(), client.refund.listMine()]);
 
   // The API already returns newest first; sorting again keeps the page right if that ever changes.
-  // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
-  return { payments: [...payments].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) };
+  return {
+    // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
+    payments: [...payments].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+    refunds,
+  };
 }
 
 /*===== Purchases =====*/
 /**
  * F5's record of what was paid: one slip per payment, with the dog and course on each line and what the payment turned
- * into. The app only records; there is nothing to pay, refund or edit here.
+ * into, and what was given back. The app only records; there is nothing to pay or edit here.
  */
 export default function AccountPurchasesPage({ loaderData }: Route.ComponentProps) {
-  const { payments } = loaderData;
+  const { payments, refunds } = loaderData;
 
   return (
     <div className="site-container py-8 lg:py-14">
@@ -54,7 +58,11 @@ export default function AccountPurchasesPage({ loaderData }: Route.ComponentProp
       ) : (
         <div className="flex flex-col gap-6 lg:gap-8">
           {payments.map((payment) => (
-            <PaymentSlip key={payment.id} payment={payment} />
+            <PaymentSlip
+              key={payment.id}
+              payment={payment}
+              refunds={refunds.filter((entry) => entry.paymentId === payment.id)}
+            />
           ))}
         </div>
       )}

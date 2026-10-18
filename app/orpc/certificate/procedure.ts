@@ -55,7 +55,12 @@ export const adminRevokeCertificateProcedure = base.certificate.admin.revoke
   .use(requireRoleMiddleware("admin"))
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await adminRevokeCertificate({ db: context.db, id: input.id, reason: input.reason });
+    const result = await adminRevokeCertificate({
+      db: context.db,
+      adminId: context.user.id,
+      id: input.id,
+      reason: input.reason,
+    });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     if (result.kind === "invalid")
       throw errors.INVALID_INPUT({ data: { errors: result.errors, fields: result.fields } });

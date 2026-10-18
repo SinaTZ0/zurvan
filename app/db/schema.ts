@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   primaryKey,
@@ -641,6 +642,67 @@ export const certificate = pgTable("certificate", {
   /** Why the Admin revoked it. Private: the verification page says only that it is revoked. */
   revokedReason: text("revoked_reason"),
 });
+
+/*===== Refunds =====*/
+// The ledger of money given back (docs/app-spec.md, F5). The Admin decides a refund and records it here, pays it out
+// outside the app (a bank transfer), then marks it paid with the transfer's reference; a refund decided by mistake is
+// cancelled before it is paid. Nothing is deleted. The sum of the refunds that stand (pending or paid) for a payment can
+// never exceed what that payment charged, and the check runs under a lock on the payment, so two refunds can't both slip
+// under the limit.
+
+export const refund = pgTable(
+  "refund",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    paymentId: uuid("payment_id")
+      .notNull()
+      .references(() => payment.id, { onDelete: "restrict" }),
+    /** The item (and so the course) the refund is for, or null for the payment as a whole. Informational: the limit is the payment's. */
+    paymentItemId: uuid("payment_item_id").references(() => paymentItem.id, { onDelete: "restrict" }),
+    /** Rial. */
+    amount: bigint("amount", { mode: "number" }).notNull(),
+    /** `pending` (decided, not yet paid out), `paid` (paid out; `reference` says how) or `cancelled` (withdrawn before it was paid). */
+    status: text("status").notNull().default("pending"),
+    /** Why, in the Admin's words. Private to the Admin: the customer sees the amount, the state and the reference. */
+    reason: text("reason").notNull(),
+    /** The bank transfer's reference, written when the Admin marks it paid. */
+    reference: text("reference"),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    paidAt: timestamp("paid_at"),
+    cancelledAt: timestamp("cancelled_at"),
+  },
+  (table) => [
+    index("refund_payment_id_idx").on(table.paymentId),
+    index("refund_status_created_at_idx").on(table.status, table.createdAt),
+    check("refund_amount_check", sql`${table.amount} > 0`),
+  ],
+);
+
+/*===== Audit Trail =====*/
+// What the Admin did that touches money or a person's record, with who, what and when (docs/app-spec.md, F5 and F14). Rows
+// are written and never changed or deleted. `data` holds the few facts worth keeping (an amount, a reference); it never
+// holds a password, a phone number or the text of a private note.
+
+export const auditEvent = pgTable(
+  "audit_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** e.g. `refund.created`, `refund.paid`, `refund.cancelled`, `certificate.issued`, `certificate.revoked`. */
+    action: text("action").notNull(),
+    /** What it was done to: `refund`, `certificate`. */
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    data: jsonb("data"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("audit_event_entity_idx").on(table.entityType, table.entityId, table.createdAt)],
+);
 
 /*===== Partners =====*/
 // Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`

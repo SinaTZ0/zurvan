@@ -11,6 +11,7 @@ export const SMS_KINDS = [
   "enrollment-completed",
   "enrollment-cancelled",
   "commission-paid",
+  "refund-paid",
 ] as const;
 
 export type SmsKind = (typeof SMS_KINDS)[number];
@@ -25,6 +26,7 @@ export const SMS_KIND_LABELS: Record<SmsKind, string> = {
   "enrollment-completed": "تمام شد",
   "enrollment-cancelled": "لغو شد",
   "commission-paid": "پورسانت پرداخت شد",
+  "refund-paid": "بازپرداخت پرداخت شد",
 };
 
 /** Messages per page of the outbox. */

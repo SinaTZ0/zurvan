@@ -4,7 +4,18 @@ import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { certificate, consent, course, dog, enrollment, logbookEntry, payment, paymentItem, user } from "~/db/schema";
+import {
+  auditEvent,
+  certificate,
+  consent,
+  course,
+  dog,
+  enrollment,
+  logbookEntry,
+  payment,
+  paymentItem,
+  user,
+} from "~/db/schema";
 import { FILE_NUMBER_PREFIX, normalizeFileNumber } from "~/lib/dog-file";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import type { UserRole } from "~/lib/user-constants";
@@ -123,6 +134,7 @@ afterAll(async () => {
   const ids = people.map((who) => who.id);
   const paymentIds = db.select({ id: payment.id }).from(payment).where(inArray(payment.customerId, ids));
   const dogIds = db.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, ids));
+  await db.delete(auditEvent).where(inArray(auditEvent.actorId, ids));
   await db.delete(certificate).where(inArray(certificate.issuedBy, ids));
   await db.delete(consent).where(inArray(consent.userId, ids));
   await db.delete(logbookEntry).where(inArray(logbookEntry.dogId, dogIds));
@@ -434,7 +446,7 @@ describe("the public record", () => {
 
   it("drops a revoked certificate and an unfinished course", async () => {
     const [row] = await db.select().from(certificate).where(eq(certificate.enrollmentId, enrollments.ana));
-    await adminRevokeCertificate({ db, id: row?.id ?? "", reason: "آزمایش" });
+    await adminRevokeCertificate({ db, adminId: admin.id, id: row?.id ?? "", reason: "آزمایش" });
 
     const answer = await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING });
     if (answer.kind !== "public") throw new Error("Expected a public record.");

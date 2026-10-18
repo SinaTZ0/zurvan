@@ -41,6 +41,9 @@ export const ERROR_STATUS_MAP = {
   RULES_NOT_ACCEPTED: 409,
   // A certificate is issued only for a completed enrollment.
   NOT_COMPLETED: 409,
+  // A refund is for a paid payment, and is answered once.
+  NOT_PAID: 409,
+  NOT_PENDING: 409,
   NOT_PUBLISHED: 409,
   // The request is fine but the session is too old for a sensitive change: sign in again, then retry.
   SESSION_TOO_OLD: 403,

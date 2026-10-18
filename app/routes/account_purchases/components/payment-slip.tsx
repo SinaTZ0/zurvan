@@ -4,6 +4,8 @@ import { formatToman } from "~/lib/course-format";
 import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { Payment } from "~/orpc/checkout/contract";
+import type { MyRefund } from "~/orpc/refund/contract";
+import { REFUND_STATUS_LABELS } from "~/orpc/refund/constants";
 
 import { PaymentLine } from "./payment-line";
 import { PaymentStatusBadge } from "~/components/payment-status-badge";
@@ -14,7 +16,9 @@ import { PaymentStatusBadge } from "~/components/payment-status-badge";
  * rule separates it from the lines it paid for. Desktop puts the stub at the start (4/12) and the lines beside it
  * (8/12); on phones the stub becomes the slip's header and the dashed rule runs under it.
  */
-export function PaymentSlip({ payment }: { payment: Payment }) {
+export function PaymentSlip({ payment, refunds }: { payment: Payment; refunds: readonly MyRefund[] }) {
+  // A refund the trainer withdrew before paying it was never owed to anyone: only the ones still to come or already paid show.
+  const shownRefunds = refunds.filter((entry) => entry.status !== "cancelled");
   const titleId = useId();
   const moment = payment.paidAt ?? payment.createdAt;
 
@@ -75,6 +79,26 @@ export function PaymentSlip({ payment }: { payment: Payment }) {
         {payment.items.map((item) => (
           <PaymentLine key={item.id} item={item} paymentStatus={payment.status} />
         ))}
+        {shownRefunds.length > 0 && (
+          <li className="flex flex-col gap-2 pt-4">
+            <p className="font-bold">بازپرداخت</p>
+            <ul className="flex flex-col gap-1.5">
+              {shownRefunds.map((entry) => (
+                <li key={entry.id} className="text-sm text-pretty text-muted-foreground">
+                  <span className="font-bold text-foreground tabular-nums">{formatToman(entry.amount)}</span> ·{" "}
+                  {REFUND_STATUS_LABELS[entry.status]}
+                  {entry.paidAt && ` ${formatJalaliTimestamp(entry.paidAt)}`}
+                  {entry.reference && (
+                    <>
+                      {" "}
+                      · کد پیگیری <bdi dir="ltr">{entry.reference}</bdi>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </li>
+        )}
       </ul>
     </article>
   );
