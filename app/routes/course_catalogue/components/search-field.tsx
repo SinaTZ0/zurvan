@@ -58,7 +58,7 @@ export function SearchField({
             maxLength={MAX_QUERY_LENGTH}
             autoComplete="off"
             enterKeyHint="search"
-            placeholder="مثلاً سگ همدم یا CGC"
+            placeholder="مثلاً سگ همدم، CGC یا IGP"
             onChange={(event) => onChange(event.target.value)}
             // Our own clear button replaces the browser's cross.
             className="[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none"

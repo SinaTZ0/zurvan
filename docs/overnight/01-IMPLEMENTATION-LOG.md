@@ -55,3 +55,13 @@ Newest entries are added at the bottom of each phase. Commits are on `feat/zurva
 - **Mascot plan and assets.** `05-MASCOT-SPEC.md`: growth stages, state rules, asset inventory and prompt proposals. **Blocker:** Zurvann's authentic art does not exist yet; the three stand-in dogs stay and nothing claims otherwise.
 - **Performance.** Only the dog showing at first paint gets `fetchPriority="high"`, and the server picks it, so the largest paint is the right image on a full load.
 - Checks: `typecheck`, `oxlint` and the hero-state tests clean.
+
+## Phase D: contextual search
+
+### Result
+
+- **Courses.** The catalogue search (title, Latin name, summary) now also reads the family's tab label (the course's kind: «فرمان‌پذیری»، «سگ همدم»، «ورزشی»…), the promised results (`highlights`) and the curriculum lines (`commands`, which hold the sport branches BH, IGP 1 to 3, FH, WUSV). Each field is matched on its own; Persian folding (ی/ي، ک/ك، ZWNJ, spaces, digits, case) is unchanged. The placeholder now reads «مثلاً سگ همدم، CGC یا IGP». Tests: `course_catalogue/search.test.ts` (5, including «ورزشی» typed with an Arabic ي, `igp`, and "no match across two fields").
+- **No search in the menu or on pages with nothing to search.** The header search is already gone (Phase A).
+- **Articles.** No article route or content store exists, so nothing was built and nothing pretends to search articles. The behaviour the owner described («ادرار هیجانی» returning matches or a truthful empty state) belongs to the article feature; it is in `03-DECISIONS-NEEDED.md`.
+- **Logbook.** A public logbook search, if it ships, must read only records marked public (Phase G).
+- Checks: `typecheck`, `oxlint` and the search tests clean.
