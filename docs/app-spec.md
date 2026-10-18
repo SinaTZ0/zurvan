@@ -121,7 +121,7 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 **Who:** the customer.
 
-**The cart lives in the browser only** (local storage), not in the database. It holds items of **one course for one dog**. A customer can add several (two courses for two dogs, say) and pay for them all at once.
+**The cart lives in the customer's account** (a `cart_item` table), so it follows them to another device; the browser keeps a copy in local storage so the page shows it at once. It holds items of **one course for one dog**. A customer can add several (two courses for two dogs, say) and pay for them all at once.
 
 1. **Add to cart.** On Course Detail the customer picks one of their dogs and presses «افزودن به سبد». Picking a dog needs signing in. The same course for the same dog can't be in the cart twice.
 2. **Cart.** It shows each item with the course's **current price** and its eligibility ([F4](#f4-eligibility)), read fresh from the server; an item that isn't eligible any more is marked and can't be paid for. The total is the sum of the eligible items.
@@ -137,7 +137,8 @@ Prices are fixed by the course. Discounts and changing a price for one customer 
 - **The gateway calls back twice:** a unique index on the gateway's payment id, and a pending payment that can be settled only once, reject the second one.
 - **An item stops being eligible between checkout and the callback** (the same course bought for the same dog in another tab, or the Admin archives the course): the payment is still recorded as paid, but that item gets **no enrollment**. It is flagged on the Admin Dashboard as **paid, not enrolled**, and the Admin gives that money back outside the app.
 - **A price changes while the course is in the cart:** the cart always shows the current price; the customer pays what it showed at «پرداخت».
-- **Another browser or device:** the cart isn't shared. That's fine at this size.
+- **Another browser or device:** the cart is the account's, so it is there on any device. It is read again when the tab is used, so what was added elsewhere appears. A cart a browser held from before carts lived in the account is merged in once; after that the account's cart wins, so an item bought or removed elsewhere isn't put back by an out-of-date copy. Signing out empties the browser's copy and keeps the account's.
+- **A payment settles:** the items it bought leave the cart, on every device.
 
 **Pages:** Course Detail · Cart · Purchases
 

@@ -501,6 +501,28 @@ export const enrollment = pgTable(
   ],
 );
 
+/*===== Cart =====*/
+// The customer's cart (F5), kept here so it follows them to another device. One row per course for one dog. It is a
+// working list, not a record: nothing points at it, so it goes with its owner, dog or course. The rows are the customer's
+// own; a dog that is not theirs never gets in (the API checks), and paying for an item takes it out.
+
+export const cartItem = pgTable(
+  "cart_item",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "cascade" }),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => course.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.dogId, table.courseId] })],
+);
+
 /*===== Partners =====*/
 // Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`
 // role plus this row, which the Admin creates with the account.

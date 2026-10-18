@@ -10,6 +10,13 @@ import type { CartItem } from "~/orpc/checkout/contract";
 /** The localStorage key. Internal identifiers keep the `zurvan` name (see CLAUDE.md). */
 export const CART_STORAGE_KEY = "zurvan-cart";
 
+/**
+ * Set once this browser has been brought together with the account's cart. A cart held here before that (from when carts
+ * lived only in the browser) is merged into the account; after it, the account's cart is the truth and anything here the
+ * account no longer has (it was bought or removed elsewhere) is dropped instead of being put back.
+ */
+export const CART_SYNCED_KEY = "zurvan-cart-synced";
+
 /** jotai's synchronous storage shape (its own type isn't exported from `jotai/utils`). */
 type SyncStorage<Value> = {
   getItem: (key: string, initialValue: Value) => Value;
@@ -65,7 +72,9 @@ export function createCartStorage(raw: SyncStorage<unknown>): SyncStorage<CartIt
 
 /*===== Source State =====*/
 /**
- * The cart: one course for one dog per item, kept in the browser only (F5).
+ * The cart as this browser shows it: one course for one dog per item (F5). The customer's account keeps the real copy
+ * on the server, so the cart follows them to another device; this atom is what every page reads, kept in localStorage so
+ * it appears at once and survives a reload. `CartSync` (mounted for a signed-in customer) keeps the two together.
  *
  * The atom is `[]` on the server and during hydration, and reads localStorage when the first component subscribes to it.
  * So render anything that depends on the stored cart only after `useHydrated()`, and have at least one mounted
@@ -81,6 +90,46 @@ export const cartItemsAtom = atomWithStorage<CartItem[]>(
 /*===== Derived State =====*/
 export const cartCountAtom = atom((get) => get(cartItemsAtom).length);
 
+/*===== Server Copy =====*/
+/** What the cart needs from the account's copy on the server. Every answer is the whole cart afterwards. */
+export type CartServer = {
+  get: () => Promise<CartItem[]>;
+  add: (item: CartItem) => Promise<CartItem[]>;
+  remove: (item: CartItem) => Promise<CartItem[]>;
+  clear: () => Promise<CartItem[]>;
+};
+
+/** Set by `CartSync` while a customer is signed in; without it the actions below change only this browser. */
+export const cartServerAtom = atom<CartServer | null>(null);
+
+/** How many changes are on their way to the server. While there are any, an older copy must not replace the screen. */
+export const cartSyncingAtom = atom(0);
+
+/** Counts the changes sent, so that only the newest answer is shown: an earlier one may arrive after a later one. */
+let newestRequest = 0;
+
+/**
+ * Sends one change to the server and shows the cart it answers with. The browser changed first (so the page never
+ * waits); the answer also carries what was added on another device. If the server refuses or can't be reached the
+ * real cart is asked for instead, and if that fails too the browser keeps what it has: `CartSync` merges it into the
+ * account the next time the customer opens the site.
+ */
+const pushToServerAtom = atom(null, async (get, set, send: (server: CartServer) => Promise<CartItem[]>) => {
+  const server = get(cartServerAtom);
+  if (!server) return;
+
+  const mine = ++newestRequest;
+  set(cartSyncingAtom, (count) => count + 1);
+  try {
+    const items = await send(server).catch(() => server.get());
+    if (mine === newestRequest) set(cartItemsAtom, parseStoredCart(items));
+  } catch {
+    // Offline or signed out: the browser's copy stands.
+  } finally {
+    set(cartSyncingAtom, (count) => count - 1);
+  }
+});
+
 /*===== Actions =====*/
 /** Adds a course-and-dog pair. Returns `"duplicate"` if it is already there and `"full"` at `CART_MAX_ITEMS`. */
 export const addCartItemAtom = atom(null, (get, set, item: CartItem): "added" | "duplicate" | "full" => {
@@ -89,7 +138,9 @@ export const addCartItemAtom = atom(null, (get, set, item: CartItem): "added" | 
   if (items.length >= CART_MAX_ITEMS) return "full";
 
   // Store only the two known fields: callers may pass a bigger object.
-  set(cartItemsAtom, [...items, { courseSlug: item.courseSlug, dogId: item.dogId }]);
+  const stored = { courseSlug: item.courseSlug, dogId: item.dogId };
+  set(cartItemsAtom, [...items, stored]);
+  void set(pushToServerAtom, (server) => server.add(stored));
   return "added";
 });
 
@@ -98,8 +149,27 @@ export const removeCartItemAtom = atom(null, (get, set, item: CartItem) => {
     cartItemsAtom,
     get(cartItemsAtom).filter((existing) => !isSameCartItem(existing, item)),
   );
+  // The cart page passes a bigger object (the reviewed item); the API takes exactly the two fields.
+  const target = { courseSlug: item.courseSlug, dogId: item.dogId };
+  void set(pushToServerAtom, (server) => server.remove(target));
 });
 
+/** Empties the cart, here and on the server: what the customer asked for. Sign-out uses `resetCartAtom` instead. */
 export const clearCartAtom = atom(null, (_get, set) => {
   set(cartItemsAtom, []);
+  void set(pushToServerAtom, (server) => server.clear());
+});
+
+/**
+ * Forgets this browser's copy without touching the account's: signing out must not empty the cart the customer will
+ * find again, and the next person on this device must not inherit it. Any answer still on its way is dropped.
+ */
+export const resetCartAtom = atom(null, (_get, set) => {
+  newestRequest++;
+  set(cartItemsAtom, []);
+});
+
+/** Replaces the browser's copy with what the server holds, for `CartSync`. */
+export const setCartItemsAtom = atom(null, (_get, set, items: readonly CartItem[]) => {
+  set(cartItemsAtom, parseStoredCart(items));
 });

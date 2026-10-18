@@ -188,8 +188,12 @@ describe("signing in with a password", () => {
       hash,
     });
 
+    // A number nobody has, new each run: its wrong passwords are counted like any other's, so it is cleaned up with the rest.
+    const unknownNumber = `09${randomInt(100_000_000, 999_999_999)}`;
+    created.phoneNumbers.push(unknownNumber);
+
     const wrong = await trySignIn({ phoneNumber: person.phoneNumber, password: "ramz-e-eshtebah-1" });
-    const unknown = await trySignIn({ phoneNumber: "09100000000", password: "ramz-e-eshtebah-1" });
+    const unknown = await trySignIn({ phoneNumber: unknownNumber, password: "ramz-e-eshtebah-1" });
     expect(wrong).toMatchObject({ ok: false, status: 401 });
     expect(unknown).toMatchObject({ ok: false, status: 401 });
     expect(unknown).toEqual(wrong);

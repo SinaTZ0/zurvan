@@ -1,4 +1,11 @@
 import {
+  addToCartProcedure,
+  clearCartProcedure,
+  getCartProcedure,
+  mergeCartProcedure,
+  removeFromCartProcedure,
+} from "~/orpc/cart/procedure";
+import {
   adminDogEligibilityProcedure,
   adminListPaymentsProcedure,
   dogEligibilityProcedure,
@@ -71,6 +78,13 @@ import { adminListUsersProcedure, adminSetUserStatusProcedure, adminUpdateUserPr
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
 export const router = implementer.router({
+  cart: {
+    get: getCartProcedure,
+    add: addToCartProcedure,
+    remove: removeFromCartProcedure,
+    clear: clearCartProcedure,
+    merge: mergeCartProcedure,
+  },
   checkout: {
     eligibility: dogEligibilityProcedure,
     review: reviewCartProcedure,

@@ -19,6 +19,7 @@ import {
   type PaymentRecord,
 } from "~/orpc/checkout/repository";
 import { cartItemsSchema } from "~/orpc/checkout/validation";
+import { removePaidItemsFromCart } from "~/orpc/cart/service";
 import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
 import {
   findApprovedCourseBySlug,
@@ -448,6 +449,16 @@ export async function completeGatewayPayment({
       notEnrolled,
     };
   });
+
+  // The items it bought leave the customer's cart, on whichever device it was filled. After the commit and best-effort:
+  // a cart left untidy changes no money, and an item already enrolled shows as not buyable.
+  if (settled.result.kind === "paid") {
+    try {
+      await removePaidItemsFromCart({ db, userId: known.customerId, paymentId: known.id });
+    } catch (error) {
+      console.error(`[checkout] could not take payment ${known.id}'s items out of the cart`, error);
+    }
+  }
 
   if (settled.payment && settled.enrolledTitles) {
     await notifyPaid({

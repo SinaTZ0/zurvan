@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 
+import { CartSync } from "~/components/cart-sync";
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { ACCOUNT_EXIT_LINK } from "~/routes/layout_account/account-nav";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
@@ -31,6 +32,7 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
 
   return (
     <div className="flex min-h-svh flex-col">
+      {loaderData.role === "customer" && <CartSync />}
       <AccountHeader
         firstName={loaderData.firstName}
         phoneNumber={loaderData.phoneNumber}

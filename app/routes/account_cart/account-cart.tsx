@@ -1,14 +1,14 @@
-import { useSetAtom } from "jotai";
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { isRouteErrorResponse, useNavigate } from "react-router";
 
-import { clearCartAtom } from "~/atoms/cart";
 import { ChalkDoodle } from "~/components/chalk-doodle";
 import { DogEmptyState } from "~/components/dog-empty-state";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { requireSession } from "~/lib/session-guard.server";
 import { CART_PATH } from "~/orpc/checkout/constants";
+import { orpc } from "~/orpc/client";
 import { selectCartItems, groupByDog, summarize } from "~/routes/account_cart/cart-groups";
 import { CartError } from "~/routes/account_cart/components/cart-error";
 import { CartSkeleton } from "~/routes/account_cart/components/cart-skeleton";
@@ -48,7 +48,7 @@ export function loader({ request }: Route.LoaderArgs) {
  */
 export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const clearCart = useSetAtom(clearCartAtom);
+  const queryClient = useQueryClient();
   const { items, ready } = useCartItems();
   const review = useCartReview({ items, ready });
   const pay = useCartPay();
@@ -64,10 +64,11 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
     if (!ready || !payment || handledPayment.current) return;
     handledPayment.current = true;
 
-    // Only `paid` empties the cart, once: `failed` leaves it exactly as it was (the cart is a spec'd all-or-nothing).
-    if (payment === "paid") clearCart();
+    // Only `paid` changes the cart, once: the server took the bought items out when the payment settled, so the cart is
+    // read again (items added on another device since stay). `failed` leaves it exactly as it was.
+    if (payment === "paid") void queryClient.invalidateQueries({ queryKey: orpc.cart.get.queryKey() });
     void navigate(CART_PATH, { replace: true, preventScrollReset: true });
-  }, [ready, payment, clearCart, navigate]);
+  }, [ready, payment, queryClient, navigate]);
 
   /*------ Reviewed Items ------*/
   const reviewed = review.data ? selectCartItems({ reviewed: review.data.items, cart: items }) : [];

@@ -1,5 +1,6 @@
 import { Outlet } from "react-router";
 
+import { CartSync } from "~/components/cart-sync";
 import { authForHeaders } from "~/lib/auth.server";
 import { roleHomePath } from "~/lib/session-guard.server";
 import { SiteFooter } from "~/routes/layout_public/components/site-footer";
@@ -36,6 +37,8 @@ export async function loader({ request }: Route.LoaderArgs): Promise<{ viewer: V
 export default function PublicLayout({ loaderData }: Route.ComponentProps) {
   return (
     <div className="flex min-h-svh flex-col">
+      {/* A customer's cart follows them to every device (F5); nobody else has one. */}
+      {loaderData.viewer?.role === "customer" && <CartSync />}
       <SiteHeader viewer={loaderData.viewer} />
       <main id="main" className="flex-1">
         <Outlet />

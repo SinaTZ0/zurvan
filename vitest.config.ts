@@ -9,6 +9,9 @@ export default defineConfig({
   test: {
     include: ["app/**/*.test.{ts,tsx}"],
     environment: "node",
+    // The integration tests share one database, and some of them count money across it (the dashboard's totals): a
+    // payment settled by another file in the middle of such a count would fail it now and then. One file at a time.
+    fileParallelism: false,
     passWithNoTests: true,
   },
 });

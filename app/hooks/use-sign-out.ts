@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSetAtom } from "jotai";
 import { useNavigate } from "react-router";
 
+import { resetCartAtom } from "~/atoms/cart";
 import { toast } from "~/components/ui/toast";
 import { authClient } from "~/lib/auth-client";
 
@@ -12,6 +14,7 @@ import { authClient } from "~/lib/auth-client";
 export function useSignOut({ redirectTo }: { redirectTo?: string } = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const resetCart = useSetAtom(resetCartAtom);
 
   return useMutation({
     mutationFn: async () => {
@@ -25,6 +28,8 @@ export function useSignOut({ redirectTo }: { redirectTo?: string } = {}) {
       // The next account on this device must not see this one's cached dogs. Cleared after leaving: clearing while a
       // page is mounted would refetch its queries without a session.
       queryClient.clear();
+      // The account keeps its cart; this browser must not show it to the next person, or merge it into their account.
+      resetCart();
     },
     onError: () => {
       toast.add({ title: "خروج انجام نشد. دوباره امتحان کن.", type: "error" });

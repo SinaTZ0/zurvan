@@ -1,3 +1,4 @@
+import { cartContract } from "~/orpc/cart/contract";
 import { checkoutContract } from "~/orpc/checkout/contract";
 import { commissionContract } from "~/orpc/commission/contract";
 import { courseContract } from "~/orpc/course/contract";
@@ -15,6 +16,7 @@ import { userContract } from "~/orpc/user/contract";
 /*===== API Contract =====*/
 // Source of truth for the API. The browser client is typed from this, never from the router.
 export const contract = {
+  cart: cartContract,
   checkout: checkoutContract,
   commission: commissionContract,
   course: courseContract,

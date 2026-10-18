@@ -12,15 +12,18 @@
 
 ## What is safe on its own
 
-Phases A to D (header, pages, homepage, hero, search) are UI only: no schema change, no new server code. If the owner approves them, they could ship without `--db-push`. They live on the same branch as the rest, so cherry-picking or splitting the branch would be needed; the commits are small and separate (`6c9064f`, `53d24da`, `50c2885`, `d19699f`).
+Phases A to D (header, pages, homepage, hero, search) are UI only: no schema change, no new server code. The branch's commits are sequential and those four phases come first, so **`bc3b21b` is exactly A to D**: merging `main` up to that commit (`git merge bc3b21b`) ships them without the later work, and without `--db-push`. The commits are `6c9064f` (header, About, Contact), `53d24da` (home), `50c2885` (hero), `d19699f` (search) and `bc3b21b` (their evidence).
 
 ## Migrations on this branch (all additive)
 
-| Phase | Change                                                                                | Existing data                                              |
-| ----- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| E1    | New table `sign_in_failure` (phone number and time of a wrong password). Nothing else | None touched. The password itself uses the existing column |
+| Phase | Change                                                                                | Existing data                                                     |
+| ----- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| E1    | New table `sign_in_failure` (phone number and time of a wrong password). Nothing else | None touched. The password itself uses the existing column        |
+| E3    | New table `cart_item` (user, dog, course, time). Nothing else                         | None touched. Existing browsers' carts are merged in on first use |
 
 Later phases add rows to this table as they land.
+
+`drizzle-kit push` also prints a few statements that have nothing to do with this branch and change no data: it drops and re-adds `payment_item_dog_course_unique` and re-sets some array column defaults on every run (a Drizzle quirk, seen on the disposable database too).
 
 **Rollback.** For every phase the first rollback is "do not merge": the live site stays on `1b7a29d`. If the branch is merged and `--db-push` has been run, the new tables are unused by the old code, so rolling the code back to `1b7a29d` (`git revert` of the merge, then `deploy.sh`) leaves them harmlessly in place; drop them only by hand after a backup if they should go.
 
