@@ -24,6 +24,7 @@ Phases A to D (header, pages, homepage, hero, search) are UI only: no schema cha
 | G1    | New column `dog.file_number` (text, unique, not null, default `'ZD-'` and ten random characters from `gen_random_uuid()`), added to the existing `dog` table                    | **Backfills every existing dog** with a number when the column is added (the default is evaluated per row) |
 | G2    | New table `logbook_entry` (dog, optional enrollment, author, day, notes, exercises, summary, public mark, times)                                                                | None touched. Empty until the trainer writes a session                                                     |
 | G3    | New table `certificate` (number default `'ZC-'` and ten random characters, enrollment, issuer, issued/revoked times, revoke reason), unique on the number and on the enrollment | None touched. Empty until the Admin issues one                                                             |
+| G4    | None (uses `consent`, `logbook_entry` and `certificate`)                                                                                                                        | None                                                                                                       |
 
 Later phases add rows to this table as they land.
 

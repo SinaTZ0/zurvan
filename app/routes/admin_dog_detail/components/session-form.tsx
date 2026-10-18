@@ -4,8 +4,10 @@ import { useForm, useWatch } from "react-hook-form";
 
 import { FormAlert } from "~/components/form-alert";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
 import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
@@ -35,11 +37,13 @@ const YEAR_OPTIONS = 3;
  * the request; this component validates, hands the sheet the API input, and puts the sheet's `failure` back on the
  * fields and in the alert above the buttons. Input is kept after a failure.
  *
- * `entry` is the session being corrected, or null for a new one. A session's «public» mark is the entry's own and is not
- * touched here: no record can be made public yet (F14), so the form doesn't offer it.
+ * `entry` is the session being corrected, or null for a new one. The entry's «public» mark (it may be shown on the dog's
+ * public record, if its owner makes the record public, F14) is offered only when an owner can make a record public at all
+ * (`publicRecordsAvailable`); otherwise it is kept as the entry has it.
  */
 export function SessionForm({
   entry,
+  publicRecordsAvailable,
   enrollments,
   isPending,
   failure,
@@ -47,6 +51,7 @@ export function SessionForm({
   onCancel,
 }: {
   entry: LogbookEntry | null;
+  publicRecordsAvailable: boolean;
   enrollments: AdminEnrollment[];
   isPending: boolean;
   failure: ApiFailure | null;
@@ -58,6 +63,7 @@ export function SessionForm({
     control,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<SessionFormInput, unknown, SessionFormValues>({
     resolver: zodResolver(sessionFormSchema),
@@ -82,11 +88,11 @@ export function SessionForm({
   const alert = [failure?.message, ...orphanMessages].filter(Boolean).join(" ");
 
   /*------ Date ------*/
-  const [year, month] = useWatch({ control, name: ["year", "month"] });
+  const [year, month, isPublic] = useWatch({ control, name: ["year", "month", "isPublic"] });
   const thisYear = isoToJalali(todayIso()).year;
   const dayCount = year && month ? jalaliMonthLength({ year: Number(year), month: Number(month) }) : 31;
 
-  const submit = handleSubmit((values) => onSubmit(toSessionInput({ values, isPublic: entry?.isPublic ?? false })));
+  const submit = handleSubmit((values) => onSubmit(toSessionInput({ values })));
 
   return (
     <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
@@ -170,6 +176,22 @@ export function SessionForm({
           <FieldDescription>یک جمله، مثلاً: از هفته‌ی قبل بهتر شده.</FieldDescription>
           <FieldError errors={[errors.progress]} />
         </Field>
+
+        {/*------ Public Mark ------*/}
+        {publicRecordsAvailable && (
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="session-public"
+              checked={!!isPublic}
+              onCheckedChange={(checked) => setValue("isPublic", checked, { shouldDirty: true })}
+              className="mt-1"
+            />
+            <Label htmlFor="session-public" className="text-sm leading-relaxed font-medium text-pretty">
+              این جلسه می‌تواند توی پرونده‌ی عمومی نشان داده شود (فقط اگر صاحب سگ پرونده را عمومی کند). یادداشت و
+              تمرین‌ها همان‌طور که نوشتی دیده می‌شود.
+            </Label>
+          </div>
+        )}
       </div>
 
       {/*===== Footer (fixed) =====*/}

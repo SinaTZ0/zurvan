@@ -3,8 +3,11 @@ import {
   adminAddEntry,
   adminListDogLogbook,
   adminUpdateEntry,
+  getPublicRecord,
+  getPublicStatus,
   listDogLogbook,
   locateDog,
+  setRecordPublic,
 } from "~/orpc/logbook/service";
 import { requireRoleMiddleware, requireUserMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
@@ -63,4 +66,33 @@ export const adminUpdateEntryProcedure = base.logbook.admin.update
     if (result.kind === "invalid")
       throw errors.INVALID_INPUT({ data: { errors: result.errors, fields: result.fields } });
     return result.entry;
+  });
+
+/*===== Public Record =====*/
+export const recordProcedure = base.logbook.record
+  .use(provideDbMiddleware)
+  .handler(({ context, input }) => getPublicRecord({ db: context.db, fileNumber: input.fileNumber }));
+
+export const publicStatusProcedure = base.logbook.publicStatus
+  .use(requireRoleMiddleware("customer"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await getPublicStatus({ db: context.db, ownerId: context.user.id, dogId: input.dogId });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    return result.status;
+  });
+
+export const setPublicProcedure = base.logbook.setPublic
+  .use(requireRoleMiddleware("customer"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await setRecordPublic({
+      db: context.db,
+      ownerId: context.user.id,
+      dogId: input.dogId,
+      isPublic: input.isPublic,
+    });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    if (result.kind === "not-published") throw errors.NOT_PUBLISHED({ data: { errors: [], fields: {} } });
+    return result.status;
   });

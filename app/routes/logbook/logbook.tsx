@@ -5,6 +5,7 @@ import { normalizeFileNumber } from "~/lib/dog-file";
 import { createServerClient } from "~/orpc/server-client.server";
 import { LookupForm } from "~/routes/logbook/components/lookup-form";
 import { PrivateRecord } from "~/routes/logbook/components/private-record";
+import { PublicRecord } from "~/routes/logbook/components/public-record";
 
 import type { Route } from "./+types/logbook";
 
@@ -29,11 +30,12 @@ export const headers: Route.HeadersFunction = ({ parentHeaders }) => {
  *
  * A signed-in owner who scans their own dog's code (or the Admin, any dog's) is sent on to their own page for the dog.
  * Everyone else, signed in or not, gets one answer, whatever the number: the record is private, and nothing says whether
- * the number exists (docs/app-spec.md, F14). The lookup runs only for a signed-in person, and it answers with a path or
- * with nothing.
+ * the number exists (docs/app-spec.md, F14), **unless the dog's owner made the record public** (which needs approved
+ * consent wording, so for now it never is): then the page shows what the API says a public record may show. The lookup
+ * behind the redirect runs only for a signed-in person, and it answers with a path or with nothing.
  */
 export async function loader({ request, params }: Route.LoaderArgs) {
-  if (params.fileNumber === undefined) return { mode: "lookup" as const, signInPath: null };
+  if (params.fileNumber === undefined) return { mode: "lookup" as const };
 
   const fileNumber = normalizeFileNumber(params.fileNumber);
   const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
@@ -46,6 +48,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     if (located) throw redirect(located.path);
   }
 
+  if (fileNumber) {
+    const answer = await createServerClient(request).logbook.record({ fileNumber });
+    if (answer.kind === "public") return { mode: "public" as const, record: answer.record };
+  }
+
   // The sign-in page returns here, so an owner who wasn't signed in can reach their dog's page from the code.
   const signInPath = user ? null : `/auth?redirectTo=${encodeURIComponent(`/logbook/${fileNumber ?? ""}`)}`;
   return { mode: "private" as const, signInPath: fileNumber ? signInPath : null };
@@ -55,7 +62,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 export default function LogbookPage({ loaderData }: Route.ComponentProps) {
   return (
     <section aria-labelledby="logbook-title" className="site-container pt-section-sm pb-section-md">
-      {loaderData.mode === "lookup" ? <LookupForm /> : <PrivateRecord signInPath={loaderData.signInPath} />}
+      {loaderData.mode === "lookup" && <LookupForm />}
+      {loaderData.mode === "private" && <PrivateRecord signInPath={loaderData.signInPath} />}
+      {loaderData.mode === "public" && <PublicRecord record={loaderData.record} />}
     </section>
   );
 }

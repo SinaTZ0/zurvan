@@ -7,12 +7,14 @@ import { Link } from "~/components/link";
 import { buildCertificateCard } from "~/lib/certificate.server";
 import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
+import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogHeader } from "~/routes/account_dog_detail/components/dog-header";
 import { CertificatesSection } from "~/routes/account_dog_detail/components/certificates-section";
 import { EnrollmentsSection } from "~/routes/account_dog_detail/components/enrollments-section";
 import { EvaluationsSection } from "~/routes/account_dog_detail/components/evaluations-section";
 import { LogbookSection } from "~/routes/account_dog_detail/components/logbook-section";
+import { PublicRecordCard } from "~/routes/account_dog_detail/components/public-record-card";
 
 import type { Route } from "./+types/account-dog-detail";
 
@@ -28,12 +30,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
   const dogId = params.dogId;
 
-  const [dog, evaluations, enrollments, logbook, certificates] = await Promise.all([
+  const [dog, evaluations, enrollments, logbook, certificates, publicStatus] = await Promise.all([
     client.dog.get({ id: dogId }),
     client.evaluation.listMine({ dogId }),
     client.enrollment.listMine({ dogId }),
     client.logbook.list({ dogId }),
     client.certificate.listMine({ dogId }),
+    client.logbook.publicStatus({ dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
@@ -48,6 +51,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       certificate,
       ...buildCertificateCard({ number: certificate.number }),
     })),
+    publicStatus,
+    // The approved wording the owner agrees to, present only once the owner has approved one.
+    wording: PUBLIC_RECORD_CONSENT,
     fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
   };
 }
@@ -59,7 +65,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * column.
  */
 export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments, logbook, certificates, fileCard } = loaderData;
+  const { dog, evaluations, enrollments, logbook, certificates, publicStatus, wording, fileCard } = loaderData;
   const status = getDogStatus({ dog, evaluations, enrollments });
 
   return (
@@ -84,8 +90,13 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
             fileNumber={dog.fileNumber}
             link={fileCard.link}
             qr={fileCard.qr}
-            note="هر کس این کد را اسکن کند «پرونده‌ی خصوصی» را می‌بیند. فقط تو و مربی پرونده را می‌بینید."
+            note={
+              publicStatus.isPublic
+                ? "پرونده عمومیه: هر کس این کد را اسکن کند پرونده‌ی عمومی را می‌بیند."
+                : "هر کس این کد را اسکن کند «پرونده‌ی خصوصی» را می‌بیند. فقط تو و مربی پرونده را می‌بینید."
+            }
           />
+          <PublicRecordCard dogId={dog.id} dogName={dog.name} status={publicStatus} wording={wording} />
         </div>
       </div>
     </div>

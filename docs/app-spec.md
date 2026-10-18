@@ -323,6 +323,14 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 `/certificate/<number>` is public and says only: valid (the course, the day, the head trainer, the number), revoked (the number and when; not the course, not the reason), or not found (the same for a number that isn't any certificate's and for text that isn't a number). It never shows the owner, and the dog's name only if its owner has made the dog's record public, which cannot be done yet. It is never cached, since a cached «valid» would outlive a revocation, and never indexed.
 
+**Making a record public (built, switched off).** The owner of a dog may make its record public, and only the owner; but only after reading and accepting **wording about exactly what that shows**, and no approved wording exists, so `app/lib/public-record.ts` holds `null`: no owner is offered the choice, the API refuses to turn it on (`NOT_PUBLISHED`) and every record stays private. When the wording is set (with a version):
+
+- the owner's dog page shows the wording, a plain list of what a stranger would see and what never shows, a tick, and «پرونده را عمومی کن». The server records the agreement as a `consent` ([F13](#f13-consent-and-site-rules)) for **that dog and that version**, with the time; **taking it back is one press, takes effect at once, and the record of having agreed stays**;
+- the trainer's session form offers each entry's «public» mark;
+- `/logbook/<number>` then shows, to anyone, the dog's **name, breed and age**, the **courses it finished**, its **valid certificates**, and the entries marked public. It is built field by field and never from a whole row, so it **cannot** contain the owner, a phone number, a payment, the weight, the microchip, notes about behavior or health, a photo, the exact birth date, an entry not marked public, a revoked certificate or an unfinished course;
+- a certificate's check shows the dog's name only while its record is public;
+- a new version of the wording makes every record private again until its owner agrees to the new one.
+
 **Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Certificate Check (`/certificate/:number`) · Dog Detail (the file card, the diary, the certificates) · Dog Detail (Admin) (the file card, the diary, the session form, issuing and revoking certificates)
 
 ---

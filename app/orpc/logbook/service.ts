@@ -1,14 +1,22 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
+import { describeDogAge } from "~/lib/dog-format";
 import { normalizeFileNumber } from "~/lib/dog-file";
+import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import type { UserRole } from "~/lib/user-constants";
 import { isUuid } from "~/lib/uuid";
+import { findCertificatesByDog } from "~/orpc/certificate/repository";
+import { findStandingConsents } from "~/orpc/consent/repository";
+import { giveDogConsent, withdrawDogConsent } from "~/orpc/consent/service";
 import { isDogId } from "~/orpc/dog/validation";
-import type { LogbookEntry } from "~/orpc/logbook/contract";
+import type { LogbookEntry, PublicStatus, RecordAnswer } from "~/orpc/logbook/contract";
 import { toLogbookEntry } from "~/orpc/logbook/mapper";
+import { isRecordPublic, type PublicRecordRules } from "~/orpc/logbook/public";
 import {
   enrollmentBelongsToDog,
+  findCompletedCourses,
   findDogByFileNumber,
+  findDogForPublicRecord,
   findDogOwner,
   findEntriesByDog,
   findEntryById,
@@ -150,4 +158,144 @@ export async function adminUpdateEntry({
   const saved = await findEntryById({ db, id });
   if (!saved) throw new Error(`adminUpdateEntry: entry ${id} could not be read back`);
   return { kind: "success", entry: toLogbookEntry(saved) };
+}
+
+/*===== The Public Record =====*/
+// A dog's record is private unless its owner made it public (docs/app-spec.md, F14). `rules` is the consent wording in
+// force (the registry's by default); a test passes its own to switch the choice on.
+
+type RulesOption = { rules?: PublicRecordRules };
+
+/**
+ * What anyone may see at a file number. «private» for everything but a record whose owner has a standing agreement to the
+ * wording in force: no wording, no agreement, a withdrawn one, an agreement to an older version, a number that doesn't
+ * exist and text that isn't a number all give the same answer. A public record is built field by field from what the
+ * record may show, so nothing else (owner, phone, payments, weight, microchip, notes about behavior or health, photos,
+ * the exact birth date, private diary entries, revoked certificates, unfinished courses) can be in it.
+ */
+export async function getPublicRecord({
+  db,
+  fileNumber,
+  rules = PUBLIC_RECORD_CONSENT,
+}: {
+  db: DatabaseOrTransaction;
+  fileNumber: string;
+} & RulesOption): Promise<RecordAnswer> {
+  const normalized = normalizeFileNumber(fileNumber);
+  if (!normalized || !rules) return { kind: "private" };
+
+  const found = await findDogForPublicRecord({ db, fileNumber: normalized });
+  if (!found) return { kind: "private" };
+  if (!(await isRecordPublic({ db, ownerId: found.ownerId, dogId: found.id, rules }))) return { kind: "private" };
+
+  const [courses, certificates, entries] = await Promise.all([
+    findCompletedCourses({ db, dogId: found.id }),
+    findCertificatesByDog({ db, dogId: found.id }),
+    findEntriesByDog({ db, dogId: found.id }),
+  ]);
+
+  return {
+    kind: "public",
+    record: {
+      fileNumber: found.fileNumber,
+      dog: {
+        name: found.name,
+        breed: found.breed,
+        ageText: describeDogAge({ birthDate: found.birthDate, birthDateApproximate: found.birthDateApproximate }),
+      },
+      courses,
+      certificates: certificates
+        .filter((row) => row.certificate.revokedAt === null)
+        .map((row) => ({
+          number: row.certificate.number,
+          courseTitle: row.course.title,
+          issuedAt: row.certificate.issuedAt,
+        })),
+      entries: entries
+        .filter((row) => row.entry.isPublic)
+        .map((row) => ({
+          occurredOn: row.entry.occurredOn,
+          notes: row.entry.notes,
+          exercises: row.entry.exercises,
+          progress: row.entry.progress,
+          courseTitle: row.course?.title ?? null,
+        })),
+    },
+  };
+}
+
+type StatusResult = { kind: "success"; status: PublicStatus } | NotFoundResult;
+
+async function statusOf({
+  db,
+  ownerId,
+  dogId,
+  rules,
+}: {
+  db: DatabaseOrTransaction;
+  ownerId: string;
+  dogId: string;
+  rules: PublicRecordRules;
+}): Promise<PublicStatus> {
+  if (!rules) return { available: false, isPublic: false, version: null, since: null };
+  const standing = (await findStandingConsents({ db, userId: ownerId, kind: "public-logbook", dogId })).find(
+    (agreement) => agreement.version === rules.version,
+  );
+  return {
+    available: true,
+    isPublic: standing !== undefined,
+    version: rules.version,
+    since: standing?.acceptedAt ?? null,
+  };
+}
+
+/** Whether the owner's own dog can be made public, and whether it is. Another owner's dog reads as `not-found`. */
+export async function getPublicStatus({
+  db,
+  ownerId,
+  dogId,
+  rules = PUBLIC_RECORD_CONSENT,
+}: {
+  db: DatabaseOrTransaction;
+  ownerId: string;
+  dogId: string;
+} & RulesOption): Promise<StatusResult> {
+  if (!isDogId(dogId)) return { kind: "not-found" };
+  const found = await findDogOwner({ db, dogId });
+  if (!found || found.ownerId !== ownerId) return { kind: "not-found" };
+  return { kind: "success", status: await statusOf({ db, ownerId, dogId, rules }) };
+}
+
+type SetPublicResult = StatusResult | { kind: "not-published" };
+
+/**
+ * Makes the owner's dog record public (recording their agreement to the wording in force, with its version and time) or
+ * private again (always allowed, and at once; the record of having agreed stays). Turning it on with no approved wording
+ * is `not-published` and changes nothing.
+ */
+export async function setRecordPublic({
+  db,
+  ownerId,
+  dogId,
+  isPublic,
+  rules = PUBLIC_RECORD_CONSENT,
+  now = new Date(),
+}: {
+  db: Database;
+  ownerId: string;
+  dogId: string;
+  isPublic: boolean;
+  now?: Date;
+} & RulesOption): Promise<SetPublicResult> {
+  if (!isDogId(dogId)) return { kind: "not-found" };
+  const found = await findDogOwner({ db, dogId });
+  if (!found || found.ownerId !== ownerId) return { kind: "not-found" };
+
+  if (isPublic) {
+    if (!rules) return { kind: "not-published" };
+    await giveDogConsent({ db, userId: ownerId, dogId, kind: "public-logbook", version: rules.version, now });
+  } else {
+    await withdrawDogConsent({ db, userId: ownerId, dogId, kind: "public-logbook", now });
+  }
+  return { kind: "success", status: await statusOf({ db, ownerId, dogId, rules }) };
 }

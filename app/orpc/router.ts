@@ -70,6 +70,9 @@ import {
   adminUpdateEntryProcedure,
   listLogbookProcedure,
   locateDogProcedure,
+  publicStatusProcedure,
+  recordProcedure,
+  setPublicProcedure,
 } from "~/orpc/logbook/procedure";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
 import {
@@ -181,7 +184,10 @@ export const router = implementer.router({
   },
   logbook: {
     locate: locateDogProcedure,
+    record: recordProcedure,
     list: listLogbookProcedure,
+    publicStatus: publicStatusProcedure,
+    setPublic: setPublicProcedure,
     admin: {
       list: adminListLogbookProcedure,
       add: adminAddEntryProcedure,

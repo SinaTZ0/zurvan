@@ -15,6 +15,7 @@ import {
 } from "~/orpc/certificate/repository";
 import { isDogId } from "~/orpc/dog/validation";
 import { isUuid } from "~/lib/uuid";
+import { isRecordPublic, type PublicRecordRules } from "~/orpc/logbook/public";
 import { findDogOwner } from "~/orpc/logbook/repository";
 
 /*===== Types =====*/
@@ -122,15 +123,18 @@ export async function adminRevokeCertificate({
 /*===== Verifying =====*/
 /**
  * What anyone holding a certificate number may be told. Valid: the course and the day. Revoked: only that it is. Not a
- * certificate number or not any certificate's: «unknown». The dog's name is left out (`dogName: null`): it is the dog's
- * owner's to publish, and no record can be public yet (F14).
+ * certificate number or not any certificate's: «unknown». The dog's name is left out (`dogName: null`) unless its owner
+ * has made the dog's record public (F14): the name is theirs to publish.
  */
 export async function verifyCertificate({
   db,
   number,
+  rules,
 }: {
   db: DatabaseOrTransaction;
   number: string;
+  /** The public-record wording in force; the registry's by default. */
+  rules?: PublicRecordRules;
 }): Promise<CertificateVerification> {
   const normalized = normalizeCertificateNumber(number);
   if (!normalized) return { kind: "unknown" };
@@ -141,11 +145,20 @@ export async function verifyCertificate({
   if (found.certificate.revokedAt) {
     return { kind: "revoked", number: found.certificate.number, revokedAt: found.certificate.revokedAt };
   }
+  const owner = await findDogOwner({ db, dogId: found.dog.id });
+  const isPublic =
+    owner !== undefined &&
+    (await isRecordPublic({
+      db,
+      ownerId: owner.ownerId,
+      dogId: found.dog.id,
+      ...(rules === undefined ? {} : { rules }),
+    }));
   return {
     kind: "valid",
     number: found.certificate.number,
     issuedAt: found.certificate.issuedAt,
     course: { title: found.course.title, latinName: found.course.latinName },
-    dogName: null,
+    dogName: isPublic ? found.dog.name : null,
   };
 }

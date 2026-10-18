@@ -1,20 +1,24 @@
 import { randomUUID } from "node:crypto";
 
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { course, dog, enrollment, logbookEntry, payment, paymentItem, user } from "~/db/schema";
+import { certificate, consent, course, dog, enrollment, logbookEntry, payment, paymentItem, user } from "~/db/schema";
 import { FILE_NUMBER_PREFIX, normalizeFileNumber } from "~/lib/dog-file";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import type { UserRole } from "~/lib/user-constants";
 import { createDog, updateDog } from "~/orpc/dog/service";
+import { adminIssueCertificate, adminRevokeCertificate, verifyCertificate } from "~/orpc/certificate/service";
 import {
   adminAddEntry,
   adminListDogLogbook,
   adminUpdateEntry,
+  getPublicRecord,
+  getPublicStatus,
   listDogLogbook,
   locateDog,
+  setRecordPublic,
 } from "~/orpc/logbook/service";
 
 /*===== Dog File =====*/
@@ -119,6 +123,8 @@ afterAll(async () => {
   const ids = people.map((who) => who.id);
   const paymentIds = db.select({ id: payment.id }).from(payment).where(inArray(payment.customerId, ids));
   const dogIds = db.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, ids));
+  await db.delete(certificate).where(inArray(certificate.issuedBy, ids));
+  await db.delete(consent).where(inArray(consent.userId, ids));
   await db.delete(logbookEntry).where(inArray(logbookEntry.dogId, dogIds));
   await db.delete(enrollment).where(inArray(enrollment.customerId, ids));
   await db.delete(paymentItem).where(inArray(paymentItem.paymentId, paymentIds));
@@ -332,3 +338,174 @@ describe("who can read a diary", () => {
     });
   });
 });
+
+/*===== The Public Record =====*/
+// Public only when the owner agreed to the wording in force, and then only what the record may show.
+const WORDING = { version: `p1-${runId}` };
+const NEWER_WORDING = { version: `p2-${runId}` };
+
+describe("the public record", () => {
+  it("is private when no wording is approved, whatever else is true: every case gives the same answer", async () => {
+    const isPrivate = { kind: "private" };
+
+    expect(await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: null })).toEqual(isPrivate);
+    // Not yet agreed to, even with wording approved.
+    expect(await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING })).toEqual(isPrivate);
+    expect(await getPublicRecord({ db, fileNumber: "ZD-0000000000", rules: WORDING })).toEqual(isPrivate);
+    expect(await getPublicRecord({ db, fileNumber: "hello", rules: WORDING })).toEqual(isPrivate);
+  });
+
+  it("can't be turned on without approved wording, can't be turned on for someone else's dog", async () => {
+    expect(await setRecordPublic({ db, ownerId: ana.id, dogId: anasDog.id, isPublic: true, rules: null })).toEqual({
+      kind: "not-published",
+    });
+    expect(await db.select().from(consent).where(eq(consent.dogId, anasDog.id))).toEqual([]);
+
+    expect(await setRecordPublic({ db, ownerId: ben.id, dogId: anasDog.id, isPublic: true, rules: WORDING })).toEqual({
+      kind: "not-found",
+    });
+    expect(await getPublicStatus({ db, ownerId: ben.id, dogId: anasDog.id, rules: WORDING })).toEqual({
+      kind: "not-found",
+    });
+    expect(await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING })).toEqual({ kind: "private" });
+  });
+
+  it("shows exactly what a public record may show, and nothing of what is private", async () => {
+    // A private entry, a public one, a finished course with a valid certificate and one with a revoked certificate.
+    await adminAddEntry({
+      db,
+      authorId: admin.id,
+      input: { dogId: anasDog.id, ...session({ notes: "یادداشت خصوصی که نباید بیرون برود", isPublic: false }) },
+    });
+    await adminAddEntry({
+      db,
+      authorId: admin.id,
+      input: {
+        dogId: anasDog.id,
+        ...session({ notes: "این جلسه قابل نمایش است", isPublic: true, occurredOn: "2026-10-12" }),
+      },
+    });
+    await db
+      .update(enrollment)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(eq(enrollment.id, enrollments.ana));
+    const issued = await adminIssueCertificate({ db, issuerId: admin.id, enrollmentId: enrollments.ana });
+    expect(issued.kind).toBe("success");
+
+    const turnedOn = await setRecordPublic({ db, ownerId: ana.id, dogId: anasDog.id, isPublic: true, rules: WORDING });
+    expect(turnedOn).toMatchObject({
+      kind: "success",
+      status: { available: true, isPublic: true, version: WORDING.version },
+    });
+
+    const answer = await getPublicRecord({ db, fileNumber: anasDog.fileNumber.toLowerCase(), rules: WORDING });
+    if (answer.kind !== "public") throw new Error("Expected a public record.");
+    const { record } = answer;
+
+    expectKeys(record, ["certificates", "courses", "dog", "entries", "fileNumber"]);
+    expectKeys(record.dog, ["ageText", "breed", "name"]);
+    expect(record.dog.name).toBe("رکس بزرگ");
+    expect(record.courses.map((entry) => entry.title)).toEqual(["آزمایش دفترچه"]);
+    expect(record.certificates).toHaveLength(1);
+    // Exactly the entries marked public (an earlier test marked one too), never the others.
+    const publicInDb = await db
+      .select()
+      .from(logbookEntry)
+      .where(and(eq(logbookEntry.dogId, anasDog.id), eq(logbookEntry.isPublic, true)));
+    expect(record.entries).toHaveLength(publicInDb.length);
+    expect(record.entries.map((entry) => entry.notes)).toContain("این جلسه قابل نمایش است");
+    expect(record.entries.map((entry) => entry.notes)).not.toContain("یادداشت خصوصی که نباید بیرون برود");
+
+    // Nothing private is anywhere in what a stranger gets: not the owner, not the phone, not the other entry.
+    const everything = JSON.stringify(record);
+    for (const secret of [
+      ana.id,
+      ana.phone,
+      "یادداشت خصوصی",
+      "2024-05-01",
+      "microchip",
+      "weightKg",
+      "behaviorNotes",
+      "medicalNotes",
+    ]) {
+      expect({ secret, leaked: everything.includes(secret) }).toEqual({ secret, leaked: false });
+    }
+  });
+
+  it("drops a revoked certificate and an unfinished course", async () => {
+    const [row] = await db.select().from(certificate).where(eq(certificate.enrollmentId, enrollments.ana));
+    await adminRevokeCertificate({ db, id: row?.id ?? "", reason: "آزمایش" });
+
+    const answer = await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING });
+    if (answer.kind !== "public") throw new Error("Expected a public record.");
+    expect(answer.record.certificates).toEqual([]);
+
+    await db.update(enrollment).set({ status: "active", completedAt: null }).where(eq(enrollment.id, enrollments.ana));
+    const after = await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING });
+    if (after.kind !== "public") throw new Error("Expected a public record.");
+    expect(after.record.courses).toEqual([]);
+  });
+
+  it("is private again at once when the owner takes it back, and the record of having agreed stays", async () => {
+    expect(
+      await setRecordPublic({ db, ownerId: ana.id, dogId: anasDog.id, isPublic: false, rules: WORDING }),
+    ).toMatchObject({
+      kind: "success",
+      status: { isPublic: false, since: null },
+    });
+    expect(await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING })).toEqual({ kind: "private" });
+
+    const rows = await db.select().from(consent).where(eq(consent.dogId, anasDog.id));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ kind: "public-logbook", version: WORDING.version });
+    expect(rows[0]?.revokedAt).toBeInstanceOf(Date);
+  });
+
+  it("is private again when the wording changes, until the owner agrees to the new version", async () => {
+    await setRecordPublic({ db, ownerId: ana.id, dogId: anasDog.id, isPublic: true, rules: WORDING });
+    expect((await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: WORDING })).kind).toBe("public");
+
+    expect(await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: NEWER_WORDING })).toEqual({
+      kind: "private",
+    });
+    expect(await getPublicStatus({ db, ownerId: ana.id, dogId: anasDog.id, rules: NEWER_WORDING })).toMatchObject({
+      kind: "success",
+      status: { available: true, isPublic: false },
+    });
+
+    await setRecordPublic({ db, ownerId: ana.id, dogId: anasDog.id, isPublic: true, rules: NEWER_WORDING });
+    expect((await getPublicRecord({ db, fileNumber: anasDog.fileNumber, rules: NEWER_WORDING })).kind).toBe("public");
+  });
+});
+
+describe("a certificate's check and the dog's name", () => {
+  it("shows the dog's name only while its owner keeps the record public", async () => {
+    await db
+      .update(enrollment)
+      .set({ status: "completed", completedAt: new Date() })
+      .where(eq(enrollment.id, enrollments.ben));
+    const issued = await adminIssueCertificate({ db, issuerId: admin.id, enrollmentId: enrollments.ben });
+    if (issued.kind !== "success") throw new Error("Could not issue Ben's certificate.");
+    const number = issued.certificate.number;
+
+    const nameOf = async (rules: { version: string } | null) => {
+      const result = await verifyCertificate({ db, number, rules });
+      return result.kind === "valid" ? result.dogName : "not valid";
+    };
+
+    expect(await nameOf(WORDING)).toBeNull();
+    await setRecordPublic({ db, ownerId: ben.id, dogId: bensDog, isPublic: true, rules: WORDING });
+    expect(await nameOf(WORDING)).toBe("بنی");
+    // With no approved wording the registry says private, however the rows stand.
+    expect(await nameOf(null)).toBeNull();
+    await setRecordPublic({ db, ownerId: ben.id, dogId: bensDog, isPublic: false, rules: WORDING });
+    expect(await nameOf(WORDING)).toBeNull();
+  });
+});
+
+/** The answer has exactly these keys, in any order. */
+function expectKeys(answer: object, keys: string[]) {
+  const actual = Object.keys(answer);
+  expect(actual).toHaveLength(keys.length);
+  expect(actual).toEqual(expect.arrayContaining(keys));
+}

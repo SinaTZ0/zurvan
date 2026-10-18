@@ -48,6 +48,8 @@ export const sessionFormSchema = z
       .string()
       .trim()
       .max(LOGBOOK_PROGRESS_MAX_LENGTH, `جمع‌بندی حداکثر ${formatNumberFa(LOGBOOK_PROGRESS_MAX_LENGTH)} حرف است.`),
+    /** The entry may be shown on the dog's public record (only if its owner makes the record public). */
+    isPublic: z.boolean(),
   })
   .superRefine(
     (values, ctx) => {
@@ -71,14 +73,14 @@ export type SessionFormValues = z.output<typeof sessionFormSchema>;
 
 /*===== To the API =====*/
 /** The input of `logbook.admin.add` (without the dog) and `logbook.admin.update` (without the id). */
-export function toSessionInput({ values, isPublic }: { values: SessionFormValues; isPublic: boolean }) {
+export function toSessionInput({ values }: { values: SessionFormValues }) {
   return {
     enrollmentId: values.enrollmentId || null,
     occurredOn: jalaliToIso({ year: Number(values.year), month: Number(values.month), day: Number(values.day) }),
     notes: values.notes,
     exercises: exerciseLines(values.exercises),
     progress: values.progress || null,
-    isPublic,
+    isPublic: values.isPublic,
   };
 }
 
@@ -94,6 +96,7 @@ export function toSessionDefaults(entry: LogbookEntry | null): DefaultValues<Ses
     notes: entry?.notes ?? "",
     exercises: entry?.exercises.join("\n") ?? "",
     progress: entry?.progress ?? "",
+    isPublic: entry?.isPublic ?? false,
   };
 }
 

@@ -9,6 +9,7 @@ import { DogFileCard } from "~/components/dog-file-card";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { buildDogFileCard } from "~/lib/dog-file.server";
+import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
 import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
@@ -58,6 +59,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     enrollments,
     logbook,
     certificates,
+    // Whether an owner can make a record public at all (approved wording exists); the session form offers its mark only then.
+    publicRecordsAvailable: PUBLIC_RECORD_CONSENT !== null,
     fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
   };
 }
@@ -69,7 +72,8 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * beside the ladder, enrollments, evaluations and details; phones read them in that order.
  */
 export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, eligibility, evaluations, enrollments, logbook, certificates, fileCard } = loaderData;
+  const { dog, eligibility, evaluations, enrollments, logbook, certificates, publicRecordsAvailable, fileCard } =
+    loaderData;
 
   /*------ URL State ------*/
   const [{ edit, session }, setParams] = useQueryStates(adminDogDetailSearchParams);
@@ -145,6 +149,7 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
         dog={dog}
         enrollments={enrollments}
         entry={editingEntry}
+        publicRecordsAvailable={publicRecordsAvailable}
         open={sessionOpen}
         onClose={() => setParams({ session: null }, { history: "replace" })}
       />

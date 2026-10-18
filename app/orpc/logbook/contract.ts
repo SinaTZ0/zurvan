@@ -29,6 +29,50 @@ export const logbookEntrySchema = z.object({
 
 export type LogbookEntry = z.infer<typeof logbookEntrySchema>;
 
+/** Whether the owner can make the dog's record public, and whether it is. */
+export const publicStatusSchema = z.object({
+  /** Approved consent wording exists, so the owner can be offered the choice. False means the record can only be private. */
+  available: z.boolean(),
+  isPublic: z.boolean(),
+  /** The wording's version in force; null when there is none. */
+  version: z.string().nullable(),
+  /** When the owner agreed, while the record is public. */
+  since: z.date().nullable(),
+});
+
+export type PublicStatus = z.infer<typeof publicStatusSchema>;
+
+/**
+ * What anyone may see of a **public** record, built field by field (never from a whole row): the dog's name, breed and
+ * age, the courses it finished, its valid certificates, and the diary entries the trainer marked public. No owner, no
+ * phone, no address, no payment, no weight, no microchip, no notes about behavior or health, no photo, no exact birth date.
+ */
+export const publicRecordSchema = z.object({
+  fileNumber: z.string(),
+  dog: z.object({ name: z.string(), breed: z.string().nullable(), ageText: z.string() }),
+  courses: z.array(z.object({ title: z.string(), latinName: z.string(), completedAt: z.date() })),
+  certificates: z.array(z.object({ number: z.string(), courseTitle: z.string(), issuedAt: z.date() })),
+  entries: z.array(
+    z.object({
+      occurredOn: z.string(),
+      notes: z.string(),
+      exercises: z.array(z.string()),
+      progress: z.string().nullable(),
+      courseTitle: z.string().nullable(),
+    }),
+  ),
+});
+
+export type PublicRecord = z.infer<typeof publicRecordSchema>;
+
+/** What the record page answers for anyone: the public record, or «private», the same for every other case. */
+export const recordAnswerSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("public"), record: publicRecordSchema }),
+  z.object({ kind: z.literal("private") }),
+]);
+
+export type RecordAnswer = z.infer<typeof recordAnswerSchema>;
+
 // Structure only; trimming, the date, the limits and whether the course is the dog's are checked by `validation.ts`.
 const sessionShape = {
   /** An enrollment of this dog; left out or `null` when the session belongs to no course. */
@@ -43,6 +87,8 @@ const sessionShape = {
 };
 
 const dogIdInputSchema = z.strictObject({ dogId: z.string() });
+const setPublicInputSchema = z.strictObject({ dogId: z.string(), isPublic: z.boolean() });
+const recordInputSchema = z.strictObject({ fileNumber: z.string() });
 const addEntryInputSchema = z.strictObject({ dogId: z.string(), ...sessionShape });
 const updateEntryInputSchema = z.strictObject({ id: z.string(), ...sessionShape });
 
@@ -52,6 +98,14 @@ const updateEntryInputSchema = z.strictObject({ id: z.string(), ...sessionShape 
 const notFoundError = {
   NOT_FOUND: {
     message: "Not found.",
+    data: errorDataSchema,
+  },
+};
+
+/** Making a record public when no approved consent wording exists: there is nothing to agree to, so nothing changes. */
+const notPublishedError = {
+  NOT_PUBLISHED: {
+    message: "There is no consent wording to agree to.",
     data: errorDataSchema,
   },
 };
@@ -93,9 +147,31 @@ export const adminUpdateEntryContract = oc
   .input(updateEntryInputSchema)
   .output(logbookEntrySchema);
 
+/** Whether the owner's dog record can be made public and whether it is. Only the owner's own dogs. */
+export const publicStatusContract = oc
+  .errors({ ...baseErrors, ...notFoundError })
+  .input(dogIdInputSchema)
+  .output(publicStatusSchema);
+
+/**
+ * Makes the owner's dog record public or private again. Public needs approved consent wording (`NOT_PUBLISHED` otherwise)
+ * and records the owner's agreement with its version and time; private is always allowed and takes effect at once. The
+ * record of having agreed stays.
+ */
+export const setPublicContract = oc
+  .errors({ ...baseErrors, ...notFoundError, ...notPublishedError })
+  .input(setPublicInputSchema)
+  .output(publicStatusSchema);
+
+/** Public: no sign-in. The record behind a file number if its owner made it public, otherwise «private», the same for every other case. */
+export const recordContract = oc.errors(commonErrors).input(recordInputSchema).output(recordAnswerSchema);
+
 export const logbookContract = {
   locate: locateDogContract,
+  record: recordContract,
   list: listLogbookContract,
+  publicStatus: publicStatusContract,
+  setPublic: setPublicContract,
   admin: {
     list: adminListLogbookContract,
     add: adminAddEntryContract,

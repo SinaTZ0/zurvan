@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { course, dog, enrollment, logbookEntry } from "~/db/schema";
@@ -25,6 +25,48 @@ export async function findDogByFileNumber({
 }: Executor & { fileNumber: string }): Promise<{ id: string; ownerId: string } | undefined> {
   const [row] = await db.select({ id: dog.id, ownerId: dog.ownerId }).from(dog).where(eq(dog.fileNumber, fileNumber));
   return row;
+}
+
+/** The dog behind a file number, with only what a public record may show (and who owns it, to ask about consent). */
+export async function findDogForPublicRecord({ db, fileNumber }: Executor & { fileNumber: string }): Promise<
+  | {
+      id: string;
+      ownerId: string;
+      fileNumber: string;
+      name: string;
+      breed: string | null;
+      birthDate: string;
+      birthDateApproximate: boolean;
+    }
+  | undefined
+> {
+  const [row] = await db
+    .select({
+      id: dog.id,
+      ownerId: dog.ownerId,
+      fileNumber: dog.fileNumber,
+      name: dog.name,
+      breed: dog.breed,
+      birthDate: dog.birthDate,
+      birthDateApproximate: dog.birthDateApproximate,
+    })
+    .from(dog)
+    .where(eq(dog.fileNumber, fileNumber));
+  return row;
+}
+
+/** The courses a dog finished, oldest first: the timeline a public record shows. */
+export function findCompletedCourses({
+  db,
+  dogId,
+}: Executor & { dogId: string }): Promise<{ title: string; latinName: string; completedAt: Date }[]> {
+  return db
+    .select({ title: course.title, latinName: course.latinName, completedAt: enrollment.completedAt })
+    .from(enrollment)
+    .innerJoin(course, eq(enrollment.courseId, course.id))
+    .where(and(eq(enrollment.dogId, dogId), eq(enrollment.status, "completed")))
+    .orderBy(asc(enrollment.completedAt), asc(enrollment.id))
+    .then((rows) => rows.flatMap((row) => (row.completedAt ? [{ ...row, completedAt: row.completedAt }] : [])));
 }
 
 /** The dog with this id, and who owns it. */

@@ -20,6 +20,7 @@ export function SessionSheet({
   dog,
   enrollments,
   entry,
+  publicRecordsAvailable,
   open,
   onClose,
 }: {
@@ -27,6 +28,8 @@ export function SessionSheet({
   enrollments: AdminEnrollment[];
   /** The session being corrected, or null for a new one. */
   entry: LogbookEntry | null;
+  /** An owner can make a record public (approved wording exists), so the form offers the entry's «public» mark. */
+  publicRecordsAvailable: boolean;
   open: boolean;
   onClose: () => void;
 }) {
@@ -76,6 +79,7 @@ export function SessionSheet({
         <SessionForm
           key={entry?.id ?? "new"}
           entry={entry}
+          publicRecordsAvailable={publicRecordsAvailable}
           enrollments={enrollments}
           isPending={save.isPending}
           failure={save.failure}
