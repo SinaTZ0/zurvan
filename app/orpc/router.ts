@@ -17,6 +17,7 @@ import {
   adminListPaymentsProcedure,
   dogEligibilityProcedure,
   listMyPaymentsProcedure,
+  myDogCoursesProcedure,
   payCartProcedure,
   reviewCartProcedure,
 } from "~/orpc/checkout/procedure";
@@ -121,6 +122,7 @@ export const router = implementer.router({
   },
   checkout: {
     eligibility: dogEligibilityProcedure,
+    dogCourses: myDogCoursesProcedure,
     review: reviewCartProcedure,
     pay: payCartProcedure,
     payments: listMyPaymentsProcedure,

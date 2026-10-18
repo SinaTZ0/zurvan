@@ -5,6 +5,7 @@ import {
   adminGetDogEligibility,
   adminListPayments,
   getDogEligibility,
+  getMyDogCourses,
   listMyPayments,
   payCart,
   reviewCart,
@@ -28,6 +29,16 @@ export const dogEligibilityProcedure = base.checkout.eligibility
     });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.dogs;
+  });
+
+/*===== Courses For A Dog =====*/
+export const myDogCoursesProcedure = base.checkout.dogCourses
+  .use(requireRoleMiddleware("customer"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await getMyDogCourses({ db: context.db, customerId: context.user.id, dogId: input.dogId });
+    if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
+    return result.courses;
   });
 
 /*===== Review =====*/

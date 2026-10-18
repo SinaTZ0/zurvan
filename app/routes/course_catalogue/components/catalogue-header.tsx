@@ -1,3 +1,5 @@
+import { Link } from "~/components/link";
+import { buttonVariants } from "~/components/ui/button";
 import { DogCounter } from "~/routes/course_catalogue/components/dog-counter";
 
 /*===== Catalogue Header =====*/
@@ -32,6 +34,10 @@ export function CatalogueHeader({
           هر دوره بعد از دوره‌ی قبلش باز می‌شه. اسم دوره رو بنویس یا از نوع‌ها انتخاب کن.
         </p>
         <div className="mt-8 max-w-xl">{children}</div>
+        {/* For people who already know what they want: signed out they are sent to sign in and brought back. */}
+        <Link to="/buy" className={buttonVariants({ size: "lg", className: "mt-5" })}>
+          خرید دوره
+        </Link>
       </div>
 
       {/*------ Dog ------*/}

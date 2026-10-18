@@ -5,6 +5,8 @@ export default [
   layout("routes/layout_public/layout-public.tsx", [
     index("routes/home/home.tsx"),
     route("courses", "routes/course_catalogue/course-catalogue.tsx"),
+    // The purchase page that starts from the dog (customers only).
+    route("buy", "routes/buy/buy.tsx"),
     route("courses/:slug", "routes/course_detail/course-detail.tsx"),
     route("assessment", "routes/assessment/assessment.tsx"),
     route("help", "routes/help/help.tsx"),

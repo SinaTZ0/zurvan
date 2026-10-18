@@ -96,6 +96,11 @@ export const adminPaymentSchema = paymentSchema.extend({
 
 export type AdminPayment = z.infer<typeof adminPaymentSchema>;
 
+/** One of the customer's own dogs against every approved course (F4), for the purchase page that starts from the dog. */
+export const myDogCourseSchema = verdictSchema.extend({ courseSlug: z.string() });
+
+export type MyDogCourse = z.infer<typeof myDogCourseSchema>;
+
 /** Every approved course against one dog, for the Admin's Dog Detail. */
 export const adminDogEligibilitySchema = z.array(
   verdictSchema.extend({ course: z.object({ slug: z.string(), title: z.string() }) }),
@@ -136,6 +141,16 @@ export const dogEligibilityContract = oc
   .input(eligibilityInputSchema)
   .output(z.array(dogEligibilitySchema));
 
+/**
+ * Every approved course against one of the customer's own dogs, with whether it can take it and why not (F4). The server
+ * decides, so the purchase page can't offer what «پرداخت» would refuse. Another owner's dog, a made-up id and a malformed
+ * one are `NOT_FOUND`.
+ */
+export const myDogCoursesContract = oc
+  .errors({ ...baseErrors, ...notFoundError })
+  .input(z.strictObject({ dogId: z.string() }))
+  .output(z.array(myDogCourseSchema));
+
 /** The cart's items with current prices and eligibility. */
 export const reviewCartContract = oc.errors(baseErrors).input(itemsInputSchema).output(cartReviewSchema);
 
@@ -163,6 +178,7 @@ export const adminDogEligibilityContract = oc
 
 export const checkoutContract = {
   eligibility: dogEligibilityContract,
+  dogCourses: myDogCoursesContract,
   review: reviewCartContract,
   pay: payCartContract,
   payments: listMyPaymentsContract,

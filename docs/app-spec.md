@@ -115,7 +115,7 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 **The early-age exception (built, switched off).** The owner has described one exception to rule 1: a very young dog that is **not** of a working breed may start one of **three introductory courses** without the evaluation. Its facts are **not confirmed**: the exact age bounds, which three courses and which breeds are working. They are not guessed. `app/lib/early-age-exception.ts` holds `null`, so the exception is **off** and every dog needs the evaluation (it fails closed). Once the owner confirms the facts and they are written there, the same check (so the cart, «پرداخت» and the payment callback together) lets a dog skip **only the evaluation** when all of these hold: the course is one of the named ones; the dog's age in whole months is inside the bounds (inclusive); a breed is written and it matches no working breed (compared with Persian letters, spaces and half-spaces folded, and a half-written working breed is also refused); the dog is otherwise eligible. A dog with no breed written never qualifies: a breed nobody classified is not assumed harmless. Every other rule (prerequisites, the course's own age range, an active enrollment, a course not on sale) still applies.
 
-**Pages:** Course Detail · Cart · Dog Detail (Admin: why a dog can't take a course)
+**Pages:** Course Detail · Buy a Course · Cart · Dog Detail (Admin: why a dog can't take a course)
 
 ---
 
@@ -124,6 +124,8 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 **Who:** the customer.
 
 **The cart lives in the customer's account** (a `cart_item` table), so it follows them to another device; the browser keeps a copy in local storage so the page shows it at once. It holds items of **one course for one dog**. A customer can add several (two courses for two dogs, say) and pay for them all at once.
+
+**Starting from the dog.** For someone who already knows what they want, «خرید دوره» (a button at the top of the catalogue, also `/buy`) starts the other way round. A visitor is sent to sign in and comes back to the same page, the dog in the address included. It asks **which of the customer's dogs** first (one tap, kept in the address as `?dog=`; a customer with one dog has it chosen already; one with none is asked to introduce a dog and brought back), then lists every course on sale with **the server's verdict for that dog**, the same [F4](#f4-eligibility) check the cart and «پرداخت» use (`checkout.dogCourses`: the caller's own dogs only; another owner's dog, a malformed id and an unknown dog all read as not found). A course the dog can take shows its price and «افزودن به سبد» (or «در سبد است» once it is there); one it can't shows each reason and the way out (the free evaluation, the course to finish first). Nothing here can be bought that the cart would refuse. The page offers no bundle, discount, program terms or choice of delivery format, because no approved facts for them exist yet (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
 1. **Add to cart.** On Course Detail the customer picks one of their dogs and presses «افزودن به سبد». Picking a dog needs signing in. The same course for the same dog can't be in the cart twice.
 2. **Cart.** It shows each item with the course's **current price** and its eligibility ([F4](#f4-eligibility)), read fresh from the server; an item that isn't eligible any more is marked and can't be paid for. The total is the sum of the eligible items.
@@ -146,7 +148,7 @@ Prices are fixed by the course. Discounts and changing a price for one customer 
 - **Another browser or device:** the cart is the account's, so it is there on any device. It is read again when the tab is used, so what was added elsewhere appears. A cart a browser held from before carts lived in the account is merged in once; after that the account's cart wins, so an item bought or removed elsewhere isn't put back by an out-of-date copy. Signing out empties the browser's copy and keeps the account's.
 - **A payment settles:** the items it bought leave the cart, on every device.
 
-**Pages:** Course Detail · Cart · Purchases
+**Pages:** Course Detail · Buy a Course · Cart · Purchases
 
 ---
 
@@ -205,7 +207,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 **Who:** the public browses; the Admin manages the catalogue.
 
-- The catalogue and its course pages sell the head trainer and his courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)).
+- The catalogue and its course pages sell the head trainer and his courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)), and the catalogue's header has a «خرید دوره» button that starts the purchase from the dog.
 - Only the Admin creates and edits courses. Every course in this version has a **fixed price**, an age range and prerequisites. Its lesson count and lesson length are **shown to customers** as a description («حدوداً ۵ جلسه»); the app doesn't track lessons.
 - The full set of course settings is **pending the owner**, like dog profiles.
 - Archived courses can't be bought, but their active enrollments continue, and a completed one still counts as a prerequisite. Archiving and restoring are reversible switches. A course is never deleted, and its link name (slug) never changes after it is created.
@@ -345,7 +347,7 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 ## Pages
 
-Each page and the features on it: **33 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **34 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
 **Public (12)**
 
@@ -364,7 +366,7 @@ Each page and the features on it: **33 pages**. A list and its form or detail ar
 | Dog Record        | F14 (private unless its owner says otherwise)     |
 | Certificate Check | F14 (valid, revoked or not found)                 |
 
-**Customer (6)**
+**Customer (7)**
 
 | Page                                                                               | Features   |
 | ---------------------------------------------------------------------------------- | ---------- |
@@ -372,6 +374,7 @@ Each page and the features on it: **33 pages**. A list and its form or detail ar
 | Dog Form                                                                           | F2         |
 | Dog Detail: evaluated or not, passed courses, evaluations, enrollments             | F2, F3, F6 |
 | Evaluation Request: dog, photos and videos, earliest date, when I'm free           | F3         |
+| Buy a Course: pick a dog, then its courses with the server's verdict on each       | F5, F4     |
 | Cart: items with price and eligibility, «پرداخت», the gateway's result as a banner | F5, F4     |
 | Purchases: past payments and the enrollments each one bought                       | F5         |
 

@@ -7,7 +7,14 @@ import { readDepositPercent } from "~/lib/platform-settings.server";
 import type { PaymentGateway } from "~/lib/payment-gateway.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { utcToTehranParts } from "~/lib/tehran-time";
-import type { AdminPayment, CartReview, DogEligibility, Payment, ReviewedItem } from "~/orpc/checkout/contract";
+import type {
+  AdminPayment,
+  CartReview,
+  DogEligibility,
+  MyDogCourse,
+  Payment,
+  ReviewedItem,
+} from "~/orpc/checkout/contract";
 import {
   findActiveEnrollmentKeys,
   findPaymentByAuthority,
@@ -125,6 +132,38 @@ export async function getDogEligibility({
 
 function toDogSummary(dog: DogRecord) {
   return { id: dog.id, name: dog.name, photo: dog.photo ? toPublicMedia(dog.photo) : null };
+}
+
+/**
+ * Every approved course against one of the customer's own dogs (F4), for the purchase page that starts from the dog. The
+ * same `judge` as the cart and «پرداخت», so what is offered here is what can be bought. Another owner's dog reads as
+ * `not-found`.
+ */
+export async function getMyDogCourses({
+  db,
+  customerId,
+  dogId,
+  now = new Date(),
+}: {
+  db: DatabaseOrTransaction;
+  customerId: string;
+  dogId: string;
+  now?: Date;
+}): Promise<{ kind: "success"; courses: MyDogCourse[] } | NotFoundResult> {
+  if (!isDogId(dogId)) return { kind: "not-found" };
+  const dog = (await findDogsByOwner({ db, ownerId: customerId })).find((candidate) => candidate.id === dogId);
+  if (!dog) return { kind: "not-found" };
+
+  const courses = await findApprovedCourses({ db });
+  const judged = await judge({ db, pairs: courses.map((course) => ({ dog, course })), now });
+  return {
+    kind: "success",
+    courses: judged.map(({ course, problems }) => ({
+      courseSlug: course.slug,
+      eligible: problems.length === 0,
+      problems,
+    })),
+  };
 }
 
 /** The Admin's Dog Detail: every approved course against one dog. */
