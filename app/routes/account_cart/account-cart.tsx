@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isRouteErrorResponse, useNavigate } from "react-router";
 
 import { ChalkDoodle } from "~/components/chalk-doodle";
@@ -52,6 +52,13 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
   const { items, ready } = useCartItems();
   const review = useCartReview({ items, ready });
   const pay = useCartPay();
+
+  /*------ Site Rules ------*/
+  // Only when rules are published (`SITE_RULES`) and this customer hasn't accepted the version in force. The page waits
+  // for the answer before «پرداخت» can be pressed, so a payment never starts on a guess.
+  const consent = useQuery({ ...orpc.consent.status.queryOptions(), staleTime: 60_000, retry: 1 });
+  const needsRules = consent.data?.siteRules != null && !consent.data.siteRules.accepted;
+  const [rulesTicked, setRulesTicked] = useState(false);
   const { containerRef, remove, message: removalMessage } = useCartRemoval();
 
   /*------ Payment Result ------*/
@@ -133,9 +140,17 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
               unavailableCount={summary.unavailableCount}
               total={review.data?.total ?? 0}
               refreshing={review.isPlaceholderData}
-              busy={pay.busy}
+              busy={pay.busy || consent.isPending}
               message={pay.message}
-              onPay={() => pay.start(summary.payable.map(({ courseSlug, dogId }) => ({ courseSlug, dogId })))}
+              needsRules={needsRules}
+              rulesTicked={rulesTicked}
+              onRulesTick={setRulesTicked}
+              onPay={() =>
+                pay.start(
+                  summary.payable.map(({ courseSlug, dogId }) => ({ courseSlug, dogId })),
+                  { acceptRules: needsRules },
+                )
+              }
             />
           </div>
         </div>

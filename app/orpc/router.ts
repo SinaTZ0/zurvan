@@ -28,6 +28,7 @@ import {
   getCourseProcedure,
   listCoursesProcedure,
 } from "~/orpc/course/procedure";
+import { acceptSiteRulesProcedure, consentStatusProcedure } from "~/orpc/consent/procedure";
 import { adminOverviewProcedure } from "~/orpc/dashboard/procedure";
 import {
   adminGetDogProcedure,
@@ -101,6 +102,10 @@ export const router = implementer.router({
       list: adminListCommissionsProcedure,
       markPaid: adminMarkCommissionPaidProcedure,
     },
+  },
+  consent: {
+    status: consentStatusProcedure,
+    acceptSiteRules: acceptSiteRulesProcedure,
   },
   course: {
     list: listCoursesProcedure,

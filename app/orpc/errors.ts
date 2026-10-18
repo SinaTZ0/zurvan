@@ -37,6 +37,9 @@ export const ERROR_STATUS_MAP = {
   NOT_ACTIVE: 409,
   NOT_ELIGIBLE: 409,
   ALREADY_PAID: 409,
+  // Site rules are published and the customer has not accepted this version (payment), or none are published (accepting).
+  RULES_NOT_ACCEPTED: 409,
+  NOT_PUBLISHED: 409,
   // The request is fine but the session is too old for a sensitive change: sign in again, then retry.
   SESSION_TOO_OLD: 403,
 };

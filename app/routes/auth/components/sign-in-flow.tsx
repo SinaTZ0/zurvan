@@ -37,10 +37,13 @@ export function SignInFlow({
   showcase,
   redirectTo,
   needsName,
+  rulesPublished,
   onStepChange,
 }: {
   showcase: boolean;
   redirectTo: string;
+  /** Approved site rules exist, so the name step asks for the tick and records it (F13). */
+  rulesPublished: boolean;
   /** Signed in already but never named (e.g. the tab closed after the code), so start at the name. */
   needsName: boolean;
   /** The page's photo and bubble follow the step, so every move to a new step is reported. */
@@ -113,7 +116,9 @@ export function SignInFlow({
         />
       )}
 
-      {step.name === "name" && <NameStep focusOnMount={hasMoved} onDone={() => finish()} />}
+      {step.name === "name" && (
+        <NameStep focusOnMount={hasMoved} rulesPublished={rulesPublished} onDone={() => finish()} />
+      )}
     </section>
   );
 }

@@ -111,6 +111,11 @@ const payErrors = {
     message: "An item in the cart can't be bought.",
     data: errorDataSchema,
   },
+  /** Site rules are published and the customer has not accepted the version in force (F13). Nothing was saved. */
+  RULES_NOT_ACCEPTED: {
+    message: "Accept the site rules first.",
+    data: errorDataSchema,
+  },
 };
 
 const baseErrors = { ...commonErrors, ...authErrors, ...roleErrors };

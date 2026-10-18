@@ -4,6 +4,7 @@ import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { SITE_RULES } from "~/lib/site-rules";
 
 const FOOTER_GROUPS = [
   {
@@ -32,6 +33,8 @@ const FOOTER_GROUPS = [
     links: [
       { label: "سؤال‌های پرتکرار", to: "/help" },
       { label: "حریم خصوصی", to: "/privacy" },
+      // Only once the owner has approved the wording.
+      ...(SITE_RULES ? [{ label: "قوانین", to: "/rules" }] : []),
     ],
   },
 ] as const;

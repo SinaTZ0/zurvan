@@ -16,12 +16,15 @@ Phases A to D (header, pages, homepage, hero, search) are UI only: no schema cha
 
 ## Migrations on this branch (all additive)
 
-| Phase | Change                                                                                | Existing data                                                     |
-| ----- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| E1    | New table `sign_in_failure` (phone number and time of a wrong password). Nothing else | None touched. The password itself uses the existing column        |
-| E3    | New table `cart_item` (user, dog, course, time). Nothing else                         | None touched. Existing browsers' carts are merged in on first use |
+| Phase | Change                                                                                                         | Existing data                                                     |
+| ----- | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| E1    | New table `sign_in_failure` (phone number and time of a wrong password). Nothing else                          | None touched. The password itself uses the existing column        |
+| E3    | New table `cart_item` (user, dog, course, time). Nothing else                                                  | None touched. Existing browsers' carts are merged in on first use |
+| E2    | New table `consent` (person, kind, version, dog, accepted and withdrawn times) with two partial unique indexes | None touched. Empty until rules are published                     |
 
 Later phases add rows to this table as they land.
+
+**A trap when pushing from the command line.** `npx drizzle-kit push` stops to ask «do you want to truncate `payment_item`?» whenever that table has rows, because it wants to re-add `payment_item_dog_course_unique`. **Answer no, or do not use the CLI on a database that matters.** The deploy script's `--db-push` uses Drizzle's API (`deploy/push-schema.mjs`) and does not ask; it applies a plain `DROP CONSTRAINT` and `ADD CONSTRAINT` for that index (brief, no data change). I could not run `deploy/push-schema.mjs` on this machine (Drizzle's introspection fails with «there is no parameter $1» on Node 24 against a local Postgres 15), so **the first `--db-push` of this branch should be tried on a restored backup first.**
 
 `drizzle-kit push` also prints a few statements that have nothing to do with this branch and change no data: it drops and re-adds `payment_item_dog_course_unique` and re-sets some array column defaults on every run (a Drizzle quirk, seen on the disposable database too).
 

@@ -11,6 +11,8 @@ export default [
     route("about", "routes/about/about.tsx"),
     route("contact", "routes/contact/contact.tsx"),
     route("privacy", "routes/privacy/privacy.tsx"),
+    // A 404 until the owner approves the rules' wording (`app/lib/site-rules.ts`).
+    route("rules", "routes/rules/rules.tsx"),
     route("join/partner", "routes/join_partner/join-partner.tsx"),
   ]),
 

@@ -1,6 +1,7 @@
 import { cartContract } from "~/orpc/cart/contract";
 import { checkoutContract } from "~/orpc/checkout/contract";
 import { commissionContract } from "~/orpc/commission/contract";
+import { consentContract } from "~/orpc/consent/contract";
 import { courseContract } from "~/orpc/course/contract";
 import { dashboardContract } from "~/orpc/dashboard/contract";
 import { dogContract } from "~/orpc/dog/contract";
@@ -19,6 +20,7 @@ export const contract = {
   cart: cartContract,
   checkout: checkoutContract,
   commission: commissionContract,
+  consent: consentContract,
   course: courseContract,
   dashboard: dashboardContract,
   dog: dogContract,

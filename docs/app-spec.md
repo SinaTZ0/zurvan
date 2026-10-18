@@ -284,11 +284,30 @@ Money is integer **Rial**. At this scale every number is a simple indexed query;
 
 ---
 
+### F13. Consent and Site Rules
+
+**Who:** every customer. The owner supplies the wording; the app records the acceptance.
+
+A **consent** record says a person accepted version V of a text at a time, and for a consent given per dog, which dog. Withdrawing marks it withdrawn; **rows are never deleted**, so what was agreed, and when, is always on record. A new version of a text means a new acceptance.
+
+**The site rules.** No approved wording exists yet, so nothing is published: `app/lib/site-rules.ts` holds `null`, and with it there is no «قوانین» page (it answers 404), no link to it, no tick and nothing recorded. The wording is a legal decision for the owner, not an engineering one. Once the owner approves it and it is set there with a version:
+
+- the page `/rules` shows it, and the header and footer link to it;
+- a new customer ticks it on the name step of sign-up, and the acceptance is stored with the version and the time;
+- a customer who hasn't accepted the version in force ticks it on the cart, and **the server refuses to start a payment** until they have (`RULES_NOT_ACCEPTED`);
+- the browser never sends the version: the server records the one in force, so nobody accepts text that isn't published, or an old version, by mistake.
+
+The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-certificate)).
+
+**Pages:** Rules (only once published) · Login / Register (the tick) · Cart (the tick)
+
+---
+
 ## Pages
 
-Each page and the features on it: **30 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **31 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
-**Public (9)**
+**Public (10)**
 
 | Page             | Features                                          |
 | ---------------- | ------------------------------------------------- |
@@ -301,6 +320,7 @@ Each page and the features on it: **30 pages**. A list and its form or detail ar
 | About            | —                                                 |
 | Contact          | —                                                 |
 | Partner Enquiry  | F7                                                |
+| Rules            | F13 (a 404 until the owner approves the wording)  |
 
 **Customer (6)**
 

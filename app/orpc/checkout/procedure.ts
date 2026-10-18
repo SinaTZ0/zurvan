@@ -55,6 +55,9 @@ export const payCartProcedure = base.checkout.pay
     if (result.kind === "not-eligible") {
       throw errors.NOT_ELIGIBLE({ data: { errors: result.errors, fields: {} } });
     }
+    if (result.kind === "rules-not-accepted") {
+      throw errors.RULES_NOT_ACCEPTED({ data: { errors: [], fields: {} } });
+    }
 
     return { url: result.url };
   });

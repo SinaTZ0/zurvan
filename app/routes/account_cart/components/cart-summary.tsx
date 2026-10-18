@@ -2,6 +2,7 @@ import { cn } from "cn";
 
 import { FormAlert } from "~/components/form-alert";
 import { Link } from "~/components/link";
+import { RulesTick } from "~/components/rules-tick";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { formatToman } from "~/lib/course-format";
@@ -24,6 +25,9 @@ export function CartSummary({
   refreshing,
   busy,
   message,
+  needsRules,
+  rulesTicked,
+  onRulesTick,
   onPay,
 }: {
   courseCount: number;
@@ -36,6 +40,10 @@ export function CartSummary({
   busy: boolean;
   /** Why the last payment didn't start. */
   message: string | undefined;
+  /** Site rules are published and this customer hasn't accepted them: the tick is shown and «پرداخت» waits for it (F13). */
+  needsRules: boolean;
+  rulesTicked: boolean;
+  onRulesTick: (ticked: boolean) => void;
   onPay: () => void;
 }) {
   const nothingToPay = courseCount === 0;
@@ -77,11 +85,14 @@ export function CartSummary({
       {/*------ Actions ------*/}
       <div className="mt-6 flex flex-col gap-3">
         <FormAlert message={message} />
+        {needsRules && !nothingToPay && (
+          <RulesTick id="cart-rules" checked={rulesTicked} onCheckedChange={onRulesTick} />
+        )}
         <Button
           type="button"
           variant="solid"
           size="lg"
-          disabled={nothingToPay || refreshing || busy}
+          disabled={nothingToPay || refreshing || busy || (needsRules && !rulesTicked)}
           onClick={onPay}
           className="w-full"
         >

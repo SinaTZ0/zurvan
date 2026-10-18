@@ -6,6 +6,7 @@ import { Link } from "~/components/link";
 import { env } from "~/env.server";
 import { authForHeaders } from "~/lib/auth.server";
 import { referralCookieFromUrl } from "~/lib/referral.server";
+import { SITE_RULES } from "~/lib/site-rules";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { AuthBubble } from "~/routes/auth/components/auth-bubble";
 import { AuthPhotos } from "~/routes/auth/components/auth-photos";
@@ -36,7 +37,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (session?.user.firstName) throw redirect(redirectTo);
 
   return data(
-    { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session },
+    // `rulesPublished`: the name step asks for the tick only when approved rules exist (F13).
+    { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session, rulesPublished: SITE_RULES !== null },
     referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined,
   );
 }
@@ -52,7 +54,7 @@ function safeRedirect(value: string | null) {
  * different dog asks at each step (the photo crossfades, the bubble's words change).
  */
 export default function AuthPage({ loaderData }: Route.ComponentProps) {
-  const { showcase, redirectTo, needsName } = loaderData;
+  const { showcase, redirectTo, needsName, rulesPublished } = loaderData;
   // Which dog is up follows the flow's step; the flow reports each change.
   const [step, setStep] = useState<AuthStepName>(needsName ? "name" : "phone");
 
@@ -65,7 +67,7 @@ export default function AuthPage({ loaderData }: Route.ComponentProps) {
 
       {/*===== Form Column =====*/}
       {/* Scrolls on its own on desktop, so the demo list never moves the photo. Its scrollbar is hidden; the wheel and touch still scroll it. */}
-      <div className="z-10 flex flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:pe-10 lg:ps-20 lg:pt-8 xl:ps-24 lg:pb-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="z-10 flex [scrollbar-width:none] flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:ps-20 lg:pe-10 lg:pt-8 lg:pb-12 xl:ps-24 [&::-webkit-scrollbar]:hidden">
         {/*------ Logo ------*/}
         {/* Phones: laid over the photo band's top start corner. Desktop: first in the column, scrolling with it. */}
         <Link
@@ -88,7 +90,13 @@ export default function AuthPage({ loaderData }: Route.ComponentProps) {
 
           {/*------ Steps ------*/}
           <div className="mt-8">
-            <SignInFlow showcase={showcase} redirectTo={redirectTo} needsName={needsName} onStepChange={setStep} />
+            <SignInFlow
+              showcase={showcase}
+              redirectTo={redirectTo}
+              needsName={needsName}
+              rulesPublished={rulesPublished}
+              onStepChange={setStep}
+            />
           </div>
 
           {/*------ Reassurance ------*/}

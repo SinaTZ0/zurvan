@@ -20,6 +20,7 @@ import {
 } from "~/orpc/checkout/repository";
 import { cartItemsSchema } from "~/orpc/checkout/validation";
 import { removePaidItemsFromCart } from "~/orpc/cart/service";
+import { hasAcceptedSiteRules } from "~/orpc/consent/service";
 import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
 import {
   findApprovedCourseBySlug,
@@ -230,7 +231,11 @@ export async function reviewCart({
 }
 
 /*===== Pay =====*/
-type PayResult = { kind: "redirect"; url: string } | InvalidResult | { kind: "not-eligible"; errors: string[] };
+type PayResult =
+  | { kind: "redirect"; url: string }
+  | InvalidResult
+  | { kind: "not-eligible"; errors: string[] }
+  | { kind: "rules-not-accepted" };
 
 /**
  * «پرداخت» (F5): checks every item again and reads its price, saves a **pending payment** listing the items (dog,
@@ -240,7 +245,8 @@ type PayResult = { kind: "redirect"; url: string } | InvalidResult | { kind: "no
  * looks at the cart again instead of paying a different total from the one they saw.
  *
  * @returns `redirect` with where to send the customer; `invalid` for an empty or oversized cart; `not-eligible` with a
- * Persian line for each item that fails.
+ * Persian line for each item that fails; `rules-not-accepted` when site rules are published and this customer has not
+ * accepted the version in force.
  */
 export async function payCart({
   db,
@@ -248,6 +254,7 @@ export async function payCart({
   customerId,
   input,
   callbackUrl,
+  rules,
   now = new Date(),
 }: {
   db: Database;
@@ -256,10 +263,17 @@ export async function payCart({
   input: { items: { courseSlug: string; dogId: string }[] };
   /** The absolute URL of the payment callback route. */
   callbackUrl: string;
+  /** The site rules in force; the registry's by default. A test passes its own to switch the gate on. */
+  rules?: Parameters<typeof hasAcceptedSiteRules>[0]["rules"];
   now?: Date;
 }): Promise<PayResult> {
   const parsed = cartItemsSchema.safeParse(input.items);
   if (!parsed.success) return { kind: "invalid", ...issuesToErrorData(parsed.error.issues) };
+
+  // With site rules published, money is taken only from someone who accepted the version in force (F13).
+  if (!(await hasAcceptedSiteRules({ db, userId: customerId, ...(rules === undefined ? {} : { rules }) }))) {
+    return { kind: "rules-not-accepted" };
+  }
 
   const items = await reviewItems({ db, customerId, items: parsed.data, now });
   const failing = items.filter((item) => !item.eligible);

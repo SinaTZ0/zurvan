@@ -523,6 +523,41 @@ export const cartItem = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.dogId, table.courseId] })],
 );
 
+/*===== Consent =====*/
+// What a person agreed to, exactly which wording, and when (docs/app-spec.md, F1 and F13): the site rules, and later a
+// dog's public logbook. A row says the person accepted version V of the text at a time; withdrawing sets `revoked_at`
+// and the row stays, so the record of what was agreed and when is never lost. Rows are never deleted.
+
+export const consent = pgTable(
+  "consent",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** What was agreed to, as plain text. Allowed values live in `app/orpc/consent/constants.ts`. */
+    kind: text("kind").notNull(),
+    /** The wording's version, so the record names the exact text that was accepted. */
+    version: text("version").notNull(),
+    /** The dog it is about, for a consent that is given per dog (a public logbook); null for the account's own. */
+    dogId: uuid("dog_id").references(() => dog.id, { onDelete: "restrict" }),
+    acceptedAt: timestamp("accepted_at").notNull().defaultNow(),
+    /** When the person took it back; null while it stands. */
+    revokedAt: timestamp("revoked_at"),
+  },
+  (table) => [
+    index("consent_user_id_kind_idx").on(table.userId, table.kind),
+    // One standing consent per person, kind and version (and dog, for the per-dog kinds). Held by the database, so a
+    // double click or two tabs can't record two.
+    uniqueIndex("consent_account_standing_idx")
+      .on(table.userId, table.kind, table.version)
+      .where(sql`${table.dogId} is null and ${table.revokedAt} is null`),
+    uniqueIndex("consent_dog_standing_idx")
+      .on(table.userId, table.kind, table.version, table.dogId)
+      .where(sql`${table.dogId} is not null and ${table.revokedAt} is null`),
+  ],
+);
+
 /*===== Partners =====*/
 // Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`
 // role plus this row, which the Admin creates with the account.
