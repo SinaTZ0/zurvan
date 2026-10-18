@@ -22,6 +22,7 @@ Phases A to D (header, pages, homepage, hero, search) are UI only: no schema cha
 | E3    | New table `cart_item` (user, dog, course, time). Nothing else                                                                                                | None touched. Existing browsers' carts are merged in on first use                                          |
 | E2    | New table `consent` (person, kind, version, dog, accepted and withdrawn times) with two partial unique indexes                                               | None touched. Empty until rules are published                                                              |
 | G1    | New column `dog.file_number` (text, unique, not null, default `'ZD-'` and ten random characters from `gen_random_uuid()`), added to the existing `dog` table | **Backfills every existing dog** with a number when the column is added (the default is evaluated per row) |
+| G2    | New table `logbook_entry` (dog, optional enrollment, author, day, notes, exercises, summary, public mark, times)                                             | None touched. Empty until the trainer writes a session                                                     |
 
 Later phases add rows to this table as they land.
 

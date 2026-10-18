@@ -568,6 +568,47 @@ export const consent = pgTable(
   ],
 );
 
+/*===== Logbook =====*/
+// A dog's training diary (docs/app-spec.md, F14): one row per session, written by the head trainer, read by the dog's
+// owner. Private by default: `is_public` only marks an entry the trainer is happy to show on the dog's public record, and
+// that record exists only if its owner makes it public, which no one can until the owner approves the wording (F14).
+// Entries are corrected by editing; none is deleted, so the diary is a record of what was written when.
+
+export const logbookEntry = pgTable(
+  "logbook_entry",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    /** The course (enrollment) the session belongs to, when it belongs to one. */
+    enrollmentId: uuid("enrollment_id").references(() => enrollment.id, { onDelete: "restrict" }),
+    /** Who wrote it: the head trainer. */
+    authorId: text("author_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    /** `YYYY-MM-DD`, Gregorian: the day of the session. */
+    occurredOn: date("occurred_on", { mode: "string" }).notNull(),
+    /** What was done and seen, in the trainer's words. */
+    notes: text("notes").notNull(),
+    /** The exercises practised, one short line each. */
+    exercises: text("exercises")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** How the dog is getting on, in a sentence or two. */
+    progress: text("progress"),
+    /** The trainer is happy for this entry to be on the public record, if the owner makes the record public. Never the default. */
+    isPublic: boolean("is_public").notNull().default(false),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("logbook_entry_dog_id_occurred_on_idx").on(table.dogId, table.occurredOn)],
+);
+
 /*===== Partners =====*/
 // Clinics, groomers and pet shops that bring in customers for a commission (F7). A partner is a user with the `partner`
 // role plus this row, which the Admin creates with the account.

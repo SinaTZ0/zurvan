@@ -315,7 +315,11 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 - **Everyone else**, signed in or not, sees one page: «این پرونده خصوصیه». It is the same words, status and shape for a private record, for a number that doesn't exist and for text that isn't a number, so the page can't be used to find out which numbers are real; it never carries the dog's name; it is never cached and never indexed (`Cache-Control: no-store`, `noindex`).
 - `/logbook` asks for a number (typed in any case, with or without `ZD-`, in Persian digits) and opens that address. It is an exact lookup, not a search: there is no list of records.
 
-**Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Dog Detail (the file card) · Dog Detail (Admin) (the file card)
+**The logbook (the dog's diary).** After a session the **head trainer**, the only staff account, writes it down on the dog's admin page: the day (Jalali, not in the future), the course it belongs to (one of the dog's own enrollments, or none), what was done and seen, the exercises (one per line; blank and repeated lines are dropped) and a one-line summary. The owner reads it on the dog's page, newest first. Entries are corrected by editing; none is deleted. Only the dog's owner and the Admin can read a diary: another customer gets the same «not found» as for a dog that doesn't exist, and partners have no access at all. Each entry carries a «public» mark (default **off**) for the dog's public record, which cannot exist yet ([see below](#f14-dog-file-logbook-and-certificate)).
+
+**No photos or videos in the diary yet.** Dog and evaluation photos are served to anyone with their unguessable link, and an evaluation video is streamed only after a check of who asks; an image added to a diary would be as public as its link, which is not private. Media waits for the owner's decision on public records and a private route for diary images (`docs/overnight/03-DECISIONS-NEEDED.md`).
+
+**Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Dog Detail (the file card and the diary) · Dog Detail (Admin) (the file card, the diary and the session form)
 
 ---
 

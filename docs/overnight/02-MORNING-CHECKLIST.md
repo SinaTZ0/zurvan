@@ -49,7 +49,9 @@ The primary handoff. Everything below is on the branch `feat/zurvann-overnight-f
 ## G. Logbook, QR, certificate
 
 - [x] **Implemented and verified.** Every dog has a unique, stable file number and a QR link. _Route:_ `/account/dogs/<id>` (owner) and `/admin/dogs/<id>` (Admin): the file card with the number, the QR code, the link and «دانلود QR برای چاپ». _Test:_ add a dog, open its page, copy the link, open it signed out (a private record that never shows the dog's name), signed in as the owner (you land on the dog's page) and as another customer (a private record). _Env:_ Local. _Evidence:_ 3 integration tests and a 15-check headless-Chrome run, screenshots `screenshots/g1-*.jpg`.
-- [ ] **Pending/blocked.** Session logbook, public/private permissions with consent, certificate. _Status:_ in progress (G2 to G4).
+- [x] **Implemented and verified.** Trainer session reporting (text) and the owner's progress timeline. _Route:_ `/admin/dogs/<id>` («ثبت جلسه», «ویرایش») and `/account/dogs/<id>` (the diary). _Test:_ as the Admin write a session (try an empty one: refused; blank and repeated exercise lines are dropped), correct it, then as the owner open the dog's page and read it; as another customer open the same address: «این سگ پیدا نشد». _Env:_ Local. _Evidence:_ 8 integration tests, a 12-check headless-Chrome run, screenshots `screenshots/g2-*.jpg`.
+- [ ] **Pending/blocked.** Media attachments in the diary. _Why:_ dog and evaluation photos are public by link and videos need their own checked route, so a diary photo would not be private; see `03-DECISIONS-NEEDED.md`.
+- [ ] **Pending/blocked.** Public/private permissions with consent, certificate. _Status:_ in progress (G3 and G4).
 
 ## H. Partners
 

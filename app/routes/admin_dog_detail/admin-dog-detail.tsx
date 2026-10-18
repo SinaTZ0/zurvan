@@ -19,6 +19,8 @@ import { EvaluateDialog } from "~/routes/admin_dog_detail/components/evaluate-di
 import { EvaluationCard } from "~/routes/admin_dog_detail/components/evaluation-card";
 import { EvaluationsSection } from "~/routes/admin_dog_detail/components/evaluations-section";
 import { IdentityPanel } from "~/routes/admin_dog_detail/components/identity-panel";
+import { LogbookSection } from "~/routes/admin_dog_detail/components/logbook-section";
+import { SessionSheet } from "~/routes/admin_dog_detail/components/session-sheet";
 import { summarizeEvaluations } from "~/routes/admin_dog_detail/evaluation-summary";
 import { buildLadder } from "~/routes/admin_dog_detail/ladder";
 import { ADMIN_DOGS_PATH, adminDogDetailSearchParams } from "~/routes/admin_dog_detail/search-params";
@@ -36,11 +38,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
   const dogId = params.dogId;
 
-  const [dog, eligibility, evaluations, enrollments] = await Promise.all([
+  const [dog, eligibility, evaluations, enrollments, logbook] = await Promise.all([
     client.dog.admin.get({ id: dogId }),
     client.checkout.admin.dogEligibility({ dogId }),
     client.evaluation.admin.list({ dogId }),
     client.enrollment.admin.list({ dogId }),
+    client.logbook.admin.list({ dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
@@ -51,6 +54,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     eligibility,
     evaluations,
     enrollments,
+    logbook,
     fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
   };
 }
@@ -62,10 +66,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * beside the ladder, enrollments, evaluations and details; phones read them in that order.
  */
 export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, eligibility, evaluations, enrollments, fileCard } = loaderData;
+  const { dog, eligibility, evaluations, enrollments, logbook, fileCard } = loaderData;
 
   /*------ URL State ------*/
-  const [{ edit }, setParams] = useQueryStates(adminDogDetailSearchParams);
+  const [{ edit, session }, setParams] = useQueryStates(adminDogDetailSearchParams);
+  // `session` is `new`, an entry's id, or nothing; an id that is no entry (deleted meanwhile) shows nothing.
+  const editingEntry = session && session !== "new" ? (logbook.find((entry) => entry.id === session) ?? null) : null;
+  const sessionOpen = session === "new" || editingEntry !== null;
 
   /*------ Evaluate Dialog ------*/
   const [evaluating, setEvaluating] = useState(false);
@@ -110,6 +117,11 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
         <div className="flex flex-col gap-6 lg:col-span-7">
           <CourseLadder dog={dog} rungs={rungs} />
           <EnrollmentsSection enrollments={enrollments} />
+          <LogbookSection
+            entries={logbook}
+            onAdd={() => setParams({ session: "new" })}
+            onEdit={(entry) => setParams({ session: entry.id })}
+          />
           <EvaluationsSection evaluations={evaluations} />
           <DetailsSection dog={dog} />
         </div>
@@ -122,6 +134,15 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
         // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
         // forward entry that reopens it.
         onClose={() => setParams({ edit: null }, { history: "replace" })}
+      />
+
+      {/*===== Session Sheet =====*/}
+      <SessionSheet
+        dog={dog}
+        enrollments={enrollments}
+        entry={editingEntry}
+        open={sessionOpen}
+        onClose={() => setParams({ session: null }, { history: "replace" })}
       />
 
       {/*===== Evaluate Dialog =====*/}

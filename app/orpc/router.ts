@@ -57,7 +57,13 @@ import {
   withdrawEvaluationProcedure,
 } from "~/orpc/evaluation/procedure";
 import { implementer } from "~/orpc/implementer.server";
-import { locateDogProcedure } from "~/orpc/logbook/procedure";
+import {
+  adminAddEntryProcedure,
+  adminListLogbookProcedure,
+  adminUpdateEntryProcedure,
+  listLogbookProcedure,
+  locateDogProcedure,
+} from "~/orpc/logbook/procedure";
 import { uploadMediaProcedure } from "~/orpc/media/procedure";
 import {
   addLeadProcedure,
@@ -159,6 +165,12 @@ export const router = implementer.router({
   },
   logbook: {
     locate: locateDogProcedure,
+    list: listLogbookProcedure,
+    admin: {
+      list: adminListLogbookProcedure,
+      add: adminAddEntryProcedure,
+      update: adminUpdateEntryProcedure,
+    },
   },
   media: {
     upload: uploadMediaProcedure,

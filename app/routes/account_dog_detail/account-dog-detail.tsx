@@ -10,6 +10,7 @@ import { createServerClient } from "~/orpc/server-client.server";
 import { DogHeader } from "~/routes/account_dog_detail/components/dog-header";
 import { EnrollmentsSection } from "~/routes/account_dog_detail/components/enrollments-section";
 import { EvaluationsSection } from "~/routes/account_dog_detail/components/evaluations-section";
+import { LogbookSection } from "~/routes/account_dog_detail/components/logbook-section";
 
 import type { Route } from "./+types/account-dog-detail";
 
@@ -25,26 +26,27 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const client = createServerClient(request);
   const dogId = params.dogId;
 
-  const [dog, evaluations, enrollments] = await Promise.all([
+  const [dog, evaluations, enrollments, logbook] = await Promise.all([
     client.dog.get({ id: dogId }),
     client.evaluation.listMine({ dogId }),
     client.enrollment.listMine({ dogId }),
+    client.logbook.list({ dogId }),
   ]).catch((error: unknown) => {
     if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
     throw error;
   });
 
-  return { dog, evaluations, enrollments, fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }) };
+  return { dog, evaluations, enrollments, logbook, fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }) };
 }
 
 /*===== Dog Detail =====*/
 /**
- * F2, F3 and F6 on one dog: evaluated or not, the courses it passed, its evaluation requests with their photos and
- * videos, and its enrollments. Phones read courses, evaluations, profile; desktop puts the profile in a sticky end
+ * F2, F3, F6 and F14 on one dog: evaluated or not, the courses it passed, its evaluation requests with their photos and
+ * videos, its enrollments, and the diary the trainer writes. Phones read courses, evaluations, profile; desktop puts the profile in a sticky end
  * column.
  */
 export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments, fileCard } = loaderData;
+  const { dog, evaluations, enrollments, logbook, fileCard } = loaderData;
   const status = getDogStatus({ dog, evaluations, enrollments });
 
   return (
@@ -56,6 +58,7 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
         {/*===== Courses and Evaluations =====*/}
         <div className="flex flex-col gap-8 lg:gap-10">
           <EnrollmentsSection enrollments={enrollments} isEvaluated={dog.isEvaluated} />
+          <LogbookSection entries={logbook} />
           <EvaluationsSection evaluations={evaluations} />
         </div>
 
