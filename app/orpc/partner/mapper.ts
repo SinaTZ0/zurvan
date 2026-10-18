@@ -40,6 +40,7 @@ export function toPhonePerson({ fact, stage }: { fact: LeadFact; stage: PartnerP
     createdAt: fact.createdAt,
     registeredAt: customer?.createdAt ?? null,
     boughtAt: stage === "bought" ? fact.boughtAt : null,
+    commission: stage === "bought" ? toPersonCommission(fact) : null,
   };
 }
 
@@ -54,7 +55,13 @@ export function toLinkPerson({ fact }: { fact: LinkCustomerFact }): PartnerPerso
     createdAt: fact.createdAt,
     registeredAt: fact.createdAt,
     boughtAt: fact.boughtAt,
+    commission: fact.boughtAt ? toPersonCommission(fact) : null,
   };
+}
+
+/** The partner's own commission for a person who bought, as the list shows it. */
+function toPersonCommission(fact: { commissionAmount: number | null; commissionPaidAt: Date | null }) {
+  return fact.commissionAmount === null ? null : { amount: fact.commissionAmount, paidAt: fact.commissionPaidAt };
 }
 
 /*===== Admin =====*/

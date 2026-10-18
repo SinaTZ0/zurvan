@@ -188,7 +188,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 **Commission.** At a customer's **first paid purchase**, if they have an active partner, the app writes one **commission**: a percentage (setting, default **10%**) of the total of the enrollments that payment created, rounded down to the Rial.
 
 - One commission per customer, ever. Later purchases earn nothing.
-- The Admin pays partners **outside the app**, by bank, and presses **«پرداخت شد»** on each commission. The partner sees each commission as paid or unpaid.
+- The Admin pays partners **outside the app**, by bank, and presses **«پرداخت شد»** on each commission. The partner sees each commission as paid or unpaid, both in the commissions list and on the row of the person it came from in Leads and Customers (the amount and the state; never the purchase's price, the course or the dog).
 - **The enrollment is cancelled afterwards:** the partner keeps the commission.
 
 **Pages:** Partner Dashboard (referral link, QR code, commissions) · Leads and Customers · Partners and Leads (Admin)

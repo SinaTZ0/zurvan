@@ -1,6 +1,8 @@
 import { cn } from "cn";
 
+import { formatToman } from "~/lib/course-format";
 import { toPersianDigits } from "~/lib/digits";
+import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { PartnerPerson } from "~/orpc/partner/contract";
 import { HighlightRing } from "~/routes/account_partner_leads/components/highlight-ring";
 import { LeadRoad } from "~/routes/account_partner_leads/components/lead-road";
@@ -13,6 +15,13 @@ function formatPhone(phoneNumber: string): string {
     ? `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`
     : phoneNumber;
   return toPersianDigits(grouped);
+}
+
+/*===== Commission =====*/
+/** What this partner is owed for a person who bought, and whether the Admin has paid it: «۹٬۵۰۰٬۰۰۰ تومان · منتظر پرداخت». */
+function describeCommission(commission: NonNullable<PartnerPerson["commission"]>): string {
+  const state = commission.paidAt ? `پرداخت شد · ${formatJalaliTimestamp(commission.paidAt)}` : "منتظر پرداخت";
+  return `${formatToman(commission.amount)} · ${state}`;
 }
 
 /*===== Lead Row =====*/
@@ -36,6 +45,7 @@ export function LeadRow({ person, highlighted }: { person: PartnerPerson; highli
     <li className={cn("relative rounded-2xl border border-border bg-card p-4", lost && "opacity-70")}>
       <p className="sr-only">
         {identity}: {STAGE_STATUS[person.stage]}
+        {person.commission && `، پورسانت ${describeCommission(person.commission)}`}
       </p>
 
       <div
@@ -77,6 +87,16 @@ export function LeadRow({ person, highlighted }: { person: PartnerPerson; highli
             {STAGE_STATUS[person.stage]}
           </span>
         </div>
+
+        {/*------ Commission ------*/}
+        {/* Only for someone who bought: what the partner is owed for them and whether it has been paid (never the
+            purchase itself, F12). */}
+        {person.commission && (
+          <p className="col-span-2 row-start-3 text-sm text-muted-foreground lg:col-span-3 lg:row-start-2">
+            پورسانت:{" "}
+            <span className="font-bold text-foreground tabular-nums">{describeCommission(person.commission)}</span>
+          </p>
+        )}
       </div>
 
       {highlighted && <HighlightRing />}

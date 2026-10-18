@@ -30,6 +30,9 @@ export type LeadFact = {
   customer: { name: string; referredByPartnerId: string | null; createdAt: Date } | null;
   /** When this partner has a commission for that customer. */
   boughtAt: Date | null;
+  /** That commission's amount (Rial) and when the Admin paid it; null while there is none or it is unpaid. */
+  commissionAmount: number | null;
+  commissionPaidAt: Date | null;
   /** An earlier lead on the same number by another active partner, ordered as `findPartnerForNewCustomer` does. */
   hasEarlierActiveLead: boolean;
 };
@@ -41,6 +44,8 @@ export type LinkCustomerFact = {
   name: string;
   createdAt: Date;
   boughtAt: Date | null;
+  commissionAmount: number | null;
+  commissionPaidAt: Date | null;
 };
 
 export type PartnerCommissionSums = {
@@ -123,6 +128,8 @@ export async function findPeople({
       customerReferredBy: user.referredByPartnerId,
       customerCreatedAt: user.createdAt,
       boughtAt: commission.createdAt,
+      commissionAmount: commission.amount,
+      commissionPaidAt: commission.paidAt,
       hasEarlierActiveLead: sql<boolean>`${hasEarlierActiveLead}`,
     })
     .from(partnerLead)
@@ -142,6 +149,8 @@ export async function findPeople({
         ? null
         : { name: row.customerName, referredByPartnerId: row.customerReferredBy, createdAt: row.customerCreatedAt },
     boughtAt: row.boughtAt,
+    commissionAmount: row.commissionAmount,
+    commissionPaidAt: row.commissionPaidAt,
     hasEarlierActiveLead: row.hasEarlierActiveLead,
   }));
 
@@ -153,6 +162,8 @@ export async function findPeople({
       name: user.name,
       createdAt: user.createdAt,
       boughtAt: commission.createdAt,
+      commissionAmount: commission.amount,
+      commissionPaidAt: commission.paidAt,
     })
     .from(user)
     .leftJoin(commission, and(eq(commission.customerId, user.id), eq(commission.partnerId, user.referredByPartnerId)))

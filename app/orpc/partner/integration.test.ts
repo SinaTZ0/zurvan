@@ -8,7 +8,7 @@ import { commission, partner, partnerLead, payment, user } from "~/db/schema";
 import { toPersianDigits } from "~/lib/digits";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { findPartnerForNewCustomer } from "~/lib/referral.server";
-import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
+import { markPaid, recordFirstPurchaseCommission } from "~/orpc/commission/service";
 import {
   addLead,
   adminListPartners,
@@ -236,10 +236,16 @@ describe("partner people", () => {
       boughtAt: null,
     });
 
+    // Before a purchase there is nothing owed to show.
+    expect((await personOnPhone({ partnerId: pB.id, phone }))?.commission).toBeNull();
+
     expect(await buy({ customerId, baseAmount: 5_000_000 })).toBe(true);
     const bought = await personOnPhone({ partnerId: pB.id, phone });
     expect(bought).toMatchObject({ stage: "bought", customerName: `Customer ${customerId}` });
     expect(bought?.boughtAt).toBeInstanceOf(Date);
+    // The partner sees his own commission for the person (10% of 5,000,000) and that it is still waiting, not the purchase.
+    expect(bought?.commission).toEqual({ amount: 500_000, paidAt: null });
+    expect(Object.keys(bought ?? {})).not.toContain("price");
 
     // The loser learns nothing of the customer: no name, no dates, and not who won.
     expect(await personOnPhone({ partnerId: pA.id, phone })).toMatchObject({
@@ -247,6 +253,7 @@ describe("partner people", () => {
       customerName: null,
       registeredAt: null,
       boughtAt: null,
+      commission: null,
     });
 
     // The Admin's view agrees, with the commission only on the partner who earned it.
@@ -255,6 +262,13 @@ describe("partner people", () => {
     expect(all.find((entry) => entry.id === pA.id)?.commissions).toMatchObject({ unpaidCount: 0, unpaidAmount: 0 });
     expect(all.find((entry) => entry.id === pB.id)?.counts.bought).toBe(1);
     expect(all.find((entry) => entry.id === pA.id)?.counts.lost).toBe(1);
+
+    // Once the Admin marks it paid, the same row says so.
+    const [row] = await db.select({ id: commission.id }).from(commission).where(eq(commission.customerId, customerId));
+    expect((await markPaid({ db, id: row?.id ?? "" })).kind).toBe("success");
+    const settled = await personOnPhone({ partnerId: pB.id, phone });
+    expect(settled?.commission?.amount).toBe(500_000);
+    expect(settled?.commission?.paidAt).toBeInstanceOf(Date);
   });
 
   it("a referral link beats a lead, and a partner never sees the other's customers", async () => {
@@ -277,6 +291,11 @@ describe("partner people", () => {
     // B has no lead on this phone, so the customer is listed once, as a link person.
     expect(bPeople.filter((person) => person.phoneNumber === phone || person.id === customerId)).toHaveLength(1);
     expect((await peopleOf(pA.id)).map((person) => person.id)).not.toContain(customerId);
+
+    // A link customer who buys shows the partner's commission the same way a phone lead does.
+    expect(await buy({ customerId, baseAmount: 2_000_000 })).toBe(true);
+    const bought = (await peopleOf(pB.id)).find((person) => person.id === customerId);
+    expect(bought).toMatchObject({ stage: "bought", commission: { amount: 200_000, paidAt: null } });
   });
 
   it("an inactive partner attributes no one, cannot add, and earns no commission", async () => {

@@ -43,6 +43,11 @@ export const partnerPersonSchema = z.object({
   registeredAt: z.date().nullable(),
   /** When the customer's first paid purchase wrote the commission. */
   boughtAt: z.date().nullable(),
+  /**
+   * What this partner is owed for the person, once `bought`: the commission's amount (Rial) and when the Admin paid it
+   * (null while it waits). Null before that and for a `lost` person. Never the purchase's price or what was bought.
+   */
+  commission: z.object({ amount: z.number().int(), paidAt: z.date().nullable() }).nullable(),
 });
 
 export type PartnerPerson = z.infer<typeof partnerPersonSchema>;

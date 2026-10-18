@@ -51,7 +51,9 @@ The primary handoff. Everything below is on the branch `feat/zurvann-overnight-f
 
 ## H. Partners
 
-- [ ] **Pending/blocked.** Per-referral payment status for partners. _Status:_ not started when this draft was written.
+- [x] **Implemented and verified.** A partner sees the payment status of his own referrals, read-only: each person who bought shows his commission for them and whether it is paid. _Route:_ `/account/partner/leads` (sign in as a demo partner, `09120000003`). _Test:_ sign up a new customer through the partner's link (`/?ref=<code>`, the code is on his dashboard), pay for a course (demo gateway), then open the partner's page: the row shows «پورسانت: … · منتظر پرداخت»; on the Admin's commissions page press «پرداخت شد» and the row reads «پرداخت شد · date». Another partner's customers never appear. _Env:_ Local. _Evidence:_ the partner integration tests, screenshots `screenshots/h-leads-*.jpg`.
+- [-] **Partially implemented: partner registers customers and dogs.** Not built: it needs the privacy and consent decisions listed in `03-DECISIONS-NEEDED.md`. Partners can still enter a phone number (a lead) as before; attribution (link, code, lead) is unchanged and tested.
+- [x] **Implemented and verified.** No external trainers or partner logos on the public site (nothing was added; the team section stays switched off). _Env:_ Local.
 
 ## Cross-cutting
 
