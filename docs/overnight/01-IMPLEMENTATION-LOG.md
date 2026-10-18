@@ -65,3 +65,4 @@ Newest entries are added at the bottom of each phase. Commits are on `feat/zurva
 - **Articles.** No article route or content store exists, so nothing was built and nothing pretends to search articles. The behaviour the owner described («ادرار هیجانی» returning matches or a truthful empty state) belongs to the article feature; it is in `03-DECISIONS-NEEDED.md`.
 - **Logbook.** A public logbook search, if it ships, must read only records marked public (Phase G).
 - Checks: `typecheck`, `oxlint` and the search tests clean.
+- **Rendered with a seeded database** (a disposable local Postgres, see `04-DEPLOYMENT-AND-ROLLBACK.md`): `/courses`, `/courses/sport`, `/courses/house-manner`, `/auth`, `/help`, `/about`, `/contact` and `/` all answer 200; searching `igp` in the catalogue finds the sport course and the dog's bubble says so (`docs/overnight/screenshots/d-courses-search-igp-1440.jpg`). The Phase B home screenshots were retaken after Phase C.
