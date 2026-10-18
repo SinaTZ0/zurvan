@@ -37,10 +37,11 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 | URL                               | Page                      | Linked from                                      |
 | --------------------------------- | ------------------------- | ------------------------------------------------ |
-| `/assessment`                     | Evaluation Request (F3)   | every «ارزیابی رایگان» button, footer            |
-| `/#evaluation`, `/#trainer`       | home sections             | header nav                                       |
+| `/assessment`                     | Evaluation Request (F3)   | the header's gold pill, home and course buttons  |
+| `/about`                          | About                     | header nav, footer, Contact                      |
+| `/contact`                        | Contact                   | header nav, footer, About, Help                  |
 | `/courses/:slug`                  | Course Detail             | course cards                                     |
-| `/courses`, `/courses?q=`         | Course Catalogue          | header search, nav, footer, buttons              |
+| `/courses`, `/courses?q=`         | Course Catalogue          | nav, footer, buttons                             |
 | `/auth`                           | Login / Register          | header                                           |
 | `/help`, `/help#how-buying-works` | Help and FAQ              | footer, account footer, Course Detail's buy card |
 | `/privacy`                        | Privacy                   | footer                                           |
@@ -65,6 +66,10 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 ## Partner Enquiry
 
 `/join/partner` (`app/routes/join_partner/`) is for the owner of a clinic, groomer or pet shop, not a customer, so its main action is the phone call, not the free evaluation. **It has no form**: the API has no way to receive an enquiry and the Admin has no screen to read one yet (his Partners page is built, but the enquiry table and procedure are not). The hero is the home hero's style with one static photo (the puppy holding its leash) and a bubble addressed to the shop owner («بفرستش پیش طلا»); below it a three-way strip (link, QR, phone leads), the three steps (call, the Admin creates the account, sign in), the commission card and a phone ask. The commission percent shown is the setting in force (`setting.commissionPercent`), read by the page's loader.
+
+## About and Contact
+
+`/about` and `/contact` (`app/routes/about/`, `app/routes/contact/`) are static and calm, built only from what the owner printed on the business card: name, role, 13 years, the international credential, the service area, the phone and the Telegram, Instagram and YouTube profiles. They add no biography and no claim about where or how training is held. About is the one place a visitor reads about the trainer (the nav has no «مربی»); Contact is four cards, each one link. A second phone number and a WhatsApp link wait for the owner and are never guessed.
 
 ## Signed-in Pages
 

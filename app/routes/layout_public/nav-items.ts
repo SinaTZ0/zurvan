@@ -1,13 +1,18 @@
 import { ACCOUNT_LINKS } from "~/lib/account-links";
 
 /*===== Storefront Navigation =====*/
-// Shared by the desktop header and the phone menu, so both always list the same pages.
-// «دوره‌ها» is the catalogue; the other two are sections of the home page.
+// Shared by the desktop header and the phone menu, so both always list the same pages. A link is listed only when its
+// page is usable: «قوانین» waits for text the owner has approved and «پرونده‌ها» for the dog logbook. «مربی» is gone
+// because there is one trainer, and there is no search here: search lives on the pages that have something to search.
 export const NAV_ITEMS = [
   { label: "دوره‌ها", to: "/courses" },
-  { label: "ارزیابی رایگان", to: "/#evaluation" },
-  { label: "مربی", to: "/#trainer" },
+  { label: "درباره‌ی طلا راستی", to: "/about" },
+  { label: "همکاران", to: "/join/partner" },
+  { label: "تماس با ما", to: "/contact" },
 ] as const;
+
+/** The one prominent ask in the header, a gold pill on desktop and the first button in the phone menu. */
+export const NAV_CTA = { label: "ارزیابی رایگان", to: "/assessment" } as const;
 
 /*===== Signed-in Links =====*/
 // The customer's account pages, listed in the person menu of the storefront header.

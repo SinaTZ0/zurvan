@@ -7,14 +7,14 @@ import { PROFILE_PATH } from "~/lib/account-links";
 import { useSignOut } from "~/hooks/use-sign-out";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "~/components/ui/sheet";
-import { SiteSearch } from "~/routes/layout_public/components/site-search";
-import { NAV_ITEMS } from "~/routes/layout_public/nav-items";
+import { NAV_CTA, NAV_ITEMS } from "~/routes/layout_public/nav-items";
 import type { Viewer } from "~/routes/layout_public/viewer";
 
 /*===== Mobile Menu =====*/
 /**
- * Below `lg`, the nav and search live in a sheet that slides in from the menu button's side (the left, in RTL). The
- * sheet's last block is the sign-in button for a visitor, or «حساب من» and «خروج» for a signed-in `viewer`.
+ * Below `lg`, the nav lives in a sheet that slides in from the menu button's side (the left, in RTL). The sheet opens
+ * with the one main action, the free assessment, then the page links; its last block is the sign-in button for a
+ * visitor, or «حساب من» and «خروج» for a signed-in `viewer`. Those are outline buttons: the sheet has one gold button.
  */
 export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
   const [open, setOpen] = useState(false);
@@ -36,7 +36,10 @@ export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
         </SheetHeader>
 
         <div className="flex flex-col gap-6 p-6 pt-4">
-          <SiteSearch id="mobile-search" />
+          {/*------ The Main Action ------*/}
+          <Link to={NAV_CTA.to} onClick={close} className={cn(buttonVariants({ size: "lg", className: "w-full" }))}>
+            {NAV_CTA.label}
+          </Link>
 
           {/*------ Links ------*/}
           <nav aria-label="منوی اصلی">
@@ -58,7 +61,7 @@ export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
                 <Link
                   to={accountPath}
                   onClick={close}
-                  className={cn(buttonVariants({ size: "lg", className: "w-full" }))}
+                  className={cn(buttonVariants({ variant: "outline", size: "lg", className: "w-full" }))}
                 >
                   {viewer.role === "customer" ? "حساب من" : "پنل من"}
                 </Link>
@@ -86,7 +89,11 @@ export function MobileMenu({ viewer }: { viewer: Viewer | null }) {
               </Button>
             </div>
           ) : (
-            <Link to="/auth" onClick={close} className={cn(buttonVariants({ size: "lg", className: "w-full" }))}>
+            <Link
+              to="/auth"
+              onClick={close}
+              className={cn(buttonVariants({ variant: "outline", size: "lg", className: "w-full" }))}
+            >
               ورود یا ثبت‌نام
             </Link>
           )}

@@ -284,9 +284,9 @@ Money is integer **Rial**. At this scale every number is a simple indexed query;
 
 ## Pages
 
-Each page and the features on it: **28 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **30 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
-**Public (7)**
+**Public (9)**
 
 | Page             | Features                                          |
 | ---------------- | ------------------------------------------------- |
@@ -296,6 +296,8 @@ Each page and the features on it: **28 pages**. A list and its form or detail ar
 | Login / Register | F1, F7                                            |
 | Help and FAQ     | — (how buying works: pay first, then we call you) |
 | Privacy          | —                                                 |
+| About            | —                                                 |
+| Contact          | —                                                 |
 | Partner Enquiry  | F7                                                |
 
 **Customer (6)**

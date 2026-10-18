@@ -8,14 +8,14 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 const FOOTER_GROUPS = [
   {
     title: "دوره‌ها",
-    links: [
-      { label: "همه‌ی دوره‌ها", to: "/courses" },
-      { label: "ارزیابی رایگان", to: "/assessment" },
-    ],
+    // The free assessment has its gold pill in the header; the footer doesn't repeat it.
+    links: [{ label: "همه‌ی دوره‌ها", to: "/courses" }],
   },
   {
     title: "ارتباط با زروان",
     links: [
+      { label: "درباره‌ی طلا راستی", to: "/about" },
+      { label: "تماس با ما", to: "/contact" },
       { label: "همکاری با زروان", to: "/join/partner" },
       ...CENTER_LINKS.map((link) => ({
         label: (
