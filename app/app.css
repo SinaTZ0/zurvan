@@ -202,18 +202,6 @@
       transform: translateY(-6px) rotate(1.5deg);
     }
   }
-
-  /* Fills a slideshow's progress bar once, over the time a photo stays up. The home hero moves to the next photo when
-     it ends, so pausing the animation pauses the slideshow, and reduced motion (no animation) never advances it */
-  --animate-slide-progress: slide-progress 7s linear both;
-  @keyframes slide-progress {
-    from {
-      transform: scaleX(0);
-    }
-    to {
-      transform: scaleX(1);
-    }
-  }
 }
 
 @theme inline {

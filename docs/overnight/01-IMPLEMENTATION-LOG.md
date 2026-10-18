@@ -44,3 +44,14 @@ Newest entries are added at the bottom of each phase. Commits are on `feat/zurva
 - `quick-actions.tsx` added; `trainer-section.tsx` lost its button (the page already asks for the assessment four times).
 - `CLAUDE.md`, `app-spec.md`, `storefront-design.md` and `head-trainer.ts` now say the owner is the only trainer shown and list what is switched off.
 - Checks: `typecheck` and `oxlint` clean. Full-page headless-Chrome screenshots at 1440px and 390px were read (`docs/overnight/screenshots/b-home-*.jpg`): no course grid, no team, the cards stack on a phone.
+
+## Phase C: Zurvann mascot and the hero's change rules
+
+### Result
+
+- **Rules (implemented).** The hero follows the visitor, not a clock: a new session or an arrival by a link steps to the next dog; back, forward, reload and waiting keep it; the dots pick one by hand. `app/lib/hero-state.ts` holds the pure rules (7 unit tests); the home loader chooses the dog to paint first from two cookies; `HomeHero` steps on `PUSH` and `REPLACE` arrivals and writes the cookie. The autoplay, its progress bar, the pause button and the unused `slide-progress` animation are gone.
+- **Verified in a real browser** (headless Chrome against the dev server, 14 checks, all passing): first visit shows dog 1 and writes both cookies; waiting 9 seconds changes nothing; reload keeps it; a link back to Home steps; Back then Forward keeps it; a dot picks and survives a reload; a returning visitor's new session steps once (1 to 2) and wraps (2 to 0); a visitor who started on another page sees the first dog; a hand-edited cookie falls back to the first.
+- **Dialogue.** Only the three approved lines are live. The headline stays as it is (not approved as final); alternatives are in `03-DECISIONS-NEEDED.md`. No new pop-ups: contextual bubbles already exist on the auth page, the empty dashboard, the cart banner and the help header.
+- **Mascot plan and assets.** `05-MASCOT-SPEC.md`: growth stages, state rules, asset inventory and prompt proposals. **Blocker:** Zurvann's authentic art does not exist yet; the three stand-in dogs stay and nothing claims otherwise.
+- **Performance.** Only the dog showing at first paint gets `fetchPriority="high"`, and the server picks it, so the largest paint is the right image on a full load.
+- Checks: `typecheck`, `oxlint` and the hero-state tests clean.

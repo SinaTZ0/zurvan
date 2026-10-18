@@ -1,41 +1,15 @@
 import { cn } from "cn";
-import { PauseIcon, PlayIcon } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
+import { useNavigationType } from "react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { HERO_COOKIE, HERO_COOKIE_MAX_AGE, nextHeroIndex } from "~/lib/hero-state";
 import { ChalkDoodle } from "~/components/chalk-doodle";
 import { SpeechBubble } from "~/components/speech-bubble";
-
-/*===== Slides =====*/
-// Three dogs take turns greeting the visitor, each with its own line in the bubble. Every photo is composed the same way
-// (the dog's head a quarter in from the left, the right half dark), so the headline and the bubble's tail fit them all.
-// `position` is the crop: the dog's face on a phone's narrow band, the dog's half on desktop.
-const SLIDES = [
-  {
-    name: "hero",
-    alt: "یک ژرمن‌شپرد روی مبل چرمی دراز کشیده و مستقیم به دوربین نگاه می‌کند",
-    line: "سلام! من اینجام که زندگی من و تو با هم بهتر بشه :)",
-    position: "object-[24%_30%] lg:object-[20%_40%]",
-  },
-  {
-    name: "hero-2",
-    alt: "یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند",
-    line: "توی خیابون هم حواسم فقط به توئه.",
-    position: "object-[8%_50%] lg:object-[0%_4%]",
-  },
-  {
-    name: "hero-3",
-    alt: "یک توله گلدن رتریور کنار در خانه دراز کشیده و قلاده‌اش را به دهان گرفته",
-    line: "قلاده‌مو آوردم! بریم تمرین؟",
-    position: "object-[4%_50%] lg:object-[0%_35%]",
-  },
-];
-
-/** `useSyncExternalStore` needs a subscription; whether we've hydrated never changes afterwards. */
-const subscribeToNothing = () => () => {};
+import { HERO_SLIDES } from "~/routes/home/hero-slides";
 
 /*===== Home Hero =====*/
 /**
@@ -43,33 +17,39 @@ const subscribeToNothing = () => () => {};
  * left half (the end, in RTL) and the right half is already dark, so the headline goes there with no box behind it. On
  * phones the photo shows the dog's face on top and the words follow below on black.
  *
- * Three photos crossfade, and the bubble's line changes with the dog. The headline stays put and stays ivory: big gold
- * on the first screen read as a gold shop. The bubble drawing itself on load is the page's one orchestrated moment.
+ * Which of the three dogs shows follows the visitor, not a clock (rules in `~/lib/hero-state`): a new session or an
+ * arrival by a link steps to the next dog; back, forward and reload keep the one that was showing; waiting changes
+ * nothing. The dots below still let a visitor pick one by hand. The headline stays put and stays ivory: big gold on the
+ * first screen read as a gold shop. The bubble drawing itself on load is the page's one orchestrated moment.
+ *
+ * `initialIndex` is the dog the server chose (it is also the one painted first). `startedSession` says the server already
+ * stepped for a new session, so a client-side arrival in that same request must not step a second time.
  */
-export function HomeHero() {
-  const [active, setActive] = useState(0);
-  const [paused, setPaused] = useState(false);
-
-  // The progress bar drives the slideshow (it advances when the bar's animation ends). Rendered only after hydration:
-  // an animation that ended before React attached its handler would leave the slideshow stuck on the first photo.
-  const hydrated = useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
+export function HomeHero({ initialIndex, startedSession }: { initialIndex: number; startedSession: boolean }) {
+  // A full load and back/forward arrive as `POP`: show the dog the server chose. A link or button arrives as `PUSH` or
+  // `REPLACE`: step to the next dog. Decided in the initial state, so nothing flashes and server and client agree.
+  const navigationType = useNavigationType();
+  const [active, setActive] = useState(() =>
+    navigationType === "POP" || startedSession
+      ? initialIndex
+      : nextHeroIndex({ current: initialIndex, count: HERO_SLIDES.length }),
   );
 
-  const next = () => setActive((index) => (index + 1) % SLIDES.length);
+  // Remember the dog on screen, so a reload or Back keeps it and the next session starts from it.
+  useEffect(() => {
+    document.cookie = `${HERO_COOKIE}=${active}; path=/; max-age=${HERO_COOKIE_MAX_AGE}; samesite=lax`;
+  }, [active]);
 
   return (
     <section aria-labelledby="hero-title" className="relative isolate overflow-hidden bg-jet">
       {/*===== Photos =====*/}
       <div className="relative h-[58svh] max-h-[34rem] min-h-80 lg:absolute lg:inset-0 lg:h-auto lg:max-h-none">
-        {SLIDES.map((slide, index) => (
+        {HERO_SLIDES.map((slide, index) => (
           <div
             key={slide.name}
             aria-hidden={index !== active}
             className={cn(
-              "absolute inset-0 transition-opacity duration-1200 ease-in-out",
+              "absolute inset-0 transition-opacity duration-1200 ease-in-out motion-reduce:transition-none",
               index === active ? "opacity-100" : "opacity-0",
             )}
           >
@@ -80,9 +60,9 @@ export function HomeHero() {
                 alt={slide.alt}
                 width={1536}
                 height={1024}
-                // The first photo is the page's largest paint; the others are only needed seconds later.
-                fetchPriority={index === 0 ? "high" : "low"}
-                decoding={index === 0 ? undefined : "async"}
+                // The dog showing first is the page's largest paint; the others are only needed if the visitor picks one.
+                fetchPriority={index === active ? "high" : "low"}
+                decoding={index === active ? undefined : "async"}
                 // A slow push-in while the photo is up. It eases back out unseen, during the fade.
                 className={cn(
                   "size-full object-cover transition-transform duration-[8s] ease-out",
@@ -112,42 +92,23 @@ export function HomeHero() {
         <div className="absolute inset-x-0 bottom-24 z-10 lg:bottom-8">
           <fieldset className="site-container flex items-center gap-1 lg:justify-end">
             <legend className="sr-only">عکس‌های بالای صفحه</legend>
-            {SLIDES.map((slide, index) => (
+            {HERO_SLIDES.map((slide, index) => (
               <button
                 key={slide.name}
                 type="button"
-                aria-label={`عکس ${formatNumberFa(index + 1)} از ${formatNumberFa(SLIDES.length)}`}
+                aria-label={`عکس ${formatNumberFa(index + 1)} از ${formatNumberFa(HERO_SLIDES.length)}`}
                 aria-current={index === active}
                 onClick={() => setActive(index)}
                 className="group/dot grid h-8 w-9 place-items-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                <span className="relative block h-1 w-7 overflow-hidden rounded-full bg-chalk/30 transition-colors group-hover/dot:bg-chalk/50">
-                  {index === active && (
-                    <span
-                      // A new key restarts the fill whenever the photo changes, by a click or on its own.
-                      key={active}
-                      onAnimationEnd={next}
-                      className={cn(
-                        // Fills from the right: the side Persian starts reading on.
-                        "absolute inset-0 origin-right bg-primary",
-                        hydrated && "motion-safe:animate-slide-progress",
-                        // Important: the `animate-` shorthand would otherwise reset the play state to running.
-                        paused && "[animation-play-state:paused]!",
-                      )}
-                    />
+                <span
+                  className={cn(
+                    "block h-1 w-7 rounded-full transition-colors",
+                    index === active ? "bg-primary" : "bg-chalk/30 group-hover/dot:bg-chalk/50",
                   )}
-                </span>
+                />
               </button>
             ))}
-            {/* Reduced motion never advances on its own, so there's nothing to pause. */}
-            <button
-              type="button"
-              aria-label={paused ? "ادامه‌ی عکس‌ها" : "توقف عکس‌ها"}
-              onClick={() => setPaused((value) => !value)}
-              className="grid size-8 place-items-center rounded-full text-chalk/70 outline-none hover:text-chalk focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:hidden"
-            >
-              {paused ? <PlayIcon aria-hidden className="size-3.5" /> : <PauseIcon aria-hidden className="size-3.5" />}
-            </button>
           </fieldset>
         </div>
       </div>
@@ -162,13 +123,13 @@ export function HomeHero() {
           <div className="flex justify-end">
             <SpeechBubble tail="top-end" lgTail="bottom-end" drawIn className="max-w-[17rem] lg:max-w-[19rem]">
               <span className="grid">
-                {SLIDES.map((slide, index) => (
+                {HERO_SLIDES.map((slide, index) => (
                   <span
                     key={slide.name}
                     aria-hidden={index !== active}
                     className={cn(
-                      "transition-opacity duration-700 [grid-area:1/1]",
-                      index === active ? "opacity-100 delay-500" : "opacity-0",
+                      "transition-opacity duration-700 [grid-area:1/1] motion-reduce:transition-none",
+                      index === active ? "opacity-100 delay-500 motion-reduce:delay-0" : "opacity-0",
                     )}
                   >
                     {slide.line}
