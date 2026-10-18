@@ -27,3 +27,20 @@ Newest entries are added at the bottom of each phase. Commits are on `feat/zurva
 - **Hidden on purpose, with the reason.** «قوانین»: no approved legal text exists, and the rules say never to ship unreviewed legal text (`03-DECISIONS-NEEDED.md`). «پرونده‌ها / لاگ‌بوک»: Phase G.
 - **Checks.** `npm run typecheck` and `oxlint` clean. Headless Chrome screenshots of `/about` and `/contact` at 1440px and the phone menu at 390px were read and look right (`docs/overnight/screenshots/a-*.png`). `/courses` needs the database and was not rendered locally in this step.
 - **Docs.** `legacy-pages.md`, `storefront-design.md` and `app-spec.md` updated in the same change (page counts, the nav, the new pages).
+
+## Phase B: simplified homepage
+
+### Brief
+
+- **Purpose.** A first-time visitor understands the site and reaches the courses, sign-up or the free assessment in one or two taps, without a catalogue in their face.
+- **Structure, top to bottom.** Hero; **quick actions** (new: three compact cards, each one link: «ثبت‌نام و ورود»، «مشاهده دوره‌ها»، «ارزیابی رایگان»); promises; evaluation panel (explains the assessment, one button); services; the trainer (no button); closing banner (the last ask).
+- **Switched off, kept in the repo with their photos.** The four need cards, the priced course grid (the same courses were shown twice) and the team section (two placeholder colleagues). Bringing one back is an import and a line in `home.tsx`.
+- **Partner program.** Nothing on the home page describes it, so nothing was removed; the nav's «همکاران» leads to `/join/partner`.
+- **Style and motion.** The cards use the existing border, `bg-card` surface and gold icon ring; the only motion is the arrow's nudge on hover (`motion-safe`).
+
+### Result
+
+- `home.tsx` no longer loads the course list: the page renders without the database (the loader only remembers a `?ref=` referral cookie, checked unchanged).
+- `quick-actions.tsx` added; `trainer-section.tsx` lost its button (the page already asks for the assessment four times).
+- `CLAUDE.md`, `app-spec.md`, `storefront-design.md` and `head-trainer.ts` now say the owner is the only trainer shown and list what is switched off.
+- Checks: `typecheck` and `oxlint` clean. Full-page headless-Chrome screenshots at 1440px and 390px were read (`docs/overnight/screenshots/b-home-*.jpg`): no course grid, no team, the cards stack on a phone.

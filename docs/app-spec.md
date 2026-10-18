@@ -10,7 +10,7 @@ The source of truth for how the app works. The course catalog's content comes fr
 
 ## The Business
 
-**K9 Training** (آموزش K9) is a head trainer's private practice. He is the owner and the app's **Admin**. The site introduces a team of **three trainers** (him and two colleagues) as equals, but only he has an account: the other two don't use the app, and who trains which dog is settled by phone. Training is mostly private (one dog), at the client's place or at the center; the owner also plans group classes at the center and offers boarding by prior arrangement with a partner pension, but the app has no seats, schedule or booking for any of that.
+**K9 Training** (آموزش K9) is a head trainer's private practice. He is the owner and the app's **Admin**. He is also the center's only trainer: the site introduces him alone (the two placeholder colleagues' cards are switched off since 2026-10-18 at the owner's request, but kept in the repo). Training is mostly private (one dog), at the client's place or at the center; the owner also plans group classes at the center and offers boarding by prior arrangement with a partner pension, but the app has no seats, schedule or booking for any of that.
 
 The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where he gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over he marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on a customer's first purchase.
 
@@ -20,7 +20,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 
 | Role                            | Who                                                                      |
 | ------------------------------- | ------------------------------------------------------------------------ |
-| **Admin** (owner, head trainer) | Runs everything. The only staff account; the other trainers have none.   |
+| **Admin** (owner, head trainer) | Runs everything. The only staff account, and the only trainer.           |
 | **Partner**                     | A clinic, groomer or pet shop that brings in customers for a commission. |
 | **Customer** (dog owner)        | Manages their dogs, requests evaluations, buys courses.                  |
 

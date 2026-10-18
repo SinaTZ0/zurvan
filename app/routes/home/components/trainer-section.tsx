@@ -1,8 +1,5 @@
-import { cn } from "cn";
 import { AwardIcon, CalendarHeartIcon, GiftIcon, MapPinnedIcon } from "lucide-react";
 
-import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
@@ -11,9 +8,10 @@ import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Trainer Section =====*/
 /**
- * The head trainer and founder, introduced by her dog, before the whole team (`TeamSection`). The one wide photo band
- * below the hero: Tala laughing while a German shepherd licks her cheek, with the dog's line over the photo's dark end.
- * Credentials come from the owner's business card; the photo remains illustrative.
+ * The head trainer and founder, introduced by their dog. They are the only trainer the home page introduces. The one
+ * wide photo band below the hero: Tala laughing while a German shepherd licks their cheek, with the dog's line over the
+ * photo's dark end. Credentials come from the owner's business card; the photo remains illustrative. No button here: the
+ * free assessment is asked for in the hero, the quick actions, the evaluation panel and the closing banner.
  */
 export function TrainerSection() {
   const points = [
@@ -47,10 +45,6 @@ export function TrainerSection() {
               </li>
             ))}
           </ul>
-
-          <Link to="/assessment" className={cn(buttonVariants({ size: "lg" }), "mt-10")}>
-            ارزیابی رایگان با {HEAD_TRAINER.firstName}
-          </Link>
         </div>
 
         {/*===== Photo =====*/}
