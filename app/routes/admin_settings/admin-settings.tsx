@@ -4,7 +4,12 @@ import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { createServerClient } from "~/orpc/server-client.server";
-import { COMMISSION_PERCENT_KEY, OTP_PER_IP_KEY, OTP_PER_PHONE_KEY } from "~/orpc/setting/constants";
+import {
+  COMMISSION_PERCENT_KEY,
+  DEPOSIT_PERCENT_KEY,
+  OTP_PER_IP_KEY,
+  OTP_PER_PHONE_KEY,
+} from "~/orpc/setting/constants";
 import { SettingCard } from "~/routes/admin_settings/components/setting-card";
 import { SettingGroup } from "~/routes/admin_settings/components/setting-group";
 
@@ -24,13 +29,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 /*===== Admin Settings =====*/
 /**
- * F10 for the Admin: the partners' commission percent and how many sign-in codes one phone or one connection may ask
- * for in an hour. A saved number is read by the next request, so nothing here needs a restart.
+ * F10 for the Admin: the partners' commission percent, the deposit taken when a customer pays, and how many sign-in
+ * codes one phone or one connection may ask for in an hour. A saved number is read by the next request, so nothing here needs a restart.
  */
 export default function AdminSettings({ loaderData }: Route.ComponentProps) {
   const { settings } = loaderData;
   const find = (key: string) => settings.find((setting) => setting.key === key);
   const commission = find(COMMISSION_PERCENT_KEY);
+  const deposit = find(DEPOSIT_PERCENT_KEY);
   const perPhone = find(OTP_PER_PHONE_KEY);
   const perIp = find(OTP_PER_IP_KEY);
 
@@ -49,6 +55,13 @@ export default function AdminSettings({ loaderData }: Route.ComponentProps) {
         {commission && (
           <SettingGroup title="پورسانت همکاران">
             <SettingCard setting={commission} busy={busy} />
+          </SettingGroup>
+        )}
+
+        {/*===== Deposit =====*/}
+        {deposit && (
+          <SettingGroup title="پیش‌پرداخت">
+            <SettingCard setting={deposit} busy={busy} />
           </SettingGroup>
         )}
 

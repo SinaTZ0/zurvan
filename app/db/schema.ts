@@ -417,8 +417,15 @@ export const payment = pgTable(
     customerId: text("customer_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
-    /** Rial: the sum of the items' prices. */
+    /**
+     * Rial charged at the gateway now: the whole of the items' prices, or the deposit when the Admin has set one (F10).
+     * What a payment "is worth" to the shop's takings; the balance, if any, is settled outside the app.
+     */
     amount: bigint("amount", { mode: "number" }).notNull(),
+    /** Rial: the sum of the items' prices, the full price of what was bought. Null on a payment made before deposits: it was `amount`. */
+    totalAmount: bigint("total_amount", { mode: "number" }),
+    /** The deposit percent in force when the payment was made (100: the whole price). */
+    depositPercent: integer("deposit_percent").notNull().default(100),
     /** `demo` in showcase mode. */
     gateway: text("gateway").notNull(),
     /** The gateway's payment id, from starting the payment; the callback finds the payment by it. Unique (F12). */

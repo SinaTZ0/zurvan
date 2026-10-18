@@ -139,6 +139,8 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
               dogCount={summary.dogCount}
               unavailableCount={summary.unavailableCount}
               total={review.data?.total ?? 0}
+              depositPercent={review.data?.depositPercent ?? 100}
+              dueNow={review.data?.dueNow ?? 0}
               refreshing={review.isPlaceholderData}
               busy={pay.busy || consent.isPending}
               message={pay.message}

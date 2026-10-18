@@ -1,4 +1,5 @@
 import {
+  DEFAULT_DEPOSIT_PERCENT,
   DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR,
   DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR,
   DEFAULT_PARTNER_COMMISSION_PERCENT,
@@ -10,16 +11,17 @@ import { COMMISSION_PERCENT_SETTING_KEY } from "~/orpc/commission/constants";
 // shows them. A missing `platform_setting` row means the default.
 
 export const COMMISSION_PERCENT_KEY = COMMISSION_PERCENT_SETTING_KEY;
+export const DEPOSIT_PERCENT_KEY = "deposit_percent";
 export const OTP_PER_PHONE_KEY = "otp_requests_per_phone_per_hour";
 export const OTP_PER_IP_KEY = "otp_requests_per_ip_per_hour";
 
-export const SETTING_KEYS = [COMMISSION_PERCENT_KEY, OTP_PER_PHONE_KEY, OTP_PER_IP_KEY] as const;
+export const SETTING_KEYS = [COMMISSION_PERCENT_KEY, DEPOSIT_PERCENT_KEY, OTP_PER_PHONE_KEY, OTP_PER_IP_KEY] as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[number];
 
 /**
- * Defaults and bounds. The bounds are guardrails against a typo (100% would pay a partner the whole sale; 0 codes would
- * lock everyone out), not business rules.
+ * Defaults and bounds. The bounds are guardrails against a typo (51% would pay a partner more than the shop keeps; 0 codes
+ * would lock everyone out), not business rules.
  */
 export const SETTING_DEFINITIONS: Record<
   SettingKey,
@@ -30,6 +32,12 @@ export const SETTING_DEFINITIONS: Record<
     min: 1,
     max: 50,
     invalidMessage: "درصد باید یک عدد صحیح بین ۱ تا ۵۰ باشد.",
+  },
+  [DEPOSIT_PERCENT_KEY]: {
+    defaultValue: DEFAULT_DEPOSIT_PERCENT,
+    min: 1,
+    max: 100,
+    invalidMessage: "درصد باید یک عدد صحیح بین ۱ تا ۱۰۰ باشد.",
   },
   [OTP_PER_PHONE_KEY]: {
     defaultValue: DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR,

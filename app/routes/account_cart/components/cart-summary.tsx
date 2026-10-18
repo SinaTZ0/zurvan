@@ -11,7 +11,8 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Cart Summary =====*/
 /**
- * «جمع سبد»: how many courses for how many dogs, the server's total, and the one main button. Only what can be paid is
+ * «جمع سبد»: how many courses for how many dogs, what «پرداخت» charges now (the whole price, or the deposit and what is
+ * left), and the one main button. Only what can be paid is
  * counted; the note says how many are left out.
  *
  * `refreshing` is a removal's total on its way: the old total stays, dimmed, and «پرداخت» waits, so nobody pays a
@@ -22,6 +23,8 @@ export function CartSummary({
   dogCount,
   unavailableCount,
   total,
+  depositPercent,
+  dueNow,
   refreshing,
   busy,
   message,
@@ -33,8 +36,12 @@ export function CartSummary({
   courseCount: number;
   dogCount: number;
   unavailableCount: number;
-  /** Rial, from the server. */
+  /** Rial, from the server: the full price of what can be paid. */
   total: number;
+  /** The deposit percent in force, from the server (100: the whole price is taken now). */
+  depositPercent: number;
+  /** Rial, from the server: what «پرداخت» charges now. */
+  dueNow: number;
   refreshing: boolean;
   /** Paying has started and the browser hasn't left yet. */
   busy: boolean;
@@ -71,8 +78,15 @@ export function CartSummary({
           refreshing && "opacity-50",
         )}
       >
-        {formatToman(nothingToPay ? 0 : total)}
+        {formatToman(nothingToPay ? 0 : dueNow)}
       </p>
+      {/* With a deposit the big number is what is charged now; the full price and what is left are said right under it. */}
+      {!nothingToPay && depositPercent < 100 && (
+        <p className="mt-2 text-sm text-pretty text-muted-foreground">
+          پیش‌پرداخت ٪{formatNumberFa(depositPercent)} از {formatToman(total)}؛ {formatToman(total - dueNow)} را موقع
+          هماهنگی با {HEAD_TRAINER.firstName} می‌دهی.
+        </p>
+      )}
       {unavailableCount > 0 && (
         <p className="mt-3 text-sm text-pretty text-muted-foreground">
           {formatNumberFa(unavailableCount)} مورد توی این جمع حساب نشده، چون الان قابل پرداخت نیست.

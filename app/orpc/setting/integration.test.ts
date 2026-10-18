@@ -5,13 +5,18 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
 import { commission, partner, payment, platformSetting, user } from "~/db/schema";
-import { DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR, DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR } from "~/lib/business-rules";
+import {
+  DEFAULT_DEPOSIT_PERCENT,
+  DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR,
+  DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR,
+} from "~/lib/business-rules";
 import { phonePlaceholderEmail } from "~/lib/phone";
-import { readOtpLimits } from "~/lib/platform-settings.server";
+import { readDepositPercent, readOtpLimits } from "~/lib/platform-settings.server";
 import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
 import { getPartnerProfile } from "~/orpc/partner/service";
 import {
   COMMISSION_PERCENT_KEY,
+  DEPOSIT_PERCENT_KEY,
   OTP_PER_IP_KEY,
   OTP_PER_PHONE_KEY,
   SETTING_DEFINITIONS,
@@ -21,7 +26,7 @@ import { adminGetSettings, getCommissionPercent, updateSetting } from "~/orpc/se
 
 /*===== Platform Settings =====*/
 // Runs against the real database: the settings are read by the commission and by sign-in, which only a real table shows.
-// The three keys are shared state, so their rows are saved up front and put back afterwards.
+// The keys are shared state, so their rows are saved up front and put back afterwards.
 
 const runId = randomUUID().slice(0, 8);
 const partnerUser = {
@@ -155,6 +160,7 @@ describe("platform settings", () => {
     expect(await readOtpLimits({ db })).toEqual({ perPhone: 3, perIp: 50 });
     expect(await adminGetSettings({ db })).toMatchObject([
       { key: COMMISSION_PERCENT_KEY },
+      { key: DEPOSIT_PERCENT_KEY },
       { key: OTP_PER_PHONE_KEY, value: 3, updatedAt: expect.any(Date) },
       { key: OTP_PER_IP_KEY, value: 50 },
     ]);
@@ -166,5 +172,32 @@ describe("platform settings", () => {
       perPhone: DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR,
       perIp: DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR,
     });
+  });
+
+  it("makes the deposit follow the setting, 100 (the whole price) until one is set, and 100 again for a corrupt value", async () => {
+    await db.delete(platformSetting).where(eq(platformSetting.key, DEPOSIT_PERCENT_KEY));
+    expect(await readDepositPercent({ db })).toBe(DEFAULT_DEPOSIT_PERCENT);
+    expect(DEFAULT_DEPOSIT_PERCENT).toBe(100);
+
+    expect(await updateSetting({ db, key: DEPOSIT_PERCENT_KEY, value: 50 })).toMatchObject({
+      kind: "success",
+      setting: { key: DEPOSIT_PERCENT_KEY, value: 50, defaultValue: 100, min: 1, max: 100 },
+    });
+    expect(await readDepositPercent({ db })).toBe(50);
+
+    // The bounds are guardrails against a typo: nothing under 1 or over 100, and whole numbers only.
+    for (const value of [0, 101, 49.5, Number.NaN]) {
+      expect(await updateSetting({ db, key: DEPOSIT_PERCENT_KEY, value })).toEqual({
+        kind: "invalid",
+        fields: { value: SETTING_DEFINITIONS[DEPOSIT_PERCENT_KEY].invalidMessage },
+      });
+    }
+    expect(await readDepositPercent({ db })).toBe(50);
+
+    // A hand-edited row must not start a payment at a percent nobody chose.
+    for (const corrupt of ["half", "0", "150", "33.3"]) {
+      await db.update(platformSetting).set({ value: corrupt }).where(eq(platformSetting.key, DEPOSIT_PERCENT_KEY));
+      expect({ corrupt, percent: await readDepositPercent({ db }) }).toEqual({ corrupt, percent: 100 });
+    }
   });
 });

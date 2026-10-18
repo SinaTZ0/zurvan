@@ -3,6 +3,7 @@ import { useId } from "react";
 import { CustomerContact } from "~/components/customer-contact";
 import { PaymentStatusBadge } from "~/components/payment-status-badge";
 import { formatToman } from "~/lib/course-format";
+import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { AdminPayment } from "~/orpc/checkout/contract";
 
@@ -35,7 +36,14 @@ export function PaymentSlip({ payment }: { payment: AdminPayment }) {
           <PaymentStatusBadge status={payment.status} className="lg:order-4" />
         </div>
 
-        <p className="order-2 text-base font-bold tabular-nums lg:order-3">{formatToman(payment.amount)}</p>
+        <p className="order-2 text-base font-bold tabular-nums lg:order-3">
+          {formatToman(payment.amount)}
+          {describeDeposit(payment) && (
+            <span className="ms-2 text-xs font-normal text-muted-foreground">
+              {describeDeposit(payment)} · {describeBalance(payment)}
+            </span>
+          )}
+        </p>
 
         <CustomerContact
           name={payment.customer.name}

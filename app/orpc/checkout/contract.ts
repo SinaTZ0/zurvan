@@ -48,8 +48,12 @@ export type ReviewedItem = z.infer<typeof reviewedItemSchema>;
 
 export const cartReviewSchema = z.object({
   items: z.array(reviewedItemSchema),
-  /** Rial: the sum of the eligible items. */
+  /** Rial: the sum of the eligible items, the full price. */
   total: z.number().int(),
+  /** The deposit percent in force now (100: the whole price is taken). */
+  depositPercent: z.number().int(),
+  /** Rial: what «پرداخت» would charge now, of `total`; the rest is settled when the lessons are arranged. */
+  dueNow: z.number().int(),
 });
 
 export type CartReview = z.infer<typeof cartReviewSchema>;
@@ -67,7 +71,12 @@ export const paymentItemSchema = z.object({
 export const paymentSchema = z.object({
   id: z.string(),
   status: z.enum(PAYMENT_STATUSES),
+  /** Rial charged at the gateway: the whole price, or the deposit. */
   amount: z.number().int(),
+  /** Rial: the full price of what was bought. Equal to `amount` unless a deposit was taken. */
+  totalAmount: z.number().int(),
+  /** The deposit percent the payment was made with (100: the whole price). */
+  depositPercent: z.number().int(),
   referenceId: z.string().nullable(),
   cardNumberMasked: z.string().nullable(),
   failureReason: z.string().nullable(),

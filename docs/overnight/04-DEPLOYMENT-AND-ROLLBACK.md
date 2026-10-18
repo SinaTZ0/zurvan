@@ -25,6 +25,7 @@ Phases A to D (header, pages, homepage, hero, search) are UI only: no schema cha
 | G2    | New table `logbook_entry` (dog, optional enrollment, author, day, notes, exercises, summary, public mark, times)                                                                | None touched. Empty until the trainer writes a session                                                     |
 | G3    | New table `certificate` (number default `'ZC-'` and ten random characters, enrollment, issuer, issued/revoked times, revoke reason), unique on the number and on the enrollment | None touched. Empty until the Admin issues one                                                             |
 | G4    | None (uses `consent`, `logbook_entry` and `certificate`)                                                                                                                        | None                                                                                                       |
+| F3    | New columns on `payment`: `total_amount` (bigint, nullable: old rows read as `amount`) and `deposit_percent` (integer, not null, default 100)                                   | Existing payments get 100 and a null total: they read as whole-price payments                              |
 
 Later phases add rows to this table as they land.
 

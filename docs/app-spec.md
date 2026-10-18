@@ -127,12 +127,14 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 1. **Add to cart.** On Course Detail the customer picks one of their dogs and presses «افزودن به سبد». Picking a dog needs signing in. The same course for the same dog can't be in the cart twice.
 2. **Cart.** It shows each item with the course's **current price** and its eligibility ([F4](#f4-eligibility)), read fresh from the server; an item that isn't eligible any more is marked and can't be paid for. The total is the sum of the eligible items.
-3. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price) and sends the total to the gateway.
+3. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price) and sends the amount due now to the gateway: the total, or, if the Admin has set a **deposit** ([F10](#f10-settings)), that share of it.
 4. **Result.** The gateway returns the customer to the Cart with a banner showing the result.
    - **Success:** in one database transaction, the payment becomes **paid**, an **enrollment** is created for each item at the price saved in step 3, and the partner commission is written when it's due ([F7](#f7-partners)). The cart is emptied. The customer sees «پرداخت انجام شد؛ برای هماهنگی با شما تماس می‌گیریم» (paid; we'll call you), and the Admin gets an SMS ([F9](#f9-notifications)).
    - **Failure or abandoned:** the pending payment becomes **failed**; the cart is unchanged.
 
 Prices are fixed by the course. Discounts and changing a price for one customer are not in this version.
+
+**The deposit.** The Admin's setting «پیش‌پرداخت» is the share of the price taken when the customer pays: **100 (the whole price) until the owner approves a deposit** (the owner mentioned 50%). With a deposit set, the cart shows the amount due now as the big number and says «پیش‌پرداخت ٪۵۰ از …؛ … را موقع هماهنگی می‌دهی»; the gateway is charged the deposit **rounded up to the Rial** and no more; each payment item and the enrollment keep the **full price**; the payment records the full price, the amount charged and the percent it was made with, and keeps that percent when the setting changes later. The Purchases page and the Admin's payments say what was taken and what is left. The balance is settled **outside the app**, when the lessons are arranged: the app shows how much is left and does not collect it. A failed deposit payment enrolls nothing, as any failed payment. The partner's commission stays on the price of what was bought, as before (not on the deposit).
 
 **Edge cases:**
 
@@ -232,11 +234,12 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 ### F10. Settings
 
-Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The Admin can set the commission from 1 to 50%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
+Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The Admin can set the commission from 1 to 50%, the deposit from 1 to 100%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
 
 | Setting                | Default     |
 | ---------------------- | ----------- |
 | Partner commission     | 10%         |
+| Deposit                | 100%        |
 | OTP requests per phone | 5 per hour  |
 | OTP requests per IP    | 20 per hour |
 

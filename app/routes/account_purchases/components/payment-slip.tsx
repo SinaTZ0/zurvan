@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 import { formatToman } from "~/lib/course-format";
+import { describeBalance, describeDeposit } from "~/lib/deposit-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { Payment } from "~/orpc/checkout/contract";
 
@@ -31,7 +32,15 @@ export function PaymentSlip({ payment }: { payment: Payment }) {
           <PaymentStatusBadge status={payment.status} />
         </div>
 
-        <p className="text-2xl font-black text-primary">{formatToman(payment.amount)}</p>
+        <div>
+          <p className="text-2xl font-black text-primary">{formatToman(payment.amount)}</p>
+          {/* A deposit says what it is a share of and what is left, which is settled when the lessons are arranged. */}
+          {describeDeposit(payment) && (
+            <p className="mt-1 text-sm text-pretty text-muted-foreground">
+              {describeDeposit(payment)}؛ {describeBalance(payment)} موقع هماهنگی با مربی.
+            </p>
+          )}
+        </div>
 
         {/*------ Failure ------*/}
         {payment.status === "failed" && (

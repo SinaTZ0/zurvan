@@ -1,7 +1,13 @@
-import { calculateCommission } from "~/lib/business-rules";
+import { calculateCommission, calculateDeposit } from "~/lib/business-rules";
 import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
-import { COMMISSION_PERCENT_KEY, OTP_PER_IP_KEY, OTP_PER_PHONE_KEY, type SettingKey } from "~/orpc/setting/constants";
+import {
+  COMMISSION_PERCENT_KEY,
+  DEPOSIT_PERCENT_KEY,
+  OTP_PER_IP_KEY,
+  OTP_PER_PHONE_KEY,
+  type SettingKey,
+} from "~/orpc/setting/constants";
 
 /*===== Constants =====*/
 // The example sale the commission sentence is worked on: 10,000,000 Toman, kept in Rial like every amount in the app.
@@ -33,6 +39,22 @@ export const SETTING_COPY: Record<SettingKey, SettingCopy> = {
       `از خریدی به مبلغ ${formatToman(EXAMPLE_SALE_RIAL)}، ${formatToman(
         calculateCommission({ baseAmount: EXAMPLE_SALE_RIAL, percent }),
       )} پورسانت می‌نویسیم.`,
+  },
+  [DEPOSIT_PERCENT_KEY]: {
+    name: "پیش‌پرداخت دوره",
+    description:
+      "چند درصد از قیمت دوره موقع پرداخت گرفته می‌شود؛ بقیه را موقع هماهنگی با مشتری حساب می‌کنی. ۱۰۰ یعنی کل مبلغ.",
+    notes: [
+      "فقط برای پرداخت‌های بعدی؛ پرداختی که انجام شده همان درصدی را که روز خریدش بود نگه می‌دارد.",
+      "بقیه‌ی مبلغ بیرون از سایت گرفته می‌شود؛ سایت فقط نشان می‌دهد چقدر مانده.",
+    ],
+    unit: "٪",
+    liveSentence: (percent) => {
+      const due = calculateDeposit({ total: EXAMPLE_SALE_RIAL, percent });
+      return percent >= 100
+        ? `از دوره‌ای به مبلغ ${formatToman(EXAMPLE_SALE_RIAL)}، کل مبلغ موقع پرداخت گرفته می‌شود.`
+        : `از دوره‌ای به مبلغ ${formatToman(EXAMPLE_SALE_RIAL)}، ${formatToman(due)} موقع پرداخت گرفته می‌شود و ${formatToman(EXAMPLE_SALE_RIAL - due)} می‌ماند برای هماهنگی.`;
+    },
   },
   [OTP_PER_PHONE_KEY]: {
     name: "کدهای ورود برای هر شماره",

@@ -1,7 +1,9 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { EARLY_AGE_EXCEPTION } from "~/lib/early-age-exception";
 import { checkEligibility, type Ineligibility } from "~/lib/eligibility";
+import { calculateDeposit } from "~/lib/business-rules";
 import { findAdminPhoneNumber, notify } from "~/lib/notify.server";
+import { readDepositPercent } from "~/lib/platform-settings.server";
 import type { PaymentGateway } from "~/lib/payment-gateway.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { utcToTehranParts } from "~/lib/tehran-time";
@@ -225,11 +227,12 @@ export async function reviewCart({
 }): Promise<CartReview> {
   // An empty, oversized or malformed cart reviews as empty: «پرداخت» reports it properly.
   const parsed = cartItemsSchema.safeParse(input.items);
-  if (!parsed.success) return { items: [], total: 0 };
+  if (!parsed.success) return { items: [], total: 0, depositPercent: 100, dueNow: 0 };
 
   const items = await reviewItems({ db, customerId, items: parsed.data, now });
   const total = items.reduce((sum, item) => sum + (item.eligible ? (item.price ?? 0) : 0), 0);
-  return { items, total };
+  const depositPercent = await readDepositPercent({ db });
+  return { items, total, depositPercent, dueNow: calculateDeposit({ total, percent: depositPercent }) };
 }
 
 /*===== Pay =====*/
@@ -292,7 +295,11 @@ export async function payCart({
 
   // Every item is eligible, so each has a course, a dog and a price.
   const priced = items.map((item) => ({ ...item, price: item.price ?? 0 }));
-  const amount = priced.reduce((sum, item) => sum + item.price, 0);
+  const total = priced.reduce((sum, item) => sum + item.price, 0);
+  // The Admin's deposit setting (100 until the owner approves one): the gateway is charged the deposit, the items keep their
+  // full prices, and the balance is settled when the lessons are arranged, outside the app.
+  const depositPercent = await readDepositPercent({ db });
+  const amount = calculateDeposit({ total, percent: depositPercent });
   const courses = await findCoursesBySlugs({ db, slugs: priced.map((item) => item.courseSlug) });
 
   /*------ Gateway ------*/
@@ -305,6 +312,8 @@ export async function payCart({
       values: {
         customerId,
         amount,
+        totalAmount: total,
+        depositPercent,
         gateway: gateway.name,
         authority: started.authority,
         createdAt: now,
@@ -530,6 +539,9 @@ function toPayment(row: { payment: PaymentRecord; items: PaymentItemRow[] }): Pa
     id: payment.id,
     status: payment.status,
     amount: payment.amount,
+    // A payment made before deposits existed was the whole price.
+    totalAmount: payment.totalAmount ?? payment.amount,
+    depositPercent: payment.depositPercent,
     referenceId: payment.referenceId,
     cardNumberMasked: payment.cardNumberMasked,
     failureReason: payment.failureReason,
