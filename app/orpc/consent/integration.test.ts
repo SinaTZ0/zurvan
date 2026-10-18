@@ -123,7 +123,10 @@ describe("the site rules", () => {
     await acceptSiteRules({ db, userId: ana.id, rules: V2 });
 
     expect(await hasAcceptedSiteRules({ db, userId: ana.id, rules: V2 })).toBe(true);
-    expect((await rowsOf(ana.id)).map((row) => row.version).toSorted()).toEqual([V1.version, V2.version].toSorted());
+    const versions = (await rowsOf(ana.id)).map((row) => row.version);
+    expect(versions).toHaveLength(2);
+    expect(versions).toContain(V1.version);
+    expect(versions).toContain(V2.version);
   });
 });
 
