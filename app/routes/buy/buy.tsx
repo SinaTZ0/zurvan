@@ -22,6 +22,14 @@ export const meta: Route.MetaFunction = () => [
   { name: "description", content: "اول سگت را انتخاب کن؛ برای هر دوره می‌بینی مناسبش هست یا اول چه کاری لازم است." },
 ];
 
+/*===== Headers =====*/
+// The page lists someone's own dogs and what each can take, so no shared cache may keep it (the public layout sets none).
+export const headers: Route.HeadersFunction = ({ parentHeaders }) => {
+  const result = new Headers(parentHeaders);
+  result.set("Cache-Control", "private, no-store");
+  return result;
+};
+
 /*===== Loader =====*/
 /**
  * The purchase page that starts from the dog (docs/app-spec.md, F5). The dog is `?dog=<id>`; with exactly one dog it is
