@@ -1,0 +1,62 @@
+# Morning checklist
+
+The primary handoff. Everything below is on the branch `feat/zurvann-overnight-feedback` and **runs locally only**: nothing from this branch is live (the live site is `main` at `1b7a29d`; see `04-DEPLOYMENT-AND-ROLLBACK.md`).
+
+**How to read an item.** Each has a normal Markdown checkbox and a status written as text. `[x]` means the status text says _Implemented and verified_ and says how it was verified. `[-]` means _Partially implemented_ and says what is missing. `[ ]` means _Pending/blocked_ and says why. Nothing is ticked without a check that was actually run.
+
+**Environment legend.** **Local** = the branch on a developer machine with a database. **Staging** = none exists. **Production** = nothing from this branch.
+
+**To try the branch locally** (the normal setup, `README.md`): check out the branch, `npm ci`, start Postgres, `npm run db:push` (only adds tables and columns), `npm run db:seed:demo`, `npm run dev`, open `http://localhost:5173`. Sign in with any demo number (`09120000004` is a customer with two dogs, `09120000001` the Admin) and the code `12345`. A new number signs up the same way.
+
+---
+
+## A. Header, navigation, pages
+
+- [x] **Implemented and verified.** Desktop navigation: horizontal RTL menu with four links, no «مربی», no search in the menu. _Route:_ any public page. _Test:_ at 1024px or wider read the header: دوره‌ها، درباره‌ی طلا راستی، همکاران، تماس با ما, the current page in full-strength text, and the gold pill «ارزیابی رایگان». _Env:_ Local. _Evidence:_ headless Chrome DOM check (clicked the About link and the logo) and screenshots `screenshots/a-about-1440.png`, `a-contact-1440.png`.
+- [x] **Implemented and verified.** Responsive mobile navigation. _Test:_ under 1024px tap «منو»: the pill first, the same four links, then sign-in (or account) as outline buttons. _Env:_ Local. _Evidence:_ `screenshots/a-menu-390.png`.
+- [x] **Implemented and verified.** New pages `/about` and `/contact`, built only from the business card. _Test:_ open both; every phone, Telegram, Instagram and YouTube link is clickable and matches the card; no `k9training.ir`. _Env:_ Local.
+
+## B. Homepage
+
+- [x] **Implemented and verified.** Course/price duplication removed; three quick actions; the team section and the four need cards switched off (files kept). _Route:_ `/`. _Test:_ the page has no course grid and no prices; under the hero are «ثبت‌نام و ورود»، «مشاهده دوره‌ها»، «ارزیابی رایگان». _Env:_ Local. _Evidence:_ full-page screenshots `screenshots/b-home-1440-full.jpg`, `b-home-390-full.jpg`.
+- [x] **Implemented and verified.** Partner promotion: nothing on the home page describes the partner programme any more (there was nothing to move); «همکاران» in the nav leads to `/join/partner`. _Env:_ Local.
+
+## C. Mascot and hero
+
+- [x] **Implemented and verified.** Navigation-driven hero: a new session or arriving by a link steps to the next dog; back, forward, reload and waiting keep it; dots pick one; no autoplay. _Route:_ `/`. _Test:_ open `/` (dog 1), wait 10 seconds (no change), go to `/about` and click the logo (dog 2), press Back then Forward (dog 2 stays), reload (stays). _Env:_ Local. _Evidence:_ 14 checks in headless Chrome, all passing; 7 unit tests (`app/lib/hero-state.test.ts`).
+- [x] **Implemented and verified.** Only the three approved dialogue lines are live; no new pop-ups. The headline «من فقط فرمان نمی‌برم؛ می‌فهمم.» is **still live** because the owner has not supplied the new line (candidates in `03-DECISIONS-NEEDED.md`).
+- [ ] **Pending/blocked.** Authentic Zurvann (Malinois puppy to adult) art. _Why:_ it does not exist in the repository; the three stand-in dogs stay and nothing claims otherwise. Spec and asset inventory: `05-MASCOT-SPEC.md`.
+
+## D. Search
+
+- [x] **Implemented and verified.** Course search reads title, Latin name, summary, kind, results and curriculum lines (so «igp» finds the sport course), with Persian folding. _Route:_ `/courses`. _Test:_ type `igp`, then `سگ همدم`, then a nonsense word (empty state). _Env:_ Local. _Evidence:_ 5 unit tests, screenshot `screenshots/d-courses-search-igp-1440.jpg`.
+- [ ] **Pending/blocked.** Article search. _Why:_ there is no article route or content; nothing was built or faked. See `03-DECISIONS-NEEDED.md`.
+
+## E. Accounts
+
+- [x] **Implemented and verified.** Password sign-in next to the code, never replacing it. _Route:_ `/auth`. _Test:_ sign in with a code, open `/account/profile`, set a password (try `12345678`: refused; two different ones: refused), sign out, on `/auth` type the number and press «ورود با رمز عبور», sign in. Type a wrong password: «شماره یا رمز عبور درست نیست…», the same text for a number that doesn't exist. _Env:_ Local. _Evidence:_ 7 integration tests and a 20-check headless-Chrome run, screenshots `screenshots/e1-*.jpg`.
+- [x] **Implemented and verified.** Reset: «رمزم را فراموش کرده‌ام» sends a code; after signing in with it the profile page opens at the password card with the field ready, and a new password replaces the old one and signs the other devices out. No separate reset endpoint and no password hints exist. _Test:_ five wrong passwords (the sixth try is paused even with the right one), press «رمزم را فراموش کرده‌ام», enter `12345`, set a new password, sign in with it. _Env:_ Local.
+- [-] **Partially implemented: showcase caveat.** In showcase mode the sign-in code is the public `12345`, so «forgot my password» is exactly as open as sign-in. Passwords add convenience now and security only once a real SMS provider exists.
+- [-] **Partially implemented: user profile.** The account area, the avatar/initial in the header menu, the profile page (name, password) and several dogs per owner already existed and were checked as before. **Consent to the site rules at sign-up is not built yet** (see the E2 entry below once it lands).
+- [ ] **Pending/blocked.** Cart and orders persist across devices. _Status:_ in progress (E3).
+
+## F. Assessment, eligibility, checkout, payments
+
+- [ ] **Pending/blocked.** Eligibility and assessment, purchasing wizard, deposit, refund ledger, notifications. _Status:_ not started when this draft was written; this section is rewritten as each part lands.
+
+## G. Logbook, QR, certificate
+
+- [ ] **Pending/blocked.** Per-dog file number and QR, session logbook, public/private permissions, certificate. _Status:_ not started when this draft was written.
+
+## H. Partners
+
+- [ ] **Pending/blocked.** Per-referral payment status for partners. _Status:_ not started when this draft was written.
+
+## Cross-cutting
+
+- [ ] **Pending/blocked.** English/Persian switcher. _Why:_ no translated, reviewed content exists; a fake switcher is not shipped. Audit and staged plan: `03-DECISIONS-NEEDED.md`.
+- [x] **Implemented and verified.** CF-33 trainer/contact content (already live): name, phone `09214087867`, Telegram, Instagram, YouTube, area «تمام نقاط تهران». **Gaps recorded, not guessed:** no second phone and no WhatsApp number or link exist in the data; no `k9training.ir`. _Env:_ Production (verified after the earlier deploy).
+- [x] **Implemented and verified.** Brand placeholders audited, not changed: 31 page titles and descriptions, 9 SMS and sign-in bodies and 1 line of UI copy still say «آموزش K9». _Why not changed:_ a naming decision for the owner (`03-DECISIONS-NEEDED.md`).
+- [-] **Partially implemented.** RTL, accessibility, responsive UI, empty/loading/error states: checked on the pages that changed (headless Chrome at 1440 and 390 pixels, keyboard focus order read in the markup); not a full audit of every page.
+- [-] **Partially implemented.** Lint, typecheck, test suite, build: lint and typecheck clean and the suite green after every phase so far (86 tests); the final full run, including the production build, is recorded in `01-IMPLEMENTATION-LOG.md` at the end.
+- [x] **Implemented and verified.** Git commits recorded; the branch is not deployed (`04-DEPLOYMENT-AND-ROLLBACK.md`).

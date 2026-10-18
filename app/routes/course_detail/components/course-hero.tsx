@@ -107,7 +107,7 @@ function Facts({ course }: { course: Course }) {
         </FactTile>
       ) : (
         <>
-          <FactTile icon={ClockIcon} label="تعداد جلسه‌ها">
+          <FactTile icon={ClockIcon} label="تعداد جلسه‌ها" note="به سگ و نوع دوره بستگی داره.">
             {describeSessions(course)}
           </FactTile>
           <FactTile icon={CakeIcon} label="سن سگ">
@@ -132,11 +132,14 @@ function FactTile({
   icon: Icon,
   label,
   wide = false,
+  note,
   children,
 }: {
   icon: LucideIcon;
   label: string;
   wide?: boolean;
+  /** A short qualifier under the value, for a fact that is approximate. */
+  note?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -145,6 +148,7 @@ function FactTile({
       <div>
         <dt className="text-sm text-muted-foreground">{label}</dt>
         <dd className="mt-0.5 font-bold text-pretty">{children}</dd>
+        {note && <p className="mt-1 text-xs text-pretty text-muted-foreground">{note}</p>}
       </div>
     </div>
   );
