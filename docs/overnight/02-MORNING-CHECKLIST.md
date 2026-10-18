@@ -44,7 +44,10 @@ The primary handoff. Everything below is on the branch `feat/zurvann-overnight-f
 
 ## F. Assessment, eligibility, checkout, payments
 
-- [ ] **Pending/blocked.** Eligibility and assessment, purchasing wizard, deposit, refund ledger, notifications. _Status:_ not started when this draft was written; this section is rewritten as each part lands.
+- [x] **Implemented and verified.** Server-side enforcement: a dog that isn't evaluated can't pay for a course, however the page or the request is changed. _Route:_ `/courses/<slug>`, `/account/cart`. _Test:_ with a dog that hasn't been evaluated open a course page (it says why not) and try the cart; the server refuses «پرداخت». _Env:_ Local. _Evidence:_ the checkout tests and `early-age.integration.test.ts`.
+- [-] **Partially implemented: the early-age exception.** Built into the one eligibility check and tested end to end, but **off**: the age bounds, the three courses and the working-breed list are unconfirmed, so every dog needs the assessment (`app/lib/early-age-exception.ts` holds `null`; the file says how to turn it on). _Evidence:_ 8 unit and 5 integration tests with made-up facts.
+- [ ] **Pending/blocked.** The assessment's own forms: the owner's questionnaire and the trainer's evaluation form. _Why:_ nobody has defined them; the existing free-evaluation request (dates, available days, photos, videos) stays.
+- [ ] **Pending/blocked.** Purchasing wizard, delivery format, deposit, refund ledger, notifications. _Status:_ in progress (F2 and later); this section is rewritten as each part lands.
 
 ## G. Logbook, QR, certificate
 

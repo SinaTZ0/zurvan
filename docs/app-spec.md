@@ -113,6 +113,8 @@ One **eligibility check** decides whether a dog may buy a course. It is a single
 
 A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگی را تمام کند» or «حداقل سن این دوره ۶ ماه است». Course Detail shows, for each of the customer's dogs, whether it can take the course and why not.
 
+**The early-age exception (built, switched off).** The owner has described one exception to rule 1: a very young dog that is **not** of a working breed may start one of **three introductory courses** without the evaluation. Its facts are **not confirmed**: the exact age bounds, which three courses and which breeds are working. They are not guessed. `app/lib/early-age-exception.ts` holds `null`, so the exception is **off** and every dog needs the evaluation (it fails closed). Once the owner confirms the facts and they are written there, the same check (so the cart, «پرداخت» and the payment callback together) lets a dog skip **only the evaluation** when all of these hold: the course is one of the named ones; the dog's age in whole months is inside the bounds (inclusive); a breed is written and it matches no working breed (compared with Persian letters, spaces and half-spaces folded, and a half-written working breed is also refused); the dog is otherwise eligible. A dog with no breed written never qualifies: a breed nobody classified is not assumed harmless. Every other rule (prerequisites, the course's own age range, an active enrollment, a course not on sale) still applies.
+
 **Pages:** Course Detail · Cart · Dog Detail (Admin: why a dog can't take a course)
 
 ---

@@ -1,4 +1,5 @@
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
+import { EARLY_AGE_EXCEPTION } from "~/lib/early-age-exception";
 import { checkEligibility, type Ineligibility } from "~/lib/eligibility";
 import { findAdminPhoneNumber, notify } from "~/lib/notify.server";
 import type { PaymentGateway } from "~/lib/payment-gateway.server";
@@ -84,6 +85,7 @@ async function judge({
       passedCourseIds: new Set(passed.filter((entry) => entry.dogId === dog.id).map((entry) => entry.courseId)),
       hasActiveEnrollment: active.has(`${dog.id}:${course.id}`),
       today,
+      earlyAgeException: EARLY_AGE_EXCEPTION,
     }),
   }));
 }
