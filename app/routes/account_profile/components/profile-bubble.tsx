@@ -9,6 +9,7 @@ import type { ProfileFocus } from "~/routes/account_profile/hooks/use-profile-bu
 // help), so nothing here is announced.
 const NAME_LINE = `اسمتو درست بنویس تا ${HEAD_TRAINER.firstName} بدونه با کی کار می‌کنه.`;
 const SHEBA_LINE = `شبا رو بنویس تا ${HEAD_TRAINER.firstName} کمیسیونت رو بفرسته.`;
+const PASSWORD_LINE = "رمز بذار تا دفعه‌ی بعد بدون منتظر پیامک بیای تو.";
 const SAVED_LINE = "ثبت شد!";
 
 /*===== Profile Bubble =====*/
@@ -36,6 +37,7 @@ export function ProfileBubble({
   const lines: { key: string; text: string; active: boolean }[] = [
     { key: "name", text: NAME_LINE, active: !celebrating && focus === "name" },
     ...(isPartner ? [{ key: "sheba", text: SHEBA_LINE, active: !celebrating && focus === "sheba" }] : []),
+    { key: "password", text: PASSWORD_LINE, active: !celebrating && focus === "password" },
     { key: "saved", text: SAVED_LINE, active: celebrating },
   ];
 

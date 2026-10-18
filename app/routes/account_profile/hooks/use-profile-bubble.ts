@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 /*===== Types =====*/
 /** The card the person is working in; picks the dog's line. */
-export type ProfileFocus = "name" | "sheba";
+export type ProfileFocus = "name" | "sheba" | "password";
 
 /** How long «ثبت شد!» stays before the dog goes back to the line for the card in focus. */
 const CELEBRATION_MS = 2800;

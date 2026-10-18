@@ -19,17 +19,19 @@ export const meta: Route.MetaFunction = () => [{ title: "تنظیمات حساب
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { user } = context.get(sessionContext);
   const isPartner = user.role === "partner";
+  const client = createServerClient(request);
 
   // Only a partner has a Sheba. A partner user with no `partner` row is a broken account, not an empty page: the API
   // answers NOT_FOUND and the page's error boundary says so.
-  const profile = isPartner
-    ? await createServerClient(request)
-        .partner.getMine()
-        .catch((error: unknown) => {
+  const [profile, { hasPassword }] = await Promise.all([
+    isPartner
+      ? client.partner.getMine().catch((error: unknown) => {
           if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
           throw error;
         })
-    : null;
+      : null,
+    client.password.status(),
+  ]);
 
   return {
     // The guard only lets named accounts through, so `firstName` is set.
@@ -38,13 +40,14 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     phoneNumber: user.phoneNumber ?? null,
     isPartner,
     shebaNumber: profile?.shebaNumber ?? null,
+    hasPassword,
   };
 }
 
 /*===== Profile Settings =====*/
 /**
- * F1's profile page for customers and partners: the name, and for a partner the Sheba the Admin pays commission to.
- * Your own tag is engraved as you type; the page itself is `ProfileSettings`.
+ * F1's profile page for customers and partners: the name, the password, and for a partner the Sheba the Admin pays
+ * commission to. Your own tag is engraved as you type; the page itself is `ProfileSettings`.
  */
 export default function AccountProfilePage({ loaderData }: Route.ComponentProps) {
   return <ProfileSettings {...loaderData} />;

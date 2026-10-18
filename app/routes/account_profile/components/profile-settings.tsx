@@ -1,5 +1,6 @@
 import { PageHeader } from "~/routes/account_profile/components/page-header";
 import { NameForm } from "~/routes/account_profile/components/name-form";
+import { PasswordForm } from "~/routes/account_profile/components/password-form";
 import { ProfileBubble } from "~/routes/account_profile/components/profile-bubble";
 import { ProfileTag } from "~/routes/account_profile/components/profile-tag";
 import { ShebaForm } from "~/routes/account_profile/components/sheba-form";
@@ -9,8 +10,8 @@ import { USER_ROLE_LABELS } from "~/lib/user-constants";
 
 /*===== Profile Settings =====*/
 /**
- * The whole body of the page: the header, the person's tag and the forms. The two forms are independent (each saves on
- * its own, with its own pending and error state); this component only joins them to the tag and the dog's bubble: what
+ * The whole body of the page: the header, the person's tag and the forms. The forms are independent (each saves on its
+ * own, with its own pending and error state); this component only joins them to the tag and the dog's bubble: what
  * is typed in the name form engraves the tag, which card has focus picks the dog's line, and a save makes it say
  * «ثبت شد!».
  *
@@ -23,6 +24,7 @@ export function ProfileSettings({
   phoneNumber,
   isPartner,
   shebaNumber,
+  hasPassword,
 }: {
   firstName: string;
   lastName: string;
@@ -30,6 +32,8 @@ export function ProfileSettings({
   isPartner: boolean;
   /** A partner's saved Sheba (`IR` + 24 digits), or null; ignored for a customer. */
   shebaNumber: string | null;
+  /** Whether the person has set a password; the card's wording follows. */
+  hasPassword: boolean;
 }) {
   const bubble = useProfileBubble();
   const nameForm = useNameForm({ initial: { firstName, lastName }, onSaved: bubble.celebrate });
@@ -65,6 +69,11 @@ export function ProfileSettings({
             isPending={nameForm.isPending}
             isDirty={nameForm.isDirty}
             onFocusCard={() => bubble.setFocus("name")}
+          />
+          <PasswordForm
+            hasPassword={hasPassword}
+            onFocusCard={() => bubble.setFocus("password")}
+            onSaved={bubble.celebrate}
           />
           {isPartner && (
             <ShebaForm

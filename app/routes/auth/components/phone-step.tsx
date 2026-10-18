@@ -15,14 +15,16 @@ import { type PhoneInput, type PhoneValues, phoneSchema } from "~/routes/auth/sc
 
 /*===== Phone Step =====*/
 /**
- * Step one: the phone number. Sends the code and hands the normalized number on. There is no separate sign-up: a
- * number seen for the first time becomes a new customer account once its code is verified.
+ * Step one: the phone number. Sends the code and hands the normalized number on, or, for someone who has set a password,
+ * hands it to the password step without sending anything. There is no separate sign-up: a number seen for the first
+ * time becomes a new customer account once its code is verified.
  */
 export function PhoneStep({
   defaultPhoneNumber,
   showcase,
   focusOnMount,
   onSent,
+  onChoosePassword,
 }: {
   defaultPhoneNumber: string;
   /** Coming back from the code step: the field takes focus. Not on page load, where the reader starts at the top. */
@@ -30,6 +32,8 @@ export function PhoneStep({
   /** Shows the demo accounts under the form, each filling in its number. */
   showcase: boolean;
   onSent: (phoneNumber: string) => void;
+  /** The person would rather type their password: nothing is sent, the number goes on to the password step. */
+  onChoosePassword: (phoneNumber: string) => void;
 }) {
   const {
     register,
@@ -55,6 +59,9 @@ export function PhoneStep({
     }
     onSent(phoneNumber);
   });
+
+  // The same number check as the code button, then the password step instead of an SMS.
+  const choosePassword = handleSubmit(({ phoneNumber }) => onChoosePassword(phoneNumber));
 
   return (
     <form method="post" onSubmit={onSubmit} noValidate>
@@ -87,6 +94,16 @@ export function PhoneStep({
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
           کد ورود را بفرست
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full"
+          disabled={isSubmitting}
+          onClick={choosePassword}
+        >
+          ورود با رمز عبور
         </Button>
 
         {showcase && (

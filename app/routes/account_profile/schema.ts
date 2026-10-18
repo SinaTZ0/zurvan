@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { toLatinDigits } from "~/lib/digits";
+import { toLatinDigits, toPersianDigits } from "~/lib/digits";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "~/lib/user-constants";
 
 /*===== Name =====*/
 // Same rules as the sign-in name step, written for this page: this slice does not import from the auth slice.
@@ -65,3 +66,25 @@ export function formatShebaForField(sheba: string | null): string {
   const digits = sheba ? extractShebaDigits(sheba) : null;
   return digits ? (digits.match(/\d{4}/g)?.join(" ") ?? digits) : "";
 }
+
+/*===== Password =====*/
+// The same length limits as the server (`app/orpc/password/validation.ts`), for a message before the request. The server
+// also refuses a password that is the person's own number or on a list of the first ones tried; it is the authority, and
+// its message lands on the same field.
+export const passwordFormSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(1, "رمز عبور را بنویس.")
+      .refine((value) => Array.from(value).length >= PASSWORD_MIN_LENGTH, {
+        message: `رمز عبور باید حداقل ${toPersianDigits(String(PASSWORD_MIN_LENGTH))} نویسه باشد.`,
+      })
+      .max(PASSWORD_MAX_LENGTH, `رمز عبور حداکثر ${toPersianDigits(String(PASSWORD_MAX_LENGTH))} نویسه می‌تواند باشد.`),
+    confirmPassword: z.string().min(1, "رمز عبور را یک بار دیگر بنویس."),
+  })
+  .refine((values) => values.newPassword === values.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "دو رمز عبور یکی نیستند.",
+  });
+
+export type PasswordFormValues = z.infer<typeof passwordFormSchema>;

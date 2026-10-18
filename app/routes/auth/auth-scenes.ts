@@ -1,6 +1,6 @@
 /*===== Types =====*/
-/** The three steps of the sign-in flow; each one is asked by a different dog. */
-export type AuthStepName = "phone" | "code" | "name";
+/** The steps of the sign-in flow. Each is asked by a dog; the password step shares the phone step's welcome portrait. */
+export type AuthStepName = "phone" | "password" | "code" | "name";
 
 type AuthScene = {
   /** File stem under `public/photo/` (`<name>-900.webp` for phones, `<name>-1536.webp` from `lg`). */
@@ -22,6 +22,14 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
     line: "سلام! شمارتو بده تا بشناسمت.",
     position: "object-[24%_30%] lg:object-[20%_40%]",
   },
+  // Still at the door, only the way in differs: the same portrait, so a step change between the two doesn't fade a photo
+  // into itself.
+  password: {
+    photo: "auth/welcome",
+    alt: "یک ژرمن‌شپرد کنار پنجره، پنجه‌هایش را روی لبه‌ی چوبی گذاشته و با سر کج به دوربین نگاه می‌کند",
+    line: "رمزتو بگو؛ دیگه لازم نیست منتظر پیامک بمونی.",
+    position: "object-[24%_30%] lg:object-[20%_40%]",
+  },
   code: {
     photo: "home/hero-2",
     alt: "یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند",
@@ -38,3 +46,13 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
 
 /** The steps in the order they come. */
 export const AUTH_STEP_NAMES = Object.keys(AUTH_SCENES) as AuthStepName[];
+
+/** One step per distinct photo, so a photo two steps share is in the page once. */
+export const AUTH_PHOTO_STEP_NAMES = AUTH_STEP_NAMES.filter(
+  (name, index) => AUTH_STEP_NAMES.findIndex((other) => AUTH_SCENES[other].photo === AUTH_SCENES[name].photo) === index,
+);
+
+/** Whether the step is shown over the welcome portrait, whose bubble sits beside the dog's muzzle on a phone. */
+export function isWelcomePortrait(step: AuthStepName): boolean {
+  return AUTH_SCENES[step].photo === AUTH_SCENES.phone.photo;
+}

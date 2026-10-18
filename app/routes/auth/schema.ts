@@ -23,6 +23,15 @@ export const phoneSchema = z.object({
 export type PhoneInput = z.input<typeof phoneSchema>;
 export type PhoneValues = z.output<typeof phoneSchema>;
 
+/*===== Password =====*/
+// Only "was something typed": whether it is right is the server's to say, and it answers the same for a wrong password
+// and an unknown number. The strength rules apply when a password is set, not when it is used.
+export const passwordSchema = z.object({
+  password: z.string().min(1, "رمز عبورت را بنویس."),
+});
+
+export type PasswordValues = z.infer<typeof passwordSchema>;
+
 /*===== Code =====*/
 export const codeSchema = z.object({
   code: z.string().regex(new RegExp(`^\\d{${SIGN_IN_CODE_LENGTH}}$`), "کد پنج‌رقمی پیامک را کامل بنویس."),

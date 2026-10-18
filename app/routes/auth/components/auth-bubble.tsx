@@ -1,7 +1,7 @@
 import { cn } from "cn";
 
 import { SpeechBubble } from "~/components/speech-bubble";
-import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName } from "~/routes/auth/auth-scenes";
+import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName, isWelcomePortrait } from "~/routes/auth/auth-scenes";
 
 /*===== Auth Bubble =====*/
 /**
@@ -21,7 +21,7 @@ export function AuthBubble({ step }: { step: AuthStepName }) {
       className={cn(
         "pointer-events-none z-10 -mt-20 flex justify-end lg:mt-0 lg:mb-9 xl:absolute xl:end-[47%] xl:top-[17%] xl:mb-0 xl:block",
         // Keep the same space in the form flow while lifting this bubble beside the welcome dog's face.
-        step === "phone" &&
+        isWelcomePortrait(step) &&
           "-mt-40 mb-20 justify-start lg:mt-0 lg:mb-9 lg:justify-end xl:end-[40%] xl:top-[23%] xl:mb-0",
       )}
     >

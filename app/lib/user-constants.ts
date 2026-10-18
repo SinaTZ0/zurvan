@@ -29,3 +29,21 @@ export const SHOWCASE_SIGN_IN_CODE = "12345";
 
 /** Error code the sign-in endpoints return for a blocked account. */
 export const ACCOUNT_BLOCKED_CODE = "ACCOUNT_BLOCKED";
+
+/*===== Password Sign-in =====*/
+// A person can set a password after signing in with a code, and then sign in with their number and that password. The
+// code stays available: it is also how someone who forgot the password gets back in and sets a new one.
+
+/** Characters a password must have at least, and at most (the hasher's own ceiling is 128). */
+export const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MAX_LENGTH = 128;
+
+/** A password can be set or replaced only this soon after signing in, so a stolen old session can't take the account. */
+export const PASSWORD_CHANGE_FRESH_MINUTES = 30;
+
+/** Wrong passwords for one number before it is paused, and how long the count looks back and the pause lasts. */
+export const MAX_SIGN_IN_FAILURES = 5;
+export const SIGN_IN_FAILURE_WINDOW_MINUTES = 15;
+
+/** Error code the sign-in endpoint returns while a number is paused after too many wrong passwords. */
+export const SIGN_IN_PAUSED_CODE = "TOO_MANY_SIGN_IN_ATTEMPTS";

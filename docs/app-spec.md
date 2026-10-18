@@ -45,6 +45,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 - One role per phone number. Only customers self-register; the Admin creates partner accounts.
 - Blocked users can't sign in: the Admin blocks and unblocks from the Users page, which signs the user out everywhere at once. He can't block himself or any admin. Blocking a partner closes his sign-in only; his link and commissions are switched off by deactivating him ([F7](#f7-partners)).
 - Each user edits their name. Partners also enter their Sheba number, so the Admin knows where to send commissions ([F7](#f7-partners)).
+- **Password (optional).** After signing in, a customer or partner can set a password in Profile Settings and then sign in with their number and that password; the code stays, and is also how a forgotten password is fixed (sign in with a code, then set a new one there; the card asks for no "current password"). A password can be set or replaced only within 30 minutes of signing in, and doing so signs the other devices out. It is stored only as a hash. A wrong password, an unknown number and a number that never set one all read the same, 5 wrong passwords in 15 minutes pause password sign-in for that number (the code still works), and password sign-in is rate-limited per IP. While the sign-in code is the public showcase code, this adds convenience, not security.
 
 **Pages:** Login / Register · Profile Settings · Users (user form in a dialog)
 

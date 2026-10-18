@@ -13,11 +13,13 @@ import { resolvePublicOrigin } from "~/lib/public-origin";
 import { readOtpLimits } from "~/lib/platform-settings.server";
 import { findPartnerForNewCustomer, readReferralCode } from "~/lib/referral.server";
 import { recentSms, sendSms } from "~/lib/sms.server";
+import { clearSignInFailures, isSignInPaused, recordSignInFailure } from "~/lib/sign-in-failures.server";
 import {
   ACCOUNT_BLOCKED_CODE,
   SHOWCASE_SIGN_IN_CODE,
   SIGN_IN_CODE_LENGTH,
   SIGN_IN_CODE_RESEND_SECONDS,
+  SIGN_IN_PAUSED_CODE,
 } from "~/lib/user-constants";
 
 /*===== Startup Check =====*/
@@ -37,7 +39,9 @@ const HOUR_MS = 60 * 60 * 1000;
 /*===== Auth Instance =====*/
 /**
  * Better-Auth server instance: phone number + a one-time code by SMS, with database sessions. The same two steps sign
- * a person in or, the first time, sign them up as a customer (F1).
+ * a person in or, the first time, sign them up as a customer (F1). A person who has set a password (the `password`
+ * feature, from their profile after signing in with a code) can also sign in with their number and that password
+ * (`/sign-in/phone-number`); wrong passwords are counted per number and pause it for a while (`sign-in-failures`).
  *
  * Mounted at `/api/auth/*` (see `app/routes/api_auth/`). Server code reads the session with
  * `authForHeaders(headers).api.getSession({ headers })`.
@@ -73,6 +77,8 @@ function createAuth(baseURL: string) {
       enabled: true,
       customRules: {
         "/phone-number/send-otp": async () => ({ window: HOUR_MS / 1000, max: (await readOtpLimits({ db })).perIp }),
+        // Password guesses from one connection: generous for a household behind one address, tight for a script.
+        "/sign-in/phone-number": { window: 10 * 60, max: 20 },
       },
     },
 
@@ -109,18 +115,33 @@ function createAuth(baseURL: string) {
 
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/phone-number/send-otp" && ctx.path !== "/phone-number/verify") return;
+        const isCodePath = ctx.path === "/phone-number/send-otp" || ctx.path === "/phone-number/verify";
+        const isPasswordPath = ctx.path === "/sign-in/phone-number";
+        if (!isCodePath && !isPasswordPath) return;
         const phone: unknown = ctx.body?.phoneNumber;
         if (typeof phone !== "string") return;
 
         /*------ Blocked Accounts ------*/
-        // Checked before a code is sent, so a blocked number doesn't even get an SMS, and again at verify.
+        // Checked before a code is sent, so a blocked number doesn't even get an SMS, and again at verify and before a
+        // password is tried.
         const [blocked] = await db
           .select({ id: schema.user.id })
           .from(schema.user)
           .where(and(eq(schema.user.phoneNumber, phone), eq(schema.user.status, "blocked")))
           .limit(1);
         if (blocked) throw new APIError("FORBIDDEN", { code: ACCOUNT_BLOCKED_CODE, message: "Account is blocked." });
+
+        /*------ Paused After Wrong Passwords ------*/
+        // The password path has no code to send, so this is all it needs. A paused number still signs in with a code.
+        if (isPasswordPath) {
+          if (await isSignInPaused({ db, phoneNumber: phone })) {
+            throw new APIError("TOO_MANY_REQUESTS", {
+              code: SIGN_IN_PAUSED_CODE,
+              message: "Too many wrong passwords.",
+            });
+          }
+          return;
+        }
 
         /*------ Per-number Limits ------*/
         if (ctx.path !== "/phone-number/send-otp") return;
@@ -134,6 +155,22 @@ function createAuth(baseURL: string) {
         if (sent.count >= perPhone && !isDemoPhoneNumber(phone)) {
           throw new APIError("TOO_MANY_REQUESTS", { code: "TOO_MANY_CODES", message: "Too many codes this hour." });
         }
+      }),
+
+      /*------ Wrong Passwords ------*/
+      // A refused password sign-in (unknown number and wrong password look the same: 401) is counted against the number;
+      // a good one clears the count. Other failures (a malformed number, a blocked account) are not guesses.
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-in/phone-number") return;
+        const phone: unknown = ctx.body?.phoneNumber;
+        if (typeof phone !== "string") return;
+
+        const returned = ctx.context.returned;
+        if (returned instanceof APIError) {
+          if (returned.statusCode === 401) await recordSignInFailure({ db, phoneNumber: phone });
+          return;
+        }
+        await clearSignInFailures({ db, phoneNumber: phone });
       }),
     },
 

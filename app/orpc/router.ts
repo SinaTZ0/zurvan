@@ -59,6 +59,7 @@ import {
   listMyLeadsProcedure,
   updateMyPartnerProfileProcedure,
 } from "~/orpc/partner/procedure";
+import { passwordStatusProcedure, setPasswordProcedure } from "~/orpc/password/procedure";
 import { adminListSmsProcedure } from "~/orpc/sms/procedure";
 import {
   adminGetSettingsProcedure,
@@ -151,6 +152,10 @@ export const router = implementer.router({
       create: adminCreatePartnerProcedure,
       setActive: adminSetPartnerActiveProcedure,
     },
+  },
+  password: {
+    status: passwordStatusProcedure,
+    set: setPasswordProcedure,
   },
   sms: {
     admin: {

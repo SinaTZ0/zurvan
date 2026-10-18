@@ -129,6 +129,20 @@ export const smsOutbox = pgTable(
   (table) => [index("sms_outbox_created_at_idx").on(table.createdAt)],
 );
 
+/*===== Password Sign-in Failures =====*/
+// A wrong password for a phone number, so the sign-in hook can pause a number that is being guessed at (the per-IP limit
+// is Better-Auth's own). Rows older than a day are deleted when a new one is written, and a good sign-in clears the
+// number's rows. No IP address and no password is ever stored here.
+export const signInFailure = pgTable(
+  "sign_in_failure",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    phoneNumber: text("phone_number").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("sign_in_failure_phone_created_at_idx").on(table.phoneNumber, table.createdAt)],
+);
+
 /*===== Media =====*/
 // One row per uploaded image (docs/media.md). The row's id is the `mediaId` in the storage key, and it is inserted only
 // after every variant is in the bucket. Entities point to it with a nullable foreign key (`dog.photo_media_id`, ...).

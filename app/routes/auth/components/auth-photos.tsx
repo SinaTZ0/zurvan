@@ -1,6 +1,6 @@
 import { cn } from "cn";
 
-import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName } from "~/routes/auth/auth-scenes";
+import { AUTH_PHOTO_STEP_NAMES, AUTH_SCENES, type AuthStepName } from "~/routes/auth/auth-scenes";
 
 /*===== Auth Photos =====*/
 /**
@@ -8,15 +8,16 @@ import { AUTH_SCENES, AUTH_STEP_NAMES, type AuthStepName } from "~/routes/auth/a
  * the black below. Desktop: it fills the page behind both columns, with the dark half deepening toward the form.
  *
  * All three photos are in the page from the start (the others hidden at opacity 0, low fetch priority), so a step change
- * is a plain opacity fade with nothing left to load. Opacity only; reduced motion swaps instantly.
+ * is a plain opacity fade with nothing left to load. Opacity only; reduced motion swaps instantly. Steps that share a
+ * photo (the phone and password steps) share its layer, so moving between them doesn't fade at all.
  */
 export function AuthPhotos({ step }: { step: AuthStepName }) {
   return (
     <div className="relative h-[42svh] min-h-72 w-full lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
       {/*------ Photos ------*/}
-      {AUTH_STEP_NAMES.map((name) => {
+      {AUTH_PHOTO_STEP_NAMES.map((name) => {
         const scene = AUTH_SCENES[name];
-        const isActive = name === step;
+        const isActive = scene.photo === AUTH_SCENES[step].photo;
         return (
           <div
             key={name}
