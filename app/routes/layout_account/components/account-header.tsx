@@ -40,7 +40,7 @@ export function AccountHeader({
     <header className="border-b border-foreground/10 bg-jet">
       <div className="site-container flex h-16 items-stretch gap-6 lg:h-20">
         {/*------ Logo ------*/}
-        <Link to="/" className="flex shrink-0 items-center self-center rounded-sm" aria-label="آموزش K9، صفحه‌ی اصلی">
+        <Link to="/" className="flex shrink-0 items-center self-center rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
           <BrandLogo className="text-[1.625rem] lg:text-[1.875rem]" />
         </Link>
 

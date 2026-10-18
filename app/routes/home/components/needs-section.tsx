@@ -12,7 +12,7 @@ const NEEDS: { family: CourseFamily; title: string; detail: string; photo: strin
   {
     family: "basics",
     title: "سگ خونگی",
-    detail: "آداب خونه و آرامش بیرون",
+    detail: "آرامش توی خونه و عادت‌های خوب روزمره",
     photo: "/photo/home/course-bmc.webp",
   },
   {

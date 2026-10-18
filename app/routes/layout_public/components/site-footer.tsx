@@ -2,8 +2,7 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
-import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
 
 const FOOTER_GROUPS = [
   {
@@ -14,9 +13,9 @@ const FOOTER_GROUPS = [
     ],
   },
   {
-    title: "ارتباط با آموزش K9",
+    title: "ارتباط با زروان",
     links: [
-      { label: "همکاری فروشگاه‌ها و کلینیک‌ها", to: "/join/partner" },
+      { label: "همکاری با زروان", to: "/join/partner" },
       ...CENTER_LINKS.map((link) => ({
         label: (
           <>
@@ -43,11 +42,13 @@ export function SiteFooter() {
       <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
-          <Link to="/" className="self-start rounded-sm" aria-label="آموزش K9، صفحه‌ی اصلی">
+          <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
             <BrandLogo className="text-[1.875rem]" />
           </Link>
+          <p className="text-sm font-bold text-foreground">مجموعه تربیتی و رفتارشناسی سگ زروان</p>
           <p className="text-sm text-pretty text-muted-foreground">
-            آموزش خصوصی سگ با {HEAD_TRAINER.name}، در خانه‌ی خودت یا بیرون، در {CENTER_SERVICE_AREA}.
+            از اولین تجربه‌های زندگی کنار سگت تا آموزش‌های تخصصی و حرفه‌ای، زروان همراهتونه؛ با برنامه‌ای که متناسب با
+            نیاز و شرایط هر سگ طراحی می‌شه.
           </p>
           <a
             href={`tel:${CENTER_PHONE.tel}`}
@@ -91,7 +92,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t">
-        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ آموزش K9. همه‌ی حقوق محفوظ است.</p>
+        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
       </div>
     </footer>
   );

@@ -12,7 +12,7 @@ The shared `BrandLogo` keeps the original «آموزش K9» lettering and replac
 - **It sells real people.** The dogs talk about their trainers by first name: the head trainer (`HEAD_TRAINER` in `app/lib/head-trainer.ts`) runs the evaluation, «اول بذار طلا منو بشناسه», and the team section shows all three trainers as equals. Never an anonymous pool of trainers.
 - **Photos everywhere.** Dark, cinematic photos of dogs do the selling; text and UI are quiet around them.
 - **Premium, not a gold shop.** Pure black and flat gold. Gold is on buttons, icons, numbers and small accents, never a large headline on the first screen.
-- **Private training, one dog.** Never show or imply group classes, seats, a venue or a class schedule.
+- **Mostly private training.** The help page lists the owner's four formats (private at the client's place, private at the center, group at the center, boarding with coordination). Group classes aren't running yet: never word them as open, and never show seats or a class schedule.
 - **Every road leads to the free evaluation.** It is the main action on every public page.
 
 ## The Home Page
@@ -56,7 +56,7 @@ The header and footer live in `app/routes/layout_public/` and wrap every public 
 
 ## Help and FAQ
 
-`/help` (`app/routes/help/`) answers how buying works without a phone call. The idea: the five-stop chalk road under the header is the overview of the journey (free evaluation, courses open, pay, call and training, done) and also the index into the FAQ below, whose six groups carry the same numbered discs (the last group, «ورود و شماره‌ات», is not a step and has none). A group's disc fills gold when it is the `:target`. Answers are plain body copy, not the dog's voice; the dog speaks in the headlines and the one bubble («اول پرداخت، بعد طلا زنگ می‌زنه»). Question ids are the anchors other pages link to (`how-buying-works`, `after-paying`, `payment-failed`, …); group ids are `evaluation`, `courses`, `paying`, `training`, `done`, `account`. The copy never states refund or cancellation rules, deadlines, expiry, a calendar or lesson tracking: the one money-back sentence is that {طلا} cancels and returns the money outside the site if he can't take the dog.
+`/help` (`app/routes/help/`) answers how buying works without a phone call. The idea: the five-stop chalk road under the header is the overview of the journey (free evaluation, courses open, pay, call and training, done) and also the index into the FAQ below, whose six groups carry the same numbered discs (the last group, «ورود و شماره‌ات», is not a step and has none). A group's disc fills gold when it is the `:target`. Answers are plain body copy, not the dog's voice; the dog speaks in the headlines and the one bubble («بعد از ثبت درخواستت، طلا باهات تماس می‌گیره»). Question ids are the anchors other pages link to (`how-buying-works`, `after-paying`, `payment-failed`, …); group ids are `evaluation`, `courses`, `paying`, `training`, `done`, `account`. The copy never states refund or cancellation rules, deadlines, expiry, a calendar or lesson tracking: the one money-back sentence is that {طلا} cancels and returns the money outside the site if he can't take the dog.
 
 ## Privacy
 

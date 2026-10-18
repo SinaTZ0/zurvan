@@ -340,7 +340,7 @@ export const SEED_COURSES: SeedCourse[] = [
     family: "sport",
     summary: "برای سگ‌هایی که برای مسابقه و ورزش‌های سگی آماده می‌شوند.",
     highlights: [],
-    commands: ["BH", "IGP 1–3", "FH", "WUSV"],
+    commands: ["BH", "IGP 1", "IGP 2", "IGP 3", "FH", "WUSV"],
     cover: {
       src: "/photo/home/course-sport.webp",
       alt: "بوردر کالی در هوا از روی مانع اجیلیتی می‌پرد",

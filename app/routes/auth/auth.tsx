@@ -70,7 +70,7 @@ export default function AuthPage({ loaderData }: Route.ComponentProps) {
         {/* Phones: laid over the photo band's top start corner. Desktop: first in the column, scrolling with it. */}
         <Link
           to="/"
-          aria-label="آموزش K9، صفحه‌ی اصلی"
+          aria-label="زروان، صفحه‌ی اصلی"
           className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
         >
           <BrandLogo />

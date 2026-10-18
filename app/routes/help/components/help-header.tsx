@@ -52,7 +52,7 @@ export function HelpHeader() {
             lgTail="bottom-end"
             className="max-w-[16rem] sm:max-w-xs lg:absolute lg:start-5 lg:top-[14%] lg:max-w-[15rem] xl:start-6"
           >
-            اول پرداخت، بعد {HEAD_TRAINER.firstName} زنگ می‌زنه.
+            بعد از ثبت درخواستت، {HEAD_TRAINER.firstName} باهات تماس می‌گیره.
           </SpeechBubble>
         </div>
       </div>

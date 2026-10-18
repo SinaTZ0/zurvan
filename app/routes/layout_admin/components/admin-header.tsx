@@ -11,7 +11,7 @@ export function AdminHeader({ firstName, phoneNumber }: { firstName: string; pho
   return (
     <header className="sticky top-0 z-40 border-b border-foreground/10 bg-jet">
       <div className="flex h-14 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <Link to="/admin" className="flex shrink-0 items-center rounded-sm" aria-label="آموزش K9، مدیریت">
+        <Link to="/admin" className="flex shrink-0 items-center rounded-sm" aria-label="زروان، مدیریت">
           <BrandLogo className="text-[1.375rem]" />
         </Link>
         <span className="rounded-full border border-primary/40 px-2.5 py-0.5 text-xs font-bold text-primary">
