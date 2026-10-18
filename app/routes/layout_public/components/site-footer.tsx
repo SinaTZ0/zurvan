@@ -2,7 +2,8 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
+import { CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 const FOOTER_GROUPS = [
   {
@@ -49,6 +50,9 @@ export function SiteFooter() {
           <p className="text-sm text-pretty text-muted-foreground">
             از اولین تجربه‌های زندگی کنار سگت تا آموزش‌های تخصصی و حرفه‌ای، زروان همراهتونه؛ با برنامه‌ای که متناسب با
             نیاز و شرایط هر سگ طراحی می‌شه.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {HEAD_TRAINER.name} · محدوده‌ی فعالیت: {CENTER_SERVICE_AREA}
           </p>
           <a
             href={`tel:${CENTER_PHONE.tel}`}

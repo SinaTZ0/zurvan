@@ -19,7 +19,7 @@ export function TrainerSection() {
   const points = [
     { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای` },
     { icon: AwardIcon, label: HEAD_TRAINER.credential },
-    { icon: MapPinnedIcon, label: `فعال در ${CENTER_SERVICE_AREA}؛ توی خونه یا بیرون` },
+    { icon: MapPinnedIcon, label: `فعال در ${CENTER_SERVICE_AREA}` },
     { icon: GiftIcon, label: "قبل از هر دوره، یه ارزیابی رایگان" },
   ];
 
@@ -35,8 +35,8 @@ export function TrainerSection() {
             {HEAD_TRAINER.name}، {HEAD_TRAINER.role}
           </p>
           <p className="mt-4 max-w-lg text-pretty text-muted-foreground">
-            {HEAD_TRAINER.firstName} آموزش K9 رو راه انداخته و ارزیابی اولمون رو خودش انجام می‌ده. میاد خونه‌مون یا
-            می‌ریم بیرون، و هر چیزی رو همون‌جایی یادم می‌ده که قراره انجامش بدم.
+            {HEAD_TRAINER.firstName} زروان رو راه انداخته و ارزیابی اولمون رو خودش انجام می‌ده. توی آموزش سگ‌ها از
+            آموزش‌های پایه و عمومی تا دوره‌های تخصصی، نگهبانی، ورزشی و سطوح مسابقاتی کار می‌کنه.
           </p>
 
           <ul className="mt-8 space-y-4">

@@ -171,7 +171,7 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
 
 ## Loose Ends
 
-- **Owner-supplied details:** Tala Rasti’s name, 13 years of experience, specialty, international certificate, services and Tehran coverage come from the supplied business card. The phone, website and social profiles live in `app/lib/contact.ts`; every existing phone link uses the supplied number.
+- **Owner-supplied details:** Tala Rasti’s name, 13 years of experience, specialty, international certificate, services and Tehran coverage come from the supplied business card. The phone and the Instagram, YouTube and Telegram profiles live in `app/lib/contact.ts` (the old `k9training.ir` website link was dropped on 2026-10-18); every existing phone link uses the supplied number. The card's slogan, EXPERIENCE. KNOWLEDGE. RESULT., is recorded as `HEAD_TRAINER.cardSlogan` and not shown: the Services section keeps «تجربه، دانش، نتیجه.» until the owner gives final approval to replace it. There is no About or Contact page yet, so the card's details sit in the home page's trainer section, the footer and the help page's contact block.
 - **Placeholders:** the head trainer’s photo; the other two trainers’ names, focuses and years; the course prices. The photos are generated stand-ins until the owner has real ones.
 - **Working and sport dogs** have no price and show «بعد از ارزیابی»; they are a future feature (app-spec F8).
 - **Help copy to confirm with the owner:** the answers are written from app-spec F1 to F6; the owner should read them once (especially «اگه طلا نتونه سگمو بپذیره چی؟», `boarding` and `no-price`).
