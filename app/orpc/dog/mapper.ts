@@ -17,6 +17,7 @@ export function toPublicDog({ record, passed }: { record: DogRecord; passed: Pas
 
   return {
     id: record.id,
+    fileNumber: record.fileNumber,
     name: record.name,
     breed: record.breed,
     sex: record.sex,

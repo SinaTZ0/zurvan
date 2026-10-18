@@ -9,6 +9,8 @@ import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
 /*===== Schemas =====*/
 export const dogSchema = z.object({
   id: z.string(),
+  /** `ZD-` and ten characters; printed on the dog's QR code and certificates. Stable. */
+  fileNumber: z.string(),
   name: z.string(),
   breed: z.string().nullable(),
   sex: z.enum(DOG_SEXES),

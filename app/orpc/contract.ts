@@ -7,6 +7,7 @@ import { dashboardContract } from "~/orpc/dashboard/contract";
 import { dogContract } from "~/orpc/dog/contract";
 import { enrollmentContract } from "~/orpc/enrollment/contract";
 import { evaluationContract } from "~/orpc/evaluation/contract";
+import { logbookContract } from "~/orpc/logbook/contract";
 import { mediaContract } from "~/orpc/media/contract";
 import { partnerContract } from "~/orpc/partner/contract";
 import { passwordContract } from "~/orpc/password/contract";
@@ -26,6 +27,7 @@ export const contract = {
   dog: dogContract,
   enrollment: enrollmentContract,
   evaluation: evaluationContract,
+  logbook: logbookContract,
   media: mediaContract,
   partner: partnerContract,
   password: passwordContract,

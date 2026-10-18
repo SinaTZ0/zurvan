@@ -5,8 +5,10 @@ import { useState } from "react";
 import { data, isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
 
 import { getDogEvaluationState } from "~/components/dog-evaluation-stamp";
+import { DogFileCard } from "~/components/dog-file-card";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { buildDogFileCard } from "~/lib/dog-file.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
 import { DetailsSection } from "~/routes/admin_dog_detail/components/details-section";
@@ -44,7 +46,13 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw error;
   });
 
-  return { dog, eligibility, evaluations, enrollments };
+  return {
+    dog,
+    eligibility,
+    evaluations,
+    enrollments,
+    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+  };
 }
 
 /*===== Admin Dog Detail =====*/
@@ -54,7 +62,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * beside the ladder, enrollments, evaluations and details; phones read them in that order.
  */
 export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, eligibility, evaluations, enrollments } = loaderData;
+  const { dog, eligibility, evaluations, enrollments, fileCard } = loaderData;
 
   /*------ URL State ------*/
   const [{ edit }, setParams] = useQueryStates(adminDogDetailSearchParams);
@@ -88,6 +96,13 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
             evaluated={evaluated}
             waiting={waiting}
             onEvaluate={() => setEvaluating(true)}
+          />
+          <DogFileCard
+            dogName={dog.name}
+            fileNumber={dog.fileNumber}
+            link={fileCard.link}
+            qr={fileCard.qr}
+            note="هر کس غیر از تو و صاحب سگ، با اسکن این کد «پرونده‌ی خصوصی» را می‌بیند."
           />
         </div>
 

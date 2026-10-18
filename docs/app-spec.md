@@ -303,11 +303,27 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 ---
 
+### F14. Dog File, Logbook and Certificate
+
+**Who:** the owner of a dog; the Admin (the head trainer) for every dog. Nobody else.
+
+**The dog's file.** Every dog gets a **file number** the moment it is written: `ZD-` and ten random hexadecimal characters, made by the database, unique, never edited. The dogs that existed before it was added got theirs when the column was. The number is on the dog's **QR code**, which opens `/logbook/<number>`; both the owner's and the Admin's dog pages show the number, the QR code, its link and a PNG to print, and the Admin can search dogs by it.
+
+**What a QR code opens.** The dog's **record is private by default**:
+
+- A signed-in **owner** who opens it is sent on to their own dog's page, the **Admin** to the dog's admin page.
+- **Everyone else**, signed in or not, sees one page: «این پرونده خصوصیه». It is the same words, status and shape for a private record, for a number that doesn't exist and for text that isn't a number, so the page can't be used to find out which numbers are real; it never carries the dog's name; it is never cached and never indexed (`Cache-Control: no-store`, `noindex`).
+- `/logbook` asks for a number (typed in any case, with or without `ZD-`, in Persian digits) and opens that address. It is an exact lookup, not a search: there is no list of records.
+
+**Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Dog Detail (the file card) · Dog Detail (Admin) (the file card)
+
+---
+
 ## Pages
 
-Each page and the features on it: **31 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **32 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
-**Public (10)**
+**Public (11)**
 
 | Page             | Features                                          |
 | ---------------- | ------------------------------------------------- |
@@ -321,6 +337,7 @@ Each page and the features on it: **31 pages**. A list and its form or detail ar
 | Contact          | —                                                 |
 | Partner Enquiry  | F7                                                |
 | Rules            | F13 (a 404 until the owner approves the wording)  |
+| Dog Record       | F14 (private unless its owner says otherwise)     |
 
 **Customer (6)**
 

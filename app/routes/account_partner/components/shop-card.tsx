@@ -4,9 +4,9 @@ import { useState } from "react";
 import { BrandLogo } from "~/components/brand-logo";
 import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
-import { CopyLinkButton } from "~/routes/account_partner/components/copy-link-button";
+import { CopyLinkButton } from "~/components/copy-link-button";
 import type { ReferralQr } from "~/routes/account_partner/qr.server";
-import { downloadQrPng } from "~/routes/account_partner/qr-png";
+import { downloadQrPng } from "~/lib/qr-png";
 
 /*===== Caption =====*/
 // The card's only line: it is for the partner's customers, so it carries the site's main action, not his name.

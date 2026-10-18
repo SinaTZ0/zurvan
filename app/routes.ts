@@ -13,6 +13,8 @@ export default [
     route("privacy", "routes/privacy/privacy.tsx"),
     // A 404 until the owner approves the rules' wording (`app/lib/site-rules.ts`).
     route("rules", "routes/rules/rules.tsx"),
+    // A dog's record: the lookup, and what its QR code opens (private unless its owner says otherwise).
+    route("logbook/:fileNumber?", "routes/logbook/logbook.tsx"),
     route("join/partner", "routes/join_partner/join-partner.tsx"),
   ]),
 

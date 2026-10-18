@@ -34,7 +34,7 @@ export function DogSearchField({
           type="search"
           value={value}
           autoComplete="off"
-          placeholder="اسم سگ، نژاد، اسم یا شماره‌ی صاحب"
+          placeholder="اسم سگ، نژاد، شماره‌ی پرونده، اسم یا شماره‌ی صاحب"
           onChange={(event) => onChange(event.target.value)}
           // Our own clear button replaces the browser's cross, so both don't show.
           className="[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none"

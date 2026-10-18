@@ -178,6 +178,16 @@ export const dog = pgTable(
   "dog",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    /**
+     * The dog's file number, printed on its QR code and certificates (docs/app-spec.md, F14): `ZD-` and ten random
+     * hexadecimal characters. Made by the database, so every dog has one from the moment it is written and the dogs that
+     * existed before this column got theirs when it was added. Stable: never edited, never reused. Not a secret (it is
+     * on a printed code), so what a person can see through it is decided by the record's privacy, not by the number.
+     */
+    fileNumber: text("file_number")
+      .notNull()
+      .unique()
+      .default(sql`'ZD-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 10))`),
     ownerId: text("owner_id")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),

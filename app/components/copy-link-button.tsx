@@ -9,7 +9,7 @@ import { toast } from "~/components/ui/toast";
 const COPIED_MS = 2000;
 
 /**
- * Copies the referral link to the clipboard. The label flips to «کپی شد» for a moment and a toast says it too, since
+ * Copies a link (the partner's referral link, a dog's record) to the clipboard. The label flips to «کپی شد» for a moment and a toast says it too, since
  * the flip is easy to miss on a phone. A refused clipboard (no permission, an insecure origin) is said plainly so the
  * partner can select the link by hand.
  */

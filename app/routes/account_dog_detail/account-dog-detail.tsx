@@ -1,8 +1,10 @@
 import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
+import { DogFileCard } from "~/components/dog-file-card";
 import { DogProfile } from "~/components/dog-profile";
 import { Link } from "~/components/link";
+import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
 import { createServerClient } from "~/orpc/server-client.server";
 import { DogHeader } from "~/routes/account_dog_detail/components/dog-header";
@@ -32,7 +34,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw error;
   });
 
-  return { dog, evaluations, enrollments };
+  return { dog, evaluations, enrollments, fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }) };
 }
 
 /*===== Dog Detail =====*/
@@ -42,7 +44,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * column.
  */
 export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments } = loaderData;
+  const { dog, evaluations, enrollments, fileCard } = loaderData;
   const status = getDogStatus({ dog, evaluations, enrollments });
 
   return (
@@ -58,8 +60,15 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
         </div>
 
         {/*===== Profile =====*/}
-        <div className="lg:sticky lg:top-24">
+        <div className="flex flex-col gap-8 lg:sticky lg:top-24">
           <DogProfile dog={dog} />
+          <DogFileCard
+            dogName={dog.name}
+            fileNumber={dog.fileNumber}
+            link={fileCard.link}
+            qr={fileCard.qr}
+            note="هر کس این کد را اسکن کند «پرونده‌ی خصوصی» را می‌بیند. فقط تو و مربی پرونده را می‌بینید."
+          />
         </div>
       </div>
     </div>

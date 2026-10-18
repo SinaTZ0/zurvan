@@ -48,7 +48,8 @@ The primary handoff. Everything below is on the branch `feat/zurvann-overnight-f
 
 ## G. Logbook, QR, certificate
 
-- [ ] **Pending/blocked.** Per-dog file number and QR, session logbook, public/private permissions, certificate. _Status:_ not started when this draft was written.
+- [x] **Implemented and verified.** Every dog has a unique, stable file number and a QR link. _Route:_ `/account/dogs/<id>` (owner) and `/admin/dogs/<id>` (Admin): the file card with the number, the QR code, the link and «دانلود QR برای چاپ». _Test:_ add a dog, open its page, copy the link, open it signed out (a private record that never shows the dog's name), signed in as the owner (you land on the dog's page) and as another customer (a private record). _Env:_ Local. _Evidence:_ 3 integration tests and a 15-check headless-Chrome run, screenshots `screenshots/g1-*.jpg`.
+- [ ] **Pending/blocked.** Session logbook, public/private permissions with consent, certificate. _Status:_ in progress (G2 to G4).
 
 ## H. Partners
 
