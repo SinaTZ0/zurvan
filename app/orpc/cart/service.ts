@@ -25,15 +25,18 @@ type ResolvedItem = { courseId: string; dogId: string };
 
 /*===== Resolving =====*/
 /**
- * Keeps the items that belong: the course exists (whatever its status, as the browser's own cart never checked) and the
- * dog is the customer's. Another customer's dog reads as not there, so a hand-made request can't put it in a cart or
- * find out it exists. Repeats are dropped.
+ * Keeps the items that belong: the course exists and the dog is the customer's. Another customer's dog reads as not
+ * there, so a hand-made request can't put it in a cart or find out it exists. Repeats are dropped.
+ *
+ * With `approvedOnly`, a draft or archived course reads as not there too: adding one would persist it and let
+ * `checkout.review` show its title and price. Removal leaves it off, so a course archived while in a cart can still go.
  */
 async function resolveItems({
   db,
   userId,
   items,
-}: Executor & { userId: string; items: readonly CartItem[] }): Promise<ResolvedItem[]> {
+  approvedOnly = false,
+}: Executor & { userId: string; items: readonly CartItem[]; approvedOnly?: boolean }): Promise<ResolvedItem[]> {
   const wellFormed = items.filter((item) => item.courseSlug.trim() !== "" && isDogId(item.dogId));
   if (wellFormed.length === 0) return [];
 
@@ -44,7 +47,9 @@ async function resolveItems({
 
   const resolved = new Map<string, ResolvedItem>();
   for (const item of wellFormed) {
-    const course = courses.find((candidate) => candidate.slug === item.courseSlug);
+    const course = courses.find(
+      (candidate) => candidate.slug === item.courseSlug && (!approvedOnly || candidate.status === "approved"),
+    );
     const dog = dogs.find((candidate) => candidate.id === item.dogId);
     if (course && dog) resolved.set(`${dog.id}:${course.id}`, { courseId: course.id, dogId: dog.id });
   }
@@ -66,7 +71,7 @@ export async function addToCart({
   userId,
   item,
 }: Executor & { userId: string; item: CartItem }): Promise<{ kind: "success"; cart: Cart } | InvalidResult> {
-  const [resolved] = await resolveItems({ db, userId, items: [item] });
+  const [resolved] = await resolveItems({ db, userId, items: [item], approvedOnly: true });
   if (!resolved) return { kind: "invalid", errors: ["این مورد دیگر وجود ندارد."] };
 
   const already = await findCartPairKeys({ db, userId, courseIds: [resolved.courseId] });
@@ -106,7 +111,7 @@ export async function mergeIntoCart({
   userId,
   items,
 }: Executor & { userId: string; items: readonly CartItem[] }): Promise<Cart> {
-  const resolved = await resolveItems({ db, userId, items });
+  const resolved = await resolveItems({ db, userId, items, approvedOnly: true });
   if (resolved.length > 0) {
     const already = await findCartPairKeys({ db, userId, courseIds: [...new Set(resolved.map((r) => r.courseId))] });
     const fresh = resolved.filter((pair) => !already.has(`${pair.dogId}:${pair.courseId}`));
