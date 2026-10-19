@@ -23,11 +23,13 @@ const ACTIONS: { icon: LucideIcon; title: string; detail: string; to: string }[]
  * Under the hero: three compact squares that are each a single link, centred in one row at every width. On a phone the
  * line under the title is dropped (the squares are about 110px wide); from `sm` each square is a fixed 10 to 11rem.
  * Quiet on purpose (a border and a gold icon): the hero above and the evaluation panel below carry the page's loud
- * moments.
+ * moments. The hero's bottom padding is the gap above them (adding another left a dead black band); the gap below keeps
+ * them off the promise strip's hairline. On desktop they tuck up into the hero's faded bottom edge, so they read as
+ * its continuation rather than as cards adrift between two sections.
  */
 export function QuickActions() {
   return (
-    <section aria-label="شروع سریع" className="site-container pt-section-sm">
+    <section aria-label="شروع سریع" className="relative z-10 site-container pb-section-sm lg:-mt-12">
       <ul className="mx-auto grid max-w-[36rem] grid-cols-3 gap-3 sm:gap-4">
         {ACTIONS.map(({ icon: Icon, title, detail, to }) => (
           <li key={to}>

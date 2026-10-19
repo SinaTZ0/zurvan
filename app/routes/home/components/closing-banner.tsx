@@ -16,7 +16,7 @@ import { SpeechBubble } from "~/components/speech-bubble";
  */
 export function ClosingBanner() {
   return (
-    <section aria-labelledby="closing-title" className="relative isolate mt-section-lg overflow-hidden bg-jet">
+    <section aria-labelledby="closing-title" className="relative isolate mt-section-md overflow-hidden bg-jet">
       {/*------ Words ------*/}
       <div className="relative z-10 site-container flex flex-col items-center pt-section-sm text-center">
         <h2 id="closing-title" className="font-display text-h1 font-black text-balance">
@@ -52,7 +52,7 @@ export function ClosingBanner() {
         {/* In the black beside the dog's head, at the start, its tail curling down toward the ear. */}
         <SpeechBubble
           tail="bottom-end"
-          className="absolute start-[2%] top-0 max-w-[12rem] sm:top-[6%] lg:start-[4%] lg:top-[36%] lg:max-w-[15rem]"
+          className="absolute start-[2%] top-0 max-w-[15rem] sm:top-[6%] sm:max-w-[12rem] lg:start-[4%] lg:top-[36%] lg:max-w-[15rem]"
         >
           آماده‌ای شروع کنیم؟ من که مشتاقم!
         </SpeechBubble>

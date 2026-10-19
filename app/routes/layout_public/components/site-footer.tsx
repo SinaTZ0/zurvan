@@ -43,8 +43,8 @@ const FOOTER_GROUPS = [
 /*===== Site Footer =====*/
 export function SiteFooter() {
   return (
-    <footer className="relative isolate mt-section-md overflow-hidden surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
-      <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
+    <footer className="mt-section-md overflow-hidden surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
+      <div className="site-container grid gap-10 pt-section-sm pb-10 lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
         {/*------ Brand ------*/}
         <div className="flex max-w-sm flex-col gap-4">
           <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
@@ -88,15 +88,15 @@ export function SiteFooter() {
         ))}
       </div>
 
-      {/* Decorative stencil sits behind the content without adding height to the footer. Its size follows the width of
-          the page column (`cqw`), so the whole word fits at every screen width: the full width on a phone, and on a
-          desktop the part under the link columns, clear of the brand column and the phone number. The bottom margin is
-          the height of the copyright line below, so the letters stand on it. */}
-      <div className="@container pointer-events-none absolute inset-x-0 bottom-0 -z-10 site-container flex flex-col lg:flex-row-reverse">
+      {/* Decorative stencil, in its own band under the links: laid behind them, its strokes ran through the link text.
+          Its size follows the width of the page column (`cqw`), so the whole word fits at every screen width: the
+          full width on a phone, and on a desktop the width of the link columns, at the end side. The letters stand on
+          the copyright line's hairline. */}
+      <div className="@container pointer-events-none site-container flex flex-col lg:flex-row-reverse">
         <p
           aria-hidden
           dir="ltr"
-          className="mb-[3.85rem] font-stencil text-[length:calc(100cqw/3.15)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)] lg:text-[length:calc(68cqw/3.09)]"
+          className="font-stencil text-[length:calc(100cqw/3.15)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)] lg:text-[length:calc(68cqw/3.09)]"
         >
           ZURVAN
         </p>
