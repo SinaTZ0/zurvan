@@ -1,17 +1,23 @@
 import { cn } from "cn";
-import { DogIcon, GiftIcon, HouseIcon, RouteIcon, type LucideIcon } from "lucide-react";
+import { DogIcon, HouseIcon, RouteIcon, ScanSearchIcon, type LucideIcon } from "lucide-react";
+
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Promises =====*/
-// What training here is like, in the dog's words. Each line is a fact about how the practice works (app-spec: private,
-// at home or outside, a free first meeting, courses that open one after another), not a claim about results.
+// What training here is like, in the dog's words. Each line is a fact about how the practice works, not a claim about
+// results. The owner's notes (2026-10-19) shaped them: «فقط من و مربی‌م / کلاس شلوغ نداریم» was wrong (the owner of the dog
+// is in a private class, and a group class may exist), and «خونه یا بیرون» is where a lesson happens, not what kind of
+// class it is, so the first chip names the kinds of class the help page already words (no group class is announced
+// as running: the help page says it starts when one is held). The free evaluation is asked for in the header, the
+// hero, the quick actions and the evaluation panel, so it is not a chip as well.
 const PROMISES: { icon: LucideIcon; title: string; detail: string }[] = [
-  { icon: HouseIcon, title: "توی خونه‌ی خودمون یا بیرون", detail: "همون‌جایی که زندگی می‌کنم، یاد می‌گیرم." },
+  { icon: HouseIcon, title: "کلاس به شرایط ما می‌خوره", detail: "خصوصی در محل شما یا مجموعه؛ پانسیون با هماهنگی." },
   {
     icon: DogIcon,
-    title: "فقط من و مربی‌م",
-    detail: "کلاس شلوغ نداریم؛ هر جلسه مال خودمه.",
+    title: `مربی‌م خودِ ${HEAD_TRAINER.firstName}ـه`,
+    detail: "ارزیابی و مسیر آموزشمو خودش مشخص می‌کنه.",
   },
-  { icon: GiftIcon, title: "اولش رایگان آشنا می‌شیم", detail: "قبل از هر دوره، یه ارزیابی رایگان." },
+  { icon: ScanSearchIcon, title: "هر سگ دوره‌های خودشو داره", detail: "توی صفحه‌ی دوره می‌بینی کدوم برای سگت بازه." },
   { icon: RouteIcon, title: "از سگ خونگی تا سگ کار", detail: "قدم‌به‌قدم؛ هر دوره بعد از قبلی باز می‌شه." },
 ];
 

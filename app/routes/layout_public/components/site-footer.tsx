@@ -2,7 +2,7 @@ import { PhoneIcon } from "lucide-react";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
+import { CENTER_DESCRIPTOR, CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { SITE_RULES } from "~/lib/site-rules";
 
@@ -49,7 +49,7 @@ export function SiteFooter() {
           <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
             <BrandLogo className="text-[1.875rem]" />
           </Link>
-          <p className="text-sm font-bold text-foreground">مجموعه تربیتی و رفتارشناسی سگ زروان</p>
+          <p className="text-sm font-bold text-foreground">{CENTER_DESCRIPTOR}</p>
           <p className="text-sm text-pretty text-muted-foreground">
             از اولین تجربه‌های زندگی کنار سگت تا آموزش‌های تخصصی و حرفه‌ای، زروان همراهتونه؛ با برنامه‌ای که متناسب با
             نیاز و شرایط هر سگ طراحی می‌شه.

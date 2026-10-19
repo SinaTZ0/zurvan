@@ -1,27 +1,17 @@
-import { AwardIcon, CalendarHeartIcon, GiftIcon, MapPinnedIcon } from "lucide-react";
-
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { ChalkDoodle } from "~/components/chalk-doodle";
 import { SpeechBubble } from "~/components/speech-bubble";
+import { TrainerFacts } from "~/components/trainer-facts";
 
 /*===== Trainer Section =====*/
 /**
  * The head trainer and founder, introduced by their dog. They are the only trainer the home page introduces. A portrait
  * photo of Tala crouched beside the dog (the owner's own, `HEAD_TRAINER.photos.withDog`) with the dog's line under it,
  * in a bubble whose tail points up at the dog: the photo's corners hold banners and logos, so nothing is laid over
- * it. Credentials come from the owner's business card. No button here: the free assessment is asked for in the hero,
- * the quick actions, the evaluation panel and the closing banner.
+ * it. Credentials come from the owner's business card (the same three facts as the About page). No button and no
+ * line about the free assessment here: it is asked for in the hero, the quick actions and the evaluation panel.
  */
 export function TrainerSection() {
-  const points = [
-    { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای` },
-    { icon: AwardIcon, label: HEAD_TRAINER.credential },
-    { icon: MapPinnedIcon, label: `فعال در ${CENTER_SERVICE_AREA}` },
-    { icon: GiftIcon, label: "قبل از هر دوره، یه ارزیابی رایگان" },
-  ];
-
   return (
     <section id="trainer" aria-labelledby="trainer-title" className="site-container scroll-mt-24 pt-section-lg">
       <div className="grid items-center gap-gutter lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">
@@ -38,20 +28,14 @@ export function TrainerSection() {
             آموزش‌های پایه و عمومی تا دوره‌های تخصصی، نگهبانی، ورزشی و سطوح مسابقاتی کار می‌کنه.
           </p>
 
-          <ul className="mt-8 space-y-4">
-            {points.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-3">
-                <Icon aria-hidden strokeWidth={1.5} className="size-7 shrink-0 text-primary" />
-                <span className="font-bold">{label}</span>
-              </li>
-            ))}
-          </ul>
+          <TrainerFacts />
         </div>
 
         {/*===== Photo =====*/}
         <div className="relative order-1 lg:order-2">
           <div className="overflow-hidden rounded-4xl border border-border">
-            {/* The frame is 4:5 and the picture 2:3: `object-top` keeps both faces and drops the dog's paws. */}
+            {/* The frame is 6:7 and the picture 2:3: `object-top` keeps both faces and the harness and stops above the
+                trouser leg, where the lettering in the original is garbled (the owner's call whether to keep it). */}
             <img
               src={HEAD_TRAINER.photos.withDog.src}
               srcSet={HEAD_TRAINER.photos.withDog.srcSet}
@@ -61,7 +45,7 @@ export function TrainerSection() {
               height={HEAD_TRAINER.photos.withDog.height}
               loading="lazy"
               decoding="async"
-              className="aspect-[4/5] w-full object-cover object-top"
+              className="aspect-[6/7] w-full object-cover object-top"
             />
           </div>
 

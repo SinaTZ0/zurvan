@@ -9,7 +9,7 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 // never taken back when the owner fills the form out of order. Informal spoken Persian, in the dog's voice.
 export const GUIDE_LINES = [
   "قبل از هر کاری، بیا با هم آشنا شیم!",
-  `عکس و فیلم یادت نره! ${HEAD_TRAINER.firstName} می‌خواد منو بشناسه.`,
+  `حالا بگو معمولاً کی وقت داری تا ${HEAD_TRAINER.firstName} بهت زنگ بزنه.`,
   `عالی! ${HEAD_TRAINER.firstName} خوشش میاد`,
   `${HEAD_TRAINER.firstName} زنگ می‌زنه، قول می‌دم`,
 ] as const;

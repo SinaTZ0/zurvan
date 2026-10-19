@@ -4,50 +4,45 @@ import { Link } from "~/components/link";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Actions =====*/
-// Three doors for someone who just arrived, in the order they usually need them: make an account, look at the courses,
-// ask for the free assessment. Each is one link with one line saying what is behind it. The courses themselves are not
-// shown on the home page: they live on `/courses`.
+// Three small squares under the hero, in the order the owner named them (2026-10-19): the free assessment, signing up,
+// the courses. Each is one link with one line saying what is behind it. The courses themselves are not shown on the
+// home page: they live on `/courses`.
 const ACTIONS: { icon: LucideIcon; title: string; detail: string; to: string }[] = [
-  { icon: UserPlusIcon, title: "ثبت‌نام و ورود", detail: "حساب بساز و سگت رو معرفی کن.", to: "/auth" },
-  {
-    icon: GraduationCapIcon,
-    title: "مشاهده دوره‌ها",
-    detail: "از آداب خونه تا مسابقه، همه‌ی دوره‌ها یک‌جا.",
-    to: "/courses",
-  },
   {
     icon: ClipboardCheckIcon,
     title: "ارزیابی رایگان",
-    detail: `قبل از شروع، ${HEAD_TRAINER.firstName} سگت رو از نزدیک می‌بینه.`,
+    detail: `${HEAD_TRAINER.firstName} سگت رو از نزدیک می‌بینه.`,
     to: "/assessment",
   },
+  { icon: UserPlusIcon, title: "ثبت‌نام و ورود", detail: "حساب بساز و سگت رو معرفی کن.", to: "/auth" },
+  { icon: GraduationCapIcon, title: "مشاهده دوره‌ها", detail: "همه‌ی دوره‌ها یک‌جا.", to: "/courses" },
 ];
 
 /*===== Quick Actions =====*/
 /**
- * Under the hero: three compact cards that are each a single link. One column on phones, three across from `sm`. Quiet on
- * purpose (a border and a gold icon): the hero above and the evaluation panel below carry the page's loud moments.
+ * Under the hero: three compact squares that are each a single link, centred in one row at every width. On a phone the
+ * line under the title is dropped (the squares are about 110px wide); from `sm` each square is a fixed 10 to 11rem.
+ * Quiet on purpose (a border and a gold icon): the hero above and the evaluation panel below carry the page's loud
+ * moments.
  */
 export function QuickActions() {
   return (
     <section aria-label="شروع سریع" className="site-container pt-section-sm">
-      <ul className="grid gap-3 sm:grid-cols-3">
+      <ul className="mx-auto grid max-w-[36rem] grid-cols-3 gap-3 sm:gap-4">
         {ACTIONS.map(({ icon: Icon, title, detail, to }) => (
           <li key={to}>
             <Link
               to={to}
-              className="group/action flex h-full items-center gap-4 rounded-3xl border border-border bg-card p-5 shadow-sm transition-colors outline-none hover:border-primary/50 focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="group/action relative flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-3xl border border-border bg-card p-2 text-center shadow-sm transition-colors outline-none hover:border-primary/50 focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-4"
             >
-              <span className="grid size-12 shrink-0 place-items-center rounded-full border border-primary/60 text-primary">
-                <Icon aria-hidden strokeWidth={1.5} className="size-6" />
+              <span className="grid size-11 shrink-0 place-items-center rounded-full border border-primary/60 text-primary sm:size-12">
+                <Icon aria-hidden strokeWidth={1.5} className="size-5 sm:size-6" />
               </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-extrabold">{title}</span>
-                <span className="mt-0.5 block text-sm text-pretty text-muted-foreground">{detail}</span>
-              </span>
+              <span className="block text-sm leading-snug font-extrabold text-balance sm:text-base">{title}</span>
+              <span className="hidden text-xs text-pretty text-muted-foreground sm:block">{detail}</span>
               <ChevronLeftIcon
                 aria-hidden
-                className="size-5 shrink-0 text-primary transition-transform motion-safe:group-hover/action:-translate-x-0.5"
+                className="absolute end-2 bottom-2 size-4 text-primary transition-transform motion-safe:group-hover/action:-translate-x-0.5 max-sm:hidden"
               />
             </Link>
           </li>

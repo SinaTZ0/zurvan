@@ -144,7 +144,7 @@ export function HomeHero({ initialIndex, startedSession }: { initialIndex: numbe
             من فقط فرمان نمی‌برم؛ می‌فهمم.
           </h1>
           <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-            آموزش خصوصی با {HEAD_TRAINER.firstName}، توی خونه‌ی خودمون یا بیرون. اولین دیدارمون رایگانه.
+            با {HEAD_TRAINER.firstName} قدم‌به‌قدم جلو می‌ریم؛ اولین دیدارمون هم رایگانه.
           </p>
 
           {/*------ Actions ------*/}

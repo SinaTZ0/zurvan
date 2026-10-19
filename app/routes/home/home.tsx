@@ -24,10 +24,10 @@ import type { Route } from "./+types/home";
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
-  { title: `آموزش K9 | آموزش خصوصی سگ با ${HEAD_TRAINER.name}` },
+  { title: `آموزش K9 | آموزش سگ با ${HEAD_TRAINER.name}` },
   {
     name: "description",
-    content: `آموزش خصوصی سگ با ${HEAD_TRAINER.name}، با ${formatNumberFa(HEAD_TRAINER.years)} سال تجربه در ${CENTER_SERVICE_AREA}. آموزش پایه و پیشرفته، رفتارشناسی و اصلاح رفتار، آموزش تخصصی و آمادگی مسابقه برای تمامی نژادها و سنین. ارزیابی اول رایگان است.`,
+    content: `آموزش سگ با ${HEAD_TRAINER.name}، با ${formatNumberFa(HEAD_TRAINER.years)} سال تجربه در ${CENTER_SERVICE_AREA}. آموزش پایه و پیشرفته، رفتارشناسی و اصلاح رفتار، آموزش تخصصی و آمادگی مسابقه برای تمامی نژادها و سنین. ارزیابی اول رایگان است.`,
   },
 ];
 

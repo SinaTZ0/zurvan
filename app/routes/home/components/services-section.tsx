@@ -38,11 +38,11 @@ export function ServicesSection() {
       <div className="grid gap-gutter lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
         <div>
           <h2 id="services-title" className="max-w-lg font-display text-h1 font-black text-balance">
-            از اولین فرمان تا مسابقه
+            از اولین «بشین» تا مسابقه
           </h2>
           <p className="mt-4 max-w-lg text-pretty text-muted-foreground">
-            {HEAD_TRAINER.firstName} با همه‌ی نژادها و در تمام سنین کار می‌کنه؛ از آداب زندگی روزمره تا آموزش تخصصی و
-            آمادگی مسابقه. اول منو می‌شناسه، بعد مسیر آموزشمو با تو مشخص می‌کنه.
+            قهرمان نباشم هم اشکالی نداره! {HEAD_TRAINER.firstName} با همه‌ی نژادها و توی همه‌ی سنین کار می‌کنه؛ از آداب
+            زندگی روزمره تا آموزش تخصصی و آمادگی مسابقه. اول منو می‌شناسه، بعد مسیر آموزشمو با تو مشخص می‌کنه.
           </p>
           <p className="mt-6 font-bold text-primary">تجربه، دانش، نتیجه.</p>
         </div>

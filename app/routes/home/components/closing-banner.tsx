@@ -7,8 +7,9 @@ import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Closing Banner =====*/
 /**
- * The last ask. A German shepherd peeks up over the bottom edge of the band, ears first, as if over the edge of the
- * page, and asks whether we're starting. The photo's top third is empty black, so the words sit there with no box.
+ * The last ask: make an account, the first step of the way (the free assessment is asked for higher up). A German
+ * shepherd peeks up over the bottom edge of the band, ears first, as if over the edge of the page, and asks whether
+ * we're starting. The photo's top third is empty black, so the words sit there with no box.
  *
  * The photo is shown whole, never cropped to a band: a crop cut through the ears and left a hard edge under the words.
  * On wide screens it stops at a width where the head still fits under the words, and its sides fade into the page.
@@ -21,9 +22,11 @@ export function ClosingBanner() {
         <h2 id="closing-title" className="font-display text-h1 font-black text-balance">
           یه قدم تا یه زندگی بهتر
         </h2>
-        <p className="mt-3 max-w-md text-pretty text-muted-foreground">ارزیابی اول رایگانه. فقط کافیه بگی من کی‌ام.</p>
-        <Link to="/assessment" className={cn(buttonVariants({ size: "lg" }), "mt-6")}>
-          ارزیابی رایگان بگیر
+        <p className="mt-3 max-w-md text-pretty text-muted-foreground">
+          با یه حساب شروع می‌شه؛ بعدش منو معرفی کن، فقط کافیه بگی من کی‌ام.
+        </p>
+        <Link to="/auth" className={cn(buttonVariants({ size: "lg" }), "mt-6")}>
+          ثبت‌نام و معرفی سگ
         </Link>
       </div>
 

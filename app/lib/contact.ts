@@ -9,6 +9,9 @@ export const CENTER_PHONE = {
 
 export const CENTER_SERVICE_AREA = "تمام نقاط تهران";
 
+/** The center's full name line: «زروان» is the wordmark and this sits under it (the owner asked for both, 2026-10-18). */
+export const CENTER_DESCRIPTOR = "مجموعه تربیتی و رفتارشناسی سگ زروان";
+
 /*===== Profiles =====*/
 // Each on its own because the contact page and the help page's ask link to them one by one. The footer lists them all.
 export const CENTER_TELEGRAM = {

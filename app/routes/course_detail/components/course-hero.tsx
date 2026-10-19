@@ -63,7 +63,8 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
           <p className="mt-4 max-w-xl text-lead text-pretty text-foreground/85">{course.summary}</p>
 
           {/*------ Trainer ------*/}
-          {/* The site sells him, and «private» is the promise: both sit before the facts. */}
+          {/* The site sells a named person, so he sits before the facts. The kind of class is not promised here: it is
+              arranged with him (help page, «کلاس‌ها چه جوری برگزار می‌شن؟»). */}
           <p className="mt-6 flex items-center gap-3">
             <img
               src={HEAD_TRAINER.photos.avatar.src}
@@ -74,7 +75,7 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
             />
             <span className="flex flex-col leading-snug">
               <span className="font-bold">با {HEAD_TRAINER.name}</span>
-              <span className="text-sm text-muted-foreground">جلسه‌ها خصوصی است، فقط با سگ تو.</span>
+              <span className="text-sm text-muted-foreground">نوع کلاس و زمان جلسه‌ها را با هم هماهنگ می‌کنید.</span>
             </span>
           </p>
 

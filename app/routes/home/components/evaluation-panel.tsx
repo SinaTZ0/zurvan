@@ -9,7 +9,10 @@ import { SpeechBubble } from "~/components/speech-bubble";
 /*===== Steps =====*/
 // The real path from a new dog to training (app-spec F3, F5, F6), told by the dog. It is a sequence, so it is numbered.
 const STEPS = [
-  { title: "عکس و فیلممو بفرست", detail: "چند تا عکس یا فیلم کوتاه از من، و این‌که معمولاً کی وقتت آزاده." },
+  {
+    title: "درخواستمو ثبت کن",
+    detail: "منو انتخاب کن و بگو معمولاً کی وقتت آزاده؛ اگه خواستی چند تا عکس و فیلم کوتاه هم بفرست.",
+  },
   {
     title: `${HEAD_TRAINER.firstName} زنگ می‌زنه`,
     detail: "یه وقت هماهنگ می‌کنه و میاد منو ببینه. رایگان، بدون تعهد.",

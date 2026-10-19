@@ -11,7 +11,7 @@ test.describe("a visitor", () => {
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
 
     const menu = page.getByRole("navigation", { name: "منوی اصلی" });
-    await expect(menu.getByRole("link")).toHaveText(["دوره‌ها", "درباره‌ی طلا راستی", "همکاران", "تماس با ما"]);
+    await expect(menu.getByRole("link")).toHaveText(["دوره‌ها", "درباره‌ی طلا راستی", "همکارها", "تماس با ما"]);
   });
 
   test("finds a course by what it teaches", async ({ page }) => {

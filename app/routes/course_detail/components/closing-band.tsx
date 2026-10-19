@@ -6,12 +6,14 @@ import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Steps =====*/
-// How buying works, in order (app-spec F5, F6): pay upfront, the trainer calls, training starts. It is a sequence, so
-// it is numbered.
+// How buying works, in order (app-spec F5, F6): the course is bought from the cart (upfront, as before), the trainer
+// calls, training starts. It is a sequence, so it is numbered. The words follow the owner's notes (2026-10-19): the first
+// step doesn't lead with the payment, and the last doesn't promise «private» or «home or outside» (the kind of class is
+// arranged on the call; where a course is held is written on its own page).
 const STEPS = [
-  { title: "پرداخت", detail: "دوره‌ای که انتخاب کردی را از سبد می‌خری." },
-  { title: `${HEAD_TRAINER.firstName} زنگ می‌زند`, detail: "زمان و جای جلسه‌ها را با هم هماهنگ می‌کنید." },
-  { title: "تمرین در خانه یا بیرون", detail: "جلسه‌ها خصوصی است، فقط با سگ تو." },
+  { title: "دوره را برمی‌داری", detail: "دوره‌ای که انتخاب کردی را از سبد می‌خری." },
+  { title: `${HEAD_TRAINER.firstName} زنگ می‌زند`, detail: "نوع کلاس، زمان و جای جلسه‌ها را با هم هماهنگ می‌کنید." },
+  { title: "تمرین شروع می‌شود", detail: "جای تمرین هر دوره در صفحه‌ی همان دوره نوشته شده است." },
 ] as const;
 
 /*===== Closing Band =====*/

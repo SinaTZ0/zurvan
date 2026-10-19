@@ -23,8 +23,8 @@ import {
 
 /*===== Request Form =====*/
 /**
- * The evaluation request: which dog, its photos and videos, and when the owner is free. Three plain sections in one
- * raised card. It tells the page how far it has got (`onProgressChange`) so the dog beside it can react, and hands over
+ * The evaluation request: which dog, when the owner is free, and optionally photos and videos. Three plain sections in
+ * one raised card. It tells the page how far it has got (`onProgressChange`) so the dog beside it can react, and hands over
  * the saved evaluation (`onSent`) so the page can swap this card for the confirmation.
  */
 export function RequestForm({
@@ -113,14 +113,6 @@ export function RequestForm({
       {/*===== Which Dog =====*/}
       <DogPicker dogs={dogs} registration={register("dogId")} error={errors.dogId?.message} />
 
-      {/*===== Photos and Videos =====*/}
-      {/* The field is its own section and carries its heading, so it sits here without a wrapper. */}
-      <EvaluationMediaField
-        onChange={handleFiles}
-        onBusyChange={setBusy}
-        errors={{ photos: errors.photoMediaIds?.message, videos: errors.videoIds?.message }}
-      />
-
       {/*===== When Free =====*/}
       <section aria-labelledby="when-title" className="min-w-0">
         <h2 id="when-title" className="mb-4 text-lg font-extrabold">
@@ -128,6 +120,15 @@ export function RequestForm({
         </h2>
         <WhenFreeFields register={register} control={control} setValue={setValue} errors={errors} />
       </section>
+
+      {/*===== Photos and Videos =====*/}
+      {/* Last and optional: the owner's notes (2026-10-19) say photos and videos are not the main step and not a
+          substitute for the form. The field is its own section and carries its heading and the word «اختیاری». */}
+      <EvaluationMediaField
+        onChange={handleFiles}
+        onBusyChange={setBusy}
+        errors={{ photos: errors.photoMediaIds?.message, videos: errors.videoIds?.message }}
+      />
 
       {/*===== Submit =====*/}
       <div className="flex flex-col gap-3 border-t pt-8">

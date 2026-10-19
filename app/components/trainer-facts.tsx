@@ -5,7 +5,10 @@ import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Trainer Facts =====*/
-/** The three facts printed on the owner's business card: years of experience, the credential and the service area. */
+/**
+ * The three facts printed on the owner's business card: years of experience, the credential and the service area.
+ * Shared by the About page and the home page's trainer section, so both always say the same three things.
+ */
 export function TrainerFacts() {
   const facts = [
     { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای` },

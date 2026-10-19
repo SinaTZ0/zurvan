@@ -9,7 +9,7 @@ import { SITE_RULES } from "~/lib/site-rules";
 export const NAV_ITEMS: readonly { label: string; to: string }[] = [
   { label: "دوره‌ها", to: "/courses" },
   { label: "درباره‌ی طلا راستی", to: "/about" },
-  { label: "همکاران", to: "/join/partner" },
+  { label: "همکارها", to: "/join/partner" },
   { label: "تماس با ما", to: "/contact" },
   // Appears with the approved wording (`app/lib/site-rules.ts`) and not before.
   ...(SITE_RULES ? [{ label: "قوانین", to: "/rules" }] : []),

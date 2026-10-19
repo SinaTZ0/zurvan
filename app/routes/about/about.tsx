@@ -3,7 +3,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { TrainerFacts } from "~/routes/about/components/trainer-facts";
+import { TrainerFacts } from "~/components/trainer-facts";
 
 import type { Route } from "./+types/about";
 

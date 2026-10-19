@@ -4,7 +4,7 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 /*===== Help Header =====*/
 /**
  * The page's top: the headline and one line of help, with the Malinois from the auth page beside them. Its bubble is
- * the page's key fact, "pay first, then he calls", and its outline drawing in is the page's one orchestrated moment.
+ * the page's key fact, "after you ask, he calls", and its outline drawing in is the page's one orchestrated moment.
  *
  * Desktop: words at the start, the framed photo at the end, the bubble over the photo's dark end with its tail across
  * at the dog. Phones: the photo on top and the bubble under it with the tail pointing up at the dog, then the words.

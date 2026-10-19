@@ -7,7 +7,7 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 const STOPS = [
   { id: "evaluation", title: "ارزیابی رایگان", line: `${HEAD_TRAINER.firstName} سگت رو می‌بینه.` },
   { id: "courses", title: "دوره‌ها باز می‌شن", line: "اونایی که پیش‌نیازشون رو گذرونده." },
-  { id: "paying", title: "پرداخت", line: "اول از سبد پرداخت می‌کنی." },
+  { id: "paying", title: "انتخاب و خرید", line: "دوره‌ات رو از سبد برمی‌داری." },
   { id: "training", title: "تماس و تمرین", line: `${HEAD_TRAINER.firstName} زنگ می‌زنه و هماهنگ می‌کنید.` },
   { id: "done", title: "تموم شد", line: "دوره‌ی بعدی باز می‌شه." },
 ];

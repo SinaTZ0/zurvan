@@ -22,7 +22,7 @@ export function SiteHeader({ viewer }: { viewer: Viewer | null }) {
       <div className="site-container flex h-16 items-center gap-6 lg:h-20">
         {/*------ Logo ------*/}
         <Link to="/" className="shrink-0 rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
-          <BrandLogo className="text-[1.625rem] lg:text-[1.875rem]" />
+          <BrandLogo descriptor className="text-[1.625rem] lg:text-[1.875rem]" />
         </Link>
 
         {/*------ Desktop Nav ------*/}

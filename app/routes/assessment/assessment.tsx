@@ -94,9 +94,7 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
         {/*===== Header =====*/}
         <header className="pb-8 lg:col-start-1 lg:row-start-1 lg:pb-10">
           <h1 className="font-display text-h1 font-black text-balance">
-            {sent
-              ? `حالا منتظر ${HEAD_TRAINER.firstName} باش`
-              : `عکس و فیلممو بفرست، بقیه‌ش با ${HEAD_TRAINER.firstName}`}
+            {sent ? `حالا منتظر ${HEAD_TRAINER.firstName} باش` : `درخواستمو بفرست، بقیه‌ش با ${HEAD_TRAINER.firstName}`}
           </h1>
           {!sent && (
             <p className="mt-3 max-w-xl text-pretty text-muted-foreground">

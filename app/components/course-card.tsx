@@ -4,7 +4,15 @@ import { ChevronLeftIcon } from "lucide-react";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { describePrerequisites, describeSessions, formatTomanShort } from "~/lib/course-format";
+import type { CourseFamily } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
+
+/*===== Branches =====*/
+// The working and sport courses are not one course but several branches (the guard dog, the bodyguard, the tracker...;
+// BH, IGP 1, IGP 2, IGP 3, FH, WUSV), and the owner wants them visible before opening the page (2026-10-19). Their
+// course rows keep the branch names in `commands`, which the card otherwise never shows, so for these families the
+// card prints them as small chips. Other courses' `commands` are the lines of what a dog learns: not for the card.
+const BRANCH_FAMILIES = new Set<CourseFamily>(["working", "sport"]);
 
 /*===== Course Card =====*/
 /**
@@ -35,6 +43,16 @@ export function CourseCard({ course, showPrerequisites = false }: { course: Cour
         <h3 className="font-extrabold sm:text-lg">{course.title}</h3>
         <p className="mt-1.5 line-clamp-2 text-sm text-pretty text-muted-foreground max-sm:hidden">{course.summary}</p>
         {prerequisites && <p className="mt-1.5 text-xs text-muted-foreground">بعد از: {prerequisites}</p>}
+        {BRANCH_FAMILIES.has(course.family) && course.commands.length > 0 && (
+          <ul aria-label="گرایش‌ها" className="mt-2 flex flex-wrap gap-1.5">
+            {course.commands.map((branch) => (
+              <li key={branch} className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
+                {/* Names such as «IGP 1» are Latin: isolate them so the digit stays on the right side of the letters. */}
+                <bdi>{branch}</bdi>
+              </li>
+            ))}
+          </ul>
+        )}
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-3 sm:pt-5">
           <p className="text-xs leading-relaxed text-muted-foreground">
