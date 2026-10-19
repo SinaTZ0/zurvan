@@ -69,6 +69,16 @@ function createAuth(baseURL: string) {
       },
     },
 
+    /*------ Disabled Endpoints ------*/
+    // A password is only ever set through `password.set` (signed in with a code, within 30 minutes, strength-checked,
+    // other sessions revoked). The plugin's own reset stores a random code that is never sent and takes a guess at it
+    // with no session, so it would bypass all of that and the per-number pause; change-password skips the pause too.
+    disabledPaths: [
+      "/phone-number/request-password-reset",
+      "/phone-number/reset-password",
+      "/change-password",
+    ],
+
     /*------ Rate Limits ------*/
     // Per IP. The per-number limits need the send log, so they live in the hook below. Both maximums are the Admin's
     // settings (F10), read on every request, so a change needs no restart. A lowered maximum applies to the next
