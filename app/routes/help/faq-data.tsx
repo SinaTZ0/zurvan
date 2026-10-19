@@ -277,6 +277,22 @@ export const FAQ_GROUPS: FaqGroupData[] = [
         ),
       },
       {
+        id: "logbook",
+        question: "لاگ‌بوک سگم کجاست؟",
+        answer: (
+          <>
+            <p>
+              بعد از هر جلسه، {TRAINER} همون‌جا که صفحه‌ی سگته می‌نویسه چه کار کردید و پیشرفت چطور بود. هر سگ یه شماره‌ی
+              پرونده و QR هم داره؛ توی صفحه‌ی سگ می‌بینیش و می‌تونی چاپش کنی. پرونده خصوصیه و فقط تو و {TRAINER}{" "}
+              می‌بینید.
+            </p>
+            <Link to="/account" className={LINK_CLASS}>
+              سگ‌های من
+            </Link>
+          </>
+        ),
+      },
+      {
         id: "boarding",
         question: "پانسیون هم هست؟",
         answer: (

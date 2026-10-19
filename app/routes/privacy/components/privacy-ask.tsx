@@ -3,8 +3,9 @@ import { buttonVariants } from "~/components/ui/button";
 
 /*===== Privacy Ask =====*/
 /**
- * The page's closing ask, copied from the catalogue's pattern: a raised card with no dog. The main action is the free
- * evaluation; the quieter one goes to the help page, where most of the questions are answered.
+ * The page's closing ask, copied from the catalogue's pattern: a raised card with no dog. The main action is the help
+ * page, where most of the questions are answered; the quieter one is the contact page. (It used to ask for the free
+ * evaluation too: the owner wants that ask kept to the menu, the hero and the quick actions.)
  */
 export function PrivacyAsk() {
   return (
@@ -19,14 +20,14 @@ export function PrivacyAsk() {
         <p className="mt-3 text-pretty text-muted-foreground">جواب خیلی از سؤال‌ها توی «سؤال‌های پرتکرار» هست.</p>
       </div>
       <div className="mt-8 flex flex-wrap gap-3 lg:mt-0 lg:shrink-0">
-        <Link
-          to="/assessment"
-          className={buttonVariants({ variant: "solid", size: "lg", className: "w-full sm:w-auto" })}
-        >
-          ارزیابی رایگان بگیر
-        </Link>
-        <Link to="/help" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}>
+        <Link to="/help" className={buttonVariants({ variant: "solid", size: "lg", className: "w-full sm:w-auto" })}>
           سؤال‌های پرتکرار
+        </Link>
+        <Link
+          to="/contact"
+          className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
+        >
+          تماس با ما
         </Link>
       </div>
     </section>

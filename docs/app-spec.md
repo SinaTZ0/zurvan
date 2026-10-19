@@ -78,10 +78,10 @@ A dog's page shows whether it is evaluated, its passed courses, its evaluation r
 
 **Who:** the customer requests; the Admin records the outcome.
 
-The free first meeting with a dog: a **checkup**, not a test. It involves no money.
+The free first meeting with a dog: an **assessment**, a test of where the dog stands (the owner corrected the earlier «checkup, not a test» wording on 2026-10-19). It has two parts: the owner's, in the request, and the trainer's, at the meeting and in recording the outcome. It involves no money. The owner's questionnaire and the trainer's evaluation form are **not defined yet**: until they are, the request is the dog, the dates and the optional media below, and the outcome is the two buttons.
 
-1. **Request.** The customer picks a dog and can attach **photos and videos** of it. They give an **earliest date** and **when they're usually free** (weekdays and time of day: morning, afternoon, evening).
-2. **The Admin calls them** and they meet. The app doesn't record when.
+1. **Request** (the owner's part). The customer picks a dog and gives an **earliest date** and **when they're usually free** (weekdays and time of day: morning, afternoon, evening). They can also attach **photos and videos** of the dog: optional, last on the form, never the main step and never a substitute for the form.
+2. **The Admin calls them** and they meet (the trainer's part). The app doesn't record when.
 3. **Outcome.** The Admin presses one of two buttons on the request:
    - **«ارزیابی شد»** (evaluated): the dog is now **evaluated** and its courses can be bought.
    - **«رد»** (rejected), with a reason: the dog isn't a fit, or the meeting never happened. The customer can request again.

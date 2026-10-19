@@ -33,6 +33,7 @@ const FOOTER_GROUPS = [
     links: [
       { label: "سؤال‌های پرتکرار", to: "/help" },
       { label: "حریم خصوصی", to: "/privacy" },
+      { label: "لاگ‌بوک سگ‌ها", to: "/logbook" },
       // Only once the owner has approved the wording.
       ...(SITE_RULES ? [{ label: "قوانین", to: "/rules" }] : []),
     ],

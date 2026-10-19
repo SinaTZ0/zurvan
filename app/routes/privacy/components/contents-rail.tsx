@@ -2,14 +2,14 @@ import { Link } from "~/components/link";
 
 /*===== Contents Rail =====*/
 /**
- * Four anchors to the sections, beside them on desktop. It is hidden on phones, where the four short sections are
- * simply stacked, so the rail never takes width the list needs.
+ * Anchors to the sections, beside them on desktop. It is hidden on phones, where the short sections are simply
+ * stacked, so the rail never takes width the list needs.
  */
 const SECTIONS = [
   { id: "kept", label: "چی ذخیره می‌شه" },
   { id: "who-sees", label: "کی چی رو می‌بینه" },
-  { id: "sign-in-code", label: "کد پیامکی" },
   { id: "yours", label: "چی رو خودت عوض می‌کنی" },
+  { id: "technical", label: "جزئیات فنی" },
 ] as const;
 
 export function ContentsRail() {

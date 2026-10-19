@@ -44,6 +44,8 @@ The auth page (a dog asks at each step), the dashboard's empty state, the cart's
 | Peeking dog for the closing banner | A German shepherd (`peek`)                                                                             | A Zurvann version                                             |
 | Alt text                           | Persian scene descriptions for each stand-in                                                           | One per Zurvann photo, describing the scene and the stage     |
 
+**Received on 2026-10-19:** two portrait photos of Tala with an adult Malinois wearing the ZURVAN harness (720x1080). They are used for **Tala's introduction** (home trainer section, About, the small avatar), not for the mascot: they show one adult dog, not the puppy, adolescent and adult stages of one dog the owner described, they are portrait (the hero is landscape with the dog's line over its dark half), Tala fills the frame (the hero's idea is the dog speaking to the visitor), and at 720px they are too small for a full-bleed hero. The three approved hero photos and lines stay. If the owner says the dog in them is Zurvan, they could become the **adult** stage in a portrait slot (for example the logbook's header); the other two stages are still missing.
+
 **Blocker:** Zurvann's authentic art. Until the owner supplies it (the pipeline in `image-reference/prompts.md`: the owner generates, the developer slices and compresses), nothing pretends the stand-ins are the mascot.
 
 ### Prompt proposals for the owner (same shared style line as the existing prompts)

@@ -9,8 +9,9 @@ import type { LogbookEntry } from "~/orpc/logbook/contract";
 export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
   return (
     <section aria-labelledby="logbook-title">
+      {/* «لاگ‌بوک» is the owner's word for the dog's file (2026-10-19): it is named first so it can be found by it. */}
       <h2 id="logbook-title" className="font-sans text-xl font-extrabold">
-        دفترچه‌ی تمرین
+        لاگ‌بوک؛ دفترچه‌ی تمرین
       </h2>
 
       {entries.length === 0 ? (

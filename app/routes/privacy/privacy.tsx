@@ -6,7 +6,7 @@ import { ContentsRail } from "~/routes/privacy/components/contents-rail";
 import { DataKept } from "~/routes/privacy/components/data-kept";
 import { PrivacyAsk } from "~/routes/privacy/components/privacy-ask";
 import { PrivacyHeader } from "~/routes/privacy/components/privacy-header";
-import { SignInCode } from "~/routes/privacy/components/sign-in-code";
+import { TechnicalDetails } from "~/routes/privacy/components/technical-details";
 import { WhoSees } from "~/routes/privacy/components/who-sees";
 import { YourHands } from "~/routes/privacy/components/your-hands";
 
@@ -20,7 +20,10 @@ export const meta: Route.MetaFunction = () => [
 
 /*===== Page =====*/
 // Static: no loader, nothing to fetch or write. Its sections are linked by hash (`/privacy#who-sees`), so each one has
-// an id and a scroll margin that clears the sticky header.
+// an id and a scroll margin that clears the sticky header. The owner found the first version too technical and full of
+// things that don't concern a customer (2026-10-19): the three sections say it in plain words, and the exact technical
+// facts (IP address, the cookies, the SMS log, the code limits) moved, unchanged in substance, into the collapsed
+// «جزئیات فنی» at the end, so nothing the page used to disclose is gone.
 export default function PrivacyPage() {
   return (
     <>
@@ -35,8 +38,8 @@ export default function PrivacyPage() {
         <div className="space-y-20 lg:col-span-8">
           <DataKept />
           <WhoSees />
-          <SignInCode />
           <YourHands />
+          <TechnicalDetails />
         </div>
       </div>
 

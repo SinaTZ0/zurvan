@@ -4,9 +4,13 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Viewer Cards =====*/
 // One card per person who can see the account's data: the visitor, the head trainer and a partner. Each lists what that
-// person sees; the partner's card also lists what they don't, because that is the question a customer asks. The copy is
-// final (`.tmp-claude/page13-brief.md`).
-const SEES = ["شماره و اسمت", "سگ‌هات، ارزیابی‌ها، دوره‌ها و پرداخت‌هات"];
+// person sees; the partner's card also lists what they don't, because that is the question a customer asks. The partner
+// lists follow what the partner's leads page really shows (`account_partner_leads/components/lead-row.tsx`): the
+// customer's name and number, where they stand (registered, bought), and the commission's amount and whether it is paid;
+// never a dog, an evaluation, the diary, a purchase or its price (app-spec F12). Reading the dogs' training for a
+// customer's own referrer is designed, not built: it needs the owner's consent and wording (docs/overnight/
+// 08-PARTNER-ACCESS-DESIGN.md).
+const SEES = ["شماره و اسمت", "سگ‌هات، ارزیابی‌ها، دفترچه‌ی تمرین، دوره‌ها و پرداخت‌هات"];
 
 const TRAINER_SEES = [
   "همه‌ی چیزهایی که مشتری‌ها وارد می‌کنن: شماره و اسم، سگ‌ها، ارزیابی‌ها با عکس و فیلمشون",
@@ -16,11 +20,15 @@ const TRAINER_SEES = [
 
 const PARTNER_SEES = [
   "شماره‌هایی که خودش وارد کرده",
-  "این‌که کدوم مشتری‌هاش ثبت‌نام کرده و خرید کرده",
-  "کمیسیون‌های خودش",
+  "این‌که کدوم مشتری‌هاش ثبت‌نام کرده و خرید کرده، با اسم و شماره‌شون",
+  "پورسانتی که بابت خرید اون مشتری‌ها به خودش می‌رسه و پرداخت شده یا نه",
 ];
 
-const PARTNER_DOES_NOT_SEE = ["سگ‌هات و ارزیابی‌هاشون", "پرداخت‌ها و دوره‌هایی که خریدی", "همکارهای دیگه"];
+const PARTNER_DOES_NOT_SEE = [
+  "سگ‌هات، ارزیابی‌ها و دفترچه‌ی تمرین‌شون",
+  "این‌که دقیقاً چه دوره‌ای خریدی",
+  "مشتری‌های همکارهای دیگه",
+];
 
 /*===== Viewer Card =====*/
 function ViewerCard({
@@ -82,7 +90,7 @@ export function WhoSees() {
           <p className="mt-6 text-sm text-muted-foreground">توی سایت فقط {HEAD_TRAINER.firstName} حساب مدیریت داره.</p>
         </ViewerCard>
 
-        <ViewerCard title="همکار، اگه از طریق اون اومده باشی" sees={PARTNER_SEES} doesNotSee={PARTNER_DOES_NOT_SEE} />
+        <ViewerCard title="همکار، فقط اگه تو رو اون آورده باشه" sees={PARTNER_SEES} doesNotSee={PARTNER_DOES_NOT_SEE} />
       </div>
     </section>
   );
