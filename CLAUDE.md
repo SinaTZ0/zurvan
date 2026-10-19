@@ -19,7 +19,7 @@ This is a React Router v8 application using Framework Mode. The application's us
 - The app records and shows; it doesn't run the business. Lesson times and sessions are handled by the Admin in real life: no calendar, lesson tracking, course requests to accept, trainer earnings or payouts. Refunds the Admin decides are recorded in a ledger with an audit trail (the money itself moves outside the app); there are no refund policies. Admin screens are plain lists with one-click buttons and an overview dashboard. Behavior requests, course tests, assessment slots and trainer-submitted courses are dropped.
 - Dog profiles and course settings are still being worked out with the owner: keep what exists and don't build on guesses (app-spec F2, F8).
 - The owner's "every dog takes CGC / almost every dog takes BMC" is never said on the site.
-- The head trainer's details live in `app/lib/head-trainer.ts`; the name, years and photo there are placeholders until the owner sends the real ones.
+- The head trainer's details live in `app/lib/head-trainer.ts`; since 2026-10-19 the name, experience and photos there are the owner's own (from the business card and the photos sent that day). Which photo is the chosen introduction photo is still open (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
 ## Design and Legacy Pages
 
