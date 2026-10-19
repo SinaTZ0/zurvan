@@ -47,6 +47,8 @@ Run overnight, on this machine, against a **second disposable database** built t
 | Run **the live commit's** own test suite against the upgraded database (so the old code survives it)                                                                                                                                    | 69 of 69 pass                                                                                                                                               |
 | Ask Drizzle Kit what it would still change on the upgraded database                                                                                                                                                                     | Only its usual quirk statements (below); nothing about any table, column, index or constraint of the branch                                                 |
 
+**For the next schema change** the same way: `node --import tsx deploy/schema-diff.mjs <the revision the live site runs> > upgrade.sql` prints the diff from that revision's `app/db/schema.ts` to the current one (it reads no database and applies nothing; run against `1b7a29d` it reproduces `deploy/upgrade-2026-10-overnight.sql` exactly). Read it, wrap it in `BEGIN; … COMMIT;`, try it on a restored backup, apply it before deploying the code.
+
 **Not verified:** a run on the real server, and PostgreSQL 17 (the rehearsal used 15; the file uses nothing version-specific, and `gen_random_uuid()` is built in from 13). If anything about the first run looks wrong, restore the dump from step 2.
 
 ## Release state
