@@ -22,6 +22,8 @@ For **their own referrals only**, that is, a person attributed to this partner a
 
 Unknown, and not guessed: which fields count as «training information» for a partner, the consent wording, and whether partners should see dog progress at all (the owner's own wish is not the customers' consent).
 
+**In her own words (voices of 12:52:59 and 12:53:00):** the partner must see whether a customer he brought has paid, so he can ask her later; she would let him see everything about that customer, even click through to the dog's file, because she thinks of the file as public, except the personal details the partner did not enter himself. What is built covers the first half (stage «bought» and the commission). The second half is deliberately **held behind the customer's consent** below, because the dog's file is private by default today and the customer has not agreed to anything: this is the decision to take to her.
+
 ## 3. Proposed rules (for the owner's approval)
 
 1. **Own referrals only, enforced on the server.** Every partner query joins through the attribution (`user.referredByPartnerId = <this partner>`); the client never filters. An inactive partner loses access at once.
