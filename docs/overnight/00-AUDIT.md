@@ -16,7 +16,7 @@ Written before the implementation started, from the repository and the live site
 
 ## 2. Release pipeline and what can ship tonight
 
-- `deploy.sh` runs on the server in `/opt/k9training`: it fast-forwards `main`, builds, recreates `app`, reloads Caddy. A schema change needs `--db-push`, which **auto-approves destructive SQL** (Drizzle `--force`). The demo is public and its data is the owner's showcase.
+- `deploy.sh` runs on the server in `/opt/k9training`: it fast-forwards `main`, builds, recreates `app`, reloads Caddy. A schema change needs `--db-push`, which **auto-approves destructive SQL** (Drizzle `--force`). _Found later, while preparing the deployment notes:_ `--db-push` also cannot run at all on a database that has tables with a composite primary key, which the live one does, and it stops the app first; the branch's schema is therefore upgraded with a reviewed SQL file instead (`04-DEPLOYMENT-AND-ROLLBACK.md`). The demo is public and its data is the owner's showcase.
 - The server checkout is on `main`; deploying another branch means changing that checkout. Nothing here does that.
 - So: UI-only work could be merged and deployed after review, but **nothing from this branch is deployed tonight**. The owner has not seen the new navigation, pages or homepage, and the later phases add tables. Rollback for every phase is "do not merge the branch"; the live site stays on `1b7a29d`.
 - Local checks use a disposable Postgres 15 cluster made with Homebrew's `initdb` in a temp directory, because Docker (Colima) is not running. It holds no real data and is deleted afterwards.
