@@ -12,7 +12,7 @@
 
 ## What is safe on its own
 
-Phases A to D (header, pages, homepage, hero, search) are UI only: no schema change, no new server code. The branch's commits are sequential and those four phases come first, so **`bc3b21b` is exactly A to D**: merging `main` up to that commit (`git merge bc3b21b`) ships them without the later work, and without `--db-push`. The commits are `6c9064f` (header, About, Contact), `53d24da` (home), `50c2885` (hero), `d19699f` (search) and `bc3b21b` (their evidence).
+Phases A to D (header, pages, homepage, hero, search) are UI only: no schema change, no new server code. The branch's commits are sequential and those four phases come first, so **`bc3b21b` is exactly A to D**: merging `main` up to that commit (`git merge bc3b21b`) ships them without the later work, and without `--db-push`. That commit was checked on its own, in a separate working copy: it typechecks, lints and builds, and its 79 tests pass. The commits are `6c9064f` (header, About, Contact), `53d24da` (home), `50c2885` (hero), `d19699f` (search) and `bc3b21b` (their evidence).
 
 ## Migrations on this branch (all additive)
 
