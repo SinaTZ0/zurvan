@@ -18,8 +18,8 @@ export const meta: Route.MetaFunction = () => [
 
 /*===== Page =====*/
 // Static: no loader. Every fact here comes from the owner's business card (`HEAD_TRAINER`); the page adds nothing to it,
-// no biography and no claim about where or how training is held. The photo is the one the home page uses and is still
-// an illustrative stand-in until the owner sends a real one.
+// no biography and no claim about where or how training is held. The photo is one of the two the owner sent on
+// 2026-10-19 (the home page shows the other); which of them is her chosen introduction is still open.
 export default function AboutPage() {
   return (
     <section
@@ -53,18 +53,18 @@ export default function AboutPage() {
       {/*===== Photo =====*/}
       <div className="order-1 lg:order-2">
         <div className="overflow-hidden rounded-4xl border border-border">
-          <picture>
-            <source media="(min-width: 64rem)" srcSet="/photo/home/trainer-1536.webp" />
-            <img
-              src="/photo/home/trainer-900.webp"
-              alt={`${HEAD_TRAINER.firstName} روی زمین نشسته و می‌خندد، ژرمن‌شپردش گونه‌اش را می‌لیسد`}
-              width={1536}
-              height={1024}
-              fetchPriority="high"
-              decoding="async"
-              className="aspect-[4/3] w-full object-cover object-[30%_50%]"
-            />
-          </picture>
+          {/* The frame is 4:5 and the picture 2:3: `object-top` keeps both faces and drops the dog's paws. */}
+          <img
+            src={HEAD_TRAINER.photos.standing.src}
+            srcSet={HEAD_TRAINER.photos.standing.srcSet}
+            sizes="(min-width: 64rem) 35rem, 100vw"
+            alt={HEAD_TRAINER.photos.standing.alt}
+            width={HEAD_TRAINER.photos.standing.width}
+            height={HEAD_TRAINER.photos.standing.height}
+            fetchPriority="high"
+            decoding="async"
+            className="aspect-[4/5] w-full object-cover object-top"
+          />
         </div>
       </div>
     </section>

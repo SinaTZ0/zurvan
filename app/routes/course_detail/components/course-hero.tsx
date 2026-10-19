@@ -66,11 +66,11 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
           {/* The site sells him, and «private» is the promise: both sit before the facts. */}
           <p className="mt-6 flex items-center gap-3">
             <img
-              src={HEAD_TRAINER.photo.src}
+              src={HEAD_TRAINER.photos.avatar.src}
               alt=""
-              width={HEAD_TRAINER.photo.width}
-              height={HEAD_TRAINER.photo.height}
-              className="size-12 shrink-0 rounded-full object-cover object-[70%_50%] ring-1 ring-primary/40"
+              width={HEAD_TRAINER.photos.avatar.width}
+              height={HEAD_TRAINER.photos.avatar.height}
+              className="size-12 shrink-0 rounded-full object-cover ring-1 ring-primary/40"
             />
             <span className="flex flex-col leading-snug">
               <span className="font-bold">با {HEAD_TRAINER.name}</span>

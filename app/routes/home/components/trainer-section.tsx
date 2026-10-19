@@ -8,10 +8,11 @@ import { SpeechBubble } from "~/components/speech-bubble";
 
 /*===== Trainer Section =====*/
 /**
- * The head trainer and founder, introduced by their dog. They are the only trainer the home page introduces. The one
- * wide photo band below the hero: Tala laughing while a German shepherd licks their cheek, with the dog's line over the
- * photo's dark end. Credentials come from the owner's business card; the photo remains illustrative. No button here: the
- * free assessment is asked for in the hero, the quick actions, the evaluation panel and the closing banner.
+ * The head trainer and founder, introduced by their dog. They are the only trainer the home page introduces. A portrait
+ * photo of Tala crouched beside the dog (the owner's own, `HEAD_TRAINER.photos.withDog`) with the dog's line under it,
+ * in a bubble whose tail points up at the dog: the photo's corners hold banners and logos, so nothing is laid over
+ * it. Credentials come from the owner's business card. No button here: the free assessment is asked for in the hero,
+ * the quick actions, the evaluation panel and the closing banner.
  */
 export function TrainerSection() {
   const points = [
@@ -23,7 +24,7 @@ export function TrainerSection() {
 
   return (
     <section id="trainer" aria-labelledby="trainer-title" className="site-container scroll-mt-24 pt-section-lg">
-      <div className="grid items-center gap-gutter lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+      <div className="grid items-center gap-gutter lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-16">
         {/*===== Words =====*/}
         <div className="order-2 lg:order-1">
           <h2 id="trainer-title" className="font-display text-h1 font-black text-balance">
@@ -50,28 +51,27 @@ export function TrainerSection() {
         {/*===== Photo =====*/}
         <div className="relative order-1 lg:order-2">
           <div className="overflow-hidden rounded-4xl border border-border">
-            <picture>
-              <source media="(min-width: 64rem)" srcSet="/photo/home/trainer-1536.webp" />
-              <img
-                src="/photo/home/trainer-900.webp"
-                alt={`${HEAD_TRAINER.firstName} روی زمین نشسته و می‌خندد، ژرمن‌شپردش گونه‌اش را می‌لیسد`}
-                width={1536}
-                height={1024}
-                loading="lazy"
-                decoding="async"
-                className="aspect-[4/3] w-full object-cover object-[30%_50%] lg:aspect-[3/2]"
-              />
-            </picture>
+            {/* The frame is 4:5 and the picture 2:3: `object-top` keeps both faces and drops the dog's paws. */}
+            <img
+              src={HEAD_TRAINER.photos.withDog.src}
+              srcSet={HEAD_TRAINER.photos.withDog.srcSet}
+              sizes="(min-width: 64rem) 35rem, 100vw"
+              alt={HEAD_TRAINER.photos.withDog.alt}
+              width={HEAD_TRAINER.photos.withDog.width}
+              height={HEAD_TRAINER.photos.withDog.height}
+              loading="lazy"
+              decoding="async"
+              className="aspect-[4/5] w-full object-cover object-top"
+            />
           </div>
 
-          {/* Over the photo's dark start third, the tail pointing back at the dog. */}
-          <SpeechBubble
-            tail="bottom-end"
-            className="absolute start-4 top-4 max-w-[13rem] sm:start-8 sm:top-8 sm:max-w-[16rem]"
-          >
-            هر بار که {HEAD_TRAINER.firstName} میاد کلی چیز یاد می‌گیرم، بعدشم بازی!
-          </SpeechBubble>
-          <ChalkDoodle name="heart" className="absolute start-10 -bottom-5 w-12 rotate-12 opacity-90 max-lg:hidden" />
+          {/* Under the photo, at the dog's side (the start side); the tail points up at the dog. */}
+          <div className="mt-5 flex justify-start">
+            <SpeechBubble tail="top-start" className="max-w-[16rem]">
+              هر بار که {HEAD_TRAINER.firstName} میاد کلی چیز یاد می‌گیرم، بعدشم بازی!
+            </SpeechBubble>
+          </div>
+          <ChalkDoodle name="heart" className="absolute end-8 -bottom-4 w-12 -rotate-12 opacity-90 max-lg:hidden" />
         </div>
       </div>
     </section>
