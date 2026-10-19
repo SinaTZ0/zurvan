@@ -232,6 +232,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 | An enrollment marked done      | Customer                                    |
 | An enrollment cancelled        | Customer                                    |
 | A commission marked paid       | Partner                                     |
+| A refund marked paid           | Customer (with the transfer's reference)    |
 
 **Pages:** SMS Outbox · the dashboards
 
@@ -424,7 +425,6 @@ Not in this version.
 7. **Courses without a price** (working and sport dogs). Until then the home page mentions them and customers contact the Admin to enroll.
 8. **Disabling a dog** at the customer's request.
 9. **Breed rules and evaluation tags** in [F4](#f4-eligibility), once the owner defines dog profiles and course settings.
-10. **A cart saved on the server**, shared across devices.
 
 **Dropped** from the earlier docs: staff trainers as a role, the calendar, course requests and the Admin accepting them, trainer earnings and payouts, wallets and the money ledger, refund policies, behavior modification requests and plans, course tests, assessment slots, trainers submitting courses for approval, and reviews and comments.
 
