@@ -15,6 +15,8 @@ Facts only the owner or the client has. Each one says what the site does **until
 
 - **Password reset design (my choice, please confirm).** Reset is «sign in with a code, then set a new password»; the card asks for no current password; a password can only be set within 30 minutes of signing in; setting it signs the other devices out; five wrong passwords in 15 minutes pause password sign-in for that number (the code still works). This is as strong as the SMS channel. **While the code is the public `12345` it is not strong at all**, and nothing in the code can fix that: a real SMS provider is the decision.
 
+- **The per-address password limit (20 in 10 minutes) is a guess.** It sits on top of the real protection, the per-number pause after five wrong passwords. Mobile networks put many people behind one address, and the code limit that already existed (the Admin's «per address» setting) has the same property. If real customers start meeting «too many tries», raise the number in `app/lib/auth.server.ts` (`customRules`), or say what the owner would like.
+
 ## Home page and mascot
 
 - **New H1 for the home page.** «من فقط فرمان نمی‌برم؛ می‌فهمم.» is not approved as final but is still live, since the owner said they would supply the line. Proposals only, in the owner's tone (informal, warm): «با هم یاد می‌گیریم، من و تو.» · «بذار با هم حرف همدیگه رو بفهمیم.» · «من اینجام که تو رو بفهمم.»
