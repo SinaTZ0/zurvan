@@ -131,7 +131,7 @@ The tokens are in `app/app.css` ("Black & Flat Gold"). One dark theme; there is 
   - `font-display`: **Estedad**, heavy (`font-black`). The hero headline and section `<h2>`s only.
   - `font-sans`: **Vazirmatn**, for everything else, including `<h3>`s inside a section.
   - `font-hand`: **Marhey**, only inside speech bubbles. Never for UI or body text.
-- The stencil face (`font-stencil`) is for the brand's «K9» only.
+- The stencil face (`font-stencil`) is for the brand's Latin lettering only: the «K9» on the dog tag and the footer's outlined «ZURVAN».
 - **Sizes:** `text-display` for the hero headline, `text-h1` for section titles on the home page, `text-lead` for the hero's line. Body, buttons and inputs stay on Tailwind's static scale.
 - **Persian needs room:** tall line heights (the tokens carry them), never negative letter spacing, `text-balance` on headings, `text-pretty` on paragraphs.
 - **Numbers** in Persian digits (`formatNumberFa`, `toLocaleString("fa-IR")`). Latin names and phone numbers in `dir="ltr"` or `<bdi>`.
