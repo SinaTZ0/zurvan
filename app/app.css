@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/vazirmatn";
-/* Only the black Latin cut: the stencil face sets the "K9" in the brand name and nothing else. */
+/* Only the black Latin cut: the stencil face sets the dog tag's "K9" and the footer's outlined "ZURVAN", nothing else. */
 @import "@fontsource/big-shoulders-stencil/latin-900.css";
 @import "lenis/dist/lenis.css";
 
