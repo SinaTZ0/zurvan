@@ -1,6 +1,6 @@
 # Deployment and rollback
 
-**Do not merge this branch and run `deploy.sh` as usual, and do not use `--db-push` on the live database.** Two separate reasons:
+**(Published on 2026-10-19, see «Release state».) Do not merge a schema-changing branch and run `deploy.sh` as usual, and do not use `--db-push` on the live database.** Two separate reasons:
 
 1. The branch adds tables and columns. A plain deploy does not create them, so the new code would fail on the first query that touches one.
 2. **`deploy.sh --db-push` cannot upgrade the live database at all.** This was found while preparing this note and is not caused by the branch: Drizzle Kit's push API ignores query parameters, and reading a table with a composite primary key (`course_prerequisite`, `dog_passed_course`) needs one, so the push stops with «there is no parameter $1». I reproduced it with the live commit's own `deploy/push-schema.mjs` against a database in the live schema. The script **stops the app first and leaves it stopped** when the push fails (`docs/deploy.md`). It only worked at the first deployment because an empty database has nothing to read.
@@ -53,11 +53,21 @@ Run overnight, on this machine, against a **second disposable database** built t
 
 ## Release state
 
-| Where                | State                                                                                                                                           |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Live site            | `main` at `1b7a29d`, deployed earlier with `deploy.sh` (no `--seed`, no `--db-push`). `https://k9training.zurvann.ir`                           |
-| This branch          | `feat/zurvann-overnight-feedback`, cut from `1b7a29d`. **Not pushed to production, not merged, no preview server exists.**                      |
-| Why nothing deployed | The owner has not seen the new navigation, homepage or sign-in; the later phases add tables, which need the SQL upgrade above, not `--db-push`. |
+| Where                | State                                                                                                                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live site            | **`main` at `97e8d3a`, deployed on 2026-10-19** (`https://k9training.zurvann.ir`). Before that it was `f4e29b5`.                                                                         |
+| Branch               | `feat/zurvann-overnight-feedback` was merged into `main` (fast-forward after merging `main` into the branch; the merge changed nothing, the footer commit was on both sides) and pushed. |
+| How it was published | The safe order below, as written: backup, the reviewed SQL file in one transaction, then a plain `deploy.sh` (no `--db-push`, no `--seed`).                                              |
+
+### What happened on 2026-10-19
+
+- Backup: `.deploy/backups/before-overnight-upgrade-20261019T113542Z.dump` (56,882 bytes, 20 tables in its contents; a first identical dump from the same hour is next to it).
+- SQL: `deploy/upgrade-2026-10-overnight.sql` (sha256 prefix `2b569b37f42f7884`, regenerated from `f4e29b5`'s schema beforehand and identical to the file, 35 statements, no `DROP`/`TRUNCATE`/`UPDATE`/`DELETE` outside foreign-key rules) ended in `COMMIT`. **PostgreSQL 17.11** on the server, which the rehearsal (15) did not cover: no problem.
+- The exact row counts of all 20 old tables were the same before and after; the database went from 20 to 27 tables; `dog.file_number` was filled for all 4 dogs; the 4 existing payments read `deposit_percent` 100.
+- `deploy.sh` finished with `Deployed commit 97e8d3a`; all four containers healthy.
+- Looked at on the live site afterwards, signed out only: 66 browser checks at desktop and phone width, the hero's navigation rule, the three trainer photos served, `/rules` still 404, `/buy` sends a visitor to sign in and back, a stranger's dog record «private» and `no-store`. **Nothing signed-in was exercised on the live site.**
+- Rollback if ever needed: the old code keeps working on the upgraded database (proved), so `git reset --hard f4e29b5` in `/opt/k9training` and `bash deploy.sh --no-pull`; the dump above is for the data.
+- A trap met on the way: `ssh host 'bash -s' < script` hands the script to `bash` on stdin, and a `docker compose exec -T` inside it swallows the rest of the script. Copy the script to the server and run it with `< /dev/null`.
 
 ## What is safe on its own
 
