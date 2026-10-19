@@ -1,7 +1,4 @@
-import { cn } from "cn";
-
 import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
@@ -18,8 +15,10 @@ const STEPS = [
 
 /*===== Closing Band =====*/
 /**
- * The page's last word, on a full-width sunken band: the free evaluation is the one action, and the three steps
- * after a purchase answer "and then what?". Puts its content back in a `site-container` and carries its own padding.
+ * The page's last word, on a full-width sunken band: why the courses open after the free evaluation, and the three
+ * steps after a purchase, which answer "and then what?". It no longer carries a button of its own for the evaluation
+ * (the owner wants that ask kept to the menu, the quick actions and the buy card, 2026-10-19): a quiet link goes to the
+ * help page's answer. Puts its content back in a `site-container` and carries its own padding.
  */
 export function ClosingBand() {
   return (
@@ -34,8 +33,11 @@ export function ClosingBand() {
             دوره‌ها بعد از ارزیابی باز می‌شوند. ارزیابی رایگان است و تعهدی ندارد؛ {HEAD_TRAINER.firstName} سگت را از
             نزدیک می‌بیند و می‌گوید از کجا شروع کنید.
           </p>
-          <Link to="/assessment" className={cn(buttonVariants({ variant: "solid", size: "lg" }), "mt-6")}>
-            ارزیابی رایگان با {HEAD_TRAINER.firstName}
+          <Link
+            to="/help#what-is-evaluation"
+            className="mt-5 inline-block rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            ارزیابی چطوریه؟
           </Link>
         </div>
 
