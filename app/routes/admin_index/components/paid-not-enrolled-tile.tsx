@@ -8,8 +8,9 @@ import { TileChevron } from "./tile-chevron";
 /**
  * F5's flag on the dashboard: items whose money was taken but that got no enrollment. At zero it is a calm one-line card
  * (no link: the flagged list would be empty). Above zero it borrows the torn slip of the Payments page, a dashed
- * destructive edge, with the count in gold because it is work waiting. The words never say the customer is owed: the app
- * records no refunds, giving the money back is done outside it.
+ * destructive edge, with the count in gold because it is work waiting. The amount is what was actually taken for those
+ * items (a deposit's share, not the full price). The words never say the customer is owed: giving the money back is done
+ * outside the app, and the Admin records it on the Payments page.
  */
 export function PaidNotEnrolledTile({ count, amount }: { count: number; amount: number }) {
   if (count === 0) {

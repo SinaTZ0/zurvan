@@ -62,23 +62,31 @@ async function insertCourse({ slug, price }: { slug: string; price: number }): P
 
 type TestItem = { courseId: string; price: number; enrollment?: "active" | "completed" | "cancelled" };
 
+/** A deposit takes this share of the full price (rounded up, as the checkout does); 100 is the whole price. */
+const taken = (total: number, depositPercent: number) => Math.ceil((total * depositPercent) / 100);
+
 /** A payment with its items, written straight to the tables so the status and `paidAt` are exactly what a case needs. */
 async function insertPayment({
   customerId,
   status,
   paidAt,
   items,
+  depositPercent = 100,
 }: {
   customerId: string;
   status: "paid" | "failed" | "pending";
   paidAt: Date | null;
   items: TestItem[];
+  depositPercent?: number;
 }): Promise<string> {
+  const total = items.reduce((sum, item) => sum + item.price, 0);
   const [row] = await db
     .insert(payment)
     .values({
       customerId,
-      amount: items.reduce((sum, item) => sum + item.price, 0),
+      amount: taken(total, depositPercent),
+      totalAmount: total,
+      depositPercent,
       gateway: "demo",
       authority: `test-dash-${runId}-${authorityCounter++}`,
       status,
@@ -216,6 +224,31 @@ describe("the dashboard", () => {
     expect(latest).toMatchObject({ paymentId, amount: PRICE_A + PRICE_B, customer: { id: customer.id } });
     const enrolledBySlug = Object.fromEntries(latest?.items.map((item) => [item.course.slug, item.enrolled]) ?? []);
     expect(enrolledBySlug).toEqual({ [slugs.a]: true, [slugs.b]: false });
+  });
+
+  it("counts, for a payment made with a deposit, only what was taken for the item that got no enrollment", async () => {
+    const before = await overview({ db });
+
+    // Half was charged: the unenrolled item's share of that, not its full price, is what could be sent back.
+    await insertPayment({
+      customerId: secondCustomer.id,
+      status: "paid",
+      paidAt: new Date(),
+      depositPercent: 50,
+      items: [
+        { courseId: ids.courseA, price: PRICE_A, enrollment: "active" },
+        { courseId: ids.courseB, price: PRICE_B },
+      ],
+    });
+    const after = await overview({ db });
+
+    const charged = taken(PRICE_A + PRICE_B, 50);
+    const share = Math.floor((PRICE_B * charged) / (PRICE_A + PRICE_B));
+    expect(after.waiting.paidNotEnrolled.count - before.waiting.paidNotEnrolled.count).toBe(1);
+    expect(after.waiting.paidNotEnrolled.amount - before.waiting.paidNotEnrolled.amount).toBe(share);
+    expect(share).toBeLessThan(PRICE_B);
+    // What the Admin is told to send back never exceeds what the gateway took for the whole payment.
+    expect(share).toBeLessThanOrEqual(charged);
   });
 
   it("counts a course's enrollments per status, and the totals move the same", async () => {

@@ -259,12 +259,12 @@ Stored in the database so the Admin can change them without a release. Each is r
 
 A plain **overview** of what's going on, not accounting. Each number links to the list behind it, already filtered.
 
-| Block           | Shows                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Waiting for him | Evaluation requests to answer; the latest purchases, to call; items **paid, not enrolled** ([F5](#f5-cart-and-checkout)) |
-| Enrollments     | Active, completed, cancelled                                                                                             |
-| Money           | Sales this month and in total; commissions not yet paid                                                                  |
-| Courses         | Each course: how many bought, active, completed                                                                          |
+| Block           | Shows                                                                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Waiting for him | Evaluation requests to answer; the latest purchases, to call; items **paid, not enrolled** ([F5](#f5-cart-and-checkout))                                                   |
+| Enrollments     | Active, completed, cancelled                                                                                                                                               |
+| Money           | Sales this month and in total (what was taken, a deposit counted as the deposit; refunds are recorded on the Payments page, not subtracted here); commissions not yet paid |
+| Courses         | Each course: how many bought, active, completed                                                                                                                            |
 
 Money is integer **Rial**. At this scale every number is a simple indexed query; nothing is cached.
 

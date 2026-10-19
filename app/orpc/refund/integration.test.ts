@@ -333,6 +333,15 @@ describe("who sees what", () => {
     for (const entry of mine) {
       expect(Object.keys(entry)).not.toContain("reason");
     }
+    // A refund the Admin withdrew before paying it is never shown to the customer, however they ask: Ben's payment has
+    // one (the cancelling test above), and it is on record, but not in his list.
+    const withdrawn = await db
+      .select()
+      .from(refund)
+      .where(and(eq(refund.paymentId, payments.bens), eq(refund.status, "cancelled")));
+    expect(withdrawn.length).toBeGreaterThan(0);
+    expect(mine.some((entry) => entry.status === "cancelled")).toBe(false);
+    expect(mine.map((entry) => entry.id)).not.toContain(withdrawn[0]?.id);
     // Ana's refunds are not Ben's, and his are not hers.
     const anas = await listMyRefunds({ db, customerId: ana.id });
     expect(anas.some((entry) => entry.paymentId === payments.bens)).toBe(false);

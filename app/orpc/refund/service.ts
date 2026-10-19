@@ -39,7 +39,11 @@ export async function adminListRefunds({
   return (await findRefunds({ db, ...(paymentId === undefined ? {} : { paymentId }) })).map(toRefund);
 }
 
-/** The refunds of the customer's own payments, newest first, without the Admin's reasons. */
+/**
+ * The refunds of the customer's own payments, newest first, without the Admin's reasons. A refund the Admin withdrew
+ * before paying it was never owed to anyone and is **not** returned: what the customer is told is decided here, not by
+ * the page that happens to ask (F5).
+ */
 export async function listMyRefunds({
   db,
   customerId,
@@ -48,7 +52,8 @@ export async function listMyRefunds({
   customerId: string;
 }): Promise<MyRefund[]> {
   const paymentIds = await findPaymentIdsOfCustomer({ db, customerId });
-  return (await findRefundsOfPayments({ db, paymentIds })).map(toMyRefund);
+  const records = await findRefundsOfPayments({ db, paymentIds });
+  return records.filter((record) => record.status !== "cancelled").map(toMyRefund);
 }
 
 /*===== Creating =====*/

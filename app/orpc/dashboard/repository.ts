@@ -21,10 +21,19 @@ export async function countRequestedEvaluations({ db }: Executor): Promise<numbe
   return row?.value ?? 0;
 }
 
-/** F5: items of a paid payment that made no enrollment, and the Rial they add up to. */
+/**
+ * F5: items of a paid payment that made no enrollment, and the Rial that was actually taken for them. An item keeps its
+ * full price, but with a deposit the gateway was charged less, so each item counts its **share of what was charged**
+ * (`price × charged ÷ full price`, rounded down per item): the figure the Admin would send back, never more than the
+ * payment's own charge. A payment made without a deposit, or before deposits existed, charged the full price.
+ */
 export async function sumPaidNotEnrolledItems({ db }: Executor): Promise<CountAndAmount> {
+  const takenForItem =
+    sql<number>`coalesce(sum(floor(${paymentItem.price}::numeric * ${payment.amount} / nullif(coalesce(${payment.totalAmount}, ${payment.amount}), 0))), 0)`.mapWith(
+      Number,
+    );
   const [row] = await db
-    .select({ count: count(), amount: sumOf(paymentItem.price) })
+    .select({ count: count(), amount: takenForItem })
     .from(paymentItem)
     .innerJoin(payment, eq(paymentItem.paymentId, payment.id))
     .leftJoin(enrollment, eq(enrollment.paymentItemId, paymentItem.id))
@@ -44,8 +53,9 @@ export async function countEnrollmentsByStatus({ db }: Executor): Promise<Enroll
 
 /*===== Money =====*/
 /**
- * Rial taken in by `paid` payments. With `range`, only those whose `paidAt` is in `[start, end)`. Failed and pending
- * payments are never counted, and nothing is subtracted for refunds, which the app doesn't record.
+ * Rial taken in by `paid` payments (with a deposit, the deposit). With `range`, only those whose `paidAt` is in
+ * `[start, end)`. Failed and pending payments are never counted. This is what was taken, not what was kept: refunds are
+ * recorded on the Payments page and are not subtracted here (the dashboard is an overview, not accounting, F11).
  */
 export async function sumPaidPayments({
   db,

@@ -8,6 +8,7 @@ import { cartItem, course, dog, enrollment, evaluation, payment, paymentItem, us
 import { getPaymentGateway } from "~/lib/payment-gateway.server";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { addToCart, clearCart, getCart, mergeIntoCart, removeFromCart } from "~/orpc/cart/service";
+import { mergeInputSchema } from "~/orpc/cart/contract";
 import { CART_MAX_ITEMS } from "~/orpc/checkout/constants";
 import { completeGatewayPayment, payCart } from "~/orpc/checkout/service";
 import { createDog } from "~/orpc/dog/service";
@@ -178,6 +179,19 @@ describe("merging the cart a browser already holds", () => {
     expect(once).toEqual({ items: [mine] });
     expect(twice).toEqual({ items: [mine] });
     await clearCart({ db, userId: ana.id });
+  });
+});
+
+/** A list of this many distinct items, for the shape of a merge request. */
+const itemsOfLength = (length: number) =>
+  Array.from({ length }, (_, index) => ({ courseSlug: `c-${index}`, dogId: "a-dog" }));
+
+describe("what a merge accepts", () => {
+  it("takes a list up to the cart's limit and refuses a longer one before anything is looked up", () => {
+    expect(mergeInputSchema.safeParse({ items: itemsOfLength(CART_MAX_ITEMS) }).success).toBe(true);
+    expect(mergeInputSchema.safeParse({ items: itemsOfLength(CART_MAX_ITEMS + 1) }).success).toBe(false);
+    expect(mergeInputSchema.safeParse({ items: itemsOfLength(5_000) }).success).toBe(false);
+    expect(mergeInputSchema.safeParse({ items: [], somethingElse: true }).success).toBe(false);
   });
 });
 

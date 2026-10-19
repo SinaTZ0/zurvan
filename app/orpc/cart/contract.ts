@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+import { CART_MAX_ITEMS } from "~/orpc/checkout/constants";
 import { cartItemSchema } from "~/orpc/checkout/contract";
 import { commonErrors } from "~/orpc/errors";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
@@ -13,7 +14,11 @@ export type Cart = z.infer<typeof cartSchema>;
 
 // Structure only; the limit and the meaning (the dog is theirs, the course exists) are checked by the service.
 const itemInputSchema = z.strictObject({ item: cartItemSchema });
-const itemsInputSchema = z.strictObject({ items: z.array(cartItemSchema) });
+/**
+ * A browser never holds more than the cart's limit (it cuts what it reads to that), so a longer list is a hand-made
+ * request and is refused at the edge instead of being looked up item by item.
+ */
+export const mergeInputSchema = z.strictObject({ items: z.array(cartItemSchema).max(CART_MAX_ITEMS) });
 
 /*===== Errors =====*/
 const baseErrors = { ...commonErrors, ...authErrors, ...roleErrors };
@@ -34,9 +39,10 @@ export const clearCartContract = oc.errors(baseErrors).output(cartSchema);
 
 /**
  * Adds a list of items at once, for the cart a browser already holds when the customer signs in on it. Items that
- * don't belong (not the customer's dog, no such course) and items past the cart's limit are left out, not refused.
+ * don't belong (not the customer's dog, no such course) and items past the cart's limit are left out, not refused; a
+ * list longer than the limit is refused before anything is looked up.
  */
-export const mergeCartContract = oc.errors(baseErrors).input(itemsInputSchema).output(cartSchema);
+export const mergeCartContract = oc.errors(baseErrors).input(mergeInputSchema).output(cartSchema);
 
 export const cartContract = {
   get: getCartContract,
