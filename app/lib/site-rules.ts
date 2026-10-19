@@ -9,7 +9,9 @@
 //   - the page `/rules` shows it and the header and footer link to it,
 //   - a new customer ticks it on the name step and the acceptance is stored,
 //   - a customer who has not accepted this version ticks it on the cart before «پرداخت».
-// Nothing else needs changing.
+// Nothing else needs changing in the app. Two end-to-end smoke tests (`e2e/smoke.spec.ts`) describe the state without
+// rules and must be changed when this is set: `/rules` is expected to be a 404, and a new customer is expected to get
+// past the name step without a tick.
 
 export type SiteRules = {
   /** A new value whenever the wording changes, e.g. `"1405-07-01"`. Stored with each acceptance. */
