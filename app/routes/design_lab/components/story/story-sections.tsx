@@ -17,7 +17,7 @@ const STEP_DETAILS = [
 export function StoryPath() {
   return (
     <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-16 md:px-8 lg:pt-20">
-      <h2 id="st-path-title" className={`${HEADING} text-center text-3xl md:text-5xl`}>
+      <h2 id="st-path-title" className={`${HEADING} st-reveal text-center text-3xl md:text-5xl`}>
         از کجا شروع می‌شود؟
       </h2>
 
@@ -27,8 +27,8 @@ export function StoryPath() {
           const Icon = STEP_ICONS[index];
           return (
             // Card 3 sits lower in the wide row, as if the dog's weight pressed it down; the others keep the top line.
-            <li key={step.title} className={`relative ${index === 2 ? "mt-20 lg:mt-12" : ""}`}>
-              <div className="relative z-0 flex h-full flex-col items-center rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) px-5 pt-6 pb-7 text-center">
+            <li key={step.title} className={`st-reveal-pop relative ${index === 2 ? "mt-20 lg:mt-12" : ""}`}>
+              <div className="st-lift relative z-0 flex h-full flex-col items-center rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) px-5 pt-6 pb-7 text-center">
                 <span className="absolute start-4 top-4 grid size-8 place-items-center rounded-full bg-(--st-badge) text-xs font-bold text-(--st-badge-ink)">
                   {formatNumberFa(index + 1)}
                 </span>
@@ -48,14 +48,14 @@ export function StoryPath() {
               {/*------ Peek: head and paws over card 3's top edge; the paws sit in front of the border ------*/}
               {index === 2 && (
                 <>
-                  <div className="absolute bottom-[calc(100%-1.4rem)] left-1/2 z-10 w-32 -translate-x-1/2 sm:w-36">
+                  <div className="st-tilt st-pet absolute bottom-[calc(100%-1.4rem)] left-1/2 z-10 w-32 -translate-x-1/2 sm:w-36">
                     <Cut name="peek" className="w-full" />
-                    <Ticks className="absolute top-[12%] -right-7 w-6" />
-                    <Ticks className="absolute top-[12%] -left-7 w-6 -scale-x-100" />
+                    <Ticks className="st-ticks absolute top-[12%] -right-7 w-6" />
+                    <Ticks className="st-ticks absolute top-[12%] -left-7 w-6 -scale-x-100 [animation-delay:-.7s]" />
                   </div>
                   <Bubble
                     tail="left"
-                    className="absolute bottom-[calc(100%+3rem)] left-[calc(50%+3.4rem)] z-10 hidden w-32 text-sm sm:block lg:left-[calc(50%+6rem)]"
+                    className="st-float absolute bottom-[calc(100%+3rem)] left-[calc(50%+3.4rem)] z-10 hidden w-32 text-sm sm:block lg:left-[calc(50%+6rem)]"
                   >
                     قفل‌ها دارن باز می‌شن!
                   </Bubble>
@@ -127,14 +127,14 @@ export function StoryFormats() {
         {/*------ Behind the panel's top edge: hedges, the ears and the bubble ------*/}
         {/* The hedges' flat bottoms tuck under the edge, so they grow out from behind it like the dog does. */}
         <div aria-hidden className="absolute inset-x-4 top-0 md:inset-x-8">
-          <Cut name="hedge" className="absolute right-[-2%] bottom-[calc(100%-0.6rem)] w-36 md:w-52" />
-          <Cut name="hedge" className="absolute bottom-[calc(100%-0.6rem)] left-[-2%] w-44 -scale-x-100 md:w-80" />
-          <Cut name="ears" className="absolute right-[12%] bottom-[calc(100%-0.5rem)] w-28 md:right-[22%] md:w-40" />
+          <Cut name="hedge" className="st-sway absolute right-[-2%] bottom-[calc(100%-0.6rem)] w-36 md:w-52" />
+          <Cut name="hedge" className="st-sway-2 absolute bottom-[calc(100%-0.6rem)] left-[-2%] w-44 -scale-x-100 md:w-80" />
+          <Cut name="ears" className="st-twitch absolute right-[12%] bottom-[calc(100%-0.5rem)] w-28 md:right-[22%] md:w-40" />
         </div>
         <div className="absolute inset-x-4 top-0 md:inset-x-8">
           <Bubble
             tail="right"
-            className="absolute right-[calc(12%+7.5rem)] bottom-[calc(100%+1.4rem)] md:right-[calc(22%+10.5rem)] md:w-44"
+            className="st-float-2 absolute right-[calc(12%+7.5rem)] bottom-[calc(100%+1.4rem)] md:right-[calc(22%+10.5rem)] md:w-44"
           >
             جای تو یا جای ما؟
           </Bubble>
@@ -142,7 +142,7 @@ export function StoryFormats() {
 
         <div className="relative z-10 rounded-[2rem] border-2 border-(--st-line)/70 bg-(--st-sage-2) p-5 md:p-8 lg:grid lg:grid-cols-[1.25fr_3fr] lg:gap-8">
           <div className="mb-6 lg:mb-0 lg:self-center">
-            <h2 id="st-formats-title" className={`${HEADING} text-4xl md:text-5xl lg:text-[2.6rem]`}>
+            <h2 id="st-formats-title" className={`${HEADING} st-reveal text-4xl md:text-5xl lg:text-[2.6rem]`}>
               کجا آموزش
               <br />
               می‌دهیم؟
@@ -152,17 +152,17 @@ export function StoryFormats() {
             </p>
           </div>
 
-          <ul className="grid gap-4 sm:grid-cols-3">
+          <ul className="st-reveal grid gap-4 sm:grid-cols-3">
             {LAB_FORMATS.map((format, index) => (
               <li
                 key={format}
-                className="flex flex-col overflow-hidden rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) px-5 pt-5"
+                className="st-lift flex flex-col overflow-hidden rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) px-5 pt-5"
               >
                 <h3 className="font-display text-lg leading-snug font-bold text-(--st-ink)">{format}</h3>
                 <p className="mt-1.5 text-sm leading-6 text-(--st-ink)/75">{FORMAT_DETAILS[index]}</p>
                 <Cut
                   name={FORMAT_SCENES[index]}
-                  className="-mx-3 mt-auto w-[calc(100%+1.5rem)] max-w-72 self-center pt-4"
+                  className="st-lift-pic -mx-3 mt-auto w-[calc(100%+1.5rem)] max-w-72 self-center pt-4"
                 />
               </li>
             ))}

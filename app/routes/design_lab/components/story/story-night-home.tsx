@@ -7,7 +7,8 @@ import { StoryHero } from "~/routes/design_lab/components/story/story-hero";
 import { StoryFormats, StoryPath, StoryServices } from "~/routes/design_lab/components/story/story-sections";
 import type { Palette } from "~/routes/design_lab/components/story/story-palettes";
 import { GroundStrip } from "~/routes/design_lab/components/story/story-parts";
-import { GRAIN, THEME_CSS } from "~/routes/design_lab/components/story/story-theme";
+import { StoryRunner } from "~/routes/design_lab/components/story/story-runner";
+import { GRAIN, LIVELY_CSS, THEME_CSS } from "~/routes/design_lab/components/story/story-theme";
 
 /*===== Palette Choice =====*/
 /** `?palette=1`, `2`… (1-based, so the link reads like the picker); anything else opens the first. */
@@ -77,18 +78,21 @@ function PalettePicker({
  * design 6 the six styles of the chosen one. `Services` swaps the «چه چیزی یاد می‌دهیم؟» section (design 7's
  * pinned scroll scene); with a single palette there's nothing to pick, so the picker is left out. `ground` lays a
  * strip of path under the hero, so the hero's card stands on it and the steps start below it. `typed` adds the
- * hero's typewriter line (design 7).
+ * hero's typewriter line (design 7). `lively` turns on design 7's motion: the idle loops (LIVELY_CSS), the scroll
+ * reveals and Fandogh running after his ball between the steps and the services.
  */
 export function StoryNightHome({
   palettes,
   Services = StoryServices,
   ground = false,
   typed = false,
+  lively = false,
 }: {
   palettes: readonly Palette[];
   Services?: () => React.ReactNode;
   ground?: boolean;
   typed?: boolean;
+  lively?: boolean;
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const current = paletteIndex({ value: searchParams.get("palette"), count: palettes.length });
@@ -101,15 +105,21 @@ export function StoryNightHome({
     <div
       data-theme="dark"
       style={{ backgroundImage: GRAIN, ...palettes[current].tokens } as React.CSSProperties}
-      className="st-root min-h-svh overflow-x-clip bg-(--st-paper) text-(--st-ink) transition-colors duration-300 motion-reduce:transition-none"
+      className={cn(
+        "st-root min-h-svh overflow-x-clip bg-(--st-paper) text-(--st-ink) transition-colors duration-300 motion-reduce:transition-none",
+        lively && "st-lively",
+      )}
     >
       <style>{THEME_CSS}</style>
+      {lively && <style>{LIVELY_CSS}</style>}
       <StoryHeader />
       <main>
         <StoryHero typed={typed} />
-        {/* Pulled up over the hero's bottom edge, so its card stands on the path. */}
-        {ground && <GroundStrip className="z-10 -mt-7 md:-mt-9" />}
+        {/* Pulled up over the hero's bottom edge, so its card stands on the path. Not on phones, where it crowds the
+            card's edge under the dog's paws (the owner's call, 2026-10-20). */}
+        {ground && <GroundStrip className="z-10 -mt-7 max-sm:hidden md:-mt-9" />}
         <StoryPath />
+        {lively && <StoryRunner />}
         <Services />
         <StoryFormats />
         <StoryTrainer />

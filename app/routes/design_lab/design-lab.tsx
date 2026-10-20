@@ -49,7 +49,7 @@ export default function DesignLabPage({ loaderData }: Route.ComponentProps) {
       {variant === "4" && <StoryHome />}
       {variant === "5" && <StoryNightHome palettes={NIGHT_PALETTES} />}
       {variant === "6" && <StoryNightHome palettes={GOLD_STYLES} />}
-      {variant === "7" && <StoryNightHome palettes={GOLD_STYLES.slice(0, 1)} Services={StoryTeach} ground typed />}
+      {variant === "7" && <StoryNightHome palettes={GOLD_STYLES.slice(0, 1)} Services={StoryTeach} ground typed lively />}
       <DesignSwitch current={variant} />
     </>
   );

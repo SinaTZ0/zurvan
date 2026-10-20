@@ -15,32 +15,34 @@ export function StoryTrainer() {
     >
       {/* He hangs from the band above: the image is cut flat at the top, so the cut sits on the band's bottom edge. */}
       <div aria-hidden className="absolute -top-px left-[6%] z-10 md:left-[8%]">
-        <Cut name="upside" className="w-20 md:w-28" />
+        <Cut name="upside" className="st-swing w-20 md:w-28" />
       </div>
       <Bubble
         tail="left"
-        className="absolute top-3 left-[calc(6%+5.4rem)] z-10 hidden w-40 sm:block md:top-5 md:left-[calc(8%+7.6rem)]"
+        className="st-float absolute top-3 left-[calc(6%+5.4rem)] z-10 hidden w-40 sm:block md:top-5 md:left-[calc(8%+7.6rem)]"
       >
         وارونه‌ام، ولی هنوز دوستتم!
       </Bubble>
 
       {/* Foliage in the far corner, out in the page margin, so it never runs into the copy. */}
       <div aria-hidden className="absolute bottom-6 -left-28 hidden w-32 xl:block">
-        <Cut name="plants" className="w-full -scale-x-100" />
+        <Cut name="plants" className="st-sway w-full -scale-x-100" />
       </div>
 
       <div className="grid items-end gap-x-8 gap-y-8 md:grid-cols-[auto_1fr] lg:grid-cols-[auto_auto_1fr] lg:gap-x-10">
         {/*------ Dog + framed photo ------*/}
         <div className="flex items-end gap-3 md:col-span-1 lg:contents">
           <div className="relative w-[7.5rem] shrink-0 pt-16 sm:w-40 lg:w-56">
-            <Cut name="plants" className="absolute right-0 bottom-0 w-24 lg:w-36" />
-            <Cut name="sit" className="relative w-full -scale-x-100" />
-            <Bubble tail="left" className="absolute top-0 right-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg">
+            <Cut name="plants" className="st-sway-2 absolute right-0 bottom-0 w-24 lg:w-36" />
+            <div className="st-wiggle-late st-pet relative">
+              <Cut name="sit" className="block w-full -scale-x-100" />
+            </div>
+            <Bubble tail="left" className="st-float-2 absolute top-0 right-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg">
               {HEAD_TRAINER.firstName} مربی منه!
             </Bubble>
           </div>
 
-          <figure className="flex-1 rounded-sm border-2 border-(--st-line)/80 bg-(--st-paper-2) p-2 md:p-2.5 lg:w-72 lg:flex-none">
+          <figure className="st-reveal-pop flex-1 rounded-sm border-2 border-(--st-line)/80 bg-(--st-paper-2) p-2 md:p-2.5 lg:w-72 lg:flex-none">
             <img
               src={photo.src}
               srcSet={photo.srcSet}
@@ -56,7 +58,7 @@ export function StoryTrainer() {
 
         {/*------ Copy ------*/}
         <div className="md:self-center">
-          <h2 id="st-trainer-title" className={`${HEADING} text-3xl md:text-[2.6rem]`}>
+          <h2 id="st-trainer-title" className={`${HEADING} st-reveal text-3xl md:text-[2.6rem]`}>
             یک مربی.
             <br />
             یک همراهی ماندگار.
@@ -95,7 +97,7 @@ export function StoryClosing() {
     <section aria-labelledby="st-closing-title" style={CLOSING_TOKENS} className="relative z-10 bg-(--st-close)">
       <div className="mx-auto grid max-w-6xl items-end gap-6 px-4 pt-12 md:px-8 md:pt-16">
         <div className="pb-[17rem] md:min-h-[27rem] md:pe-[18rem] md:pb-16">
-          <h2 id="st-closing-title" className={`${HEADING} text-4xl md:text-6xl`}>
+          <h2 id="st-closing-title" className={`${HEADING} st-reveal text-4xl md:text-6xl`}>
             هر وقت آماده‌ای،
             <br />
             ما هم هستیم
@@ -106,12 +108,12 @@ export function StoryClosing() {
 
       <div className="pointer-events-none absolute bottom-0 left-4 z-20 w-44 md:left-[8%] md:w-64">
         <div className="relative translate-y-[16%]">
-          <Cut name="plants" className="absolute bottom-[16%] left-[92%] z-0 w-24 md:w-36" />
-          <Cut name="plants" className="absolute right-[88%] bottom-[16%] z-0 w-24 -scale-x-100 md:w-32" />
-          <Cut name="leash" className="relative z-10 w-full" />
-          <Ticks className="absolute top-[14%] -right-6 z-20 w-7 md:-right-8 md:w-8" />
-          <Ticks className="absolute top-[22%] -left-5 z-20 w-6 -scale-x-100 md:-left-7 md:w-7" />
-          <Bubble tail="right" className="absolute -top-6 right-[60%] z-20 md:-top-4">
+          <Cut name="plants" className="st-sway absolute bottom-[16%] left-[92%] z-0 w-24 md:w-36" />
+          <Cut name="plants" className="st-sway-2 absolute right-[88%] bottom-[16%] z-0 w-24 -scale-x-100 md:w-32" />
+          <Cut name="leash" className="st-hop relative z-10 w-full" />
+          <Ticks className="st-ticks absolute top-[14%] -right-6 z-20 w-7 md:-right-8 md:w-8" />
+          <Ticks className="st-ticks absolute top-[22%] -left-5 z-20 w-6 -scale-x-100 [animation-delay:-.7s] md:-left-7 md:w-7" />
+          <Bubble tail="right" className="st-float absolute -top-6 right-[60%] z-20 md:-top-4">
             بریم؟
           </Bubble>
         </div>

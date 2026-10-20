@@ -84,7 +84,7 @@ export function StoryHero({ typed = false }: { typed?: boolean }) {
 
       {/* Foliage in the copy's bottom corner, as in the mockup; the card covers that corner on narrow screens. */}
       <div aria-hidden className="absolute -right-6 bottom-0 hidden w-40 lg:block xl:w-48">
-        <Cut name="plants" eager className="w-full" />
+        <Cut name="plants" eager className="st-sway w-full" />
       </div>
 
       <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr]">
@@ -117,13 +117,16 @@ export function StoryHero({ typed = false }: { typed?: boolean }) {
             aria-hidden
             className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-(--st-line)/70 bg-(--st-sage)"
           />
-          <Cut name="plants" eager className="absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-56" />
+          <Cut name="plants" eager className="st-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-56" />
           <Cut
             name="plants"
             eager
-            className="absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-44"
+            className="st-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-44"
           />
-          <Cut name="paws" eager className="st-rise relative z-10 w-full" />
+          {/* The wrapper wiggles (design 7) while the image rises, so the two animations don't fight over one transform. */}
+          <div className="st-wiggle st-pet relative z-10">
+            <Cut name="paws" eager className="st-rise block w-full" />
+          </div>
           <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[7.2rem] sm:w-44 lg:w-52">
             سلام، من فندقم! جای خوبی اومدی.
           </Bubble>

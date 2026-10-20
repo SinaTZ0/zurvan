@@ -308,11 +308,12 @@ export function StoryTeach() {
                   <path
                     key={d}
                     d={d}
-                    className={
+                    className={cn(
+                      "st-pennant",
                       index % 3 === 1
                         ? "fill-[color-mix(in_srgb,var(--st-red)_60%,var(--st-paper))]"
-                        : "fill-[color-mix(in_srgb,var(--st-ink)_14%,var(--st-paper))]"
-                    }
+                        : "fill-[color-mix(in_srgb,var(--st-ink)_14%,var(--st-paper))]",
+                    )}
                   />
                 ))}
               </svg>
@@ -330,14 +331,14 @@ export function StoryTeach() {
                   className="fill-[color-mix(in_srgb,var(--st-ink)_9%,var(--st-paper))]"
                 />
               </svg>
-              <Cut name="hedge" className="absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
-              <Cut name="hedge" className="absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block" />
+              <Cut name="hedge" className="st-sway absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
+              <Cut name="hedge" className="st-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block" />
               <Cut
                 name="ground"
                 className="absolute bottom-[3%] left-[2%] w-56 md:w-80 lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
               />
-              <Cut name="plants" className="absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
-              <Cut name="plants" className="absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]" />
+              <Cut name="plants" className="st-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
+              <Cut name="plants" className="st-sway-2 absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]" />
 
               {pinned && (
                 <StepCount shown={shown} className="absolute top-7 right-8 hidden text-lg lg:block xl:text-xl" />
@@ -364,7 +365,7 @@ export function StoryTeach() {
                       style={{ height: `${item.rise * 100}%` }}
                       className="relative flex max-w-full justify-center"
                     >
-                      <Cut name={item.pose} className="h-full w-auto max-w-full object-contain object-bottom" />
+                      <Cut name={item.pose} className="st-breathe h-full w-auto max-w-full object-contain object-bottom" />
                       {/* On wide screens the bubble sits by his head (he faces right); on phones it's past him, in the plate's free corner. */}
                       <motion.div
                         {...bubble}
@@ -373,7 +374,7 @@ export function StoryTeach() {
                           item.bubbleAt ?? "bottom-[86%] left-[64%]",
                         )}
                       >
-                        <Bubble tail="left" className="xl:px-5 xl:py-3 xl:text-xl">
+                        <Bubble tail="left" className="st-float xl:px-5 xl:py-3 xl:text-xl">
                           {item.says}
                         </Bubble>
                       </motion.div>
@@ -382,7 +383,7 @@ export function StoryTeach() {
                       {...bubble}
                       className="absolute top-[4%] left-[calc(100%-1.75rem)] origin-bottom-left lg:hidden"
                     >
-                      <Bubble tail="left" className="max-w-[8.5rem] md:max-w-none">
+                      <Bubble tail="left" className="st-float max-w-[8.5rem] md:max-w-none">
                         {item.says}
                       </Bubble>
                     </motion.div>
