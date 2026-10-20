@@ -101,7 +101,7 @@ export function StoryHero() {
 
       <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:w-full lg:flex-1 lg:grid-cols-[1.05fr_1fr] lg:items-center">
         {/*------ Copy ------*/}
-        <div className="pt-10 pb-8 lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)]">
+        <div className="pt-7 pb-8 sm:pt-10 lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)]">
           {/* On lg, the headline follows the height too (with a rem part, so browser zoom still enlarges it), and
               the width on a narrow lg screen, where its column is tight. */}
           <h1
@@ -148,7 +148,7 @@ export function StoryHero() {
           <div className="st-wiggle st-pet relative z-10">
             <Cut name="paws" eager className="st-rise block w-full" />
           </div>
-          <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[7.2rem] sm:w-44 lg:w-52">
+          <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
             سلام، من فندقم! جای خوبی اومدی.
           </Bubble>
         </div>

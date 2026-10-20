@@ -130,7 +130,7 @@ function ChalkGround() {
  */
 export function StoryRunner() {
   return (
-    <div aria-hidden className="st-lane pointer-events-none relative h-32 overflow-x-clip md:h-40">
+    <div aria-hidden className="st-lane pointer-events-none relative h-28 overflow-x-clip md:h-40">
       <style>{RUNNER_CSS}</style>
       <ChalkGround />
 

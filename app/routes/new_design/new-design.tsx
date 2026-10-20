@@ -1,6 +1,6 @@
 import { StoryClosing, StoryFooter, StoryTrainer } from "~/routes/new_design/components/story-closing";
 import { StoryFormats } from "~/routes/new_design/components/story-formats";
-import { StoryHeader } from "~/routes/new_design/components/story-header";
+import { StoryHeader, StoryTabBar } from "~/routes/new_design/components/story-header";
 import { StoryHero } from "~/routes/new_design/components/story-hero";
 import { GroundStrip } from "~/routes/new_design/components/story-parts";
 import { StoryRunner } from "~/routes/new_design/components/story-runner";
@@ -44,6 +44,7 @@ export default function NewDesignPage() {
         <StoryClosing />
       </main>
       <StoryFooter />
+      <StoryTabBar />
     </div>
   );
 }

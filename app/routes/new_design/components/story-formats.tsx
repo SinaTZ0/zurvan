@@ -36,7 +36,7 @@ export function StoryFormats() {
           </Bubble>
         </div>
 
-        <div className="relative z-10 rounded-[2rem] border-2 border-(--st-line)/70 bg-(--st-sage-2) p-5 md:p-8 lg:grid lg:grid-cols-[1.25fr_3fr] lg:gap-8">
+        <div className="relative z-10 rounded-[2rem] border-2 border-(--st-line)/70 bg-(--st-sage-2) p-4 sm:p-5 md:p-8 lg:grid lg:grid-cols-[1.25fr_3fr] lg:gap-8">
           <div className="mb-6 lg:mb-0 lg:self-center">
             <h2 id="st-formats-title" className={`${HEADING} st-reveal text-4xl md:text-5xl lg:text-[2.6rem]`}>
               کجا آموزش
@@ -48,17 +48,21 @@ export function StoryFormats() {
             </p>
           </div>
 
-          <ul className="st-reveal grid gap-4 sm:grid-cols-3">
+          {/* On phones each place is a row, its scene beside the words, so the three fit on about one screen
+              instead of three tall cards. */}
+          <ul className="st-reveal grid gap-3 sm:grid-cols-3 sm:gap-4">
             {FORMATS.map((format, index) => (
               <li
                 key={format}
-                className="st-lift flex flex-col overflow-hidden rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) px-5 pt-5"
+                className="st-lift grid grid-cols-[1fr_8.5rem] items-center gap-x-3 overflow-hidden rounded-2xl border border-(--st-line)/25 bg-(--st-paper-2) py-4 ps-4 pe-1 sm:flex sm:flex-col sm:items-stretch sm:px-5 sm:pt-5 sm:pb-0"
               >
-                <h3 className="font-display text-lg leading-snug font-bold text-(--st-ink)">{format}</h3>
-                <p className="mt-1.5 text-sm leading-6 text-(--st-ink)/75">{FORMAT_DETAILS[index]}</p>
+                <div>
+                  <h3 className="font-display text-base leading-snug font-bold text-(--st-ink) sm:text-lg">{format}</h3>
+                  <p className="mt-1.5 text-sm leading-6 text-(--st-ink)/75">{FORMAT_DETAILS[index]}</p>
+                </div>
                 <Cut
                   name={FORMAT_SCENES[index]}
-                  className="st-lift-pic -mx-3 mt-auto w-[calc(100%+1.5rem)] max-w-72 self-center pt-4"
+                  className="st-lift-pic w-full sm:-mx-3 sm:mt-auto sm:w-[calc(100%+1.5rem)] sm:max-w-72 sm:self-center sm:pt-4"
                 />
               </li>
             ))}

@@ -19,7 +19,7 @@ export function StoryTrainer() {
       </div>
       <Bubble
         tail="left"
-        className="st-float absolute top-3 left-[calc(6%+5.4rem)] z-10 hidden w-40 sm:block md:top-5 md:left-[calc(8%+7.6rem)]"
+        className="st-float absolute top-6 left-[calc(6%+5.4rem)] z-10 w-40 md:top-5 md:left-[calc(8%+7.6rem)]"
       >
         وارونه‌ام، ولی هنوز دوستتم!
       </Bubble>
@@ -98,7 +98,7 @@ export function StoryClosing() {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-0 left-4 z-20 w-44 md:left-[8%] md:w-64">
+      <div className="pointer-events-none absolute bottom-0 left-7 z-20 w-44 md:left-[8%] md:w-64">
         <div className="relative translate-y-[16%]">
           <Cut name="plants" className="st-sway absolute bottom-[16%] left-[92%] z-0 w-24 md:w-36" />
           <Cut name="plants" className="st-sway-2 absolute right-[88%] bottom-[16%] z-0 w-24 -scale-x-100 md:w-32" />
@@ -118,14 +118,15 @@ export function StoryClosing() {
 export function StoryFooter() {
   const linkClass =
     "rounded underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--st-ink)";
+  // Below lg the bottom padding clears the floating tab bar.
   return (
-    <footer className="mx-auto max-w-6xl px-4 pt-20 pb-28 md:px-8 md:pt-14">
-      <div className="grid gap-8 border-t border-(--st-line)/25 pt-8 text-sm text-(--st-ink)/85 md:grid-cols-4">
-        <div>
+    <footer className="mx-auto max-w-6xl px-4 pt-20 pb-32 md:px-8 md:pt-14 lg:pb-16">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-7 border-t border-(--st-line)/25 pt-8 text-sm text-(--st-ink)/85 md:grid-cols-4">
+        <div className="col-span-2 md:col-span-1">
           <p className="font-display text-2xl font-black text-(--st-ink)">زروان</p>
           <p className="mt-1">{CENTER_DESCRIPTOR}</p>
         </div>
-        <div className="space-y-2">
+        <div className="col-span-2 space-y-2 md:col-span-1">
           <p>
             تلفن:{" "}
             <a href={`tel:${CENTER_PHONE.tel}`} dir="ltr" className={`inline-block ${linkClass}`}>
@@ -134,7 +135,7 @@ export function StoryFooter() {
           </p>
           <p>محدوده‌ی خدمات: {CENTER_SERVICE_AREA}</p>
         </div>
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 md:flex-col">
+        <ul className="flex flex-col gap-y-2.5">
           {CENTER_LINKS.map((item) => (
             <li key={item.href}>
               <a href={item.href} target="_blank" rel="noreferrer noopener" className={linkClass}>
@@ -143,7 +144,7 @@ export function StoryFooter() {
             </li>
           ))}
         </ul>
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 md:flex-col">
+        <ul className="flex flex-col gap-y-2.5">
           <li>
             <Link to="/privacy" className={linkClass}>
               حریم خصوصی

@@ -133,13 +133,13 @@ function Marker({ index }: { index: number }) {
  */
 export function StoryTrail() {
   return (
-    <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-16 md:px-8 lg:pt-20">
+    <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-10 md:px-8 md:pb-16 lg:pt-20">
       <ChalkDefs />
       <h2 id="st-path-title" className={`${HEADING} st-reveal text-center text-3xl md:text-5xl`}>
         از کجا شروع می‌شود؟
       </h2>
 
-      <div className="st-reveal relative mx-auto mt-32 max-w-xl rounded-[2rem] bg-(--st-paper-2) px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">
+      <div className="st-reveal relative mx-auto mt-40 max-w-xl rounded-[2rem] bg-(--st-paper-2) px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">
         <SketchedEdge />
 
         {/*------ Props on the edges: the signpost where the trail starts, a dropped bone on the bottom ------*/}
@@ -155,7 +155,7 @@ export function StoryTrail() {
         </div>
         <Bubble
           tail="left"
-          className="st-float absolute bottom-[calc(100%+3rem)] left-[calc(6rem+6.75rem)] z-10 hidden w-32 text-sm sm:block lg:left-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)]"
+          className="st-float absolute bottom-[calc(100%+5rem)] left-[11.5rem] z-10 w-28 text-sm sm:left-[calc(6rem+6.75rem)] sm:w-32 lg:left-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)]"
         >
           قفل‌ها دارن باز می‌شن!
         </Bubble>

@@ -233,7 +233,9 @@ export function StoryTeach() {
   const insetY = useTransform(arrival, [0.25, 1], [6, 0]);
   const insetX = useTransform(arrival, [0.25, 1], [5, 0]);
   const radius = useTransform(arrival, [0.25, 1], [32, 0]);
-  const clipPath = useMotionTemplate`inset(${insetY}svh ${insetX}vw round ${radius}px)`;
+  // Phones skip the top and bottom inset (`--st-clip-y: 0`): their heading sits in the top few svh, which the inset
+  // would slice through while the card arrives.
+  const clipPath = useMotionTemplate`inset(calc(${insetY}svh * var(--st-clip-y, 1)) ${insetX}vw round ${radius}px)`;
 
   /*------ Steps: which service is open ------*/
   const { scrollYProgress: steps } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
@@ -258,7 +260,7 @@ export function StoryTeach() {
           // to a motion value even after the prop is gone.
           key={pinned ? "pinned" : "plain"}
           style={pinned ? { clipPath } : undefined}
-          className={cn("bg-(--st-paper-2)", pinned ? "absolute inset-0" : "py-16")}
+          className={cn("bg-(--st-paper-2) max-lg:[--st-clip-y:0]", pinned ? "absolute inset-0" : "py-16")}
         >
           <div className="mx-auto grid h-full max-w-[88rem] grid-rows-[auto_auto_1fr] gap-x-10 px-4 pt-[max(1.25rem,4svh)] pb-24 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:grid-rows-[auto_1fr] lg:pb-20 xl:gap-x-16">
             {/* Sizes are fluid (FLUID); on short wide screens the intro is dropped too, as the open service needs the room. */}
@@ -287,7 +289,7 @@ export function StoryTeach() {
               aria-hidden
               style={{ backgroundImage: GRAIN }}
               className={cn(
-                "relative mt-4 h-[26svh] overflow-hidden rounded-[1.5rem] border-2 border-(--st-line)/10 bg-(--st-paper) max-lg:[@media(max-height:44rem)]:h-[20svh]",
+                "relative mt-4 h-[33svh] overflow-hidden rounded-[1.5rem] border-2 border-(--st-line)/10 bg-(--st-paper) max-lg:[@media(max-height:44rem)]:h-[22svh]",
                 "lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:h-auto lg:rounded-[2.5rem]",
                 // Unpinned, the list runs long: the plate stays in view beside it instead of stretching down it.
                 !pinned && "lg:sticky lg:top-8 lg:h-[36rem] lg:self-start",
@@ -338,7 +340,7 @@ export function StoryTeach() {
               />
               <Cut
                 name="ground"
-                className="absolute bottom-[3%] left-[2%] w-56 md:w-80 lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
+                className="absolute bottom-[3%] left-[2%] w-64 md:w-80 lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
               />
               <Cut name="plants" className="st-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
               <Cut
@@ -362,7 +364,7 @@ export function StoryTeach() {
                 return (
                   <div
                     key={item.title}
-                    className="absolute bottom-[6%] left-[2%] flex h-[80%] w-56 items-end justify-center md:w-80 lg:inset-x-0 lg:bottom-[9%] lg:h-[60%] lg:max-h-[30rem] lg:w-auto"
+                    className="absolute bottom-[6%] left-[2%] flex h-[82%] w-64 items-end justify-center md:w-80 lg:inset-x-0 lg:bottom-[9%] lg:h-[60%] lg:max-h-[30rem] lg:w-auto"
                   >
                     <motion.div
                       initial={false}
