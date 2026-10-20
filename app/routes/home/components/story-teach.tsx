@@ -6,10 +6,10 @@ import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "rea
 
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { SERVICES } from "~/routes/new_design/content";
-import { Bubble, Cut, HEADING } from "~/routes/new_design/components/story-parts";
-import { GRAIN } from "~/routes/new_design/components/story-theme";
-import type { CutName } from "~/routes/new_design/components/story-parts";
+import { SERVICES } from "~/routes/home/content";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Content =====*/
 // What each service opens into. A draft from docs/zurvan-courses.md (the course cards and the owner's notes) for the
@@ -21,7 +21,7 @@ type ServiceTitle = (typeof SERVICES)[number]["title"];
 // `bubbleAt` places the wide-screen bubble by the head when the default (up and to the right) doesn't fit the pose.
 const TEACH: Record<
   ServiceTitle,
-  { points: readonly string[]; pose: CutName; rise: number; says: string; bubbleAt?: string }
+  { points: readonly string[]; pose: MascotCutName; rise: number; says: string; bubbleAt?: string }
 > = {
   "آموزش پایه و پیشرفته": {
     points: [
@@ -165,8 +165,8 @@ function useStepSnap({ section, enabled }: { section: React.RefObject<HTMLElemen
 /** «۳ از ۵»: where the visitor is in the pinned stretch. Decorative; the open item already says it. */
 function StepCount({ shown, className }: { shown: number; className?: string }) {
   return (
-    <p aria-hidden className={cn("shrink-0 font-display text-(--st-ink)/55 tabular-nums", className)}>
-      <span className="text-(--st-ink)">{formatNumberFa(shown + 1)}</span> از {formatNumberFa(ITEMS.length)}
+    <p aria-hidden className={cn("shrink-0 font-display text-foreground/55 tabular-nums", className)}>
+      <span className="text-foreground">{formatNumberFa(shown + 1)}</span> از {formatNumberFa(ITEMS.length)}
     </p>
   );
 }
@@ -208,8 +208,8 @@ function ServiceTitle({ title, open, stacked }: { title: string; open: boolean; 
         style={{ fontSize: FLUID.service }}
         className={cn(
           "origin-top-right font-display leading-[1.25] font-bold text-balance transition-[scale,color] duration-500 motion-reduce:transition-none",
-          open ? "text-(--st-ink)" : "scale-(--closed) text-(--st-ink)/45",
-          stacked && "max-lg:scale-100 max-lg:text-(--st-ink)",
+          open ? "text-foreground" : "scale-(--closed) text-foreground/45",
+          stacked && "max-lg:scale-100 max-lg:text-foreground",
         )}
       >
         {title}
@@ -263,7 +263,7 @@ export function StoryTeach() {
           // to a motion value even after the prop is gone.
           key={pinned ? "pinned" : "plain"}
           style={pinned ? { clipPath } : undefined}
-          className={cn("bg-(--st-paper-2) max-lg:[--st-clip-y:0]", pinned ? "absolute inset-0" : "py-16")}
+          className={cn("bg-card max-lg:[--st-clip-y:0]", pinned ? "absolute inset-0" : "py-16")}
         >
           <div
             className={cn(
@@ -276,7 +276,7 @@ export function StoryTeach() {
             {/*------ Title ------*/}
             <header>
               <div className="flex items-baseline justify-between gap-4">
-                <h2 id="st-teach-title" style={{ fontSize: FLUID.title }} className={HEADING}>
+                <h2 id="st-teach-title" style={{ fontSize: FLUID.title }} className={DISPLAY_HEADING}>
                   چی می‌تونم یاد بگیرم؟
                 </h2>
                 {/* On phones the plate is too short for a page number beside the bubble, so it sits here. */}
@@ -284,7 +284,7 @@ export function StoryTeach() {
               </div>
               <p
                 style={{ fontSize: FLUID.intro }}
-                className="mt-3 hidden max-w-[28em] leading-[1.75] text-(--st-ink)/70 md:block lg:[@media(max-height:46rem)]:hidden"
+                className="mt-3 hidden max-w-[28em] leading-[1.75] text-foreground/70 md:block lg:[@media(max-height:46rem)]:hidden"
               >
                 {HEAD_TRAINER.firstName} با همه‌ی نژادها و توی هر سنی کار می‌کنه. این پنج تا کاریه که انجام می‌ده.
               </p>
@@ -296,9 +296,8 @@ export function StoryTeach() {
                 service, filling the screen's spare height, with the bubble over his head. */}
             <div
               aria-hidden
-              style={{ backgroundImage: GRAIN }}
               className={cn(
-                "relative mt-4 overflow-hidden rounded-[1.5rem] border-2 border-(--st-line)/10 bg-(--st-paper)",
+                "relative mt-4 overflow-hidden rounded-[1.5rem] border-2 border-foreground/10 bg-background paper-grain",
                 "lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:h-auto lg:rounded-[2.5rem]",
                 // Unpinned, the list runs long: the plate stays in view beside it instead of stretching down it.
                 !pinned && "h-[min(24rem,55svh)] lg:sticky lg:top-8 lg:h-[36rem] lg:self-start",
@@ -313,17 +312,17 @@ export function StoryTeach() {
                   d="M0 6 Q200 46 400 6"
                   fill="none"
                   strokeWidth={1.5}
-                  className="stroke-[color-mix(in_srgb,var(--st-ink)_22%,var(--st-paper))]"
+                  className="stroke-[color-mix(in_srgb,varforeground_22%,varbackground)]"
                 />
                 {PENNANTS.map((d, index) => (
                   <path
                     key={d}
                     d={d}
                     className={cn(
-                      "st-pennant",
+                      "lively-pennant",
                       index % 3 === 1
-                        ? "fill-[color-mix(in_srgb,var(--st-red)_60%,var(--st-paper))]"
-                        : "fill-[color-mix(in_srgb,var(--st-ink)_14%,var(--st-paper))]",
+                        ? "fill-[color-mix(in_srgb,varprimary_60%,varbackground)]"
+                        : "fill-[color-mix(in_srgb,varforeground_14%,varbackground)]",
                     )}
                   />
                 ))}
@@ -335,26 +334,29 @@ export function StoryTeach() {
               >
                 <path
                   d="M0 30 C50 10 100 12 150 26 S260 4 320 20 S380 22 400 14 V100 H0 Z"
-                  className="fill-[color-mix(in_srgb,var(--st-ink)_5%,var(--st-paper))]"
+                  className="fill-[color-mix(in_srgb,varforeground_5%,varbackground)]"
                 />
                 <path
                   d="M0 58 C70 36 120 40 180 54 S290 30 345 44 S390 46 400 40 V100 H0 Z"
-                  className="fill-[color-mix(in_srgb,var(--st-ink)_9%,var(--st-paper))]"
+                  className="fill-[color-mix(in_srgb,varforeground_9%,varbackground)]"
                 />
               </svg>
-              <Cut name="hedge" className="st-sway absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
-              <Cut
+              <MascotCut name="hedge" className="lively-sway absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
+              <MascotCut
                 name="hedge"
-                className="st-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block"
+                className="lively-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block"
               />
-              <Cut
+              <MascotCut
                 name="ground"
                 className="absolute bottom-[3%] left-[2%] w-[min(20rem,90%)] md:left-[6%] md:w-[60%] lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
               />
-              <Cut name="plants" className="st-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
-              <Cut
+              <MascotCut
                 name="plants"
-                className="st-sway-2 absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]"
+                className="lively-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block"
+              />
+              <MascotCut
+                name="plants"
+                className="lively-sway-2 absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]"
               />
 
               {pinned && (
@@ -382,9 +384,9 @@ export function StoryTeach() {
                         style={{ height: `${item.rise * 100}%` }}
                         className="relative flex max-w-full justify-center"
                       >
-                        <Cut
+                        <MascotCut
                           name={item.pose}
-                          className="st-breathe h-full w-auto max-w-full object-contain object-bottom"
+                          className="lively-breathe h-full w-auto max-w-full object-contain object-bottom"
                         />
                         {/* On wide screens the bubble sits by his head (he faces right); below lg it's on the plate (after this box). */}
                         <motion.div
@@ -394,9 +396,9 @@ export function StoryTeach() {
                             item.bubbleAt ?? "bottom-[86%] left-[64%]",
                           )}
                         >
-                          <Bubble tail="left" className="st-float xl:px-5 xl:py-3 xl:text-xl">
+                          <ChalkBubble tail="left" className="lively-float xl:px-5 xl:py-3 xl:text-xl">
                             {item.says}
-                          </Bubble>
+                          </ChalkBubble>
                         </motion.div>
                       </motion.div>
                     </div>
@@ -407,9 +409,9 @@ export function StoryTeach() {
                       {...bubble}
                       className="absolute top-[4%] right-3 origin-bottom-left md:right-auto md:left-[46%] lg:hidden"
                     >
-                      <Bubble tail="left" className="st-float max-w-[11rem] md:max-w-none">
+                      <ChalkBubble tail="left" className="lively-float max-w-[11rem] md:max-w-none">
                         {item.says}
-                      </Bubble>
+                      </ChalkBubble>
                     </motion.div>
                   </Fragment>
                 );
@@ -422,8 +424,8 @@ export function StoryTeach() {
             <div className="relative mt-5 lg:mt-8 lg:self-center">
               {/* The rail: its gold fill follows the scroll through the pinned stretch. */}
               {pinned && (
-                <div aria-hidden className="absolute inset-y-0 start-0 w-0.5 bg-(--st-line)/15">
-                  <motion.div style={{ scaleY: steps }} className="h-full w-full origin-top bg-(--st-red)" />
+                <div aria-hidden className="absolute inset-y-0 start-0 w-0.5 bg-foreground/15">
+                  <motion.div style={{ scaleY: steps }} className="h-full w-full origin-top bg-primary" />
                 </div>
               )}
               <ul className={cn(pinned && "ps-5 max-lg:grid md:ps-7")}>
@@ -451,17 +453,17 @@ export function StoryTeach() {
                         <div className="overflow-hidden">
                           <p
                             style={{ fontSize: FLUID.detail }}
-                            className="pt-[0.75em] leading-[1.75] text-(--st-ink)/85"
+                            className="pt-[0.75em] leading-[1.75] text-foreground/85"
                           >
                             {item.detail}
                           </p>
                           <ul
                             style={{ fontSize: FLUID.points }}
-                            className="mt-3 space-y-1.5 pb-2 leading-[1.75] text-(--st-ink)/70 max-lg:[@media(max-height:44rem)]:hidden"
+                            className="mt-3 space-y-1.5 pb-2 leading-[1.75] text-foreground/70 max-lg:[@media(max-height:44rem)]:hidden"
                           >
                             {item.points.map((point) => (
                               <li key={point} className="flex gap-2.5">
-                                <span aria-hidden className="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-(--st-red)" />
+                                <span aria-hidden className="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-primary" />
                                 {point}
                               </li>
                             ))}

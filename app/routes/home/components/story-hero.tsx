@@ -2,8 +2,11 @@ import { cn } from "cn";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { Bubble, Cut, EvaluationButton, HEADING } from "~/routes/new_design/components/story-parts";
-import { BRICK, GRAIN } from "~/routes/new_design/components/story-theme";
+import { BRICK } from "~/lib/brick";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { EvaluationButton } from "~/components/evaluation-button";
+import { MascotCut } from "~/components/mascot-cut";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Typed Word =====*/
 // The headline types what the dog learns with the trainer, one skill at a time, each in its own colour. First person
@@ -89,7 +92,7 @@ function TrainerName() {
         <path
           d="M118 4.5C88 8 52 9 3 6.5C30 10.5 62 12 92 11"
           pathLength={1}
-          stroke="var(--st-red)"
+          stroke="varprimary"
           strokeWidth={3.2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -184,11 +187,11 @@ function BarkingDog() {
   return (
     <>
       {/* The wrapper wiggles while the image rises, so the two animations don't fight over one transform. */}
-      <div className="st-wiggle st-pet relative z-10" onPointerEnter={bark} onPointerDown={bark}>
-        <Cut name="paws" eager className={cn("st-rise block w-full", frame && "invisible")} />
+      <div className="lively-wiggle lively-pet relative z-10" onPointerEnter={bark} onPointerDown={bark}>
+        <MascotCut name="paws" eager className={cn("st-rise block w-full", frame && "invisible")} />
         {ready &&
           BARK_FRAMES.map((name) => (
-            <Cut
+            <MascotCut
               key={name}
               name={name}
               eager
@@ -199,9 +202,9 @@ function BarkingDog() {
       {/* The bark is a sound, so its bubble is decoration: the page says nothing new while he barks. */}
       {frame && (
         <div aria-hidden className="absolute top-[36%] right-[88%] z-20">
-          <Bubble tail="right" className="st-bark px-3 py-1.5">
+          <ChalkBubble tail="right" className="st-bark px-3 py-1.5">
             هاپ هاپ!
-          </Bubble>
+          </ChalkBubble>
         </div>
       )}
     </>
@@ -230,7 +233,8 @@ export function StoryHero() {
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
           .st-rise { animation: st-rise .9s cubic-bezier(.2,.8,.25,1) both; }
-          .st-pop { animation: st-pop .45s cubic-bezier(.3,1.5,.5,1) .75s both; transform-origin: 85% 100%; }
+          /* It pops in, then floats (the shared lively-float keyframes): the float comes second, so it wins once it starts. */
+          .st-pop { animation: st-pop .45s cubic-bezier(.3,1.5,.5,1) .75s both, lively-float 3.4s ease-in-out 1.3s infinite alternate; transform-origin: 85% 100%; }
         }
         @keyframes st-rise {
           from { transform: translateY(34%); clip-path: inset(-200px -200px 13% -200px); }
@@ -251,7 +255,7 @@ export function StoryHero() {
 
       {/* Foliage in the copy's bottom corner, as in the mockup; the card covers that corner on narrow screens. */}
       <div aria-hidden className="absolute -right-6 bottom-0 hidden w-40 lg:block xl:w-48">
-        <Cut name="plants" eager className="st-sway w-full" />
+        <MascotCut name="plants" eager className="lively-sway w-full" />
       </div>
 
       <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:w-full lg:flex-1 lg:grid-cols-[1.05fr_1fr] lg:items-center">
@@ -264,9 +268,9 @@ export function StoryHero() {
           <h1
             id="st-hero-title"
             className={cn(
-              HEADING,
+              DISPLAY_HEADING,
               "text-[2.6rem] sm:text-6xl lg:text-[clamp(2.75rem,calc(0.5rem+min(7.5svh,5.2vw)),4.5rem)]",
-              // After the sizes: `cn` lets a later font size drop an earlier `leading-*`. Taller than HEADING's 1.2,
+              // After the sizes: `cn` lets a later font size drop an earlier `leading-*`. Taller than DISPLAY_HEADING's 1.2,
               // so the underline under «طلا» clears the «گ» on the line below.
               "leading-[1.4]",
             )}
@@ -280,7 +284,7 @@ export function StoryHero() {
             <span className="sr-only">: بشینم، بمونم، صدام کنی بیام، آروم باشم و کنار پات راه برم</span>
             <TypedWord />
           </h1>
-          <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-(--st-ink)/80 lg:mx-0">
+          <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-foreground/80 lg:mx-0">
             آموزش خصوصی سگ در تهران،
             <br />
             در محل خودتون یا توی مرکز.
@@ -295,24 +299,24 @@ export function StoryHero() {
           {/* The card is a brick wall he looks over, with the page's grain on the bricks. */}
           <div
             aria-hidden
-            style={{ backgroundImage: `${GRAIN}, ${BRICK}` }}
-            className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-(--st-line)/70 bg-(--st-sage) lg:-bottom-[100svh]"
+            style={{ backgroundImage: `var(--grain), ${BRICK}` }}
+            className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-foreground/70 bg-inverse lg:-bottom-[100svh]"
           />
           {/* On lg, the bushes are a share of the dog's width (their lg sizes at his 21rem), so they shrink with him. */}
-          <Cut
+          <MascotCut
             name="plants"
             eager
-            className="st-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-[67%]"
+            className="lively-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-[67%]"
           />
-          <Cut
+          <MascotCut
             name="plants"
             eager
-            className="st-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
+            className="lively-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
           />
           <BarkingDog />
-          <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
+          <ChalkBubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
             سلام، من زروانم! بیا تو، در بازه.
-          </Bubble>
+          </ChalkBubble>
         </div>
       </div>
     </section>

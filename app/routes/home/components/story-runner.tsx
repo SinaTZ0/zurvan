@@ -1,6 +1,6 @@
 import { PawPrint } from "lucide-react";
-
-import { Bubble, Cut } from "~/routes/new_design/components/story-parts";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { MascotCut } from "~/components/mascot-cut";
 
 /*===== Timing =====*/
 // One lap: Fandogh chases his ball across the lane in the first RUN share of the cycle, then the lane rests empty
@@ -64,12 +64,12 @@ const RUNNER_CSS = `
 function Ball() {
   return (
     <svg viewBox="0 0 20 20" className="st-ball-spin size-full">
-      <circle cx="10" cy="10" r="9" className="fill-(--st-red) stroke-(--st-ink)" strokeWidth={1.4} />
+      <circle cx="10" cy="10" r="9" className="fill-primary stroke-foreground" strokeWidth={1.4} />
       <path
         d="M3.5 4.5C7 7 7 13 3.5 15.5M16.5 4.5C13 7 13 13 16.5 15.5"
         fill="none"
         strokeWidth={1.3}
-        className="stroke-(--st-paper)"
+        className="stroke-background"
       />
     </svg>
   );
@@ -84,7 +84,7 @@ function Ball() {
 function ChalkGround() {
   return (
     <svg
-      className="absolute inset-x-0 bottom-0 h-10 w-full [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] text-(--st-ink) opacity-60 md:bottom-2"
+      className="absolute inset-x-0 bottom-0 h-10 w-full [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] text-foreground opacity-60 md:bottom-2"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -142,7 +142,7 @@ export function StoryRunner() {
           <PawPrint
             key={at}
             style={{ "--at": at, left: `${(1 - at) * 100}%` } as React.CSSProperties}
-            className={`st-print absolute bottom-3 size-3.5 -rotate-90 text-(--st-ink) opacity-0 md:bottom-4 md:size-4 ${index % 2 ? "translate-y-1.5" : ""}`}
+            className={`st-print absolute bottom-3 size-3.5 -rotate-90 text-foreground opacity-0 md:bottom-4 md:size-4 ${index % 2 ? "translate-y-1.5" : ""}`}
           />
         );
       })}
@@ -163,21 +163,21 @@ export function StoryRunner() {
             fill="none"
             strokeLinecap="round"
             strokeWidth={2}
-            className="st-lines absolute top-[30%] left-[calc(100%+0.25rem)] w-6 stroke-(--st-ink) opacity-60 md:w-8"
+            className="st-lines absolute top-[30%] left-[calc(100%+0.25rem)] w-6 stroke-foreground opacity-60 md:w-8"
           >
             <path d="M2 4h20M8 12h20M4 20h16" />
           </svg>
-          <span className="st-puff absolute bottom-0 left-[80%] size-4 rounded-full bg-(--st-ink)/25" />
-          <span className="st-puff absolute bottom-1 left-[70%] size-3 rounded-full bg-(--st-ink)/20 [animation-delay:-.19s]" />
+          <span className="st-puff absolute bottom-0 left-[80%] size-4 rounded-full bg-foreground/25" />
+          <span className="st-puff absolute bottom-1 left-[70%] size-3 rounded-full bg-foreground/20 [animation-delay:-.19s]" />
 
           <div className="st-gallop">
-            <Cut name="teach-work" className="w-full -scale-x-100" />
+            <MascotCut name="teach-work" className="w-full -scale-x-100" />
           </div>
 
           <div className="st-shout absolute bottom-[calc(100%+0.5rem)] left-[-1rem]">
-            <Bubble tail="left" className="text-sm whitespace-nowrap md:text-base">
+            <ChalkBubble tail="left" className="text-sm whitespace-nowrap md:text-base">
               وایسا توپ!
-            </Bubble>
+            </ChalkBubble>
           </div>
         </div>
       </div>

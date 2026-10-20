@@ -1,7 +1,7 @@
 /*===== Head Trainer =====*/
 // The center is his practice: he founded it, runs the evaluations and is the app's only Admin and only trainer (the
-// owner confirmed it; the two placeholder colleagues' cards in `routes/home/components/team-section.tsx` are kept but
-// not rendered). The storefront, the footer and the auth page speak about him, so his details live in one place.
+// owner confirmed it; the two placeholder colleagues' cards were removed with the old home page and are in git
+// history). The storefront, the footer and the auth page speak about him, so his details live in one place.
 //
 // Name, experience and credentials supplied on the owner's business card. The photos are the two the owner sent on
 // 2026-10-19 (WhatsApp, 720x1080), so they are the largest the site can serve: nothing is upscaled. Which of the two is

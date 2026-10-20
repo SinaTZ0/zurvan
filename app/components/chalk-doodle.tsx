@@ -3,6 +3,7 @@ import { cn } from "cn";
 /*===== Chalk Doodle =====*/
 // White marker doodles around the dogs and their bubbles: decoration only, so they are hidden from screen readers.
 // Each image is trimmed to its strokes, so size them by width.
+// Part of the previous look (with `SpeechBubble`): kept for the pages not yet redesigned; the mascot pages don't use it.
 export type ChalkDoodleName =
   "heart" | "paw" | "crown" | "arrow-curl" | "arrow-loop" | "bone" | "sparkles" | "swoosh" | "exclaim";
 

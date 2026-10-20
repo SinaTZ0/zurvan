@@ -58,11 +58,6 @@ export default [
 
   route("auth", "routes/auth/auth.tsx"),
 
-  /*===== New Design =====*/
-  // The mascot-led home page the owner is reviewing; outside the storefront shell because it draws its own header and
-  // footer. Not linked from anywhere and `noindex`.
-  route("new-design", "routes/new_design/new-design.tsx"),
-
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),
   route("rpc/*", "routes/rpc/rpc.ts"),

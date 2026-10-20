@@ -1,109 +1,131 @@
-import { PhoneIcon } from "lucide-react";
+import { ArrowUpLeft, MapPin, Phone, UserRound } from "lucide-react";
 
-import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { CENTER_DESCRIPTOR, CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
+import { toPersianDigits } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { SITE_RULES } from "~/lib/site-rules";
+import { BrandEmblem } from "~/components/brand-emblem";
+import { SOCIAL_ICONS } from "~/components/social-icons";
 
+/*===== Footer =====*/
+// The storefront's facts, laid out as a full-width band: the brand with its social links, three
+// link groups, and how to reach the center, over a copyright line. Gold only marks the contact icons, as everywhere
+// on this page. On the home page the closing scene's dog stands on the band's top edge.
 const FOOTER_GROUPS = [
-  {
-    title: "دوره‌ها",
-    // The free assessment has its gold pill in the header; the footer doesn't repeat it.
-    links: [{ label: "همه‌ی دوره‌ها", to: "/courses" }],
-  },
+  { title: "دوره‌ها", links: [{ label: "همه‌ی دوره‌ها", to: "/courses" }] },
   {
     title: "ارتباط با زروان",
     links: [
-      { label: "درباره‌ی طلا راستی", to: "/about" },
+      { label: `درباره‌ی ${HEAD_TRAINER.name}`, to: "/about" },
       { label: "تماس با ما", to: "/contact" },
       { label: "همکاری با زروان", to: "/join/partner" },
-      ...CENTER_LINKS.map((link) => ({
-        label: (
-          <>
-            {link.label}: <bdi>{link.handle}</bdi>
-          </>
-        ),
-        to: link.href,
-      })),
     ],
   },
   {
     title: "راهنما",
     links: [
       { label: "سؤال‌های پرتکرار", to: "/help" },
-      { label: "حریم خصوصی", to: "/privacy" },
       { label: "لاگ‌بوک سگ‌ها", to: "/logbook" },
       // Only once the owner has approved the wording.
       ...(SITE_RULES ? [{ label: "قوانین", to: "/rules" }] : []),
     ],
   },
-] as const;
+];
 
-/*===== Site Footer =====*/
+const FOOTER_FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+const FOOTER_LINK = `rounded text-foreground/70 transition-colors hover:text-foreground ${FOOTER_FOCUS}`;
+
+/** The storefront footer on every public page; below `lg` it leaves room at the bottom for the floating tab bar. */
 export function SiteFooter() {
   return (
-    <footer className="relative isolate mt-section-md overflow-hidden surface-inverse bg-[color-mix(in_oklab,var(--inverse)_70%,black)]">
-      <div className="site-container grid gap-10 py-section-sm lg:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))] lg:gap-gutter">
-        {/*------ Brand ------*/}
-        <div className="flex max-w-sm flex-col gap-4">
-          <Link to="/" className="self-start rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
-            <BrandLogo className="text-[1.875rem]" />
-          </Link>
-          <p className="text-sm font-bold text-foreground">{CENTER_DESCRIPTOR}</p>
-          <p className="text-sm text-pretty text-muted-foreground">
-            از اولین تجربه‌های زندگی کنار سگت تا آموزش‌های تخصصی و حرفه‌ای، زروان همراهتونه؛ با برنامه‌ای که متناسب با
-            نیاز و شرایط هر سگ طراحی می‌شه.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {HEAD_TRAINER.name} · محدوده‌ی فعالیت: {CENTER_SERVICE_AREA}
-          </p>
-          <a
-            href={`tel:${CENTER_PHONE.tel}`}
-            className="flex items-center gap-2.5 self-start py-2 text-base font-bold text-foreground transition-colors hover:text-saffron"
-          >
-            <PhoneIcon strokeWidth={1.7} className="size-5 text-saffron" aria-hidden />
-            {/* Phone numbers read left to right even in Persian text. */}
-            <span dir="ltr">{CENTER_PHONE.display}</span>
-          </a>
+    <footer className="border-t border-foreground/10 bg-card paper-grain text-sm text-foreground/85">
+      {/* Below lg the bottom padding clears the floating tab bar. */}
+      <div className="mx-auto max-w-6xl px-4 pt-16 pb-32 md:px-8 md:pt-24 lg:pb-8">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[1.9fr_repeat(3,minmax(0,1fr))_1.3fr] lg:gap-x-10">
+          {/*------ Brand ------*/}
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
+            <Link to="/" className={`inline-flex items-center gap-3 rounded ${FOOTER_FOCUS}`}>
+              <BrandEmblem className="size-14" />
+              <span className="flex flex-col leading-tight">
+                <span className="font-display text-3xl font-black text-foreground">زروان</span>
+                <span className="mt-0.5 text-xs text-foreground/65">{CENTER_DESCRIPTOR}</span>
+              </span>
+            </Link>
+            <p className="mt-4 max-w-sm leading-7 text-pretty text-foreground/70">
+              {HEAD_TRAINER.name} از سال {toPersianDigits(String(HEAD_TRAINER.since))} سگ‌ها رو آموزش می‌ده:
+              فرمان‌پذیری، اصلاح رفتار، کارهای تخصصی و آمادگی مسابقه.
+            </p>
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {CENTER_LINKS.map((item) => {
+                const Icon = SOCIAL_ICONS[item.href];
+                return (
+                  <li key={item.href}>
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className={`flex items-center gap-2 rounded-xl border border-foreground/15 px-3 py-1.5 text-foreground/85 transition-colors hover:border-foreground/35 hover:text-foreground ${FOOTER_FOCUS}`}
+                    >
+                      <Icon className="size-[1.125rem] text-primary" />
+                      {item.label}
+                      <ArrowUpLeft aria-hidden className="size-3.5 text-foreground/50" />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/*------ Link groups ------*/}
+          {FOOTER_GROUPS.map((group) => (
+            <nav key={group.title} aria-label={group.title}>
+              <h2 className="font-display text-base font-bold text-foreground">{group.title}</h2>
+              <ul className="mt-4 flex flex-col gap-3">
+                {group.links.map((link) => (
+                  <li key={link.to}>
+                    <Link to={link.to} className={FOOTER_LINK}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          {/*------ Reach the center ------*/}
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
+            <h2 className="font-display text-base font-bold text-foreground">تماس با زروان</h2>
+            <ul className="mt-4 flex flex-col gap-3.5">
+              <li className="flex items-center gap-2.5">
+                <Phone aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
+                <a
+                  href={`tel:${CENTER_PHONE.tel}`}
+                  dir="ltr"
+                  className={`rounded font-bold text-foreground tabular-nums hover:underline ${FOOTER_FOCUS}`}
+                >
+                  {CENTER_PHONE.display}
+                </a>
+              </li>
+              <li className="flex items-center gap-2.5">
+                <MapPin aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
+                فعالیت در {CENTER_SERVICE_AREA}
+              </li>
+              <li className="flex items-center gap-2.5">
+                <UserRound aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
+                مربی: {HEAD_TRAINER.name}
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/*------ Link Groups ------*/}
-        {FOOTER_GROUPS.map((group) => (
-          <nav key={group.title} aria-label={group.title}>
-            <h2 className="text-base text-foreground">{group.title}</h2>
-            <ul className="mt-4 flex flex-col gap-3">
-              {group.links.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
-      </div>
-
-      {/* Decorative stencil sits behind the content without adding height to the footer. Its size follows the width of
-          the page column (`cqw`), so the whole word fits at every screen width: the full width on a phone, and on a
-          desktop the part under the link columns, clear of the brand column and the phone number. The bottom margin is
-          the height of the copyright line below, so the letters stand on it. */}
-      <div className="@container pointer-events-none absolute inset-x-0 bottom-0 -z-10 site-container flex flex-col lg:flex-row-reverse">
-        <p
-          aria-hidden
-          dir="ltr"
-          className="mb-[3.85rem] font-stencil text-[length:calc(100cqw/3.15)] leading-[0.8] font-black text-transparent opacity-40 select-none [-webkit-text-stroke:1px_var(--primary)] lg:text-[length:calc(68cqw/3.09)]"
-        >
-          ZURVAN
-        </p>
-      </div>
-
-      <div className="border-t">
-        <p className="site-container py-5 text-xs text-muted-foreground">© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
+        {/*------ Bottom bar ------*/}
+        <div className="mt-12 flex flex-col gap-3 border-t border-foreground/10 pt-6 text-xs text-foreground/60 sm:flex-row sm:items-center sm:justify-between">
+          <p>© ۱۴۰۵ زروان. همه‌ی حقوق محفوظ است.</p>
+          <Link to="/privacy" className={`self-start ${FOOTER_LINK} text-foreground/60`}>
+            حریم خصوصی
+          </Link>
+        </div>
       </div>
     </footer>
   );

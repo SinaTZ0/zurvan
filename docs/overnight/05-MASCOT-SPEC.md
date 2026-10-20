@@ -18,7 +18,9 @@ A proposal for the owner to approve. Nothing here is live art: **no authentic ma
 
 Keep one consistent identity across the three: fawn coat, black mask and ears, dark brown eyes, a thin brown leather collar with a small gold tag. The owner decides the real markings.
 
-## 3. How the hero changes (implemented)
+## 3. How the hero changed (history)
+
+> **History (2026-10-21).** The rotating photo hero below was removed when the mascot-led page became the home page: `app/lib/hero-state.ts`, its test and `hero-slides.ts` are deleted, and the hero is now the cartoon mascot leaning over a wall (`app/routes/home/components/story-hero.tsx`). The mascot's current rules are in `docs/storefront-design.md`, "Mascot".
 
 The hero follows the visitor, not a clock. Rules in `app/lib/hero-state.ts`, tested in `hero-state.test.ts`, and checked in a real browser (14 checks, all passing, run on 2026-10-19):
 

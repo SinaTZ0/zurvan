@@ -3,8 +3,11 @@ import { ClipboardList, LockOpen, PawPrint, Phone } from "lucide-react";
 import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
-import { Bubble, Cut, HEADING, Ticks } from "~/routes/new_design/components/story-parts";
-import { STEPS } from "~/routes/new_design/content";
+import { STEPS } from "~/routes/home/content";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { ChalkTicks } from "~/components/chalk-ticks";
+import { MascotCut } from "~/components/mascot-cut";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Chalk Defs =====*/
 // The steps drawn as a chalk trail on one board, in the same chalk as the running lane's ground under it.
@@ -63,7 +66,7 @@ function WindingTrail() {
       aria-hidden
       viewBox="0 0 1000 120"
       preserveAspectRatio="none"
-      className="absolute inset-x-0 top-0 hidden h-[7.5rem] w-full overflow-visible text-(--st-ink) opacity-55 lg:block"
+      className="absolute inset-x-0 top-0 hidden h-[7.5rem] w-full overflow-visible text-foreground opacity-55 lg:block"
     >
       <path
         d={WINDING_PATH}
@@ -87,7 +90,7 @@ function WindingTrail() {
 function SketchedEdge() {
   const box = { width: "calc(100% - 2px)", height: "calc(100% - 2px)" };
   return (
-    <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible text-(--st-line)">
+    <svg aria-hidden className="pointer-events-none absolute inset-0 size-full overflow-visible text-foreground">
       <g fill="none" stroke="currentColor" strokeLinecap="round" filter="url(#st-trail-chalk)">
         <rect x="1" y="1" rx="32" style={box} strokeWidth={2.2} opacity={0.75} />
         <rect x="3" y="-1" rx="34" style={box} strokeWidth={1.2} strokeDasharray="140 18 60 26 220 14" opacity={0.35} />
@@ -104,8 +107,8 @@ function SketchedEdge() {
 function Marker({ index }: { index: number }) {
   const Icon = STEP_ICONS[index];
   return (
-    <div className="st-lift-pic relative grid size-16 shrink-0 place-items-center rounded-full bg-(--st-paper-2)">
-      <svg aria-hidden viewBox="0 0 64 64" fill="none" className="absolute inset-0 text-(--st-ink)/70">
+    <div className="lively-lift-pic relative grid size-16 shrink-0 place-items-center rounded-full bg-card">
+      <svg aria-hidden viewBox="0 0 64 64" fill="none" className="absolute inset-0 text-foreground/70">
         <path
           d="M33 4C49 4 60 16 60 32S48 60 32 60 4 47 4 32 16 4 29 5.5"
           stroke="currentColor"
@@ -114,8 +117,8 @@ function Marker({ index }: { index: number }) {
           filter="url(#st-trail-chalk)"
         />
       </svg>
-      <Icon aria-hidden className="size-7 text-(--st-sage-deep)" strokeWidth={1.6} />
-      <span className="absolute -start-1.5 -top-1.5 grid size-7 place-items-center rounded-full border border-(--st-line)/40 bg-(--st-paper) text-xs font-bold text-(--st-ink)">
+      <Icon aria-hidden className="size-7 text-primary" strokeWidth={1.6} />
+      <span className="absolute -start-1.5 -top-1.5 grid size-7 place-items-center rounded-full border border-foreground/40 bg-background text-xs font-bold text-foreground">
         {formatNumberFa(index + 1)}
       </span>
     </div>
@@ -135,30 +138,30 @@ export function StoryTrail() {
   return (
     <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-10 md:px-8 md:pb-16 lg:pt-20">
       <ChalkDefs />
-      <h2 id="st-path-title" className={`${HEADING} st-reveal text-center text-3xl md:text-5xl`}>
+      <h2 id="st-path-title" className={`${DISPLAY_HEADING} lively-reveal text-center text-3xl md:text-5xl`}>
         از کجا شروع کنیم؟
       </h2>
 
-      <div className="st-reveal relative mx-auto mt-40 max-w-xl rounded-[2rem] bg-(--st-paper-2) px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">
+      <div className="lively-reveal relative mx-auto mt-40 max-w-xl rounded-[2rem] bg-card px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">
         <SketchedEdge />
 
         {/*------ Props on the edges: the signpost where the trail starts, a dropped bone on the bottom ------*/}
         {/* Their straw tufts and the bone overlap the edge, so they sit on it rather than float near it. */}
-        <Cut name="signpost" className="absolute right-5 bottom-[calc(100%-0.9rem)] w-24 lg:right-[5%] lg:w-32" />
-        <Cut name="bone" className="absolute -bottom-4 left-6 w-24 -rotate-6 lg:left-[5%] lg:w-28" />
+        <MascotCut name="signpost" className="absolute right-5 bottom-[calc(100%-0.9rem)] w-24 lg:right-[5%] lg:w-32" />
+        <MascotCut name="bone" className="absolute -bottom-4 left-6 w-24 -rotate-6 lg:left-[5%] lg:w-28" />
 
         {/*------ The dog over the top edge; his cut sits 1.4rem inside, under the paws ------*/}
-        <div className="st-tilt st-pet absolute bottom-[calc(100%-1.4rem)] left-24 z-10 w-32 -translate-x-1/2 sm:w-36 lg:left-[calc(2.1875rem+(100%-5rem)*0.375)]">
-          <Cut name="peek" className="w-full" />
-          <Ticks className="st-ticks absolute top-[12%] -right-7 w-6" />
-          <Ticks className="st-ticks absolute top-[12%] -left-7 w-6 -scale-x-100 [animation-delay:-.7s]" />
+        <div className="lively-tilt lively-pet absolute bottom-[calc(100%-1.4rem)] left-24 z-10 w-32 -translate-x-1/2 sm:w-36 lg:left-[calc(2.1875rem+(100%-5rem)*0.375)]">
+          <MascotCut name="peek" className="w-full" />
+          <ChalkTicks className="lively-ticks absolute top-[12%] -right-7 w-6" />
+          <ChalkTicks className="lively-ticks absolute top-[12%] -left-7 w-6 -scale-x-100 [animation-delay:-.7s]" />
         </div>
-        <Bubble
+        <ChalkBubble
           tail="left"
-          className="st-float absolute bottom-[calc(100%+5rem)] left-[11.5rem] z-10 w-28 text-sm sm:left-[calc(6rem+6.75rem)] sm:w-32 lg:left-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)]"
+          className="lively-float absolute bottom-[calc(100%+5rem)] left-[11.5rem] z-10 w-28 text-sm sm:left-[calc(6rem+6.75rem)] sm:w-32 lg:left-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)]"
         >
           قفل‌ها دارن باز می‌شن!
-        </Bubble>
+        </ChalkBubble>
 
         {/*------ The stops ------*/}
         <ol className="relative grid gap-y-8 lg:grid-cols-4 lg:gap-x-10">
@@ -181,23 +184,26 @@ export function StoryTrail() {
                 <div className="relative z-[1]">
                   {/* Wide only: stacked, the text column is right beside the marker and they'd cover it. */}
                   {index === 2 && (
-                    <Cut name="key" className="absolute top-[45%] -left-12 z-[2] hidden w-16 -rotate-12 lg:block" />
-                  )}
-                  {last && (
-                    <Cut
-                      name="flag"
-                      className="st-sway-2 absolute bottom-5 -left-[4.5rem] -z-[1] hidden w-24 lg:block"
+                    <MascotCut
+                      name="key"
+                      className="absolute top-[45%] -left-12 z-[2] hidden w-16 -rotate-12 lg:block"
                     />
                   )}
-                  <div className="st-lift">
+                  {last && (
+                    <MascotCut
+                      name="flag"
+                      className="lively-sway-2 absolute bottom-5 -left-[4.5rem] -z-[1] hidden w-24 lg:block"
+                    />
+                  )}
+                  <div className="lively-lift">
                     <Marker index={index} />
                   </div>
                 </div>
                 <div className="lg:mt-5">
-                  <h3 className="font-display text-lg leading-snug font-bold text-(--st-ink) md:text-xl">
+                  <h3 className="font-display text-lg leading-snug font-bold text-foreground md:text-xl">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 max-w-64 text-[15px] leading-7 text-(--st-ink)/75">{step.detail}</p>
+                  <p className="mt-1.5 max-w-64 text-[15px] leading-7 text-foreground/75">{step.detail}</p>
                 </div>
               </li>
             );

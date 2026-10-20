@@ -29,6 +29,9 @@ const LG_TAIL_CLASSES: Record<BubbleTail, string> = {
  *
  * `drawIn` plays the page's one orchestrated moment: the outline draws itself, then the words appear. Reduced motion
  * shows the finished bubble.
+ *
+ * Superseded by `ChalkBubble` (`~/components/chalk-bubble`), the mascot's ink bubble of the current look. This one
+ * stays on the pages not yet redesigned; a page moves to `ChalkBubble` when it is.
  */
 export function SpeechBubble({
   children,

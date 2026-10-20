@@ -223,6 +223,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -277,76 +278,91 @@
   --shadow-lg: var(--elevation-lg);
 }
 
-/*===== Palette: Black & Flat Gold =====*/
-/* One theme, and it is dark: pure black under dark, warm-lit dog photos, with flat amber gold for actions, icons and
-   small accents (image-reference/). The photos carry the warmth, so the surfaces stay neutral: a warm or tinted black
-   under gold reads as mud. Gold is never a large headline on the first screen (it reads as a gold shop); headlines are
-   ivory. Chalk white is for the dog's speech bubbles and the doodles, never body text.
+/*===== Palette: Near-black Paper & Bright Gold =====*/
+/* One theme, and it is dark: the mascot-led look the owner chose on 2026-10-20 (the home page; docs/storefront-design.md).
+   A neutral near-black paper with a faint grain (`--grain`, on the body), ivory ink, and a bright yellow gold for
+   actions, icons and small accents only: big gold on the first screen reads as a bullion shop, so headlines are ivory.
+   The surfaces stay neutral greys: a warm or tinted black under gold reads as mud. Chalk white is for the old
+   `SpeechBubble` and the doodles; the mascot's `ChalkBubble` is drawn in the ink.
 
-   Layers, from back to front. Each step is a lighter neutral surface plus a deeper shadow:
+   Layers, from back to front. Each step is a lighter neutral grey plus a deeper shadow:
      sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)
-     background  the page
-     card        raised content: cards, lists, panels                                   + shadow-sm
+     background  the page (the paper)
+     card        raised content: cards, lists, panels, the footer                       + shadow-sm
      popover     overlays: menus, sheets, dialogs, things floating over a photo         + shadow-lg
-   `inverse` is the one emphasis band per page (see `surface-inverse` below). `jet` is the header and hero surface.
+     muted       fills on a card (chips, tracks), the lightest grey
+   `inverse` is the one grey band per page (see `surface-inverse` below). `jet` is the header and hero surface: the
+   paper itself now, as the header sits on the page.
 
-   The `gold-leaf` names are kept so existing pages keep working, but they are flat amber now: no metal sheen.
+   The `gold-leaf` names are kept so existing pages keep working; they are the flat gold.
 
    The document always carries `.dark` (root.tsx), so the `dark:` variants inside the shadcn components apply. */
-
 :root {
   color-scheme: dark;
   --radius: 0.75rem;
 
   /*------ Surfaces ------*/
-  --base: #000000;
-  --jet: #000000;
-  --sunken: #070707;
+  --base: #141414;
+  --jet: #141414;
+  --sunken: #0f0f0f;
   --background: var(--base);
-  --card: #121212;
-  --popover: #1a1a1a;
+  --card: #1d1d1d;
+  --popover: #232323;
 
   /*------ Text ------*/
-  --foreground: #f3eee4;
-  --card-foreground: #f3eee4;
-  --popover-foreground: #f3eee4;
+  --foreground: #f4eee2;
+  --card-foreground: #f4eee2;
+  --popover-foreground: #f4eee2;
+  /* 5.6:1 on the lightest surface (`muted`), 7.3:1 on the page: AA for body text everywhere. */
   --muted-foreground: #a8a297;
   --faint: #4a4a4a; /* disabled items and decoration, never text */
   --chalk: #ffffff; /* speech bubbles and doodles */
 
   /*------ Action ------*/
-  --primary: #f5b83d;
-  --primary-foreground: #140d00;
-  --ring: #f7c862;
+  --primary: #ffc21a;
+  --primary-hover: #ffd14f;
+  --primary-foreground: #1a1300;
+  --ring: #ffd14f;
 
   /*------ Fills ------*/
-  --muted: #1c1c1c;
+  --muted: #2b2b2b;
   --secondary: var(--muted);
-  --secondary-foreground: #f3eee4;
-  --accent: #1f1a10; /* hover and selected rows: a trace of the gold on black */
-  --accent-foreground: #f3eee4;
+  --secondary-foreground: #f4eee2;
+  --accent: #241f13; /* hover and selected rows: a trace of the gold on the paper */
+  --accent-foreground: #f4eee2;
 
   /*------ Edges ------*/
-  --border: rgb(245 184 61 / 0.16); /* a gold hairline */
+  --border: rgb(255 194 26 / 0.16); /* a gold hairline */
   /* Neutral, not gold: the shadcn controls also fill with `bg-input/30`, and gold that thin turns brown on black. */
-  --input: rgb(243 238 228 / 0.28);
+  --input: rgb(244 238 226 / 0.28);
 
   /*------ Accents and status ------*/
-  --saffron: #f5b83d;
-  --saffron-text: #f7c35a;
-  --saffron-foreground: #140d00;
+  --saffron: #ffc21a;
+  --saffron-text: #ffcb3d;
+  --saffron-foreground: #1a1300;
   --success: #6cc48f;
   --destructive: #ee7080;
 
   /*------ Gold (flat) ------*/
-  --gold-leaf: linear-gradient(#f5b83d, #f5b83d);
-  --gold-leaf-text: linear-gradient(#f7c35a, #f7c35a);
+  --gold-leaf: linear-gradient(#ffc21a, #ffc21a);
+  --gold-leaf-text: linear-gradient(#ffcb3d, #ffcb3d);
 
   /*------ Emphasis band ------*/
-  --inverse: #0e0e0e;
-  --inverse-foreground: #f3eee4;
+  /* The grey band the home page closes on (and the formats scene): one step above `popover`'s grey. */
+  --inverse: #232323;
+  --inverse-foreground: #f4eee2;
   --inverse-muted: #b3ada2;
-  --inverse-border: rgb(245 184 61 / 0.22);
+  --inverse-border: rgb(255 194 26 / 0.22);
+
+  /*------ Phone tab bar ------*/
+  /* The height the storefront's floating tab bar takes from the bottom of the screen below `lg` (its 4.25rem, its gap
+     from the edge and a little air): anything else fixed to the bottom on phones sits above it. */
+  --tab-bar-space: calc(4.25rem + max(0.75rem, env(safe-area-inset-bottom)) + 0.5rem);
+
+  /*------ Paper grain ------*/
+  /* A tiny tiled SVG noise at 7% opacity, on the body and on bands that paint their own fill (`paper-grain`): cheap, and
+     it keeps the flat paper from looking digital. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E");
 
   /*------ Elevation ------*/
   /* Shadows barely show on black, so raised layers also get a faint light top edge. */
@@ -356,20 +372,20 @@
   --elevation-lg:
     inset 0 1px 0 rgb(255 255 255 / 0.08), 0 4px 10px rgb(0 0 0 / 0.6), 0 32px 64px -12px rgb(0 0 0 / 0.85);
 
-  --chart-1: #f5b83d;
+  --chart-1: #ffc21a;
   --chart-2: #f7d488;
   --chart-3: #b8862a;
   --chart-4: #fbe7bd;
   --chart-5: #a8a297;
 
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #f3eee4;
-  --sidebar-primary: #f5b83d;
-  --sidebar-primary-foreground: #140d00;
-  --sidebar-accent: #1f1a10;
-  --sidebar-accent-foreground: #f3eee4;
-  --sidebar-border: rgb(245 184 61 / 0.16);
-  --sidebar-ring: #f7c862;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #f4eee2;
+  --sidebar-primary: #ffc21a;
+  --sidebar-primary-foreground: #1a1300;
+  --sidebar-accent: #241f13;
+  --sidebar-accent-foreground: #f4eee2;
+  --sidebar-border: rgb(255 194 26 / 0.16);
+  --sidebar-ring: #ffd14f;
 }
 
 @layer base {
@@ -379,6 +395,7 @@
   /* Vazirmatn at 400 reads thin on screen, so body text (and the inputs that inherit it) defaults to 500 */
   body {
     @apply bg-background font-medium text-foreground;
+    background-image: var(--grain);
   }
   html {
     @apply font-sans;
@@ -390,7 +407,7 @@
     @apply font-heading font-extrabold;
   }
   ::selection {
-    background-color: rgb(245 184 61 / 0.35);
+    background-color: rgb(255 194 26 / 0.35);
     color: var(--foreground);
   }
 }
@@ -418,13 +435,13 @@
     pointer-events: none;
     background-image: radial-gradient(
       ellipse var(--glow-w, 60%) var(--glow-h, 60%) at var(--glow-at, 50% 50%),
-      rgb(245 184 61 / calc(var(--glow-alpha, 0.1) * 0.6)),
+      rgb(255 194 26 / calc(var(--glow-alpha, 0.1) * 0.6)),
       transparent
     );
   }
 }
 
-/* The emphasis band: charcoal under gold hairlines. It re-points the surface and text tokens for everything inside, so
+/* The emphasis band: the grey band under gold hairlines. It re-points the surface and text tokens for everything inside, so
    headings, muted text and borders need no special classes there. Gold stays the action colour, so buttons and links
    keep their look. */
 @utility surface-inverse {
@@ -434,6 +451,17 @@
   --border: var(--inverse-border);
   background-color: var(--inverse);
   color: var(--inverse-foreground);
+}
+
+/* The paper's grain on a band that paints its own fill over the body's (a card-grey footer, a picture card). */
+@utility paper-grain {
+  background-image: var(--grain);
+}
+
+/* Steps the scenery back (plants, ground, buildings), so the mascot stays the brightest thing on the page. Never on
+   the dog himself. */
+@utility scenery-dim {
+  filter: brightness(0.6) saturate(0.65);
 }
 
 /* Flat gold as a fill: buttons, the one gold panel, badges. */
@@ -460,5 +488,329 @@
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+}
+
+/*===== Lively: the Mascot's Idle Motion =====*/
+/* Shared by every page the mascot lives on (the home page set them). Every loop is long and small, so the page feels
+   alive without nagging, and the whole block is off for reduced motion. The keyframes animate `transform`, which
+   composes with Tailwind's own `translate`/`rotate`/`scale` properties instead of replacing them, so a flipped cut-out
+   stays flipped. A loop goes on a wrapper or on the cut-out itself; a page's one-off motion (a hero's entrance, a
+   running lap) stays in its own slice. */
+@media (prefers-reduced-motion: no-preference) {
+  /*------ Scenery ------*/
+  .lively-sway {
+    transform-origin: 50% 100%;
+    animation: lively-sway 5.5s ease-in-out infinite alternate;
+  }
+  .lively-sway-2 {
+    transform-origin: 50% 100%;
+    animation: lively-sway 4.2s ease-in-out -2s infinite alternate-reverse;
+  }
+
+  /*------ The dog ------*/
+  .lively-wiggle {
+    transform-origin: 50% 100%;
+    animation: lively-wiggle 6s ease-in-out infinite;
+  }
+  .lively-wiggle-late {
+    transform-origin: 50% 100%;
+    animation: lively-wiggle 7s ease-in-out -3.5s infinite;
+  }
+  .lively-tilt {
+    transform-origin: 50% 90%;
+    animation: lively-tilt 5s ease-in-out infinite;
+  }
+  .lively-twitch {
+    transform-origin: 50% 100%;
+    animation: lively-twitch 4s ease-in-out infinite;
+  }
+  .lively-swing {
+    transform-origin: 50% 0;
+    animation: lively-swing 3.2s ease-in-out infinite alternate;
+  }
+  .lively-hop {
+    transform-origin: 50% 100%;
+    animation: lively-hop 2.8s cubic-bezier(0.3, 0.7, 0.4, 1) infinite;
+  }
+  .lively-breathe {
+    transform-origin: 50% 100%;
+    animation: lively-breathe 2.6s ease-in-out infinite;
+  }
+  .lively-ticks {
+    animation: lively-ticks 1.4s ease-in-out infinite;
+  }
+  /* Petting: hovering a dog makes him wriggle, whatever his idle loop is. One soft wriggle, then a rest, so a resting
+     cursor doesn't keep him shaking. The cut-outs ignore the pointer, so the wrapper takes it back. */
+  .lively-pet {
+    pointer-events: auto;
+  }
+  .lively-pet:hover {
+    transform-origin: 50% 100%;
+    animation: lively-pet 2.6s ease-in-out infinite;
+  }
+
+  /*------ Bubbles and cards ------*/
+  .lively-float {
+    animation: lively-float 3.4s ease-in-out infinite alternate;
+  }
+  .lively-float-2 {
+    animation: lively-float 2.9s ease-in-out -1.4s infinite alternate;
+  }
+  .lively-lift {
+    transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  }
+  .lively-lift:hover {
+    transform: translateY(-6px) rotate(-0.6deg);
+  }
+  .lively-lift:hover .lively-lift-pic {
+    animation: lively-jelly 0.7s ease-in-out;
+  }
+  .lively-pennant {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: lively-pennant 2.4s ease-in-out infinite alternate;
+  }
+  .lively-pennant:nth-child(odd) {
+    animation-delay: -1.2s;
+    animation-duration: 2.9s;
+  }
+
+  /*------ Scroll reveals ------*/
+  /* Driven by the scroll itself where the browser can; elsewhere (Firefox for now) things simply show. */
+  @supports (animation-timeline: view()) {
+    .lively-reveal {
+      animation: lively-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 75%;
+    }
+    .lively-reveal-pop {
+      animation: lively-reveal-pop linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 80%;
+    }
+  }
+}
+
+@keyframes lively-sway {
+  from {
+    transform: rotate(-1.6deg);
+  }
+  to {
+    transform: rotate(1.6deg);
+  }
+}
+/* Still most of the time, then a quick happy shake. */
+@keyframes lively-wiggle {
+  0%,
+  82%,
+  100% {
+    transform: none;
+  }
+  85% {
+    transform: rotate(-3deg);
+  }
+  88% {
+    transform: rotate(2.5deg);
+  }
+  91% {
+    transform: rotate(-2deg);
+  }
+  94% {
+    transform: rotate(1deg);
+  }
+}
+/* The curious head tilt: one way, hold, the other way, back. */
+@keyframes lively-tilt {
+  0%,
+  20%,
+  100% {
+    transform: none;
+  }
+  28%,
+  42% {
+    transform: rotate(-7deg);
+  }
+  52%,
+  64% {
+    transform: rotate(5deg);
+  }
+  72% {
+    transform: none;
+  }
+}
+@keyframes lively-twitch {
+  0%,
+  70%,
+  100% {
+    transform: none;
+  }
+  74% {
+    transform: translateY(-6%) rotate(-3deg);
+  }
+  78% {
+    transform: translateY(-2%) rotate(2deg);
+  }
+  82% {
+    transform: translateY(-7%) rotate(-1deg);
+  }
+  88% {
+    transform: none;
+  }
+}
+@keyframes lively-swing {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+/* Two excited hops, then a rest: "let's go?" */
+@keyframes lively-hop {
+  0%,
+  46%,
+  100% {
+    transform: none;
+  }
+  8% {
+    transform: translateY(-9%) scale(0.98, 1.03);
+  }
+  16% {
+    transform: scale(1.03, 0.97);
+  }
+  24% {
+    transform: translateY(-7%) scale(0.98, 1.03);
+  }
+  32% {
+    transform: scale(1.02, 0.98);
+  }
+  38% {
+    transform: none;
+  }
+}
+@keyframes lively-breathe {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(1.012, 1.025);
+  }
+}
+@keyframes lively-ticks {
+  0%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+}
+@keyframes lively-jelly {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: rotate(-4deg) scale(1.04, 0.96);
+  }
+  40% {
+    transform: rotate(3deg) scale(0.97, 1.04);
+  }
+  60% {
+    transform: rotate(-2deg) scale(1.02, 0.98);
+  }
+  80% {
+    transform: rotate(1deg);
+  }
+}
+@keyframes lively-pet {
+  0%,
+  32%,
+  100% {
+    transform: none;
+  }
+  8% {
+    transform: rotate(-2deg) scale(1.02, 0.98);
+  }
+  16% {
+    transform: rotate(1.5deg) scale(0.99, 1.02);
+  }
+  24% {
+    transform: rotate(-0.8deg);
+  }
+}
+@keyframes lively-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+@keyframes lively-pennant {
+  from {
+    transform: rotate(-9deg);
+  }
+  to {
+    transform: rotate(9deg);
+  }
+}
+@keyframes lively-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lively-reveal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(2rem) scale(0.9) rotate(-2deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*===== Answers: Motion That Follows an Action =====*/
+/* What the page shows after the visitor does something (a filter, a search, a dog picked) arrives instead of
+   appearing: new content rises in a few pixels as it fades in, and a speech bubble pops from its tail. They run once,
+   when the element mounts, so a changed part gets a new `key` to play again. `--answer-delay` staggers a list (set it
+   per item); a bubble sets `--pop-origin` to its tail's corner. Off for reduced motion: things simply appear. */
+@media (prefers-reduced-motion: no-preference) {
+  .answer-in {
+    animation: answer-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) var(--answer-delay, 0s) both;
+  }
+  .answer-pop {
+    transform-origin: var(--pop-origin, 50% 100%);
+    animation: answer-pop 0.38s cubic-bezier(0.3, 1.45, 0.5, 1) var(--answer-delay, 0s) both;
+  }
+}
+@keyframes answer-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes answer-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
