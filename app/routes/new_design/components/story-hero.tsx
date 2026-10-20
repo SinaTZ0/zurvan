@@ -2,6 +2,7 @@ import { cn } from "cn";
 import { useEffect, useState } from "react";
 
 import { Bubble, Cut, EvaluationButton, HEADING } from "~/routes/new_design/components/story-parts";
+import { BRICK, GRAIN } from "~/routes/new_design/components/story-theme";
 
 /*===== Typed Word =====*/
 // The headline types what you learn together, one skill at a time, each in its own colour. The colours are
@@ -101,7 +102,9 @@ export function StoryHero() {
 
       <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:w-full lg:flex-1 lg:grid-cols-[1.05fr_1fr] lg:items-center">
         {/*------ Copy ------*/}
-        <div className="pt-7 pb-8 sm:pt-10 lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)]">
+        {/* Centred until the copy has a column of its own on lg; hung on the right edge, it left the screen's left half
+            empty. */}
+        <div className="pt-7 pb-8 text-center sm:pt-10 lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)] lg:text-start">
           {/* On lg, the headline follows the height too (with a rem part, so browser zoom still enlarges it), and
               the width on a narrow lg screen, where its column is tight. */}
           <h1
@@ -119,7 +122,7 @@ export function StoryHero() {
             <span className="sr-only">: بشینیم، بمونیم، بیایم، آروم باشیم و کنار پا راه بریم</span>
             <TypedWord />
           </h1>
-          <p className="mt-5 max-w-sm text-lg leading-8 text-(--st-ink)/80">
+          <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-(--st-ink)/80 lg:mx-0">
             آموزش خصوصی، با حوصله و دقت،
             <br />
             برای زندگی شادتر تو و سگت.
@@ -128,9 +131,13 @@ export function StoryHero() {
         </div>
 
         {/*------ Mascot on the card edge ------*/}
-        <div className="relative mb-20 ml-auto w-[13.5rem] sm:w-72 lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)]">
+        {/* Below lg the dog and his bubble are centred as one group: the bubble overhangs his left side by about
+            6.5rem (7rem from sm), so he moves right by half that. */}
+        <div className="relative mx-auto mb-20 w-[13.5rem] translate-x-[3.25rem] sm:w-72 sm:translate-x-14 lg:mr-0 lg:ml-auto lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)] lg:translate-x-0">
+          {/* The card is a brick wall he looks over, with the page's grain on the bricks. */}
           <div
             aria-hidden
+            style={{ backgroundImage: `${GRAIN}, ${BRICK}` }}
             className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-(--st-line)/70 bg-(--st-sage) lg:-bottom-[100svh]"
           />
           {/* On lg, the bushes are a share of the dog's width (their lg sizes at his 21rem), so they shrink with him. */}
@@ -149,7 +156,7 @@ export function StoryHero() {
             <Cut name="paws" eager className="st-rise block w-full" />
           </div>
           <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
-            سلام، من فندقم! جای خوبی اومدی.
+            سلام، من زروانم! جای خوبی اومدی.
           </Bubble>
         </div>
       </div>

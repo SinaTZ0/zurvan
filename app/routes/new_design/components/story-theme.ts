@@ -7,6 +7,29 @@
 export const GRAIN =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.07'/%3E%3C/svg%3E\")";
 
+/*------ Brick ------*/
+// The hero's card is the wall the dog leans over. Four courses in running bond (64×22 bricks, 3px of mortar), each
+// brick a slightly different wash of ink over the card's grey, so the mortar is just the grey showing between them.
+// The tile is three bricks wide; a brick cut by the tile's edge gets the same tone on both sides, so the seam is hidden.
+const BRICK_TONES = [0.05, 0.03, 0.065, 0.04, 0.06, 0.028, 0.045, 0.07, 0.035, 0.055, 0.032, 0.062];
+
+function brickWall() {
+  const bricks: string[] = [];
+  for (let row = 0; row < 4; row++) {
+    const offset = row % 2 ? -32 : 0;
+    for (let i = 0; i < (offset ? 4 : 3); i++) {
+      const opacity = BRICK_TONES[row * 3 + (i % 3)];
+      bricks.push(
+        `<rect x='${offset + i * 64 + 1.5}' y='${row * 22 + 1.5}' width='61' height='19' rx='1.5' fill-opacity='${opacity}'/>`,
+      );
+    }
+  }
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='192' height='88' fill='#F4EEE2'>${bricks.join("")}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+export const BRICK = brickWall();
+
 // Neutral black and bright yellow gold (the owner's pick, 2026-10-20). Gold goes only on buttons and icons: big gold
 // on the first screen reads as a bullion shop. The `--st-sage*` names are the storybook's bands, now greys.
 const GOLD = "#FFC21A";

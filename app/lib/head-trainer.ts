@@ -14,6 +14,8 @@ export const HEAD_TRAINER = {
   firstName: "طلا",
   role: "متخصص تربیت، رفتارشناسی و اصلاح رفتار سگ",
   years: 13,
+  /** The year (Solar Hijri) the trainer started working with dogs; the new home page says «از سال ۱۳۹۲» (owner, 2026-10-20). */
+  since: 1392,
   credential: "مدرک بین‌المللی از فدراسیون جهانی سگ",
   /**
    * The slogan printed on the owner's card. It is recorded here and not shown: the site still carries the Persian
