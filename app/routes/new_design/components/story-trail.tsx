@@ -3,12 +3,11 @@ import { ClipboardList, LockOpen, PawPrint, Phone } from "lucide-react";
 import { cn } from "cn";
 
 import { formatNumberFa } from "~/lib/digits";
-import { Bubble, Cut, HEADING, Ticks } from "~/routes/design_lab/components/story/story-parts";
-import { STEP_DETAILS } from "~/routes/design_lab/components/story/story-sections";
-import { LAB_STEPS } from "~/routes/design_lab/lab-content";
+import { Bubble, Cut, HEADING, Ticks } from "~/routes/new_design/components/story-parts";
+import { STEPS } from "~/routes/new_design/content";
 
 /*===== Chalk Defs =====*/
-// Design 7's steps drawn as a chalk trail on one board, in the same chalk as the running lane's ground under it.
+// The steps drawn as a chalk trail on one board, in the same chalk as the running lane's ground under it.
 // Stacked, the trail is a tiled pattern (in px, so it never stretches) laid in one straight segment per gap between
 // markers. The pattern and the roughening filter are defined once here; the svg holding them is sized to nothing but
 // not `display: none`, which would stop Chrome painting them. A pattern's strokes take `currentColor` from where the
@@ -125,7 +124,7 @@ function Marker({ index }: { index: number }) {
 
 /*===== Story Trail =====*/
 /**
- * «از کجا شروع می‌شود؟» for design 7: the four steps as stops on one chalk trail, on a single board instead of four
+ * «از کجا شروع می‌شود؟»: the four steps as stops on one chalk trail, on a single board instead of four
  * boxes. The dog peeks over the board's top edge above step 3, where the courses unlock (the open lock and his
  * bubble say the same thing). Stacked, the trail runs down the start side and he peeks in at the far corner.
  *
@@ -164,8 +163,8 @@ export function StoryTrail() {
         {/*------ The stops ------*/}
         <ol className="relative grid gap-y-8 lg:grid-cols-4 lg:gap-x-10">
           <WindingTrail />
-          {LAB_STEPS.map((step, index) => {
-            const last = index === LAB_STEPS.length - 1;
+          {STEPS.map((step, index) => {
+            const last = index === STEPS.length - 1;
             return (
               <li
                 key={step.title}
@@ -198,7 +197,7 @@ export function StoryTrail() {
                   <h3 className="font-display text-lg leading-snug font-bold text-(--st-ink) md:text-xl">
                     {step.title}
                   </h3>
-                  <p className="mt-1.5 max-w-64 text-[15px] leading-7 text-(--st-ink)/75">{STEP_DETAILS[index]}</p>
+                  <p className="mt-1.5 max-w-64 text-[15px] leading-7 text-(--st-ink)/75">{step.detail}</p>
                 </div>
               </li>
             );

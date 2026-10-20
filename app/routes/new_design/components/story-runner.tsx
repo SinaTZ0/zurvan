@@ -1,6 +1,6 @@
 import { PawPrint } from "lucide-react";
 
-import { Bubble, Cut } from "~/routes/design_lab/components/story/story-parts";
+import { Bubble, Cut } from "~/routes/new_design/components/story-parts";
 
 /*===== Timing =====*/
 // One lap: Fandogh chases his ball across the lane in the first RUN share of the cycle, then the lane rests empty
@@ -8,7 +8,7 @@ import { Bubble, Cut } from "~/routes/design_lab/components/story/story-parts";
 const RUN = 0.55;
 const PRINTS = 9;
 
-// The lap lives in the lane's own <style>: it's only rendered on design 7, and only moves without reduced motion.
+// The lap lives in the lane's own <style>, and only moves without reduced motion.
 // Positions are physical (left/right), as the run is right to left on screen whatever the page's direction.
 const RUNNER_CSS = `
   .st-lane { --cycle: 7s; --dog-w: 5.5rem; }
@@ -84,7 +84,7 @@ function Ball() {
 function ChalkGround() {
   return (
     <svg
-      className="absolute inset-x-0 bottom-0 h-10 w-full text-(--st-ink) opacity-60 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] md:bottom-2"
+      className="absolute inset-x-0 bottom-0 h-10 w-full [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] text-(--st-ink) opacity-60 md:bottom-2"
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"

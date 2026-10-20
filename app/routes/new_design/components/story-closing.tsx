@@ -2,7 +2,7 @@ import { Link } from "~/components/link";
 import { CENTER_DESCRIPTOR, CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { Bubble, Cut, EvaluationButton, HEADING, Ticks } from "~/routes/design_lab/components/story/story-parts";
+import { Bubble, Cut, EvaluationButton, HEADING, Ticks } from "~/routes/new_design/components/story-parts";
 
 /*===== Trainer =====*/
 export function StoryTrainer() {
@@ -37,7 +37,10 @@ export function StoryTrainer() {
             <div className="st-wiggle-late st-pet relative">
               <Cut name="sit" className="block w-full -scale-x-100" />
             </div>
-            <Bubble tail="left" className="st-float-2 absolute top-0 right-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg">
+            <Bubble
+              tail="left"
+              className="st-float-2 absolute top-0 right-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg"
+            >
               {HEAD_TRAINER.firstName} مربی منه!
             </Bubble>
           </div>
@@ -76,25 +79,14 @@ export function StoryTrainer() {
 }
 
 /*===== Closing =====*/
-// The band can be its own colour (solid gold in one style): inside it, the ink, the bubbles' paper and the button
-// switch to the band's set. The `--st-close-*` defaults (story-theme) keep the page's own colours.
-const CLOSING_TOKENS = {
-  "--st-ink": "var(--st-close-ink)",
-  "--st-line": "var(--st-close-ink)",
-  "--st-paper": "var(--st-close)",
-  "--st-bubble-line": "var(--st-close-bubble)",
-  "--st-bubble-ink": "var(--st-close-bubble)",
-  "--st-red": "var(--st-close-btn)",
-  "--st-red-deep": "var(--st-close-btn-hover)",
-  "--st-on-red": "var(--st-close-btn-ink)",
-  "--st-dim": "var(--st-close-dim)",
-} as React.CSSProperties;
+// Inside the band, the bubble's paper is the band's own grey, so the bubble reads as cut from it.
+const CLOSING_TOKENS = { "--st-paper": "var(--st-sage)" } as React.CSSProperties;
 
 // The leash image is cut flat at the chest (84% down); that cut sits on the band's bottom edge, so the leash itself
 // dangles 16% of the image into the footer.
 export function StoryClosing() {
   return (
-    <section aria-labelledby="st-closing-title" style={CLOSING_TOKENS} className="relative z-10 bg-(--st-close)">
+    <section aria-labelledby="st-closing-title" style={CLOSING_TOKENS} className="relative z-10 bg-(--st-sage)">
       <div className="mx-auto grid max-w-6xl items-end gap-6 px-4 pt-12 md:px-8 md:pt-16">
         <div className="pb-[17rem] md:min-h-[27rem] md:pe-[18rem] md:pb-16">
           <h2 id="st-closing-title" className={`${HEADING} st-reveal text-4xl md:text-6xl`}>

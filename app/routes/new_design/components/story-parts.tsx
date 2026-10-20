@@ -1,5 +1,5 @@
 import { Link } from "~/components/link";
-import { LAB_LINKS } from "~/routes/design_lab/lab-content";
+import { LINKS } from "~/routes/new_design/content";
 import { cn } from "cn";
 
 /*===== Cut-outs =====*/
@@ -8,7 +8,6 @@ import { cn } from "cn";
 const CUTS = {
   paws: { width: 285, height: 463 },
   peek: { width: 271, height: 275 },
-  sniff: { width: 420, height: 367 },
   sit: { width: 317, height: 473 },
   leash: { width: 249, height: 456 },
   upside: { width: 232, height: 344 },
@@ -19,13 +18,13 @@ const CUTS = {
   home: { width: 474, height: 275 },
   center: { width: 491, height: 280 },
   lodge: { width: 480, height: 271 },
-  // Design 7's poses, one per service.
+  // The poses in «چه چیزی یاد می‌دهیم؟», one per service.
   "teach-basic": { width: 308, height: 392 },
   "teach-calm": { width: 402, height: 216 },
   "teach-work": { width: 340, height: 401 },
   "teach-medal": { width: 362, height: 393 },
   "teach-advice": { width: 433, height: 397 },
-  // Design 7's props along the steps' trail.
+  // Props along the steps' trail.
   signpost: { width: 360, height: 325 },
   key: { width: 360, height: 250 },
   flag: { width: 360, height: 313 },
@@ -34,19 +33,16 @@ const CUTS = {
 
 export type CutName = keyof typeof CUTS;
 
-// At night the scenery steps back so the dog stays the brightest thing on the page: the hedge has a drawn night
-// version; the rest is dimmed by `.st-dim` (story-home's theme CSS). The dog cut-outs are never dimmed.
-const NIGHT_VERSION: Partial<Record<CutName, string>> = { hedge: "hedge-night" };
-// The key and the flag stay bright: they're the steps' two gold accents (the unlock and the finish).
-const DIMMED_AT_NIGHT = new Set<CutName>(["plants", "ground", "home", "center", "lodge", "signpost", "bone"]);
+// The scenery steps back so the dog stays the brightest thing on the page (`.st-dim`, story-theme). The dog cut-outs are
+// never dimmed; the key and the flag stay bright too, as the steps' two gold accents (the unlock and the finish).
+const DIMMED = new Set<CutName>(["plants", "ground", "home", "center", "lodge", "signpost", "bone"]);
 
 /** One mascot or scenery cut-out. Position and size come from `className`; the aspect ratio is kept by `h-auto`. */
 export function Cut({ name, className, eager = false }: { name: CutName; className?: string; eager?: boolean }) {
   const { width, height } = CUTS[name];
-  const night = NIGHT_VERSION[name];
-  const image = (file: string, themeClass?: string) => (
+  return (
     <img
-      src={`/photo/design-lab/story/${file}.webp`}
+      src={`/photo/new-design/${name}.webp`}
       alt=""
       width={width}
       height={height}
@@ -54,22 +50,8 @@ export function Cut({ name, className, eager = false }: { name: CutName; classNa
       fetchPriority={eager ? "high" : undefined}
       decoding="async"
       draggable={false}
-      className={cn(
-        "pointer-events-none h-auto max-w-none select-none",
-        DIMMED_AT_NIGHT.has(name) && "st-dim",
-        themeClass,
-        className,
-      )}
+      className={cn("pointer-events-none h-auto max-w-none select-none", DIMMED.has(name) && "st-dim", className)}
     />
-  );
-
-  // Both are rendered and CSS hides one, so the right one shows before hydration; a hidden lazy image isn't fetched.
-  if (night === undefined) return image(name);
-  return (
-    <>
-      {image(name, "st-day")}
-      {image(night, "st-night")}
-    </>
   );
 }
 
@@ -78,7 +60,7 @@ export function Cut({ name, className, eager = false }: { name: CutName; classNa
 // dip at every seam: a second row, mirrored and shifted half a tile, fills the dips and breaks up the repeat. A tile
 // is the strip's height x 492/93 wide (296px, 381px at md); the mirrored row is placed from the right, which the flip
 // turns into the left, so its seams land halfway between the first row's whatever the screen width.
-const GROUND_TILE = "url(/photo/design-lab/story/ground.webp)";
+const GROUND_TILE = "url(/photo/new-design/ground.webp)";
 
 /** A full-width strip of path (dirt, stones, grass) that separates two sections. Decorative. */
 export function GroundStrip({ className }: { className?: string }) {
@@ -128,7 +110,7 @@ export function Bubble({
 }
 
 /*===== Buttons =====*/
-/** The main action everywhere: the free evaluation. White on #A63D30 is 6.3:1; each palette pairs its own text. */
+/** The main action everywhere: the free evaluation, near-black on the gold. */
 export function EvaluationButton({
   children = "درخواست ارزیابی رایگان",
   className,
@@ -138,7 +120,7 @@ export function EvaluationButton({
 }) {
   return (
     <Link
-      to={LAB_LINKS.evaluation}
+      to={LINKS.evaluation}
       className={cn(
         "inline-flex items-center justify-center rounded-full bg-(--st-red) px-7 py-3 text-base font-bold text-(--st-on-red) transition-colors hover:bg-(--st-red-deep) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--st-ink)",
         className,

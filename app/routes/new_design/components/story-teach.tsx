@@ -5,15 +5,15 @@ import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useTransform
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { formatNumberFa } from "~/lib/digits";
-import { LAB_SERVICES } from "~/routes/design_lab/lab-content";
-import { Bubble, Cut, HEADING } from "~/routes/design_lab/components/story/story-parts";
-import { GRAIN } from "~/routes/design_lab/components/story/story-theme";
-import type { CutName } from "~/routes/design_lab/components/story/story-parts";
+import { SERVICES } from "~/routes/new_design/content";
+import { Bubble, Cut, HEADING } from "~/routes/new_design/components/story-parts";
+import { GRAIN } from "~/routes/new_design/components/story-theme";
+import type { CutName } from "~/routes/new_design/components/story-parts";
 
 /*===== Content =====*/
 // What each service opens into. A draft from docs/zurvan-courses.md (the course cards and the owner's notes) for the
 // owner to check: no prices, session counts or promises the cards don't make.
-type ServiceTitle = (typeof LAB_SERVICES)[number]["title"];
+type ServiceTitle = (typeof SERVICES)[number]["title"];
 
 // `rise` is the pose's height against the standing ones, so every pose is drawn at one scale and the lying dog
 // doesn't swell to a standing dog's height.
@@ -72,7 +72,7 @@ const TEACH: Record<
   },
 };
 
-const ITEMS = LAB_SERVICES.map((service) => ({ ...service, ...TEACH[service.title] }));
+const ITEMS = SERVICES.map((service) => ({ ...service, ...TEACH[service.title] }));
 
 // The garland across the top of the plate: pennants hung along a sagging string (Q 200 46), each turned to the string.
 // Every third is gold, the rest a tint of the ink.
@@ -296,7 +296,7 @@ export function StoryTeach() {
               {/*------ Scenery ------*/}
               {/* No sky objects: the black is the site's own colour, not night. A garland of pennants is strung across
                   the top, as over a yard on a training day, above two lines of hills, the far one fainter: tints of the
-                  ink on the plate, so they work in any palette. Wide screens only, as the phone stage is too short. */}
+                  ink on the plate. Wide screens only, as the phone stage is too short. */}
               <svg viewBox="0 0 400 50" className="absolute inset-x-0 top-[11%] hidden w-full lg:block">
                 <path
                   d="M0 6 Q200 46 400 6"
@@ -332,13 +332,19 @@ export function StoryTeach() {
                 />
               </svg>
               <Cut name="hedge" className="st-sway absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
-              <Cut name="hedge" className="st-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block" />
+              <Cut
+                name="hedge"
+                className="st-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block"
+              />
               <Cut
                 name="ground"
                 className="absolute bottom-[3%] left-[2%] w-56 md:w-80 lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
               />
               <Cut name="plants" className="st-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
-              <Cut name="plants" className="st-sway-2 absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]" />
+              <Cut
+                name="plants"
+                className="st-sway-2 absolute -right-[3%] -bottom-[3%] w-24 -scale-x-100 md:w-32 lg:w-[20%]"
+              />
 
               {pinned && (
                 <StepCount shown={shown} className="absolute top-7 right-8 hidden text-lg lg:block xl:text-xl" />
@@ -365,7 +371,10 @@ export function StoryTeach() {
                       style={{ height: `${item.rise * 100}%` }}
                       className="relative flex max-w-full justify-center"
                     >
-                      <Cut name={item.pose} className="st-breathe h-full w-auto max-w-full object-contain object-bottom" />
+                      <Cut
+                        name={item.pose}
+                        className="st-breathe h-full w-auto max-w-full object-contain object-bottom"
+                      />
                       {/* On wide screens the bubble sits by his head (he faces right); on phones it's past him, in the plate's free corner. */}
                       <motion.div
                         {...bubble}

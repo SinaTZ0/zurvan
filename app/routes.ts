@@ -58,10 +58,10 @@ export default [
 
   route("auth", "routes/auth/auth.tsx"),
 
-  /*===== Design Lab =====*/
-  // Mascot-led home page directions for the owner to compare (seven so far); outside the storefront shell because each one draws
-  // its own header and footer. Not linked from anywhere and `noindex`.
-  route("design-lab/:variant?", "routes/design_lab/design-lab.tsx"),
+  /*===== New Design =====*/
+  // The mascot-led home page the owner is reviewing; outside the storefront shell because it draws its own header and
+  // footer. Not linked from anywhere and `noindex`.
+  route("new-design", "routes/new_design/new-design.tsx"),
 
   /*===== Resource Routes =====*/
   route("api/auth/*", "routes/api_auth/api-auth.ts"),
