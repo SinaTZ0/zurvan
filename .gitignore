@@ -30,3 +30,6 @@
 
 # Local note on making images with the Codex CLI
 /docs/image-gen.md
+
+# Server SSH credentials, kept locally
+/server-ssh.txt
