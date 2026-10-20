@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { useLenis } from "lenis/react";
 import Snap from "lenis/snap";
 import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useTransform } from "motion/react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
@@ -178,8 +178,9 @@ function StepCount({ shown, className }: { shown: number; className?: string }) 
  * its start corner. A transform doesn't shrink the box, so the wrapper's height follows the measured heading times
  * the same factor. `--closed` is the closed size over the open one; the open size is fluid (FLUID.service), so the
  * ratio steps by width only, keeping closed headings readable on phones and quiet on wide screens.
+ * `stacked`: below lg only the open service shows (StoryTeach), so every heading there is drawn at the open size.
  */
-function ServiceTitle({ title, open }: { title: string; open: boolean }) {
+function ServiceTitle({ title, open, stacked }: { title: string; open: boolean; stacked: boolean }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [height, setHeight] = useState<number>();
 
@@ -198,6 +199,7 @@ function ServiceTitle({ title, open }: { title: string; open: boolean }) {
       className={cn(
         "transition-[height] duration-500 [--closed:.667] motion-reduce:transition-none md:[--closed:.6] xl:[--closed:.5]",
         height !== undefined && (open ? "h-(--h)" : "h-[calc(var(--h)*var(--closed))]"),
+        stacked && "max-lg:h-auto",
       )}
     >
       {/* The page is RTL, so the start corner is the top right. */}
@@ -207,6 +209,7 @@ function ServiceTitle({ title, open }: { title: string; open: boolean }) {
         className={cn(
           "origin-top-right font-display leading-[1.25] font-bold text-balance transition-[scale,color] duration-500 motion-reduce:transition-none",
           open ? "text-(--st-ink)" : "scale-(--closed) text-(--st-ink)/45",
+          stacked && "max-lg:scale-100 max-lg:text-(--st-ink)",
         )}
       >
         {title}
@@ -262,7 +265,13 @@ export function StoryTeach() {
           style={pinned ? { clipPath } : undefined}
           className={cn("bg-(--st-paper-2) max-lg:[--st-clip-y:0]", pinned ? "absolute inset-0" : "py-16")}
         >
-          <div className="mx-auto grid h-full max-w-[88rem] grid-rows-[auto_auto_1fr] gap-x-10 px-4 pt-[max(1.25rem,4svh)] pb-24 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:grid-rows-[auto_1fr] lg:pb-20 xl:gap-x-16">
+          <div
+            className={cn(
+              "mx-auto grid h-full max-w-[88rem] gap-x-10 px-4 pt-[max(1.25rem,4svh)] pb-24 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:grid-rows-[auto_1fr] lg:pb-20 xl:gap-x-16",
+              // Pinned phones show one service at a time, so the plate takes whatever height that service leaves.
+              pinned ? "grid-rows-[auto_minmax(0,1fr)_auto]" : "grid-rows-[auto_auto_1fr]",
+            )}
+          >
             {/* Sizes are fluid (FLUID); on short wide screens the intro is dropped too, as the open service needs the room. */}
             {/*------ Title ------*/}
             <header>
@@ -283,16 +292,16 @@ export function StoryTeach() {
 
             {/*------ The plate: Fandogh's training yard, one pose per service ------*/}
             {/* The panel reads as an open picture book: the text page on one side, this illustrated plate on the
-                other, full height, with the step count as its page number. On phones it's a short stage above the
-                list (shorter still on short phones), with him to the left and the bubble beside him. */}
+                other, full height, with the step count as its page number. On phones it's a stage above the open
+                service, filling the screen's spare height, with the bubble over his head. */}
             <div
               aria-hidden
               style={{ backgroundImage: GRAIN }}
               className={cn(
-                "relative mt-4 h-[33svh] overflow-hidden rounded-[1.5rem] border-2 border-(--st-line)/10 bg-(--st-paper) max-lg:[@media(max-height:44rem)]:h-[22svh]",
+                "relative mt-4 overflow-hidden rounded-[1.5rem] border-2 border-(--st-line)/10 bg-(--st-paper)",
                 "lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:h-auto lg:rounded-[2.5rem]",
                 // Unpinned, the list runs long: the plate stays in view beside it instead of stretching down it.
-                !pinned && "lg:sticky lg:top-8 lg:h-[36rem] lg:self-start",
+                !pinned && "h-[min(24rem,55svh)] lg:sticky lg:top-8 lg:h-[36rem] lg:self-start",
               )}
             >
               {/*------ Scenery ------*/}
@@ -340,7 +349,7 @@ export function StoryTeach() {
               />
               <Cut
                 name="ground"
-                className="absolute bottom-[3%] left-[2%] w-64 md:w-80 lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
+                className="absolute bottom-[3%] left-[2%] w-[min(20rem,90%)] md:left-[6%] md:w-[60%] lg:bottom-[6%] lg:left-1/2 lg:w-[66%] lg:-translate-x-1/2"
               />
               <Cut name="plants" className="st-sway absolute -bottom-[3%] -left-[3%] hidden w-[22%] lg:block" />
               <Cut
@@ -362,66 +371,81 @@ export function StoryTeach() {
                   transition: { duration: 0.3, delay: on ? 0.45 : 0 },
                 } as const;
                 return (
-                  <div
-                    key={item.title}
-                    className="absolute bottom-[6%] left-[2%] flex h-[82%] w-64 items-end justify-center md:w-80 lg:inset-x-0 lg:bottom-[9%] lg:h-[60%] lg:max-h-[30rem] lg:w-auto"
-                  >
-                    <motion.div
-                      initial={false}
-                      animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }}
-                      transition={{ duration: 0.3, delay: on ? 0.28 : 0 }}
-                      style={{ height: `${item.rise * 100}%` }}
-                      className="relative flex max-w-full justify-center"
-                    >
-                      <Cut
-                        name={item.pose}
-                        className="st-breathe h-full w-auto max-w-full object-contain object-bottom"
-                      />
-                      {/* On wide screens the bubble sits by his head (he faces right); on phones it's past him, in the plate's free corner. */}
+                  <Fragment key={item.title}>
+                    {/* On phones the box stops short of the plate's top, which the bubble holds; a narrow plate has no
+                        room for it beside his head. */}
+                    <div className="absolute bottom-[6%] left-[2%] flex h-[calc(94%-5.5rem)] w-[min(20rem,90%)] items-end justify-center md:left-[6%] md:w-[60%] lg:inset-x-0 lg:bottom-[9%] lg:h-[60%] lg:max-h-[30rem] lg:w-auto">
                       <motion.div
-                        {...bubble}
-                        className={cn(
-                          "absolute hidden origin-bottom-left lg:block",
-                          item.bubbleAt ?? "bottom-[86%] left-[64%]",
-                        )}
+                        initial={false}
+                        animate={{ opacity: on ? 1 : 0, y: on ? 0 : 10 }}
+                        transition={{ duration: 0.3, delay: on ? 0.28 : 0 }}
+                        style={{ height: `${item.rise * 100}%` }}
+                        className="relative flex max-w-full justify-center"
                       >
-                        <Bubble tail="left" className="st-float xl:px-5 xl:py-3 xl:text-xl">
-                          {item.says}
-                        </Bubble>
+                        <Cut
+                          name={item.pose}
+                          className="st-breathe h-full w-auto max-w-full object-contain object-bottom"
+                        />
+                        {/* On wide screens the bubble sits by his head (he faces right); below lg it's on the plate (after this box). */}
+                        <motion.div
+                          {...bubble}
+                          className={cn(
+                            "absolute hidden origin-bottom-left lg:block",
+                            item.bubbleAt ?? "bottom-[86%] left-[64%]",
+                          )}
+                        >
+                          <Bubble tail="left" className="st-float xl:px-5 xl:py-3 xl:text-xl">
+                            {item.says}
+                          </Bubble>
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
+                    </div>
+                    {/* Placed on the plate, not off the dog's box, so it never runs past the plate's edge. On phones it
+                        holds the top-right corner, over his head; on a tablet's wider plate it moves in to stay over
+                        his head. */}
                     <motion.div
                       {...bubble}
-                      className="absolute top-[4%] left-[calc(100%-1.75rem)] origin-bottom-left lg:hidden"
+                      className="absolute top-[4%] right-3 origin-bottom-left md:right-auto md:left-[46%] lg:hidden"
                     >
-                      <Bubble tail="left" className="st-float max-w-[8.5rem] md:max-w-none">
+                      <Bubble tail="left" className="st-float max-w-[11rem] md:max-w-none">
                         {item.says}
                       </Bubble>
                     </motion.div>
-                  </div>
+                  </Fragment>
                 );
               })}
             </div>
 
             {/*------ The services; the one in view is open ------*/}
-            <div className="relative mt-6 lg:mt-8 lg:self-center">
+            {/* Pinned phones stack every service in one cell and show only the open one: the old fades out, then the
+                new fades in. The cell is as tall as the longest service, so the plate above doesn't jump. */}
+            <div className="relative mt-5 lg:mt-8 lg:self-center">
               {/* The rail: its gold fill follows the scroll through the pinned stretch. */}
               {pinned && (
                 <div aria-hidden className="absolute inset-y-0 start-0 w-0.5 bg-(--st-line)/15">
                   <motion.div style={{ scaleY: steps }} className="h-full w-full origin-top bg-(--st-red)" />
                 </div>
               )}
-              <ul className={cn(pinned && "ps-5 md:ps-7")}>
+              <ul className={cn(pinned && "ps-5 max-lg:grid md:ps-7")}>
                 {ITEMS.map((item, index) => {
                   const open = !pinned || index === active;
                   return (
-                    <li key={item.title} style={{ paddingBlock: FLUID.gap }}>
-                      <ServiceTitle title={item.title} open={open} />
+                    <li
+                      key={item.title}
+                      style={{ paddingBlock: FLUID.gap }}
+                      className={cn(
+                        pinned &&
+                          "motion-reduce:transition-none max-lg:transition-opacity max-lg:duration-300 max-lg:[grid-area:1/1]",
+                        pinned && (open ? "max-lg:delay-300" : "max-lg:opacity-0"),
+                      )}
+                    >
+                      <ServiceTitle title={item.title} open={open} stacked={pinned} />
                       {/* Collapsed by grid rows, not unmounted, so every service stays readable to a screen reader. */}
                       <div
                         className={cn(
                           "grid transition-[grid-template-rows,opacity] duration-500 motion-reduce:transition-none",
                           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                          pinned && "max-lg:grid-rows-[1fr] max-lg:opacity-100",
                         )}
                       >
                         <div className="overflow-hidden">
