@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { useEffect, useState } from "react";
 
 import { Bubble, Cut, EvaluationButton, HEADING } from "~/routes/design_lab/components/story/story-parts";
@@ -64,9 +65,23 @@ function TypedWord() {
 // "The mascot lives in the layout": the paws image is cut flat at the chest, 87% down, which is exactly where the sage
 // card's top edge sits. The card is behind the image (z-0 vs z-10), so the paws drape over its border while the body
 // seems to stand behind it. Card geometry hangs off the image box (`top-[87%]`), so it holds at every size.
-export function StoryHero({ typed = false }: { typed?: boolean }) {
+//
+// `fit` (design 7) makes the hero exactly one laptop screen from lg up, from a 1280×720 to a 2560×1600 at 150%:
+// the section takes the screen less the header (4.75rem) and the 2.25rem of ground showing under it, the grid
+// stretches so the card lands on its bottom, and the dog and headline are sized by the screen's height. The dog's
+// height is the screen less 13.5rem (header, ground, the card's 5rem below him and a little air), times 285/463 for
+// his width. He stops at 23rem, ~1.3x the cut-out's natural width, so a tall screen gets air rather than a soft dog:
+// the dog and copy are centred in the height, and the card runs down to the section's bottom (clipped there, under
+// the ground), so the spare height is shared between the air above him and the card below.
+export function StoryHero({ typed = false, fit = false }: { typed?: boolean; fit?: boolean }) {
   return (
-    <section aria-labelledby="st-hero-title" className="relative overflow-x-clip">
+    <section
+      aria-labelledby="st-hero-title"
+      className={cn(
+        "relative overflow-x-clip",
+        fit && "lg:flex lg:min-h-[calc(100svh-7rem)] lg:flex-col lg:overflow-clip",
+      )}
+    >
       {/* The one load moment: he rises from behind the card edge, then the bubble pops. Off for reduced motion. */}
       <style>{`
         @media (prefers-reduced-motion: no-preference) {
@@ -87,10 +102,29 @@ export function StoryHero({ typed = false }: { typed?: boolean }) {
         <Cut name="plants" eager className="st-sway w-full" />
       </div>
 
-      <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr]">
+      <div
+        className={cn(
+          "mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr]",
+          fit && "lg:w-full lg:flex-1 lg:items-center",
+        )}
+      >
         {/*------ Copy ------*/}
-        <div className="pt-10 pb-8 lg:pt-16 lg:pb-24">
-          <h1 id="st-hero-title" className={`${HEADING} text-[2.6rem] sm:text-6xl lg:text-[4.5rem]`}>
+        <div
+          className={cn(
+            "pt-10 pb-8",
+            fit ? "lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)]" : "lg:pt-16 lg:pb-24",
+          )}
+        >
+          {/* Fitted, the headline follows the height too (with a rem part, so browser zoom still enlarges it), and
+              the width on a narrow lg screen, where its column is tight. */}
+          <h1
+            id="st-hero-title"
+            className={cn(
+              HEADING,
+              "text-[2.6rem] sm:text-6xl",
+              fit ? "lg:text-[clamp(2.75rem,calc(0.5rem+min(7.5svh,5.2vw)),4.5rem)]" : "lg:text-[4.5rem]",
+            )}
+          >
             سلام! بیا با هم
             <br />
             یاد بگیریم
@@ -112,16 +146,35 @@ export function StoryHero({ typed = false }: { typed?: boolean }) {
         </div>
 
         {/*------ Mascot on the card edge ------*/}
-        <div className="relative mb-20 ml-auto w-[13.5rem] sm:w-72 lg:w-[21rem]">
+        <div
+          className={cn(
+            "relative mb-20 ml-auto w-[13.5rem] sm:w-72",
+            fit ? "lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)]" : "lg:w-[21rem]",
+          )}
+        >
           <div
             aria-hidden
-            className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-(--st-line)/70 bg-(--st-sage)"
+            className={cn(
+              "absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-(--st-line)/70 bg-(--st-sage)",
+              fit && "lg:-bottom-[100svh]",
+            )}
           />
-          <Cut name="plants" eager className="st-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-56" />
+          {/* Fitted, the bushes are a share of the dog's width (their lg sizes at his 21rem), so they shrink with him. */}
           <Cut
             name="plants"
             eager
-            className="st-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-44"
+            className={cn(
+              "st-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48",
+              fit ? "lg:w-[67%]" : "lg:w-56",
+            )}
+          />
+          <Cut
+            name="plants"
+            eager
+            className={cn(
+              "st-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40",
+              fit ? "lg:w-[52%]" : "lg:w-44",
+            )}
           />
           {/* The wrapper wiggles (design 7) while the image rises, so the two animations don't fight over one transform. */}
           <div className="st-wiggle st-pet relative z-10">
