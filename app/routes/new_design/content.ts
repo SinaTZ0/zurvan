@@ -1,27 +1,35 @@
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Content =====*/
-// The real facts the new design tells, taken from the live home page; the wording is in the dog's voice, the facts
-// (what happens, in what order, what is offered) stay.
+// The real facts the new design tells, taken from the live home page. The wording is spoken Persian (`می‌شه`, `رو`),
+// the register the dog uses in his bubbles, so the page reads as one voice; the facts (what happens, in what order,
+// what is offered) stay. Plain and concrete on purpose: the owner's customers found abstract lines («با حوصله و دقت»,
+// «گزینه‌های انعطاف‌پذیر») machine-written (2026-10-20).
 
 /** The path from a new dog to training (app-spec F3, F5, F6). A real sequence, so the trail numbers it. */
 export const STEPS = [
-  { title: "درخواست ارزیابی رایگان", detail: "سگت را معرفی کن؛ عکس و فیلم کوتاه اختیاری است." },
+  { title: "درخواست ارزیابی رایگان", detail: "سگت رو معرفی کن. اگه خواستی، یه عکس یا فیلم کوتاه هم بذار." },
   {
-    title: `${HEAD_TRAINER.firstName} تماس می‌گیرد`,
-    detail: `${HEAD_TRAINER.firstName} وقت هماهنگ می‌کند و سگت را از نزدیک می‌بیند. رایگان و بدون تعهد.`,
+    title: `${HEAD_TRAINER.firstName} زنگ می‌زنه`,
+    detail: `با هم یه وقت می‌ذارید و ${HEAD_TRAINER.firstName} سگت رو از نزدیک می‌بینه.`,
   },
-  { title: "دوره‌های مناسب باز می‌شوند", detail: "بعد از ارزیابی، دوره‌هایی که به درد سگت می‌خورد باز می‌شود." },
-  { title: "آموزش شروع می‌شود", detail: "بعد از خرید، جلسه‌ها را با هم هماهنگ می‌کنید." },
+  { title: "دوره‌ها باز می‌شن", detail: "توی حسابت می‌بینی کدوم دوره‌ها برای سگت بازه." },
+  {
+    title: "آموزش شروع می‌شه",
+    detail: `بعد از پرداخت، ${HEAD_TRAINER.firstName} باهات تماس می‌گیره و جلسه‌ها رو با هم می‌چینید.`,
+  },
 ] as const;
 
 /** The five services from the owner's business card. All breeds and ages. */
 export const SERVICES = [
-  { title: "آموزش پایه و پیشرفته", detail: "آموزش عمومی و فرمان‌پذیری، از اولین فرمان‌ها تا مهارت‌های پیشرفته." },
-  { title: "رفتارشناسی و اصلاح رفتار", detail: "شناخت رفتار سگ و کمک به حل مشکلات رفتاری." },
-  { title: "آموزش تخصصی", detail: "دفاع، ردیابی، گارد، اطاعت و آموزش سگ‌های نگهبان و ورزشی." },
-  { title: "آمادگی برای مسابقات داخلی و بین‌المللی", detail: "تمرین و آموزش تا سطوح مسابقاتی." },
-  { title: "مشاوره‌ی تخصصی قبل و بعد از آموزش", detail: "راهنمایی برای شروع آموزش و ادامه‌ی تمرین‌ها بعد از آن." },
+  { title: "آموزش پایه و پیشرفته", detail: "فرمان‌پذیری عمومی، برای توله‌ها و سگ‌های بزرگ‌تر." },
+  { title: "رفتارشناسی و اصلاح رفتار", detail: "برای وقتی که یه رفتار سگت زندگی رو براتون سخت کرده." },
+  { title: "آموزش تخصصی", detail: "برای سگ‌هایی که قراره کار کنن: نگهبانی، ردیابی، دفاع و ورزش." },
+  { title: "آمادگی برای مسابقات داخلی و بین‌المللی", detail: "برای وقتی که می‌خوای سگت رو ببری مسابقه." },
+  {
+    title: "مشاوره‌ی تخصصی قبل و بعد از آموزش",
+    detail: `سؤال‌هات رو قبل از شروع و بعد از تموم شدن آموزش از خود ${HEAD_TRAINER.firstName} بپرس.`,
+  },
 ] as const;
 
 /**

@@ -5,6 +5,7 @@ import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useTransform
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { formatNumberFa } from "~/lib/digits";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { SERVICES } from "~/routes/new_design/content";
 import { Bubble, Cut, HEADING } from "~/routes/new_design/components/story-parts";
 import { GRAIN } from "~/routes/new_design/components/story-theme";
@@ -24,9 +25,9 @@ const TEACH: Record<
 > = {
   "آموزش پایه و پیشرفته": {
     points: [
-      "از نام، بشین، بایست و خواب تا هم‌قدم، بمون و بیا.",
-      "در سطح حرفه‌ای: ماندن طولانی، هم‌قدم حرفه‌ای و فرمان‌پذیری در بیرون.",
-      "از دو ماهگی می‌شود شروع کرد.",
+      "نام، بشین، بایست، خواب، بمون، بیا و هم‌قدم.",
+      "سطح حرفه‌ای: ماندن‌های طولانی و گوش دادن به فرمان بیرون از خونه.",
+      "از دو ماهگی می‌شه شروع کرد.",
     ],
     pose: "teach-basic",
     rise: 0.98,
@@ -35,8 +36,7 @@ const TEACH: Record<
   "رفتارشناسی و اصلاح رفتار": {
     points: [
       "پرخاشگری، گاز گرفتن، اضطراب جدایی، خطای دستشویی و آشغال‌خواری.",
-      "اول ریشه‌ی رفتار را می‌شناسیم، بعد با هم درستش می‌کنیم.",
-      "برای هر سن و هر نژادی.",
+      "اول می‌فهمیم چرا این کار رو می‌کنه، بعد روی خودِ رفتار کار می‌کنیم.",
     ],
     pose: "teach-calm",
     rise: 0.54,
@@ -48,23 +48,23 @@ const TEACH: Record<
     points: [
       "نگهبان محل، بادی‌گارد، سگ سرویس و سگ آلارم.",
       "ردیابی: زنده‌یاب و موادیاب.",
-      "برنامه‌ی هر سگ بعد از ارزیابی چیده می‌شود.",
+      "برنامه‌ی هر سگ بعد از ارزیابی چیده می‌شه.",
     ],
     pose: "teach-work",
     rise: 1,
     says: "آماده‌ی کارم!",
   },
   "آمادگی برای مسابقات داخلی و بین‌المللی": {
-    points: ["آمادگی برای آزمون‌های BH، IGP ۱ تا ۳، FH و WUSV.", "تمرین منظم ردیابی، اطاعت و محافظت، تا روز مسابقه."],
+    points: ["آمادگی برای آزمون‌های BH، IGP ۱ تا ۳، FH و WUSV.", "تمرین منظم ردیابی، اطاعت و محافظت تا روز مسابقه."],
     pose: "teach-medal",
     rise: 0.98,
-    says: "تمرین امروز، مدال فردا!",
+    says: "صاف بشینم؟ داور داره نگاه می‌کنه!",
   },
   "مشاوره‌ی تخصصی قبل و بعد از آموزش": {
     points: [
-      "قبل از شروع: کدام دوره، از کجا و با چه هدفی.",
-      "بعد از آموزش: راهنمایی برای این‌که تمرین‌ها در خانه ادامه پیدا کنند.",
-      "قدم اول همیشه یک ارزیابی رایگان است.",
+      "قبل از شروع: کدوم دوره و با چه هدفی.",
+      "بعد از آموزش: این‌که تمرین‌ها توی خونه چطور ادامه پیدا کنه.",
+      "قدم اولش همون ارزیابی رایگانه.",
     ],
     pose: "teach-advice",
     rise: 0.99,
@@ -217,7 +217,7 @@ function ServiceTitle({ title, open }: { title: string; open: boolean }) {
 
 /*===== Story Teach =====*/
 /**
- * «چه چیزی یاد می‌دهیم؟» as a pinned scroll scene: the panel grows from a card to the whole screen as it arrives,
+ * «چی می‌تونم یاد بگیرم؟» as a pinned scroll scene: the panel grows from a card to the whole screen as it arrives,
  * then holds while each service opens in turn and Fandogh changes pose for it. With reduced motion it's a plain
  * section with every service open.
  */
@@ -268,7 +268,7 @@ export function StoryTeach() {
             <header>
               <div className="flex items-baseline justify-between gap-4">
                 <h2 id="st-teach-title" style={{ fontSize: FLUID.title }} className={HEADING}>
-                  چه چیزی یاد می‌دهیم؟
+                  چی می‌تونم یاد بگیرم؟
                 </h2>
                 {/* On phones the plate is too short for a page number beside the bubble, so it sits here. */}
                 {pinned && <StepCount shown={shown} className="text-base md:text-lg lg:hidden" />}
@@ -277,7 +277,7 @@ export function StoryTeach() {
                 style={{ fontSize: FLUID.intro }}
                 className="mt-3 hidden max-w-[28em] leading-[1.75] text-(--st-ink)/70 md:block lg:[@media(max-height:46rem)]:hidden"
               >
-                مهارت‌های کاربردی، سگی آرام‌تر و شادتر، و رابطه‌ای محکم‌تر. برای همه‌ی نژادها و سنین.
+                {HEAD_TRAINER.firstName} با همه‌ی نژادها و توی هر سنی کار می‌کنه. این پنج تا کاریه که انجام می‌ده.
               </p>
             </header>
 

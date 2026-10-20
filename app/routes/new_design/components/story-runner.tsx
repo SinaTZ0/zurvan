@@ -124,7 +124,7 @@ function ChalkGround() {
 
 /*===== Story Runner =====*/
 /**
- * A chalk-drawn strip of ground between the steps and «چه چیزی یاد می‌دهیم؟» where Fandogh gallops across after his ball, kicking up
+ * A chalk-drawn strip of ground between the steps and «چی می‌تونم یاد بگیرم؟» where Fandogh gallops across after his ball, kicking up
  * dust and leaving paw prints. Decorative, so it's hidden from screen readers. With reduced motion he just stands on
  * the path with the ball by his nose.
  */

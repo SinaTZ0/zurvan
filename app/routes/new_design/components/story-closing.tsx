@@ -45,7 +45,7 @@ export function StoryTrainer() {
         tail="left"
         className="st-float absolute top-6 left-[calc(6%+5.4rem)] z-10 w-40 md:top-5 md:left-[calc(8%+7.6rem)]"
       >
-        وارونه‌ام، ولی هنوز دوستتم!
+        از این بالا همه‌چی معلومه!
       </Bubble>
 
       {/* Foliage in the far corner, out in the page margin, so it never runs into the copy. */}
@@ -91,8 +91,9 @@ export function StoryTrainer() {
         </div>
 
         {/*------ Copy ------*/}
-        {/* Three steps of type and no more: the name in gold at heading size, the slogan under it, then everything
-            else at body size. The name is the heading (and the one gold line on the page, the owner's call,
+        {/* Three steps of type and no more: the name in gold at heading size, one plain line under it (the person
+            who evaluates the dog is the one who trains it, a fact rather than a slogan), then everything else at
+            body size. The name is the heading (and the one gold line on the page, the owner's call,
             2026-10-20): the section sells her. */}
         <div className="md:self-center">
           <h2
@@ -102,8 +103,7 @@ export function StoryTrainer() {
             {HEAD_TRAINER.name}
           </h2>
           <p className="mt-3 font-display text-xl leading-snug font-extrabold text-(--st-ink) md:text-2xl">
-            - یک مربی.
-            <br />- یک همراهی ماندگار.
+            همون کسی که سگت رو ارزیابی می‌کنه، آموزشش هم می‌ده.
           </p>
           <p className="mt-4 text-lg leading-8 text-(--st-ink)/80">{HEAD_TRAINER.role}</p>
 
@@ -115,7 +115,7 @@ export function StoryTrainer() {
                 className="size-5 shrink-0 text-(--st-red)"
                 strokeWidth={1.8}
               />
-              فعالیت حرفه‌ای از سال {toPersianDigits(String(HEAD_TRAINER.since))}
+              از سال {toPersianDigits(String(HEAD_TRAINER.since))} با سگ‌ها کار می‌کنه
             </li>
             <li className="flex items-center gap-3">
               <Award aria-hidden className="size-5 shrink-0 text-(--st-red)" strokeWidth={1.8} />
@@ -127,7 +127,7 @@ export function StoryTrainer() {
             to={LINKS.about}
             className="mt-7 inline-flex items-center gap-1.5 rounded text-base font-bold text-(--st-ink) underline decoration-(--st-mustard) decoration-2 underline-offset-8 hover:decoration-(--st-ink) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--st-ink)"
           >
-            آشنایی بیشتر با {HEAD_TRAINER.firstName}
+            بیشتر درباره‌ی {HEAD_TRAINER.firstName}
             <ArrowLeft aria-hidden className="size-4" />
           </Link>
         </div>
@@ -152,9 +152,9 @@ export function StoryClosing() {
       <div className="mx-auto grid max-w-6xl items-end gap-6 px-4 pt-12 md:px-8 md:pt-16">
         <div className="pb-[17rem] md:min-h-[27rem] md:pe-[18rem] md:pb-16">
           <h2 id="st-closing-title" className={`${HEADING} st-reveal text-4xl md:text-6xl`}>
-            هر وقت آماده‌ای،
+            حالا نوبت
             <br />
-            ما هم هستیم
+            سگ توئه!
           </h2>
           <EvaluationButton className="mt-7" />
         </div>
@@ -230,8 +230,8 @@ export function StoryFooter() {
               </span>
             </Link>
             <p className="mt-4 max-w-sm leading-7 text-pretty text-(--st-ink)/70">
-              از اولین تجربه‌های زندگی کنار سگت تا آموزش‌های تخصصی و حرفه‌ای، زروان همراهتونه؛ با
-              برنامه‌ای که متناسب با نیاز و شرایط هر سگ طراحی می‌شه.
+              {HEAD_TRAINER.name} از سال {toPersianDigits(String(HEAD_TRAINER.since))} سگ‌ها رو آموزش می‌ده:
+              فرمان‌پذیری، اصلاح رفتار، کارهای تخصصی و آمادگی مسابقه.
             </p>
             <ul className="mt-5 flex flex-wrap gap-2">
               {CENTER_LINKS.map((item) => {

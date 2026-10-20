@@ -124,7 +124,7 @@ function Marker({ index }: { index: number }) {
 
 /*===== Story Trail =====*/
 /**
- * «از کجا شروع می‌شود؟»: the four steps as stops on one chalk trail, on a single board instead of four
+ * «از کجا شروع کنیم؟»: the four steps as stops on one chalk trail, on a single board instead of four
  * boxes. The dog peeks over the board's top edge above step 3, where the courses unlock (the open lock and his
  * bubble say the same thing). Stacked, the trail runs down the start side and he peeks in at the far corner.
  *
@@ -136,7 +136,7 @@ export function StoryTrail() {
     <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-10 md:px-8 md:pb-16 lg:pt-20">
       <ChalkDefs />
       <h2 id="st-path-title" className={`${HEADING} st-reveal text-center text-3xl md:text-5xl`}>
-        از کجا شروع می‌شود؟
+        از کجا شروع کنیم؟
       </h2>
 
       <div className="st-reveal relative mx-auto mt-40 max-w-xl rounded-[2rem] bg-(--st-paper-2) px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">

@@ -18,7 +18,7 @@ const CUTS = {
   home: { width: 474, height: 275 },
   center: { width: 491, height: 280 },
   lodge: { width: 480, height: 271 },
-  // The poses in «چه چیزی یاد می‌دهیم؟», one per service.
+  // The poses in «چی می‌تونم یاد بگیرم؟», one per service.
   "teach-basic": { width: 308, height: 392 },
   "teach-calm": { width: 402, height: 216 },
   "teach-work": { width: 340, height: 401 },

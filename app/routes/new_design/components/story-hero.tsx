@@ -1,18 +1,20 @@
 import { cn } from "cn";
 import { useEffect, useState } from "react";
 
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { Bubble, Cut, EvaluationButton, HEADING } from "~/routes/new_design/components/story-parts";
 import { BRICK, GRAIN } from "~/routes/new_design/components/story-theme";
 
 /*===== Typed Word =====*/
-// The headline types what you learn together, one skill at a time, each in its own colour. The colours are
-// set by hand rather than taken from the palette: the palette's gold is the only accent, and the point is a change.
+// The headline types what the dog learns with the trainer, one skill at a time, each in its own colour. First person
+// singular on purpose: «یاد بگیریم بشینیم» put the owner on the floor too. The colours are set by hand rather than
+// taken from the palette: the palette's gold is the only accent, and the point is a change.
 const TYPED_WORDS = [
-  { text: "بشینیم", color: "#FFC21A" },
-  { text: "بمونیم", color: "#FFF4DC" },
-  { text: "بیایم", color: "#FFD98A" },
-  { text: "آروم باشیم", color: "#B9DDB0" },
-  { text: "کنار پا راه بریم", color: "#FFC21A" },
+  { text: "بشینم", color: "#FFC21A" },
+  { text: "بمونم", color: "#FFF4DC" },
+  { text: "صدام کنی، بیام", color: "#FFD98A" },
+  { text: "آروم باشم", color: "#B9DDB0" },
+  { text: "کنار پات راه برم", color: "#FFC21A" },
 ] as const;
 
 // Milliseconds per letter typed and erased, how long a whole word stays, and the beat before the next one starts.
@@ -62,6 +64,43 @@ function TypedWord() {
   );
 }
 
+/*===== Trainer's Name =====*/
+/**
+ * The trainer's name in the headline with a gold chalk underline. «طلا» means "gold", so the name gets the gold as a
+ * stroke under it rather than in the letters: the typed word below is already the headline's gold, and a gold name
+ * on top of it would make the first screen a bullion shop. The stroke draws right to left (the reading direction) as
+ * the end of the hero's one load moment, just after the bubble has popped; with reduced motion it's simply there.
+ */
+function TrainerName() {
+  return (
+    <span className="relative inline-block">
+      {HEAD_TRAINER.firstName}
+      <svg
+        aria-hidden
+        viewBox="0 0 120 14"
+        fill="none"
+        className="absolute top-[calc(100%-0.16em)] -right-[0.06em] w-[calc(100%+0.12em)] overflow-visible"
+      >
+        <filter id="st-hero-chalk" x="-5%" y="-40%" width="110%" height="180%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={3} />
+          <feDisplacementMap in="SourceGraphic" scale={1.6} />
+        </filter>
+        {/* One quick stroke under the word and a shorter hook back, the way a hand underlines a name. */}
+        <path
+          d="M118 4.5C88 8 52 9 3 6.5C30 10.5 62 12 92 11"
+          pathLength={1}
+          stroke="var(--st-red)"
+          strokeWidth={3.2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          filter="url(#st-hero-chalk)"
+          className="st-underline"
+        />
+      </svg>
+    </span>
+  );
+}
+
 /*===== Hero =====*/
 // "The mascot lives in the layout": the paws image is cut flat at the chest, 87% down, which is exactly where the sage
 // card's top edge sits. The card is behind the image (z-0 vs z-10), so the paws drape over its border while the body
@@ -91,6 +130,11 @@ export function StoryHero() {
           to { transform: none; clip-path: inset(-200px -200px 0 -200px); }
         }
         @keyframes st-pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+        /* Starts as the bubble lands (.75s + .45s). */
+        @media (prefers-reduced-motion: no-preference) {
+          .st-underline { stroke-dasharray: 1; animation: st-underline .6s cubic-bezier(.5,0,.3,1) 1.2s both; }
+        }
+        @keyframes st-underline { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
         @media (prefers-reduced-motion: no-preference) { .st-caret { animation: st-caret 1s steps(1) infinite; } }
         @keyframes st-caret { 50% { opacity: 0; } }
       `}</style>
@@ -112,20 +156,24 @@ export function StoryHero() {
             className={cn(
               HEADING,
               "text-[2.6rem] sm:text-6xl lg:text-[clamp(2.75rem,calc(0.5rem+min(7.5svh,5.2vw)),4.5rem)]",
+              // After the sizes: `cn` lets a later font size drop an earlier `leading-*`. Taller than HEADING's 1.2,
+              // so the underline under «طلا» clears the «گ» on the line below.
+              "leading-[1.4]",
             )}
           >
-            سلام! بیا با هم
+            {/* No «سلام» here: the bubble beside him already says it. */}
+            پیش <TrainerName />
             <br />
-            یاد بگیریم
+            یاد می‌گیرم
             {/* The typed word gets its own line, so the line's length changes and nothing else moves. */}
             <br />
-            <span className="sr-only">: بشینیم، بمونیم، بیایم، آروم باشیم و کنار پا راه بریم</span>
+            <span className="sr-only">: بشینم، بمونم، صدام کنی بیام، آروم باشم و کنار پات راه برم</span>
             <TypedWord />
           </h1>
           <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-(--st-ink)/80 lg:mx-0">
-            آموزش خصوصی، با حوصله و دقت،
+            آموزش خصوصی سگ در تهران،
             <br />
-            برای زندگی شادتر تو و سگت.
+            در محل خودتون یا توی مرکز.
           </p>
           <EvaluationButton className="mt-7" />
         </div>
@@ -156,7 +204,7 @@ export function StoryHero() {
             <Cut name="paws" eager className="st-rise block w-full" />
           </div>
           <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
-            سلام، من زروانم! جای خوبی اومدی.
+            سلام، من زروانم! بیا تو، در بازه.
           </Bubble>
         </div>
       </div>

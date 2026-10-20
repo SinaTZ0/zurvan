@@ -1,13 +1,15 @@
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { Bubble, Cut, HEADING } from "~/routes/new_design/components/story-parts";
 import { FORMATS } from "~/routes/new_design/content";
 
 /*===== Formats: Where we train =====*/
 // Each format gets a small storybook scene of the place itself, which says more than an icon would.
 const FORMAT_SCENES = ["home", "center", "lodge"] as const;
+// The service area is the business card's «تمام نقاط تهران» (`CENTER_SERVICE_AREA`).
 const FORMAT_DETAILS = [
-  "آموزش در فضای آشنای خودت و سگت.",
-  "تمرین در مرکز، با تمرکز کامل.",
-  "فعلاً با یک پانسیون همکار؛ سگت آن‌جا می‌ماند و آموزش می‌بیند.",
+  `${HEAD_TRAINER.firstName} میاد پیش‌تون، هر جای تهران که باشید.`,
+  "سگت رو میاری مرکز و جلسه‌ها همون‌جا برگزار می‌شه.",
+  "فعلاً با یه پانسیون همکار: سگت مدتی اون‌جا می‌مونه و همون‌جا آموزش می‌بینه.",
 ] as const;
 
 export function StoryFormats() {
@@ -39,12 +41,12 @@ export function StoryFormats() {
         <div className="relative z-10 rounded-[2rem] border-2 border-(--st-line)/70 bg-(--st-sage-2) p-4 sm:p-5 md:p-8 lg:grid lg:grid-cols-[1.25fr_3fr] lg:gap-8">
           <div className="mb-6 lg:mb-0 lg:self-center">
             <h2 id="st-formats-title" className={`${HEADING} st-reveal text-4xl md:text-5xl lg:text-[2.6rem]`}>
-              کجا آموزش
+              کجا تمرین
               <br />
-              می‌دهیم؟
+              کنیم؟
             </h2>
             <p className="mt-4 max-w-xs text-lg leading-8 text-(--st-ink)/80">
-              گزینه‌های انعطاف‌پذیر، متناسب با تو و سگت.
+              هر کدوم برات راحت‌تره، با {HEAD_TRAINER.firstName} هماهنگش کن.
             </p>
           </div>
 

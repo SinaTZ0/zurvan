@@ -23,7 +23,10 @@
 }
 
 /* The dog's voice: Marhey, a bouncy, rounded hand (OFL, app/fonts/marhey-OFL.txt). Only for the speech bubbles
-   (`font-hand`), where the dog talks to the visitor; never for UI or body text. */
+   (`font-hand`), where the dog talks to the visitor; never for UI or body text.
+   The file is patched (2026-10-20): upstream, the contextual medial Persian yeh (`uni06CC.medi.calt`, used after
+   ب/پ/ت/ن as in «بیا», «پیش», «نیست») was built without its two dots. It now uses the components and variation
+   deltas of the Arabic yeh's same glyph (`uni064A.medi.calt`). Re-apply this if the font is ever replaced. */
 @font-face {
   font-family: "Marhey";
   font-style: normal;
