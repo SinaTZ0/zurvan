@@ -1,10 +1,12 @@
+import { CATALOGUE_COLUMN } from "~/routes/course_catalogue/layout";
 import { CourseFamilyFilter } from "~/components/course-family-filter";
+import { BRICK } from "~/lib/brick";
 import type { CourseFamily } from "~/orpc/course/constants";
 
 /*===== Family Shelf =====*/
 /**
- * The band the dog stands behind: the family pills between two hairlines on the sunken surface. On phones the pills
- * scroll sideways inside it.
+ * The wall the dog looks over: the family pills on a brick wall with the paper's grain, a light coping along its top
+ * edge where his paws rest (as on the home hero's wall). On phones the pills scroll sideways inside it.
  */
 export function FamilyShelf({
   tabs,
@@ -16,8 +18,11 @@ export function FamilyShelf({
   onChange: (family: CourseFamily | "all") => void;
 }) {
   return (
-    <div className="border-y border-border bg-sunken">
-      <div className="site-container py-4 sm:py-5">
+    <div
+      style={{ backgroundImage: `var(--grain), ${BRICK}` }}
+      className="border-t-2 border-b border-t-foreground/60 border-b-border bg-inverse"
+    >
+      <div className={`${CATALOGUE_COLUMN} py-5 sm:py-6`}>
         {/* A little padding all round so the pills' focus rings aren't cut by the scroller's edges. */}
         <CourseFamilyFilter tabs={tabs} value={value} onChange={onChange} className="-mx-1 p-1" />
       </div>

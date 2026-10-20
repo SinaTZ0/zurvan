@@ -1,19 +1,20 @@
 import { cn } from "cn";
 import { CheckIcon, ShoppingCartIcon } from "lucide-react";
 
-import { ChalkDoodle } from "~/components/chalk-doodle";
 import { Link } from "~/components/link";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { CART_PATH } from "~/orpc/checkout/constants";
 import type { Course } from "~/orpc/course/contract";
+import { BuyProblems } from "~/routes/course_detail/components/buy-problems";
+import { CourseDog } from "~/routes/course_detail/components/course-dog";
 import { DogRowList } from "~/routes/course_detail/components/dog-row-list";
 import type { BuyCardState } from "~/routes/course_detail/components/use-buy-card";
 
 /*===== Buy Card =====*/
 /**
- * The page's one idea: a conversation with your dog. The price, the customer's dogs with a verdict each, the picked
+ * The page's one idea: the course's own dog stands on the card and talks, and the customer's dog answers below. The price, the customer's dogs with a verdict each, the picked
  * dog's bubble, and the one gold button. Every state of the viewer (signed out, no dogs, no price, a dog that can't
  * buy yet) is the same card with different words, so the page never jumps.
  *
@@ -31,7 +32,11 @@ export function BuyCard({
   cardRef: React.Ref<HTMLDivElement>;
 }) {
   return (
-    <div className="relative">
+    // When the words beside it run longer than the card, the card still ends on the hero's path.
+    <div className="relative flex flex-col lg:justify-end">
+      {/*------ The Course's Dog ------*/}
+      <CourseDog course={course} />
+
       <div
         ref={cardRef}
         id="buy-card"
@@ -45,7 +50,7 @@ export function BuyCard({
             width={course.cover.width}
             height={course.cover.height}
             fetchPriority="high"
-            className="aspect-[16/8] w-full object-cover"
+            className="aspect-[16/4.5] w-full object-cover"
           />
           {/* Fades from the card's own surface, so the photo has no bottom edge. */}
           <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-card to-transparent" />
@@ -61,6 +66,10 @@ export function BuyCard({
           {/*------ Action ------*/}
           <div className="flex flex-col gap-3">
             <BuyButton buy={buy} className="w-full" />
+            {/* A new key per dog, so each dog's reasons fade in as an answer to picking it. */}
+            {buy.action.kind === "blocked" && buy.verdict && (
+              <BuyProblems key={buy.pickedId} problems={buy.verdict.problems} />
+            )}
             {buy.quieter && (
               <Link
                 to={buy.quieter.to}
@@ -74,7 +83,9 @@ export function BuyCard({
                 message is for everyone, so it is visible; «added» only repeats what the button now says. */}
             <output className={cn("block", buy.message === "full" ? "text-sm text-pretty text-foreground" : "sr-only")}>
               {buy.message === "added" && "به سبد اضافه شد"}
-              {buy.message === "full" && "سبد پر است. اول یکی از موردهای آن را بردار."}
+              {buy.message === "full" && (
+                <span className="answer-in block">سبد پر است. اول یکی از موردهای آن را بردار.</span>
+              )}
             </output>
           </div>
 
@@ -91,13 +102,6 @@ export function BuyCard({
           )}
         </div>
       </div>
-
-      {/*------ Doodle ------*/}
-      {/* Outside the clipped card, at its start edge, curling in toward the dog list. Desktop only: on a phone the
-          list has no free margin. */}
-      {buy.mode === "dogs" && (
-        <ChalkDoodle name="arrow-curl" className="absolute -start-16 top-72 w-12 -rotate-12 opacity-80 max-lg:hidden" />
-      )}
     </div>
   );
 }
@@ -183,7 +187,8 @@ export function BuyButton({
       );
     case "in-cart":
       return (
-        <span className={cn("flex flex-col items-center gap-2", className)}>
+        // Just added, it pops in place of the button it replaces; already in the cart on load, it is simply there.
+        <span className={cn("flex flex-col items-center gap-2", buy.message === "added" && "answer-pop", className)}>
           {/* Not a button: there is nothing to press. The state is the words. */}
           <span
             className={buttonVariants({

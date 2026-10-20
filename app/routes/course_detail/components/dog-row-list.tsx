@@ -1,16 +1,18 @@
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 
+import { ChalkBubble } from "~/components/chalk-bubble";
 import { DogThumb } from "~/components/dog-thumb";
-import { Link } from "~/components/link";
-import { SpeechBubble } from "~/components/speech-bubble";
 import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import type { DogEligibility } from "~/orpc/checkout/contract";
+import { BUY_PROBLEMS_ID } from "~/routes/course_detail/components/buy-problems";
 
 /*===== Dog Row List =====*/
 /**
  * «برای کدوم سگ؟»: the customer's dogs as one radio group. Each row says at a glance whether that dog can take this
- * course; picking a row opens the dog's own bubble under it, with its reason and the way out of it.
+ * course; picking a row opens the dog's own bubble under it. When the dog can't take the course, the plain reasons and
+ * the way out of each sit under the buy button instead (`BuyProblems`, id `BUY_PROBLEMS_ID`): the bubble is the dog
+ * talking, the reasons are the site's.
  *
  * Native radios sit under the rows (screen-reader-only), so arrow keys, focus and the group's name come from the
  * browser. Every dog stays in the list, including the ones that can't buy: hiding them would leave the owner wondering
@@ -50,7 +52,9 @@ export function DogRowList({
                   value={dog.id}
                   checked={isPicked}
                   onChange={() => onPick(dog.id)}
-                  aria-describedby={isPicked && verdict ? bubbleId : undefined}
+                  aria-describedby={
+                    isPicked && verdict ? (verdict.can ? bubbleId : `${bubbleId} ${BUY_PROBLEMS_ID}`) : undefined
+                  }
                   className="peer sr-only"
                 />
                 {/*------ Row ------*/}
@@ -69,34 +73,20 @@ export function DogRowList({
               </label>
 
               {/*------ Bubble ------*/}
-              {/* Under its own row, the tail pointing up at the thumbnail at the start side. A new key redraws it
-                  for each dog picked: it answers the click. */}
+              {/* The customer's own dog speaking, under its own row. Flush with the row's start (right) edge, so the
+                  tail (physical right, 1.75rem in) lands on the thumbnail's centre. A new key remounts it for each
+                  dog picked: it answers the click. */}
               {isPicked && verdict && (
-                <div id={bubbleId} className="mt-3 ps-1">
-                  <SpeechBubble key={dog.id} drawIn tail="top-start" className="max-w-full sm:max-w-80">
+                <div id={bubbleId} className="mt-4">
+                  <ChalkBubble
+                    key={dog.id}
+                    tail="right"
+                    tailEdge="top"
+                    // It pops from its tail, up at the row's start corner.
+                    className="answer-pop max-w-full [--pop-origin:calc(100%-1.75rem)_0]"
+                  >
                     {verdict.line}
-                  </SpeechBubble>
-
-                  {verdict.problems.length > 0 && (
-                    <ul className="mt-3 flex flex-col gap-2.5 ps-1 text-sm text-muted-foreground">
-                      {verdict.problems.map((problem) => (
-                        <li key={problem.message} className="text-pretty">
-                          {problem.message}
-                          {problem.way && (
-                            <>
-                              {" "}
-                              <Link
-                                to={problem.way.to}
-                                className="rounded-sm font-bold whitespace-nowrap text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
-                              >
-                                {problem.way.label}
-                              </Link>
-                            </>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  </ChalkBubble>
                 </div>
               )}
             </li>
@@ -111,7 +101,7 @@ export function DogRowList({
 /** «می‌تونه» in gold or «هنوز نه» in muted text: words, not colour alone. */
 function VerdictMark({ can }: { can: boolean }) {
   return can ? (
-    <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-primary">
+    <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-foreground">
       <CheckIcon aria-hidden className="size-4" strokeWidth={2.6} />
       می‌تونه
     </span>

@@ -15,7 +15,9 @@ test.describe("a visitor", () => {
   });
 
   test("finds a course by what it teaches", async ({ page }) => {
+    // The search is in the header, behind its magnifier.
     await page.goto("/courses");
+    await page.getByRole("button", { name: "جست‌وجوی دوره‌ها" }).click();
     await page.getByRole("searchbox").fill("igp");
 
     await expect(page.getByRole("main")).toContainText("ورزشی");

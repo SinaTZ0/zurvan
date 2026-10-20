@@ -1,5 +1,6 @@
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
 /*===== Evaluation Ask =====*/
@@ -11,10 +12,10 @@ export function EvaluationAsk() {
   return (
     <section
       aria-labelledby="ask-title"
-      className="rounded-4xl border border-border bg-card px-6 py-10 shadow-sm sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:px-14 lg:py-12"
+      className="rounded-4xl border border-border bg-card paper-grain px-6 py-10 shadow-sm sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:px-14 lg:py-12"
     >
       <div className="max-w-xl">
-        <h2 id="ask-title" className="font-display text-h2 font-black text-balance">
+        <h2 id="ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
           نمی‌دونی از کدوم شروع کنیم؟
         </h2>
         <p className="mt-3 text-pretty text-muted-foreground">

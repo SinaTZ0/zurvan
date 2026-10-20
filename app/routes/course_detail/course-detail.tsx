@@ -4,6 +4,7 @@ import { data, isRouteErrorResponse } from "react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { authForHeaders } from "~/lib/auth.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { BuyCard } from "~/routes/course_detail/components/buy-card";
@@ -13,9 +14,16 @@ import { LaneRail } from "~/routes/course_detail/components/lane-rail";
 import { LearnSection } from "~/routes/course_detail/components/learn-section";
 import { PhoneActionBar } from "~/routes/course_detail/components/phone-action-bar";
 import { useBuyCard, type Viewer } from "~/routes/course_detail/components/use-buy-card";
+import { COLUMN } from "~/routes/course_detail/column";
 import { getLane } from "~/routes/course_detail/lane";
 
+import type { PublicLayoutHandle } from "~/routes/layout_public/layout-public";
+
 import type { Route } from "./+types/course-detail";
+
+/*===== Handle =====*/
+// The closing band, a brick wall, runs straight into the footer.
+export const handle: PublicLayoutHandle = { flushFooter: true };
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = ({ loaderData }) => {
@@ -76,13 +84,16 @@ export default function CourseDetailPage({ loaderData }: Route.ComponentProps) {
       {/*===== What You Learn and What Comes Next =====*/}
       {/* 7/5 when the lane has something to say; a course with no lane content (CGC, working dogs) gets the whole width
           rather than an empty end column. `LaneRail` renders nothing for those, so the grid asks for its heading. */}
-      <div className="site-container grid gap-y-section-sm pt-section-sm lg:has-[#lane-title]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:has-[#lane-title]:gap-x-16 xl:has-[#lane-title]:gap-x-24">
+      <div
+        className={`${COLUMN} grid gap-y-section-sm pt-section-sm lg:has-[#lane-title]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:has-[#lane-title]:gap-x-16 xl:has-[#lane-title]:gap-x-24`}
+      >
         <LearnSection course={course} />
         {lane && <LaneRail course={course} lane={lane} />}
       </div>
 
       {/*===== Closing =====*/}
-      <div className="mt-section-md">
+      {/* Room above the band for the dog sitting on it. */}
+      <div className="mt-48 md:mt-56">
         <ClosingBand />
       </div>
 
@@ -97,9 +108,9 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
   return (
-    <section aria-labelledby="course-error-title" className="site-container py-section-md">
+    <section aria-labelledby="course-error-title" className={`${COLUMN} py-section-md`}>
       <div className="max-w-xl">
-        <h1 id="course-error-title" className="font-display text-h1 font-bold text-balance">
+        <h1 id="course-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
           {notFound ? "این دوره پیدا نشد" : "صفحه‌ی این دوره باز نشد"}
         </h1>
         <p className="mt-4 text-lead text-pretty text-muted-foreground">
