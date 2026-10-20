@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { Bubble, Cut, EvaluationButton, HEADING } from "~/routes/new_design/components/story-parts";
@@ -101,6 +101,113 @@ function TrainerName() {
   );
 }
 
+/*===== Barking Dog =====*/
+// A cut-out puppet's bark, not a video: hard cuts between three drawings of the same dog. The two bark frames are
+// `paws` with only the head redrawn (turned to his left, towards the speech side, mouth open, then shut), composited
+// onto the original body below the collar on the same canvas, so swapping whole images only moves the head.
+// Milliseconds each frame holds: two quick «هاپ»s, then a beat with the mouth shut before he turns back.
+const BARK = [
+  { frame: "bark-open", ms: 170 },
+  { frame: "bark-closed", ms: 120 },
+  { frame: "bark-open", ms: 170 },
+  { frame: "bark-closed", ms: 650 },
+] as const;
+type BarkFrame = (typeof BARK)[number]["frame"];
+const BARK_FRAMES: BarkFrame[] = ["bark-open", "bark-closed"];
+
+// He barks once by himself, a beat after the intro (the underline ends at 1.8s), then whenever he's petted or tapped.
+const AUTO_BARK_MS = 3200;
+
+/**
+ * The hero dog, who barks. The bark frames load only after the page has loaded and are decoded before he may bark,
+ * so a swap never shows an empty frame; until then (and always with reduced motion, where they never load) he's the
+ * still `paws` and petting him does nothing. A bark in progress ignores new pets.
+ */
+function BarkingDog() {
+  const [ready, setReady] = useState(false);
+  const [frame, setFrame] = useState<BarkFrame | null>(null);
+  const busy = useRef(false);
+  const timers = useRef<number[]>([]);
+  const mountedAt = useRef(0);
+
+  const bark = useCallback(() => {
+    if (!ready || busy.current) return;
+    busy.current = true;
+    let at = 0;
+    for (const step of BARK) {
+      timers.current.push(window.setTimeout(() => setFrame(step.frame), at));
+      at += step.ms;
+    }
+    timers.current.push(
+      window.setTimeout(() => {
+        setFrame(null);
+        busy.current = false;
+      }, at),
+    );
+  }, [ready]);
+
+  /*------ Load the frames after the page ------*/
+  useEffect(() => {
+    mountedAt.current = performance.now();
+    const list = timers.current;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let cancelled = false;
+    const load = () => {
+      const decoded = BARK_FRAMES.map((name) => {
+        const img = new Image();
+        img.src = `/photo/new-design/${name}.webp`;
+        return img.decode();
+      });
+      // A frame that fails to load just leaves him still.
+      Promise.all(decoded).then(
+        () => !cancelled && setReady(true),
+        () => {},
+      );
+    };
+    if (document.readyState === "complete") load();
+    else window.addEventListener("load", load, { once: true });
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", load);
+      for (const timer of list) window.clearTimeout(timer);
+    };
+  }, []);
+
+  /*------ The one bark by himself ------*/
+  useEffect(() => {
+    if (!ready) return;
+    const timer = window.setTimeout(bark, Math.max(0, AUTO_BARK_MS - (performance.now() - mountedAt.current)));
+    return () => window.clearTimeout(timer);
+  }, [ready, bark]);
+
+  return (
+    <>
+      {/* The wrapper wiggles while the image rises, so the two animations don't fight over one transform. */}
+      <div className="st-wiggle st-pet relative z-10" onPointerEnter={bark} onPointerDown={bark}>
+        <Cut name="paws" eager className={cn("st-rise block w-full", frame && "invisible")} />
+        {ready &&
+          BARK_FRAMES.map((name) => (
+            <Cut
+              key={name}
+              name={name}
+              eager
+              className={cn("absolute inset-0 w-full", frame !== name && "invisible")}
+            />
+          ))}
+      </div>
+      {/* The bark is a sound, so its bubble is decoration: the page says nothing new while he barks. */}
+      {frame && (
+        <div aria-hidden className="absolute top-[36%] right-[88%] z-20">
+          <Bubble tail="right" className="st-bark px-3 py-1.5">
+            هاپ هاپ!
+          </Bubble>
+        </div>
+      )}
+    </>
+  );
+}
+
 /*===== Hero =====*/
 // "The mascot lives in the layout": the paws image is cut flat at the chest, 87% down, which is exactly where the sage
 // card's top edge sits. The card is behind the image (z-0 vs z-10), so the paws drape over its border while the body
@@ -135,6 +242,9 @@ export function StoryHero() {
           .st-underline { stroke-dasharray: 1; animation: st-underline .6s cubic-bezier(.5,0,.3,1) 1.2s both; }
         }
         @keyframes st-underline { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+        /* The bark bubble bursts out from its tail, by his mouth. */
+        .st-bark { animation: st-bark .18s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 85% 100%; }
+        @keyframes st-bark { from { transform: scale(.3) rotate(-6deg); opacity: 0; } to { transform: rotate(-6deg); opacity: 1; } }
         @media (prefers-reduced-motion: no-preference) { .st-caret { animation: st-caret 1s steps(1) infinite; } }
         @keyframes st-caret { 50% { opacity: 0; } }
       `}</style>
@@ -199,10 +309,7 @@ export function StoryHero() {
             eager
             className="st-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
           />
-          {/* The wrapper wiggles while the image rises, so the two animations don't fight over one transform. */}
-          <div className="st-wiggle st-pet relative z-10">
-            <Cut name="paws" eager className="st-rise block w-full" />
-          </div>
+          <BarkingDog />
           <Bubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
             سلام، من زروانم! بیا تو، در بازه.
           </Bubble>

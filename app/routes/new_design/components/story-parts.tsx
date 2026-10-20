@@ -7,6 +7,9 @@ import { cn } from "cn";
 // empty. The rendered width stays under ~1.3x the natural one, because the files are low resolution.
 const CUTS = {
   paws: { width: 285, height: 463 },
+  // The hero's bark (story-hero): `paws` with only the head redrawn, on the same canvas, so a swap moves nothing else.
+  "bark-open": { width: 285, height: 463 },
+  "bark-closed": { width: 285, height: 463 },
   peek: { width: 271, height: 275 },
   sit: { width: 317, height: 473 },
   leash: { width: 249, height: 456 },
