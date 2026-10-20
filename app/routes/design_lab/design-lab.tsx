@@ -8,6 +8,7 @@ import { StoryHome } from "~/routes/design_lab/components/story/story-home";
 import { StoryNightHome } from "~/routes/design_lab/components/story/story-night-home";
 import { GOLD_STYLES, NIGHT_PALETTES } from "~/routes/design_lab/components/story/story-palettes";
 import { StoryTeach } from "~/routes/design_lab/components/story/story-teach";
+import { StoryTrail } from "~/routes/design_lab/components/story/story-trail";
 import { isDesignVariant } from "~/routes/design_lab/designs";
 
 import type { Route } from "./+types/design-lab";
@@ -50,7 +51,15 @@ export default function DesignLabPage({ loaderData }: Route.ComponentProps) {
       {variant === "5" && <StoryNightHome palettes={NIGHT_PALETTES} />}
       {variant === "6" && <StoryNightHome palettes={GOLD_STYLES} />}
       {variant === "7" && (
-        <StoryNightHome palettes={GOLD_STYLES.slice(0, 1)} Services={StoryTeach} ground typed lively fit />
+        <StoryNightHome
+          palettes={GOLD_STYLES.slice(0, 1)}
+          Services={StoryTeach}
+          Path={StoryTrail}
+          ground
+          typed
+          lively
+          fit
+        />
       )}
       <DesignSwitch current={variant} />
     </>

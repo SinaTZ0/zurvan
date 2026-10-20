@@ -80,11 +80,12 @@ function PalettePicker({
  * strip of path under the hero, so the hero's card stands on it and the steps start below it. `typed` adds the
  * hero's typewriter line (design 7). `lively` turns on design 7's motion: the idle loops (LIVELY_CSS), the scroll
  * reveals and Fandogh running after his ball between the steps and the services. `fit` makes the hero one laptop
- * screen tall (StoryHero).
+ * screen tall (StoryHero). `Path` swaps the steps section (design 7 draws them as a chalk trail).
  */
 export function StoryNightHome({
   palettes,
   Services = StoryServices,
+  Path = StoryPath,
   ground = false,
   typed = false,
   lively = false,
@@ -92,6 +93,7 @@ export function StoryNightHome({
 }: {
   palettes: readonly Palette[];
   Services?: () => React.ReactNode;
+  Path?: () => React.ReactNode;
   ground?: boolean;
   typed?: boolean;
   lively?: boolean;
@@ -121,7 +123,7 @@ export function StoryNightHome({
         {/* Pulled up over the hero's bottom edge, so its card stands on the path. Not on phones, where it crowds the
             card's edge under the dog's paws (the owner's call, 2026-10-20). */}
         {ground && <GroundStrip className="z-10 -mt-7 max-sm:hidden md:-mt-9" />}
-        <StoryPath />
+        <Path />
         {lively && <StoryRunner />}
         <Services />
         <StoryFormats />

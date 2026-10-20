@@ -25,6 +25,11 @@ const CUTS = {
   "teach-work": { width: 340, height: 401 },
   "teach-medal": { width: 362, height: 393 },
   "teach-advice": { width: 433, height: 397 },
+  // Design 7's props along the steps' trail.
+  signpost: { width: 360, height: 325 },
+  key: { width: 360, height: 250 },
+  flag: { width: 360, height: 313 },
+  bone: { width: 360, height: 174 },
 } as const;
 
 export type CutName = keyof typeof CUTS;
@@ -32,7 +37,8 @@ export type CutName = keyof typeof CUTS;
 // At night the scenery steps back so the dog stays the brightest thing on the page: the hedge has a drawn night
 // version; the rest is dimmed by `.st-dim` (story-home's theme CSS). The dog cut-outs are never dimmed.
 const NIGHT_VERSION: Partial<Record<CutName, string>> = { hedge: "hedge-night" };
-const DIMMED_AT_NIGHT = new Set<CutName>(["plants", "ground", "home", "center", "lodge"]);
+// The key and the flag stay bright: they're the steps' two gold accents (the unlock and the finish).
+const DIMMED_AT_NIGHT = new Set<CutName>(["plants", "ground", "home", "center", "lodge", "signpost", "bone"]);
 
 /** One mascot or scenery cut-out. Position and size come from `className`; the aspect ratio is kept by `h-auto`. */
 export function Cut({ name, className, eager = false }: { name: CutName; className?: string; eager?: boolean }) {

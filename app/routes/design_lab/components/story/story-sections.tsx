@@ -7,7 +7,7 @@ import { LAB_FORMATS, LAB_SERVICES, LAB_STEPS } from "~/routes/design_lab/lab-co
 
 /*===== Path: How it starts =====*/
 const STEP_ICONS = [ClipboardList, Phone, CalendarCheck, PawPrint] as const;
-const STEP_DETAILS = [
+export const STEP_DETAILS = [
   "سگت را معرفی کن؛ عکس و فیلم کوتاه اختیاری است.",
   `${HEAD_TRAINER.firstName} وقت هماهنگ می‌کند و سگت را از نزدیک می‌بیند. رایگان و بدون تعهد.`,
   "بعد از ارزیابی، دوره‌هایی که به درد سگت می‌خورد باز می‌شود.",
