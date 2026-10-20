@@ -12,7 +12,7 @@ What the courses redesign taught (the catalogue `/courses` and Course Detail `/c
   - scenery behind him, dimmed (`scenery-dim`): the house, hedge, centre, lodge, plants, signpost, bone, flag;
   - a pool of warm light where he stands: `bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.08),transparent)]` (0.07–0.08 alpha, never more);
   - something to stand on or lean over: a `GroundStrip`, a card's top edge, a plate's edge, a wall's coping;
-  - often a chalk bubble with a line, and a chalk night sky (`NightSky`) in a tall empty area, since every course photo is a night scene.
+  - often a chalk bubble with a line, and a chalk night sky (`NightSky`) in a tall empty area (it was chosen when every course photo was a night scene; since 2026-10-21 the covers are daylight snapshots, and the night sky stays as the drawn scenes' own).
 - **No empty band or cell.** Look at every screenshot for a black area with nothing in it: under a short column beside a tall one, a gap between sections, a grid cell without a card, a strip above the footer. Fill it with something that **means** something (next section), shrink it, or move the dog into it.
 - **Texture here and there.** Flat surfaces look dead on this paper.
   - `paper-grain` on panels, plates and cards that paint their own fill.

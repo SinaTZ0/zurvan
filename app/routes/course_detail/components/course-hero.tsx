@@ -23,8 +23,8 @@ import { COLUMN } from "~/routes/course_detail/column";
  * the same scenery as the course's family stage in the catalogue.
  *
  * Phones are designed apart: the cover photo comes first and melts into the paper, then the title, the facts as a 2x2
- * grid, and the card below them. On desktop that same photo is the top of the card instead (see `BuyCard`), so each
- * layout shows exactly one copy.
+ * grid, and the card below them. On desktop the hero has no photo: the course's dog on the card is its picture (see
+ * `BuyCard`).
  */
 export function CourseHero({ course, children }: { course: Course; children: React.ReactNode }) {
   return (

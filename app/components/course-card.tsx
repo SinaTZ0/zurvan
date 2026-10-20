@@ -27,7 +27,9 @@ export function CourseCard({ course, showPrerequisites = false }: { course: Cour
 
   return (
     <article className="group/card grid h-full grid-cols-[7rem_minmax(0,1fr)] overflow-hidden rounded-3xl border border-border bg-card shadow-sm sm:flex sm:flex-col">
-      <div className="overflow-hidden sm:aspect-[3/2]">
+      {/* A wide, short photo: on the catalogue the card sits beside a drawn scene, so the photo is a glimpse of the
+          real thing and the title and price keep most of the card. */}
+      <div className="overflow-hidden sm:aspect-[16/9]">
         <img
           src={course.cover.src}
           alt={course.cover.alt}

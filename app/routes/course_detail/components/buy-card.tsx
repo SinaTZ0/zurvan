@@ -18,8 +18,9 @@ import type { BuyCardState } from "~/routes/course_detail/components/use-buy-car
  * dog's bubble, and the one gold button. Every state of the viewer (signed out, no dogs, no price, a dog that can't
  * buy yet) is the same card with different words, so the page never jumps.
  *
- * On desktop the course photo is the card's top half and fades into its surface. Phones show that photo above the title
- * instead (in the hero), so the card starts at the price.
+ * The mascot is the card's only picture: the course photo shows on phones above the title (in the hero) and in the
+ * catalogue, not here, so a drawn dog never stands on a photographed one. The price hangs from the card's top edge as a
+ * chalk price tag, in ivory: gold is for the button alone.
  */
 export function BuyCard({
   course,
@@ -42,23 +43,9 @@ export function BuyCard({
         id="buy-card"
         className="relative scroll-mt-24 overflow-hidden rounded-4xl border border-border bg-card shadow-sm"
       >
-        {/*------ Photo ------*/}
-        <div className="relative max-lg:hidden">
-          <img
-            src={course.cover.src}
-            alt={course.cover.alt}
-            width={course.cover.width}
-            height={course.cover.height}
-            fetchPriority="high"
-            className="aspect-[16/4.5] w-full object-cover"
-          />
-          {/* Fades from the card's own surface, so the photo has no bottom edge. */}
-          <div aria-hidden className="absolute inset-x-0 bottom-0 h-2/3 bg-linear-to-t from-card to-transparent" />
-        </div>
-
-        <div className="relative flex flex-col gap-5 p-5 sm:p-7 lg:-mt-6">
+        <div className="relative flex flex-col gap-5 p-5 sm:p-7">
           {/*------ Price ------*/}
-          <Price price={course.price} />
+          <PriceTag price={course.price} />
 
           {/*------ What the Viewer Needs to Do ------*/}
           <Body course={course} buy={buy} />
@@ -70,22 +57,25 @@ export function BuyCard({
             {buy.action.kind === "blocked" && buy.verdict && (
               <BuyProblems key={buy.pickedId} problems={buy.verdict.problems} />
             )}
+            {/* The second way in is a line, not a second big button: the free evaluation is for a dog that hasn't
+                been seen yet, so the line says when to take it. */}
             {buy.quieter && (
-              <Link
-                to={buy.quieter.to}
-                className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}
-              >
-                {buy.quieter.label}
-              </Link>
+              <p className="text-center text-sm text-muted-foreground">
+                سگت هنوز ارزیابی نشده؟{" "}
+                <Link
+                  to={buy.quieter.to}
+                  className="rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {buy.quieter.label}
+                </Link>
+              </p>
             )}
 
             {/* Always mounted: a live region has to exist before its text changes to be announced. The full-cart
                 message is for everyone, so it is visible; «added» only repeats what the button now says. */}
             <output className={cn("block", buy.message === "full" ? "text-sm text-pretty text-foreground" : "sr-only")}>
               {buy.message === "added" && "به سبد اضافه شد"}
-              {buy.message === "full" && (
-                <span className="answer-in block">سبد پر است. اول یکی از موردهای آن را بردار.</span>
-              )}
+              {buy.message === "full" && <span className="answer-in block">سبد پره. اول یکی از موردهاش رو بردار.</span>}
             </output>
           </div>
 
@@ -106,13 +96,56 @@ export function BuyCard({
   );
 }
 
-/*===== Price =====*/
-function Price({ price }: { price: number | null }) {
+/*===== Price Tag =====*/
+/**
+ * The price on a chalk tag pinned to the card's top edge: a string runs from the pin to the tag's hole, and the tag
+ * hangs a little askew from it. The outline is drawn by an SVG stretched to the tag (`non-scaling-stroke` keeps the ink
+ * even), so the tag fits its words whatever the price; the hole is its own circle, which stretching would squash.
+ * Physical sides on purpose: the point and the hole are on the tag's right, the reading start in RTL, so the tag is
+ * pinned clear of the dog in the left corner.
+ */
+function PriceTag({ price }: { price: number | null }) {
   return (
-    <p className="flex flex-wrap items-baseline gap-x-3">
-      <span className="text-sm text-muted-foreground">هزینه‌ی دوره</span>
-      <span className="text-3xl font-black text-primary">{price === null ? "بعد از ارزیابی" : formatToman(price)}</span>
-    </p>
+    // The string is as tall as the card's top padding plus this margin, so the pin lands on the card's edge.
+    <div className="relative mt-4 w-max max-w-full self-start">
+      {/*------ Pin and String ------*/}
+      <span
+        aria-hidden
+        className="absolute right-[1.375rem] bottom-[calc(50%-0.25rem)] h-[calc(50%+2.5rem)] w-0.5 rounded-full bg-foreground/45 sm:h-[calc(50%+3rem)]"
+      />
+      <span
+        aria-hidden
+        className="absolute -top-[2.65rem] right-[1.125rem] size-2.5 rounded-full bg-foreground sm:-top-[3.15rem]"
+      />
+
+      {/*------ Tag ------*/}
+      <p className="relative flex origin-[calc(100%-1.4rem)_50%] -rotate-[2.5deg] flex-col py-3 ps-14 pe-5">
+        <svg
+          aria-hidden
+          viewBox="0 0 200 80"
+          preserveAspectRatio="none"
+          className="absolute inset-0 size-full overflow-visible text-foreground"
+        >
+          <path
+            d="M10 2H168L198 40L168 78H10Q2 78 2 70V10Q2 2 10 2Z"
+            fill="var(--background)"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <span
+          aria-hidden
+          className="absolute top-1/2 right-[1.125rem] size-2.5 -translate-y-1/2 rounded-full border-2 border-foreground bg-card"
+        />
+
+        <span className="relative text-sm text-muted-foreground">هزینه‌ی دوره</span>
+        <span className={cn("relative font-black text-foreground", price === null ? "text-2xl" : "text-3xl")}>
+          {price === null ? "بعد از ارزیابی" : formatToman(price)}
+        </span>
+      </p>
+    </div>
   );
 }
 
@@ -123,20 +156,16 @@ function Body({ course, buy }: { course: Course; buy: BuyCardState }) {
     case "evaluation":
       return course.price === null ? (
         <p className="text-pretty text-muted-foreground">
-          اول {HEAD_TRAINER.firstName} سگت را می‌بیند. ارزیابی رایگان است.
+          اول {HEAD_TRAINER.firstName} سگت رو می‌بینه. ارزیابی رایگانه.
         </p>
       ) : null;
     case "visitor":
       return (
-        <p className="text-pretty text-muted-foreground">
-          برای دیدن اینکه کدام سگت می‌تونه این دوره رو بگذرونه، وارد شو.
-        </p>
+        <p className="text-pretty text-muted-foreground">وارد شو تا ببینی کدوم سگت می‌تونه این دوره رو بگذرونه.</p>
       );
     case "no-dogs":
       return (
-        <p className="text-pretty text-muted-foreground">
-          اول سگت را معرفی کن، بعد می‌بینیم کدام دوره‌ها برایش باز است.
-        </p>
+        <p className="text-pretty text-muted-foreground">اول سگت رو معرفی کن، بعد می‌بینیم کدوم دوره‌ها براش بازه.</p>
       );
     case "dogs":
       return <DogRowList dogs={buy.dogs} pickedId={buy.pickedId} verdict={buy.verdict} onPick={buy.pick} />;
@@ -169,7 +198,7 @@ export function BuyButton({
     case "pick":
       return (
         <Button type="button" variant="solid" size={size} disabled className={className}>
-          اول یکی از سگ‌ها را انتخاب کن
+          اول یکی از سگ‌ها رو انتخاب کن
         </Button>
       );
     case "blocked":
