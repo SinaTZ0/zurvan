@@ -27,3 +27,6 @@
 # Generated photo originals (exported to public/photo/) and page screenshots, kept locally
 /image-reference/generated/
 /image-reference/localhost_*.png
+
+# Local note on making images with the Codex CLI
+/docs/image-gen.md
