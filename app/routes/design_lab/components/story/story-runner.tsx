@@ -1,6 +1,6 @@
 import { PawPrint } from "lucide-react";
 
-import { Bubble, Cut, GroundStrip } from "~/routes/design_lab/components/story/story-parts";
+import { Bubble, Cut } from "~/routes/design_lab/components/story/story-parts";
 
 /*===== Timing =====*/
 // One lap: Fandogh chases his ball across the lane in the first RUN share of the cycle, then the lane rests empty
@@ -75,9 +75,56 @@ function Ball() {
   );
 }
 
+/*===== Chalk Ground =====*/
+// The lane's ground is drawn in chalk, like the bubbles, rather than the hero's photo-style path, so the two strips
+// don't read as one tile repeated. It's two patterns of different widths (the line with its tufts, then the pebbles
+// and scuffs under it), so their repeats drift apart instead of stamping one tile across the screen. The line sits
+// 20px from the svg's top, where the dog's feet land (the svg is lifted 8px at md, as he is). A small displacement
+// filter roughens every stroke into chalk; the ends fade out instead of stopping at the screen's edge.
+function ChalkGround() {
+  return (
+    <svg
+      className="absolute inset-x-0 bottom-0 h-10 w-full text-(--st-ink) opacity-60 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] md:bottom-2"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <defs>
+        <filter id="st-chalk" x="-2%" y="-20%" width="104%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={4} />
+          <feDisplacementMap in="SourceGraphic" scale={2.5} />
+        </filter>
+
+        {/*------ The line, with tufts of grass growing up from it ------*/}
+        <pattern id="st-chalk-line" width="260" height="40" patternUnits="userSpaceOnUse">
+          <path d="M0 20C30 20 50 18 90 19.5S150 22 190 20.5S240 20 260 20" strokeWidth={2.4} />
+          <path d="M6 22.5h22M44 21.5h30M112 22h14M150 23h34M210 22h20" strokeWidth={1.2} opacity={0.45} />
+          <path d="M26 19l-4-7M30 19l1-10M34 19l4-6" strokeWidth={1.6} />
+          <path d="M141 20l-2-5M144 20l2-6" strokeWidth={1.4} />
+          <path d="M214 20l-3-6M218 20v-8M222 20l3-5" strokeWidth={1.5} />
+        </pattern>
+
+        {/*------ Pebbles and scuffs on the path below it ------*/}
+        <pattern id="st-chalk-path" width="370" height="40" patternUnits="userSpaceOnUse">
+          <ellipse cx="62" cy="28" rx="3.5" ry="2" strokeWidth={1.4} />
+          <ellipse cx="70" cy="31" rx="1.6" ry="1.2" strokeWidth={1.2} />
+          <ellipse cx="205" cy="30" rx="2.6" ry="1.8" strokeWidth={1.3} />
+          <ellipse cx="318" cy="27" rx="1.8" ry="1.3" strokeWidth={1.2} />
+          <path d="M14 31h9M120 34h14M168 27h6M250 33h11M340 31h8" strokeWidth={1.3} opacity={0.6} />
+        </pattern>
+      </defs>
+      <g filter="url(#st-chalk)">
+        <rect width="100%" height="100%" fill="url(#st-chalk-line)" stroke="none" />
+        <rect width="100%" height="100%" fill="url(#st-chalk-path)" stroke="none" />
+      </g>
+    </svg>
+  );
+}
+
 /*===== Story Runner =====*/
 /**
- * A strip of path between the steps and «چه چیزی یاد می‌دهیم؟» where Fandogh gallops across after his ball, kicking up
+ * A chalk-drawn strip of ground between the steps and «چه چیزی یاد می‌دهیم؟» where Fandogh gallops across after his ball, kicking up
  * dust and leaving paw prints. Decorative, so it's hidden from screen readers. With reduced motion he just stands on
  * the path with the ball by his nose.
  */
@@ -85,7 +132,7 @@ export function StoryRunner() {
   return (
     <div aria-hidden className="st-lane pointer-events-none relative h-32 overflow-x-clip md:h-40">
       <style>{RUNNER_CSS}</style>
-      <GroundStrip className="absolute inset-x-0 bottom-0" />
+      <ChalkGround />
 
       {/*------ Paw prints, laid where he passes ------*/}
       {Array.from({ length: PRINTS }, (_, index) => {
