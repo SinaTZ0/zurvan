@@ -192,7 +192,8 @@ The tokens are in `app/app.css` ("Near-black Paper & Bright Gold"). One dark the
   2. The page is built still, with the poses in place and no animation.
   3. Screenshots go to the user, who moves or drops the dog where he doesn't work.
   4. Only then is the motion added, from the shared idle loops and the home page's reveal code.
-- Working pages (the catalogue, Course Detail, the account) keep him calmer than the home page: one or two appearances, no running laps. The Admin area has no mascot story.
+- Working pages (the catalogue, Course Detail, the account) keep him calmer than the home page: no running laps or extra gimmicks, but not bare. The approved courses pages give every dog an edge to stand on, scenery, warm light and texture, and Course Detail has him in four places. The Admin area has no mascot story.
+- **How to get there without three review rounds:** [mascot-page-playbook.md](mascot-page-playbook.md), what the courses redesign taught: the patterns, the cut-outs' edges, the motion and the pitfalls.
 
 ## Loose Ends
 
