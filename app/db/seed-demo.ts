@@ -20,6 +20,7 @@ import {
   partnerLead,
   payment,
   paymentItem,
+  refund,
   user,
 } from "~/db/schema";
 import { env } from "~/env.server";
@@ -134,7 +135,7 @@ const SECOND_PARTNER_PHONE = "09120000007";
 const SECOND_PARTNER_CODE = "niloofar-clinic";
 
 /**
- * Removes the demo customers' commissions, certificates, enrollments, payments, evaluations and passed courses, in the order their
+ * Removes the demo customers' commissions, certificates, enrollments, refunds, payments, evaluations and passed courses, in the order their
  * references allow, so their dogs can go next.
  *
  * @returns The evaluation photos and the bucket keys of the evaluation videos, to delete once this commits.
@@ -151,6 +152,16 @@ async function removeDemoHistory({ tx, customerIds }: { tx: Transaction; custome
       ),
     );
   await tx.delete(enrollment).where(inArray(enrollment.customerId, customerIds));
+  // The app never deletes a refund (the ledger only grows), but one recorded on a demo payment goes with it; it holds
+  // the payment and its item, so it is removed first.
+  await tx
+    .delete(refund)
+    .where(
+      inArray(
+        refund.paymentId,
+        tx.select({ id: payment.id }).from(payment).where(inArray(payment.customerId, customerIds)),
+      ),
+    );
   await tx
     .delete(paymentItem)
     .where(
