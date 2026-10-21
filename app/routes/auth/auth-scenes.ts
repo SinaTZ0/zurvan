@@ -1,58 +1,72 @@
+import type { MascotCutName } from "~/components/mascot-cut";
+
 /*===== Types =====*/
-/** The steps of the sign-in flow. Each is asked by a dog; the password step shares the phone step's welcome portrait. */
+/** The steps of the sign-in flow. Each is asked by a dog standing at the door; the stage keeps all four in place. */
 export type AuthStepName = "phone" | "password" | "code" | "name";
 
+/**
+ * One step's dog. Every class set is written out whole (Tailwind finds literal names only) and measured in the stage's
+ * unit, `--u` (see `AuthStage`): a phone band and the desktop panel are each drawn on a grid of units, so a smaller
+ * screen scales the whole scene instead of cropping it.
+ */
 type AuthScene = {
-  /** File stem under `public/photo/` (`<name>-900.webp` for phones, `<name>-1536.webp` from `lg`). */
-  photo: string;
-  alt: string;
-  /** What the dog says in the bubble. */
+  /** The pose that waits at the door. All four face the form (the picture's right). */
+  pose: MascotCutName;
+  /** What he says in the bubble: first person, short, no orders and no promises. */
   line: string;
-  /** The crop (`object-position`): the dog's face on a phone's narrow band, the dog's half on desktop. */
-  position: string;
+  /** His height. The poses differ in size, so each gets the height that matches the others' heads, never past ~1.3x. */
+  size: string;
+  /** His idle loop: the shared `lively-*` classes. */
+  loop: string;
+  /** Where his picture's centre stands along the path (the cut-outs' bodies sit off-centre, so each is nudged). */
+  place: string;
+  /**
+   * The bubble's right edge, from the dog's right edge: `(1 - his head's share of his width)` less how far the tail is
+   * from the bubble's right edge. Desktop aims the tail (36px in) at the head's centre; on a phone the bubble must stay
+   * left of the logo, so its tail (8px in from the edge here) aims at the forehead.
+   */
+  bubble: string;
 };
 
 /*===== Scenes =====*/
-// A dedicated welcome portrait, then the home hero's other two dogs. Their heads sit a quarter in from the left and the
-// right half stays dark for the form. Each crop keeps the face visible in the phone's narrow photo band.
 export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
+  // Hello at the door: the paw is up.
   phone: {
-    photo: "auth/welcome",
-    alt: "یک ژرمن‌شپرد کنار پنجره، پنجه‌هایش را روی لبه‌ی چوبی گذاشته و با سر کج به دوربین نگاه می‌کند",
+    pose: "wave",
     line: "سلام! شمارتو بده تا بشناسمت.",
-    position: "object-[24%_30%] lg:object-[20%_40%]",
+    size: "h-[calc(10.2*var(--u))] lg:h-[calc(25*var(--u))]",
+    loop: "lively-wiggle",
+    place: "left-[calc(13.4*var(--u))] lg:left-[calc(28.5*var(--u))]",
+    bubble: "right-[calc(50%-8px)] lg:right-[calc(50%-36px)]",
   },
-  // Still at the door, only the way in differs: the same portrait, so a step change between the two doesn't fade a photo
-  // into itself.
+  // He brings the key: the password is the other way in.
   password: {
-    photo: "auth/welcome",
-    alt: "یک ژرمن‌شپرد کنار پنجره، پنجه‌هایش را روی لبه‌ی چوبی گذاشته و با سر کج به دوربین نگاه می‌کند",
+    pose: "key-carry",
     line: "رمزتو بگو؛ دیگه لازم نیست منتظر پیامک بمونی.",
-    position: "object-[24%_30%] lg:object-[20%_40%]",
+    size: "h-[calc(11*var(--u))] lg:h-[calc(30.5*var(--u))]",
+    loop: "lively-breathe",
+    place: "left-[calc(12.5*var(--u))] lg:left-[calc(29*var(--u))]",
+    bubble: "right-[calc(39%-8px)] lg:right-[calc(39%-36px)]",
   },
+  // The phone is in his paws: the SMS has arrived.
   code: {
-    photo: "home/hero-2",
-    alt: "یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند",
+    pose: "smartphone",
     line: "پیامک رسید؟ کد پنج‌رقمی رو بگو.",
-    position: "object-[8%_50%] lg:object-[0%_4%]",
+    size: "h-[calc(10.8*var(--u))] lg:h-[calc(30*var(--u))]",
+    loop: "lively-breathe",
+    place: "left-[calc(12.1*var(--u))] lg:left-[calc(29.5*var(--u))]",
+    bubble: "right-[calc(31%-8px)] lg:right-[calc(31%-36px)]",
   },
+  // Head tilted, ears up: he is waiting to hear the name.
   name: {
-    photo: "home/hero-3",
-    alt: "یک توله گلدن رتریور کنار در خانه دراز کشیده و قلاده‌اش را به دهان گرفته",
+    pose: "listen",
     line: "حالا اسمتو بگو، می‌خوام صدات کنم.",
-    position: "object-[4%_50%] lg:object-[0%_35%]",
+    size: "h-[calc(11*var(--u))] lg:h-[calc(30.5*var(--u))]",
+    loop: "lively-tilt",
+    place: "left-[calc(13.2*var(--u))] lg:left-[calc(28.5*var(--u))]",
+    bubble: "right-[calc(46%-8px)] lg:right-[calc(46%-36px)]",
   },
 };
 
 /** The steps in the order they come. */
 export const AUTH_STEP_NAMES = Object.keys(AUTH_SCENES) as AuthStepName[];
-
-/** One step per distinct photo, so a photo two steps share is in the page once. */
-export const AUTH_PHOTO_STEP_NAMES = AUTH_STEP_NAMES.filter(
-  (name, index) => AUTH_STEP_NAMES.findIndex((other) => AUTH_SCENES[other].photo === AUTH_SCENES[name].photo) === index,
-);
-
-/** Whether the step is shown over the welcome portrait, whose bubble sits beside the dog's muzzle on a phone. */
-export function isWelcomePortrait(step: AuthStepName): boolean {
-  return AUTH_SCENES[step].photo === AUTH_SCENES.phone.photo;
-}

@@ -1,7 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { cn } from "cn";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { CodeStep } from "~/routes/auth/components/code-step";
 import { NameStep } from "~/routes/auth/components/name-step";
@@ -32,6 +34,10 @@ const STEP_TITLES: Record<AuthStepName, string> = {
  * a number seen for the first time becomes a customer account when its code is verified, and only then is the name asked.
  * A password can only be set after that, from the profile page, so the password step is for people who already have an
  * account; one who forgot theirs takes the code step and is sent on to set a new one.
+ *
+ * The steps sit on one grained plate. A new step's title and form rise in (`answer-in` on a wrapper keyed by the step's
+ * name; a resend keeps the name, so the code step doesn't replay), but not on the page's first paint: the form is there
+ * from the start and only a move the person made animates.
  */
 export function SignInFlow({
   showcase,
@@ -46,7 +52,7 @@ export function SignInFlow({
   rulesPublished: boolean;
   /** Signed in already but never named (e.g. the tab closed after the code), so start at the name. */
   needsName: boolean;
-  /** The page's photo and bubble follow the step, so every move to a new step is reported. */
+  /** The page's stage follows the step (its dog and bubble), so every move to a new step is reported. */
   onStepChange: (step: AuthStepName) => void;
 }) {
   const navigate = useNavigate();
@@ -69,56 +75,63 @@ export function SignInFlow({
   }
 
   return (
-    <section aria-labelledby="sign-in-step-title" className="flex flex-col gap-5">
-      <h2 id="sign-in-step-title" className="text-h3 font-bold">
-        {STEP_TITLES[step.name]}
-      </h2>
+    <section
+      aria-labelledby="sign-in-step-title"
+      className="rounded-4xl border border-foreground/10 bg-card paper-grain p-5 shadow-[0_24px_50px_-24px_rgb(0_0_0/0.9)] sm:p-7"
+    >
+      <div key={step.name} className={cn("flex flex-col gap-5", hasMoved && "answer-in")}>
+        <h2 id="sign-in-step-title" className={`${DISPLAY_HEADING} text-2xl text-balance`}>
+          {STEP_TITLES[step.name]}
+        </h2>
 
-      {step.name === "phone" && (
-        <PhoneStep
-          defaultPhoneNumber={lastPhoneNumber}
-          showcase={showcase}
-          focusOnMount={hasMoved}
-          onSent={(phoneNumber) => {
-            setLastPhoneNumber(phoneNumber);
-            goTo({ name: "code", phoneNumber, sentAt: Date.now(), forgot: false });
-          }}
-          onChoosePassword={(phoneNumber) => {
-            setLastPhoneNumber(phoneNumber);
-            goTo({ name: "password", phoneNumber });
-          }}
-        />
-      )}
+        {step.name === "phone" && (
+          <PhoneStep
+            defaultPhoneNumber={lastPhoneNumber}
+            showcase={showcase}
+            focusOnMount={hasMoved}
+            onSent={(phoneNumber) => {
+              setLastPhoneNumber(phoneNumber);
+              goTo({ name: "code", phoneNumber, sentAt: Date.now(), forgot: false });
+            }}
+            onChoosePassword={(phoneNumber) => {
+              setLastPhoneNumber(phoneNumber);
+              goTo({ name: "password", phoneNumber });
+            }}
+          />
+        )}
 
-      {step.name === "password" && (
-        <PasswordStep
-          phoneNumber={step.phoneNumber}
-          onEditPhone={() => goTo({ name: "phone" })}
-          onUseCode={({ forgot }) => goTo({ name: "code", phoneNumber: step.phoneNumber, sentAt: Date.now(), forgot })}
-          onSignedIn={async (user) => {
-            if (user.firstName) await finish();
-            else goTo({ name: "name" });
-          }}
-        />
-      )}
+        {step.name === "password" && (
+          <PasswordStep
+            phoneNumber={step.phoneNumber}
+            onEditPhone={() => goTo({ name: "phone" })}
+            onUseCode={({ forgot }) =>
+              goTo({ name: "code", phoneNumber: step.phoneNumber, sentAt: Date.now(), forgot })
+            }
+            onSignedIn={async (user) => {
+              if (user.firstName) await finish();
+              else goTo({ name: "name" });
+            }}
+          />
+        )}
 
-      {step.name === "code" && (
-        <CodeStep
-          phoneNumber={step.phoneNumber}
-          sentAt={step.sentAt}
-          showcase={showcase}
-          onResent={(sentAt) => setStep({ ...step, sentAt })}
-          onEditPhone={() => goTo({ name: "phone" })}
-          onVerified={async (user) => {
-            if (user.firstName) await finish(step.forgot ? NEW_PASSWORD_PATH : redirectTo);
-            else goTo({ name: "name" });
-          }}
-        />
-      )}
+        {step.name === "code" && (
+          <CodeStep
+            phoneNumber={step.phoneNumber}
+            sentAt={step.sentAt}
+            showcase={showcase}
+            onResent={(sentAt) => setStep({ ...step, sentAt })}
+            onEditPhone={() => goTo({ name: "phone" })}
+            onVerified={async (user) => {
+              if (user.firstName) await finish(step.forgot ? NEW_PASSWORD_PATH : redirectTo);
+              else goTo({ name: "name" });
+            }}
+          />
+        )}
 
-      {step.name === "name" && (
-        <NameStep focusOnMount={hasMoved} rulesPublished={rulesPublished} onDone={() => finish()} />
-      )}
+        {step.name === "name" && (
+          <NameStep focusOnMount={hasMoved} rulesPublished={rulesPublished} onDone={() => finish()} />
+        )}
+      </div>
     </section>
   );
 }

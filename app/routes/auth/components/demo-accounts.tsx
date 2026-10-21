@@ -5,21 +5,23 @@ import { SHOWCASE_SIGN_IN_CODE, USER_ROLE_LABELS } from "~/lib/user-constants";
 /*===== Demo Accounts =====*/
 /**
  * Showcase mode only: one account per role, so the owner can switch roles while showing the site. Picking one fills
- * the phone field; the code step then takes the showcase code. Numbers are shown in Latin digits, as typed.
+ * the phone field; the code step then takes the showcase code. Numbers are shown in Latin digits, as typed. It is a
+ * well sunk into the plate (a darker grained panel with a dashed gold edge), so it reads as a showcase aid and not as
+ * part of the form.
  */
 export function DemoAccounts({ onPick }: { onPick: (phoneNumber: string) => void }) {
   return (
     <section
       aria-labelledby="demo-accounts-title"
-      className="rounded-3xl border border-dashed border-primary/35 bg-card p-4"
+      className="rounded-3xl border border-dashed border-primary/35 bg-sunken paper-grain p-4"
     >
       <h2 id="demo-accounts-title" className="text-sm font-bold">
         حساب‌های نمایشی
       </h2>
       <p className="mt-1 text-xs text-pretty text-muted-foreground">
-        یکی را انتخاب کن. کد ورود همه {toPersianDigits(SHOWCASE_SIGN_IN_CODE)} است.
+        یکی رو انتخاب کن؛ کد ورود همه‌شون {toPersianDigits(SHOWCASE_SIGN_IN_CODE)} هست.
       </p>
-      <ul className="mt-3 divide-y divide-border">
+      <ul className="mt-3 divide-y divide-foreground/10">
         {DEMO_ACCOUNTS.map((account) => (
           <li key={account.phoneNumber}>
             <button

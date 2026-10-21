@@ -55,7 +55,7 @@ test.describe("a new customer", () => {
     const phone = `0919${Math.floor(1_000_000 + Math.random() * 8_999_999)}`;
     await page.goto("/auth");
     await page.fill("#sign-in-phone", phone);
-    await page.getByRole("button", { name: "کد ورود را بفرست" }).click();
+    await page.getByRole("button", { name: "کد ورود رو بفرست" }).click();
     await page.locator("#sign-in-code").focus();
     await page.keyboard.type("12345", { delay: 60 });
 

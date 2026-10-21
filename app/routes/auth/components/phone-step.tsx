@@ -3,7 +3,6 @@ import { SmartphoneIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { FormAlert } from "~/components/form-alert";
 import { Button } from "~/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "~/components/ui/input-group";
@@ -11,6 +10,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
 import { describeAuthError } from "~/routes/auth/auth-errors";
 import { DemoAccounts } from "~/routes/auth/components/demo-accounts";
+import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type PhoneInput, type PhoneValues, phoneSchema } from "~/routes/auth/schema";
 
 /*===== Phone Step =====*/
@@ -66,7 +66,7 @@ export function PhoneStep({
   return (
     <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
-        <FormAlert message={errors.root?.message} />
+        <StepAlert message={errors.root?.message} />
 
         <Field data-invalid={!!errors.phoneNumber}>
           <FieldLabel htmlFor="sign-in-phone">شماره موبایل</FieldLabel>
@@ -87,13 +87,13 @@ export function PhoneStep({
               {...register("phoneNumber")}
             />
           </InputGroup>
-          <FieldDescription id="sign-in-phone-note">کد ورود را به همین شماره پیامک می‌کنیم.</FieldDescription>
-          <FieldError errors={[errors.phoneNumber]} />
+          <FieldDescription id="sign-in-phone-note">کد ورود رو به همین شماره پیامک می‌کنیم.</FieldDescription>
+          <FieldError errors={[errors.phoneNumber]} className="answer-in" />
         </Field>
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
-          کد ورود را بفرست
+          کد ورود رو بفرست
         </Button>
         <Button
           type="button"

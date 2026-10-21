@@ -61,7 +61,7 @@ The header, footer and phone tab bar live in `app/routes/layout_public/` and wra
 
 ## Login / Register
 
-`/auth` (`app/routes/auth/`) is the home hero turned into a form, outside the storefront shell: the dog's photo fills the page, the form sits in its dark half with no box, and the dog's bubble asks the question of the step. Each step has its own dog (the three hero photos): the photo crossfades and the words change; the bubble's outline draws in once, on load. On phones the photo is a band on top that fades into the form.
+`/auth` (`app/routes/auth/`) sits outside the storefront shell. Since 2026-10-21 it is the mascot's front door instead of a photo per step: one half is a night stage with the `door` in its stretch of brick wall, its lamp lit, a path, bushes and the step's dog waiting on the doorstep with his chalk bubble asking the step's question (the `wave` dog for the number, `key-carry` for the password, `smartphone` for the SMS code, `listen` for the name). The other half holds the logo, «وارد شو، منتظرتم» with «منتظرتم» in gold, and the step's form on one grained plate, with the demo accounts (showcase mode) inside it and the trust note under it. On phones the stage is an 18rem band on top. Motion: on load the lamp lights, the dog trots up and his bubble pops; on a step change the old dog steps down, the new one hops in, the bubble pops again and the form rises in; errors rise in too. The flow, its ids and focus rules are unchanged.
 
 ## Help and FAQ
 

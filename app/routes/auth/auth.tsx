@@ -5,11 +5,11 @@ import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { env } from "~/env.server";
 import { authForHeaders } from "~/lib/auth.server";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { referralCookieFromUrl } from "~/lib/referral.server";
 import { SITE_RULES } from "~/lib/site-rules";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
-import { AuthBubble } from "~/routes/auth/components/auth-bubble";
-import { AuthPhotos } from "~/routes/auth/components/auth-photos";
+import { AuthStage } from "~/routes/auth/components/auth-stage";
 import { SignInFlow } from "~/routes/auth/components/sign-in-flow";
 import { TrustNote } from "~/routes/auth/components/trust-note";
 
@@ -50,61 +50,67 @@ function safeRedirect(value: string | null) {
 
 /*===== Page =====*/
 /**
- * The home hero turned into a form: the dog's photo fills the page, the form sits in its dark half with no box, and a
- * different dog asks at each step (the photo crossfades, the bubble's words change).
+ * The dog meets you at the door. The form is one grained plate on the paper, and the page's other half is a drawn night
+ * scene (`AuthStage`): a front door with its lamp lit, and at each step a different dog waiting on the doorstep who asks
+ * that step's question.
+ *
+ * Outside the storefront shell (no header, footer or tab bar). Desktop: one full-viewport band split in two; in RTL the
+ * first column is the right one, so the form comes first in the DOM and sits on the start side, and the stage is the
+ * left half. Phones: the stage is a band on top (moved first by `order`, so the form keeps the first place in the tab
+ * order) with the logo laid over its start corner, and the plate follows.
  */
 export default function AuthPage({ loaderData }: Route.ComponentProps) {
   const { showcase, redirectTo, needsName, rulesPublished } = loaderData;
   // Which dog is up follows the flow's step; the flow reports each change.
-  const [step, setStep] = useState<AuthStepName>(needsName ? "name" : "phone");
+  const firstStep: AuthStepName = needsName ? "name" : "phone";
+  const [step, setStep] = useState<AuthStepName>(firstStep);
 
   return (
-    // Desktop: one full-viewport band split in two. In RTL the first column is the right one, so the form comes first in
-    // the DOM and sits on the start side; the photo is absolute behind both, so its dog fills the other half.
     <main className="relative isolate flex min-h-svh flex-col bg-jet lg:grid lg:h-svh lg:grid-cols-2 lg:overflow-hidden">
-      {/*===== Photo =====*/}
-      <AuthPhotos step={step} />
-
       {/*===== Form Column =====*/}
-      {/* Scrolls on its own on desktop, so the demo list never moves the photo. Its scrollbar is hidden; the wheel and touch still scroll it. */}
-      <div className="z-10 flex [scrollbar-width:none] flex-col px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:ps-20 lg:pe-10 lg:pt-8 lg:pb-12 xl:ps-24 [&::-webkit-scrollbar]:hidden">
-        {/*------ Logo ------*/}
-        {/* Phones: laid over the photo band's top start corner. Desktop: first in the column, scrolling with it. */}
-        <Link
-          to="/"
-          aria-label="زروان، صفحه‌ی اصلی"
-          className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
-        >
-          <BrandLogo />
-        </Link>
+      {/* Scrolls on its own on desktop, so the demo list never moves the stage. Its scrollbar is hidden; the wheel and touch still scroll it. */}
+      <div className="z-10 [scrollbar-width:none] px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:px-10 lg:pt-8 [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto flex w-full max-w-md flex-col lg:min-h-full">
+          {/*------ Logo ------*/}
+          {/* Phones: laid over the stage band's top start corner. Desktop: first in the column, scrolling with it. */}
+          <Link
+            to="/"
+            aria-label="زروان، صفحه‌ی اصلی"
+            className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
+          >
+            <BrandLogo />
+          </Link>
 
-        {/*------ Bubble ------*/}
-        <AuthBubble step={step} />
+          <div className="flex flex-col max-lg:pt-7 lg:my-auto">
+            {/*------ Welcome ------*/}
+            <header>
+              <h1 className={`${DISPLAY_HEADING} text-h1 text-balance`}>
+                وارد شو، <span className="text-primary">منتظرتم</span>
+              </h1>
+              <p className="mt-3 text-pretty text-muted-foreground">بار اولته؟ حسابت همین‌جا ساخته می‌شه.</p>
+            </header>
 
-        <div className="flex w-full max-w-md flex-col max-lg:mx-auto lg:my-auto">
-          {/*------ Welcome ------*/}
-          <header>
-            <h1 className="font-display text-h1 font-black text-balance">وارد شو، منتظرتم</h1>
-            <p className="mt-3 text-pretty text-muted-foreground">بار اول است؟ حسابت همین‌جا ساخته می‌شود.</p>
-          </header>
+            {/*------ Steps ------*/}
+            <div className="mt-6 lg:mt-8">
+              <SignInFlow
+                showcase={showcase}
+                redirectTo={redirectTo}
+                needsName={needsName}
+                rulesPublished={rulesPublished}
+                onStepChange={setStep}
+              />
+            </div>
 
-          {/*------ Steps ------*/}
-          <div className="mt-8">
-            <SignInFlow
-              showcase={showcase}
-              redirectTo={redirectTo}
-              needsName={needsName}
-              rulesPublished={rulesPublished}
-              onStepChange={setStep}
-            />
-          </div>
-
-          {/*------ Reassurance ------*/}
-          <div className="mt-8">
-            <TrustNote />
+            {/*------ Reassurance ------*/}
+            <div className="mt-7">
+              <TrustNote />
+            </div>
           </div>
         </div>
       </div>
+
+      {/*===== Stage =====*/}
+      <AuthStage step={step} firstStep={firstStep} />
     </main>
   );
 }

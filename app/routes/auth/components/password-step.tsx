@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FormAlert } from "~/components/form-alert";
 import { PasswordInput } from "~/components/password-input";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
@@ -10,6 +9,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
 import { describeAuthError } from "~/routes/auth/auth-errors";
 import type { VerifiedUser } from "~/routes/auth/components/code-step";
+import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type PasswordValues, passwordSchema } from "~/routes/auth/schema";
 
 /*===== Password Step =====*/
@@ -85,7 +85,7 @@ export function PasswordStep({
           <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
             {phoneNumber}
           </bdi>{" "}
-          وارد می‌شوی.{" "}
+          وارد می‌شی.{" "}
           <button
             type="button"
             onClick={onEditPhone}
@@ -95,7 +95,7 @@ export function PasswordStep({
           </button>
         </p>
 
-        <FormAlert message={errors.root?.message} />
+        <StepAlert message={errors.root?.message} />
 
         {/*------ Password ------*/}
         <Field data-invalid={!!errors.password}>
@@ -107,7 +107,7 @@ export function PasswordStep({
             disabled={isSubmitting}
             {...register("password")}
           />
-          <FieldError errors={[errors.password]} />
+          <FieldError errors={[errors.password]} className="answer-in" />
         </Field>
 
         <Button type="submit" size="lg" className="w-full" disabled={isBusy}>
@@ -134,7 +134,7 @@ export function PasswordStep({
             onClick={() => sendCodeInstead({ forgot: true })}
             className="self-center rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline disabled:opacity-50"
           >
-            رمزم را فراموش کرده‌ام
+            رمزمو فراموش کردم
           </button>
         </div>
       </FieldGroup>

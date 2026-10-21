@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { FormAlert } from "~/components/form-alert";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "~/components/ui/input-otp";
@@ -11,6 +10,7 @@ import { authClient } from "~/lib/auth-client";
 import { toLatinDigits, toPersianDigits } from "~/lib/digits";
 import { SHOWCASE_SIGN_IN_CODE, SIGN_IN_CODE_LENGTH, SIGN_IN_CODE_RESEND_SECONDS } from "~/lib/user-constants";
 import { describeAuthError } from "~/routes/auth/auth-errors";
+import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type CodeValues, codeSchema } from "~/routes/auth/schema";
 
 /** Persian keyboards type Persian or Arabic-Indic digits; the field takes them and stores ASCII. */
@@ -90,7 +90,7 @@ export function CodeStep({
       <FieldGroup>
         {/*------ Where It Went ------*/}
         <p className="text-sm text-pretty text-muted-foreground">
-          کد {toPersianDigits(String(SIGN_IN_CODE_LENGTH))} رقمی را به{" "}
+          کد {toPersianDigits(String(SIGN_IN_CODE_LENGTH))} رقمی رو به{" "}
           <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
             {phoneNumber}
           </bdi>{" "}
@@ -104,7 +104,7 @@ export function CodeStep({
           </button>
         </p>
 
-        <FormAlert message={errors.root?.message} />
+        <StepAlert message={errors.root?.message} />
 
         {/*------ Code ------*/}
         <Field data-invalid={!!errors.code}>
@@ -129,13 +129,13 @@ export function CodeStep({
                   disabled={isSubmitting}
                 >
                   <InputOTPGroup className="gap-2">
-                    {/* Five engraved tags: flat card, faint gold hairline, a gold ring on the one being typed in. */}
+                    {/* Five wells on the plate: the input fill and its hairline, a gold ring on the one being typed in. */}
                     {Array.from({ length: SIGN_IN_CODE_LENGTH }, (_, index) => (
                       <InputOTPSlot
                         key={index}
                         index={index}
                         aria-invalid={!!errors.code}
-                        className="size-13 rounded-xl border border-border bg-card text-xl font-bold first:rounded-xl last:rounded-xl dark:bg-card"
+                        className="size-13 rounded-xl border border-input text-xl font-bold first:rounded-xl last:rounded-xl"
                       />
                     ))}
                   </InputOTPGroup>
@@ -143,14 +143,14 @@ export function CodeStep({
               </div>
             )}
           />
-          <FieldError errors={[errors.code]} />
+          <FieldError errors={[errors.code]} className="answer-in" />
         </Field>
 
         {/* Showcase mode sends no SMS, so the page says the code out loud. */}
         {showcase && (
-          <p className="rounded-xl border border-dashed border-primary/35 bg-card px-3 py-2 text-center text-sm text-muted-foreground">
+          <p className="rounded-2xl border border-dashed border-primary/35 bg-sunken paper-grain px-3 py-2.5 text-center text-sm text-muted-foreground">
             نسخه‌ی نمایشی: کد ورود همیشه{" "}
-            <span className="font-bold text-primary">{toPersianDigits(SHOWCASE_SIGN_IN_CODE)}</span> است.
+            <span className="font-bold text-primary">{toPersianDigits(SHOWCASE_SIGN_IN_CODE)}</span> هست.
           </p>
         )}
 
@@ -171,7 +171,7 @@ export function CodeStep({
               disabled={isResending}
               className="rounded-sm font-bold text-primary underline-offset-4 hover:underline disabled:opacity-50"
             >
-              کد را دوباره بفرست
+              کد رو دوباره بفرست
             </button>
           )}
         </p>

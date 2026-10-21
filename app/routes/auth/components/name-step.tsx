@@ -2,7 +2,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { FormAlert } from "~/components/form-alert";
 import { RulesTick } from "~/components/rules-tick";
 import { Button } from "~/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field";
@@ -11,6 +10,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
 import { client } from "~/orpc/client";
 import { describeAuthError } from "~/routes/auth/auth-errors";
+import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type NameValues, nameSchema } from "~/routes/auth/schema";
 
 /*===== Name Step =====*/
@@ -70,10 +70,10 @@ export function NameStep({
     <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
         <p className="text-sm text-pretty text-muted-foreground">
-          حسابت ساخته شد. اسمت را بنویس تا مربی بداند با چه کسی کار می‌کند.
+          حسابت ساخته شد. اسمتو بنویس تا مربی بدونه با کی کار می‌کنه.
         </p>
 
-        <FormAlert message={errors.root?.message} />
+        <StepAlert message={errors.root?.message} />
 
         <Field data-invalid={!!errors.firstName}>
           <FieldLabel htmlFor="sign-in-first-name">نام</FieldLabel>
@@ -83,7 +83,7 @@ export function NameStep({
             aria-invalid={!!errors.firstName}
             {...register("firstName")}
           />
-          <FieldError errors={[errors.firstName]} />
+          <FieldError errors={[errors.firstName]} className="answer-in" />
         </Field>
 
         <Field data-invalid={!!errors.lastName}>
@@ -94,7 +94,7 @@ export function NameStep({
             aria-invalid={!!errors.lastName}
             {...register("lastName")}
           />
-          <FieldError errors={[errors.lastName]} />
+          <FieldError errors={[errors.lastName]} className="answer-in" />
         </Field>
 
         {rulesPublished && (
@@ -109,8 +109,8 @@ export function NameStep({
               }}
             />
             {rulesMissing && !rulesTicked && (
-              <p role="alert" className="text-sm text-destructive">
-                برای ادامه باید قوانین را بپذیری.
+              <p role="alert" className="answer-in text-sm text-destructive">
+                برای ادامه باید قوانین رو بپذیری.
               </p>
             )}
           </div>

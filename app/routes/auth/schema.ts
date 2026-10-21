@@ -9,7 +9,7 @@ export const phoneSchema = z.object({
   phoneNumber: z
     .string()
     .trim()
-    .min(1, "شماره موبایلت را بنویس.")
+    .min(1, "شماره موبایلتو بنویس.")
     .transform((value, ctx) => {
       const normalized = normalizePhoneNumber(value);
       if (!normalized) {
@@ -27,14 +27,14 @@ export type PhoneValues = z.output<typeof phoneSchema>;
 // Only "was something typed": whether it is right is the server's to say, and it answers the same for a wrong password
 // and an unknown number. The strength rules apply when a password is set, not when it is used.
 export const passwordSchema = z.object({
-  password: z.string().min(1, "رمز عبورت را بنویس."),
+  password: z.string().min(1, "رمز عبورتو بنویس."),
 });
 
 export type PasswordValues = z.infer<typeof passwordSchema>;
 
 /*===== Code =====*/
 export const codeSchema = z.object({
-  code: z.string().regex(new RegExp(`^\\d{${SIGN_IN_CODE_LENGTH}}$`), "کد پنج‌رقمی پیامک را کامل بنویس."),
+  code: z.string().regex(new RegExp(`^\\d{${SIGN_IN_CODE_LENGTH}}$`), "کد پنج‌رقمی پیامک رو کامل بنویس."),
 });
 
 export type CodeValues = z.infer<typeof codeSchema>;
@@ -44,8 +44,8 @@ export type CodeValues = z.infer<typeof codeSchema>;
 const namePart = (missing: string) => z.string().trim().min(2, missing).max(40, "حداکثر ۴۰ حرف.");
 
 export const nameSchema = z.object({
-  firstName: namePart("اسمت را بنویس."),
-  lastName: namePart("نام خانوادگی‌ات را بنویس."),
+  firstName: namePart("اسمتو بنویس."),
+  lastName: namePart("نام خانوادگی‌تو بنویس."),
 });
 
 export type NameValues = z.infer<typeof nameSchema>;
