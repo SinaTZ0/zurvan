@@ -4,6 +4,7 @@ import { NuqsAdapter } from "nuqs/adapters/react-router/v8";
 import { useState } from "react";
 import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 
+import { RootErrorPage } from "~/components/root-error-page";
 import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
@@ -68,28 +69,14 @@ export default function App() {
   return <Outlet />;
 }
 
+/**
+ * The last error screen, for what breaks above a page's own boundary. A 404 says the address points nowhere; anything
+ * else offers a retry. The error's message and stack are shown only in development.
+ */
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
+  const missing = isRouteErrorResponse(error) && error.status === 404;
+  const details =
+    import.meta.env.DEV && error instanceof Error ? { message: error.message, stack: error.stack } : undefined;
 
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details = error.status === 404 ? "The requested page could not be found." : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
-  return (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full overflow-x-auto p-4">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
+  return <RootErrorPage missing={missing} details={details} />;
 }
