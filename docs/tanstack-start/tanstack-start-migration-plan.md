@@ -34,13 +34,14 @@ before starting; Start moves fast and blog posts lag behind it.
 
 ## Decisions Before Starting
 
-These need the owner's call. Each has a recommendation.
+The owner decided all of these on 2026-10-22.
 
-1. **Where the work happens.** Phase A runs on `main` (each step ships on React Router). Phase B can't: the app is
-   either React Router or Start, and a half-converted `main` doesn't run. **Recommendation:** Phase B on a
-   `tanstack-start` branch, merged once it passes the checks in B10. CLAUDE.md says to work on `main` unless the user
-   asks for a branch, so this needs an explicit yes.
-2. **Freshness policy (decided 2026-10-22).** Who made the change decides how it reaches the screen:
+1. **Where the work happens (decided).** Everything happens on the `tanstack-start` branch, created from `main`,
+   Phase A included. This is the owner's explicit exception to CLAUDE.md's "commit on `main`". Phase A commits still
+   run on React Router. The B0 spike runs in a git worktree (`../zurvan-spike`) on its own branch,
+   `tanstack-start-spike` (a second exception the owner approved), which stays unmerged until B1 decides whether to
+   build on it. Nothing is merged into `main` or pushed until the owner says so.
+2. **Freshness policy (decided).** Who made the change decides how it reaches the screen:
    - **Changes the visitor makes** (adds a dog, fills the cart, an Admin marks an enrollment done): the mutation
      invalidates the query keys it changed (`orpc.x.key()`), so the next render refetches. No `staleTime` is involved.
    - **Default `staleTime`: 5 minutes** (set on the `QueryClient`). It covers changes made by someone else, like a
@@ -50,16 +51,24 @@ These need the owner's call. Each has a recommendation.
    - **Refetch on focus** stays on (Query's default). It only refetches data that's already stale, so it mostly helps
      the 30-second queries.
    - Router `defaultPreloadStaleTime: 0`, so Query's `staleTime` decides whether a preload or a click refetches.
-3. **Search params.** nuqs's TanStack Router adapter is "experimental and does not yet cover TanStack Start"
-   ([nuqs docs](https://nuqs.dev/docs/adapters#tanstack-router)). **Recommendation:** replace nuqs with TanStack
+3. **Search params (decided).** nuqs's TanStack Router adapter is "experimental and does not yet cover TanStack Start"
+   ([nuqs docs](https://nuqs.dev/docs/adapters#tanstack-router)). **Decision:** replace nuqs with TanStack
    Router's own typed search params (`validateSearch` with Zod/Standard Schema, `Route.useSearch()`,
    `navigate({ search })`). Filters that are UI-only today (`shallow: true`) simply stay out of `loaderDeps`.
-4. **Production server.** The documented Node path is Nitro (`nitro/vite`, `node .output/server/index.mjs`), and
-   Nitro v3 is still beta. The alternative is Start's own build output served by `srvx` (static client files + the
-   server's `fetch` export); the docs only spell that out for Rsbuild. **Recommendation:** try Nitro in the B0 spike,
-   fall back to `srvx` if the build or Docker image misbehaves.
+4. **Production server (decided).** The documented Node path is Nitro (`nitro/vite`, `node .output/server/index.mjs`),
+   and Nitro v3 is still beta. The alternative is Start's own build output served by `srvx` (static client files + the
+   server's `fetch` export); the docs only spell that out for Rsbuild. **Decision:** try Nitro in the B0 spike, fall
+   back to `srvx` if the build or Docker image misbehaves. Result: see B0.
+5. **Two refinements of Phase A (decided).**
+   - **One `session.get` procedure** serves both A1 (the viewer on public pages) and A2 (page guards). It returns
+     anonymous / unnamed / active and revokes a blocked account's sessions wherever it's read, so a blocked user is
+     simply signed out everywhere.
+   - **A public `site.config` procedure** (`{ origin, showcase }`) gives pages the values they used to read from
+     `env.server` (the site origin for links, showcase mode), instead of adding those fields to each page's own
+     procedure. Links and QR codes that need the origin (partner link, dog file card, certificate cards) are still built
+     inside their own procedures.
 
-## Phase A: Prepare on React Router (on `main`)
+## Phase A: Prepare on React Router (on `tanstack-start`)
 
 Each step is a normal commit; the app keeps running on React Router. The goal is a codebase where every page loader is
 "call procedures, shape the result", so Phase B is mostly mechanical.
@@ -103,7 +112,7 @@ blocked account's sessions on the server. Make `requireSession` call it. In Phas
   value down or read it from a query instead of a hardcoded route id.
 - `certificate/components/certificate-hero.tsx` imports `../+types/certificate`; give it its own props type.
 
-## Phase B: Switch to Start (branch `tanstack-start`)
+## Phase B: Switch to Start (branch `tanstack-start`; B0 in the `tanstack-start-spike` worktree)
 
 ### B0. Spike: prove the risky parts first
 
