@@ -4,6 +4,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { createServerClient } from "~/orpc/server-client.server";
+import { COLUMN } from "~/routes/join_partner/column";
 import { CommissionCard } from "~/routes/join_partner/components/commission-card";
 import { HowToStart } from "~/routes/join_partner/components/how-to-start";
 import { PartnerAsk } from "~/routes/join_partner/components/partner-ask";
@@ -42,7 +43,9 @@ export default function JoinPartnerPage({ loaderData }: Route.ComponentProps) {
       <WaysIn />
 
       {/*===== Start and Commission =====*/}
-      <div className="site-container grid gap-12 py-section-md lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-16">
+      {/* Both plates carry their own headroom (the signpost and the basket dog stand on their top edges), so their top
+          edges line up; `items-stretch` makes the shorter one as tall as the other. */}
+      <div className={`${COLUMN} grid gap-x-12 py-section-sm lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]`}>
         <HowToStart />
         <CommissionCard commissionPercent={commissionPercent} />
       </div>

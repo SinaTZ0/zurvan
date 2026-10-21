@@ -1,80 +1,128 @@
-import { cn } from "cn";
 import { PhoneIcon } from "lucide-react";
 
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { GroundStrip } from "~/components/ground-strip";
+import { MascotCut } from "~/components/mascot-cut";
+import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
-import { SpeechBubble } from "~/components/speech-bubble";
 import { CENTER_PHONE } from "~/lib/contact";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { COLUMN } from "~/routes/join_partner/column";
 
 /*===== Partner Hero =====*/
-// The one photo is the puppy with its own leash, the same frame the home hero and the sign-in steps use (its crop is
-// tuned to match). The dog sits in the photo's end half and the words take the dark start half, so there is no box.
 /**
- * The partner page's first screen. The dog's bubble speaks to the shop owner, in the dog's voice, so the page sells the
- * partnership from the side of the dog walking in the shop's door. Phones: photo on top, bubble under it with its tail
- * up at the dog, the words below on black. Desktop: words at the start, the dog and its bubble at the end.
+ * The partner page's first screen: the headline, the line with the commission percent and the call button on the start
+ * side, and on the end side a little street of the places a partner owns. The clinic and the pet shop stand side by
+ * side on one path and the freshly groomed dog sits in front of them, the third kind of place (the groomer's), telling
+ * the shop owner to send his like to the trainer.
  *
- * @param commissionPercent The commission percent in force (the Admin's setting), read by the page's loader.
+ * Wide: words at the start, the street at the end. Phones: the street on top, the words under.
+ *
+ * The street's pieces are placed by physical sides because they are tied to the pictures (he looks to the right, at the
+ * words, and his bubble's tail is aimed at his head), not to the reading direction. The percent comes from the loader
+ * (the Admin's setting); nothing here depends on its width.
+ *
+ * @param commissionPercent The commission percent in force, read by the page's loader.
  */
 export function PartnerHero({ commissionPercent }: { commissionPercent: number }) {
   return (
-    <section aria-labelledby="partner-title" className="relative isolate overflow-hidden bg-jet">
-      {/*===== Photo =====*/}
-      <div className="relative aspect-[4/3] lg:absolute lg:inset-0 lg:aspect-auto">
-        <picture>
-          <source media="(min-width: 64rem)" srcSet="/photo/home/hero-3-1536.webp" />
-          <img
-            src="/photo/home/hero-3-900.webp"
-            alt="یک توله گلدن رتریور کنار در خانه دراز کشیده و قلاده‌اش را به دهان گرفته"
-            width={1536}
-            height={1024}
-            className="size-full object-cover object-[4%_50%] lg:object-[0%_35%]"
-          />
-        </picture>
-
-        {/* Phones: the photo melts into the black the words sit on. Desktop: the dark half deepens toward the words. */}
-        <div
-          aria-hidden
-          className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-jet to-transparent lg:hidden"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 hidden bg-linear-to-l from-jet from-25% via-jet/60 via-45% to-transparent to-65% lg:block"
-        />
-        <div aria-hidden className="absolute inset-x-0 bottom-0 hidden h-32 bg-linear-to-t from-jet lg:block" />
-      </div>
-
+    <section
+      aria-labelledby="partner-title"
+      className={`${COLUMN} grid items-center gap-y-6 pt-section-sm pb-section-sm lg:grid-cols-12 lg:gap-x-12`}
+    >
       {/*===== Words =====*/}
-      <div className="relative site-container lg:flex lg:min-h-[32rem] lg:items-center">
-        <div className="relative -mt-20 pb-section-sm lg:mt-0 lg:w-[46%] lg:py-section-md">
-          {/*------ Bubble ------*/}
-          {/* Above the headline, its tail up at the dog's face on a phone and across at it on desktop. */}
-          <div className="flex justify-end">
-            <SpeechBubble tail="top-end" lgTail="bottom-end" drawIn className="max-w-[17rem] lg:max-w-[19rem]">
-              یه سگ مثل من پیش تو میاد؟ بفرستش پیش {HEAD_TRAINER.firstName}.
-            </SpeechBubble>
-          </div>
-
-          {/*------ Headline ------*/}
-          <h1 id="partner-title" className="mt-8 font-display text-display font-black text-balance lg:mt-10">
-            کلینیک، آرایشگاه سگ یا پت‌شاپ داری؟ با ما همراه شو.
-          </h1>
-          <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-            مشتری‌هات رو به آموزش K9 معرفی کن؛ از اولین خریدشون {formatNumberFa(commissionPercent)}٪ مال توئه.
-          </p>
-
-          {/*------ Action ------*/}
-          <div className="mt-8">
-            <a href={`tel:${CENTER_PHONE.tel}`} className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}>
-              <PhoneIcon aria-hidden className="size-4" />
-              <span>
-                زنگ بزن: <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
-              </span>
-            </a>
-          </div>
+      <div className="order-2 lg:order-1 lg:col-span-6">
+        {/* Two unbreakable halves: on phones the line breaks after the question, not inside it. */}
+        <h1 id="partner-title" className={`${DISPLAY_HEADING} text-h1 text-balance lg:text-[3.2rem]`}>
+          <span className="inline-block">کلینیک، آرایشگاه سگ یا پت‌شاپ داری؟</span>{" "}
+          <span className="inline-block text-primary">با ما همراه شو.</span>
+        </h1>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
+          مشتری‌هات رو به آموزش K9 معرفی کن؛ از اولین خریدشون {formatNumberFa(commissionPercent)}٪ مال توئه.
+        </p>
+        <div className="mt-8">
+          <a
+            href={`tel:${CENTER_PHONE.tel}`}
+            className={buttonVariants({ variant: "solid", size: "lg", className: "w-full sm:w-auto sm:px-10" })}
+          >
+            <PhoneIcon aria-hidden className="size-4" />
+            <span>
+              زنگ بزن: <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
+            </span>
+          </a>
         </div>
       </div>
+
+      {/*===== Street =====*/}
+      <div className="relative order-1 h-[17rem] lg:order-2 lg:col-span-6 lg:h-[23rem]">
+        {/*------ Sky and Light ------*/}
+        <NightSky className="inset-x-0 top-0 h-[42%]" />
+        {/* A pool of warm light where he sits. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(ellipse_48%_55%_at_50%_75%,rgb(255_194_26/0.08),transparent)]"
+        />
+
+        {/*------ The Two Buildings and the Path ------*/}
+        <div aria-hidden>
+          {/* They rise out of the dark one after the other on load (the first screen's pictures, so eager). */}
+          <div className="jp-rise absolute bottom-[0.9rem] left-0 w-[48%] translate-y-[6%] [--rise-delay:0.1s] lg:bottom-[1.3rem]">
+            <MascotCut name="petshop" eager className="block w-full" />
+          </div>
+          <div className="jp-rise absolute right-0 bottom-[0.9rem] w-[50%] translate-y-[6%] [--rise-delay:0.28s] lg:bottom-[1.3rem]">
+            <MascotCut name="clinic" eager className="block w-full" />
+          </div>
+          <GroundStrip className="absolute inset-x-0 bottom-0 h-7 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] lg:h-10" />
+        </div>
+
+        {/*------ The Groomed Dog in Front ------*/}
+        {/* He sits at the buildings' seam, bushes on both sides. His bubble stands inside his box so it follows him:
+            the tail is 36px in from the bubble's right edge, and his head is about 60% across his picture. */}
+        <div className="absolute bottom-[0.65rem] left-1/2 z-10 w-24 -translate-x-1/2 lg:bottom-[1rem] lg:w-36">
+          <MascotCut
+            name="plants"
+            eager
+            className="lively-sway absolute bottom-0 left-[92%] w-[46%] translate-y-[3%] lg:left-[88%]"
+          />
+          <MascotCut
+            name="plants"
+            eager
+            className="lively-sway-2 absolute right-[92%] bottom-0 w-[40%] translate-y-[3%] -scale-x-100 lg:right-[88%]"
+          />
+          <MascotCut name="groomed" eager className="jp-dog lively-breathe lively-pet relative block w-full translate-y-[3%]" />
+          <ChalkBubble
+            tail="right"
+            className="jp-pop absolute right-[calc(40%-36px)] bottom-[calc(100%+0.4rem)] w-max max-w-[13.5rem] text-pretty lg:max-w-[16rem]"
+          >
+            یه سگ مثل من پیش تو میاد؟ بفرستش پیش {HEAD_TRAINER.firstName}.
+          </ChalkBubble>
+        </div>
+      </div>
+
+      {/* The page's one load moment: the street fades up out of the dark (the two buildings rise a few pixels, one
+          after the other), then the groomed dog's bubble pops from its tail (bottom right, 2.25rem in) and settles into
+          the shared float. The buildings' own translate stays (Tailwind's separate `translate` property). Off for
+          reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .jp-rise {
+            animation: jp-rise .8s cubic-bezier(.2,.8,.2,1) var(--rise-delay, 0s) both;
+          }
+          .jp-dog {
+            animation: jp-rise .6s cubic-bezier(.2,.8,.2,1) .5s both, lively-breathe 2.6s ease-in-out 1.1s infinite;
+          }
+          .jp-pop {
+            transform-origin: calc(100% - 2.25rem) 100%;
+            animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) 1.05s both, lively-float 3.4s ease-in-out 1.45s infinite alternate;
+          }
+        }
+        @keyframes jp-rise {
+          from { opacity: 0; transform: translateY(1rem); }
+          to { opacity: 1; transform: none; }
+        }
+      `}</style>
     </section>
   );
 }
