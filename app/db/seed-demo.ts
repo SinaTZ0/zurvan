@@ -7,6 +7,7 @@ import { eq, inArray, sql } from "drizzle-orm";
 import { db } from "~/db/client.server";
 import type { Transaction } from "~/db/client.server";
 import {
+  certificate,
   commission,
   course,
   dog,
@@ -27,6 +28,7 @@ import { getPaymentGateway } from "~/lib/payment-gateway.server";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { deleteObjects, videoKey } from "~/lib/storage.server";
 import { completeGatewayPayment, payCart } from "~/orpc/checkout/service";
+import { adminIssueCertificate } from "~/orpc/certificate/service";
 import { finishEnrollment } from "~/orpc/enrollment/service";
 import { markDogEvaluated, requestEvaluation } from "~/orpc/evaluation/service";
 import { parseVideoFormat } from "~/orpc/evaluation/video";
@@ -132,13 +134,22 @@ const SECOND_PARTNER_PHONE = "09120000007";
 const SECOND_PARTNER_CODE = "niloofar-clinic";
 
 /**
- * Removes the demo customers' commissions, enrollments, payments, evaluations and passed courses, in the order their
+ * Removes the demo customers' commissions, certificates, enrollments, payments, evaluations and passed courses, in the order their
  * references allow, so their dogs can go next.
  *
  * @returns The evaluation photos and the bucket keys of the evaluation videos, to delete once this commits.
  */
 async function removeDemoHistory({ tx, customerIds }: { tx: Transaction; customerIds: string[] }) {
   await tx.delete(commission).where(inArray(commission.customerId, customerIds));
+  // A certificate is never deleted by the app, but the demo's are remade with their enrollments.
+  await tx
+    .delete(certificate)
+    .where(
+      inArray(
+        certificate.enrollmentId,
+        tx.select({ id: enrollment.id }).from(enrollment).where(inArray(enrollment.customerId, customerIds)),
+      ),
+    );
   await tx.delete(enrollment).where(inArray(enrollment.customerId, customerIds));
   await tx
     .delete(paymentItem)
@@ -212,7 +223,11 @@ async function purchase({
   return settle;
 }
 
-/** The Admin presses «تمام شد» on the customer's active enrollment of a course. */
+/**
+ * The Admin presses «تمام شد» on the customer's active enrollment of a course.
+ *
+ * @returns The finished enrollment's id.
+ */
 async function completeCourse({ dogId, slug }: { dogId: string; slug: string }) {
   const [row] = await db
     .select({ id: enrollment.id })
@@ -222,19 +237,21 @@ async function completeCourse({ dogId, slug }: { dogId: string; slug: string }) 
   if (!row) throw new Error(`completeCourse: no active enrollment of ${slug}.`);
   const result = await finishEnrollment({ db, id: row.id, status: "completed" });
   if (result.kind !== "success") throw new Error(`completeCourse: ${slug} could not be completed.`);
+  return row.id;
 }
 
 /**
  * Tells the demo's story with the app's own services, so every row is what the app would have made: Leo evaluated by
- * the Admin directly, bought and finished the first companion course, started the second, and lost a race for
+ * the Admin directly, bought and finished the first companion course (and got its certificate), started the second, and lost a race for
  * Elementary (two payments for the same course, one enrollment, one item paid but not enrolled); Pesteh requested her
  * evaluation with a photo.
  */
 async function seedStory({ accountIds, dogIds }: { accountIds: Map<string, string>; dogIds: Map<string, string> }) {
   const sara = accountIds.get("09120000004");
+  const admin = accountIds.get("09120000001");
   const leoId = dogIds.get("لئو");
   const pestehId = dogIds.get("پسته");
-  if (!sara || !leoId || !pestehId) throw new Error("seedStory: a demo account or dog is missing.");
+  if (!sara || !admin || !leoId || !pestehId) throw new Error("seedStory: a demo account or dog is missing.");
 
   /*------ Leo ------*/
   const evaluated = await markDogEvaluated({ db, dogId: leoId });
@@ -242,7 +259,9 @@ async function seedStory({ accountIds, dogIds }: { accountIds: Map<string, strin
 
   // The first purchase, which writes Sara's partner's commission, and the end of its training.
   await purchase({ customerId: sara, dogId: leoId, slugs: ["companion-1", "cgc"] });
-  await completeCourse({ dogId: leoId, slug: "companion-1" });
+  const finished = await completeCourse({ dogId: leoId, slug: "companion-1" });
+  const issued = await adminIssueCertificate({ db, issuerId: admin, enrollmentId: finished });
+  if (issued.kind !== "success") throw new Error("seedStory: Leo's certificate could not be issued.");
   await purchase({ customerId: sara, dogId: leoId, slugs: ["companion-2"] });
 
   // Two payments for the same course started before either came back: the loser is paid, not enrolled.
