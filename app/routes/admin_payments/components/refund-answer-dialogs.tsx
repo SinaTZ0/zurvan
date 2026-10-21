@@ -27,6 +27,8 @@ import { formatToman } from "~/lib/course-format";
 import { client } from "~/orpc/client";
 import type { Refund } from "~/orpc/refund/contract";
 
+import { DIALOG_FOOTER, DIALOG_PLATE } from "../dialog-plate";
+
 /*===== Mark Refund Paid =====*/
 /**
  * «پرداخت شد»: the Admin has sent the money out of the app and writes the transfer's reference, which is kept with the
@@ -58,12 +60,12 @@ export function MarkRefundPaidDialog({
     onOpenChange(false);
   }
 
-  const fieldError = missing ? "کد پیگیری انتقال را بنویس." : paid.failure?.fields.reference;
+  const fieldError = missing ? "کد پیگیری انتقال رو بنویس." : paid.failure?.fields.reference;
 
   return (
     <Dialog open={open} onOpenChange={(next) => !paid.isPending && (next ? onOpenChange(true) : close())}>
       {refund && (
-        <DialogContent showCloseButton={false}>
+        <DialogContent showCloseButton={false} className={DIALOG_PLATE}>
           <form
             noValidate
             className="grid gap-4"
@@ -77,9 +79,9 @@ export function MarkRefundPaidDialog({
             }}
           >
             <DialogHeader>
-              <DialogTitle>{formatToman(refund.amount)} پرداخت شد؟</DialogTitle>
+              <DialogTitle>{formatToman(refund.amount)} رو پرداخت کردی؟</DialogTitle>
               <DialogDescription>
-                کد پیگیری انتقال ثبت می‌شود و به مشتری پیامک می‌رود. بعد از این برگشتی ندارد.
+                کد پیگیری انتقال ثبت می‌شه و برای مشتری پیامک می‌ره. بعدش دیگه برنمی‌گرده.
               </DialogDescription>
             </DialogHeader>
 
@@ -107,7 +109,7 @@ export function MarkRefundPaidDialog({
 
             <FormAlert message={paid.failure?.message ?? undefined} />
 
-            <DialogFooter>
+            <DialogFooter className={DIALOG_FOOTER}>
               <Button type="button" variant="outline" disabled={paid.isPending} onClick={close}>
                 انصراف
               </Button>
@@ -149,17 +151,17 @@ export function CancelRefundDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={(next) => !cancel.isPending && (next ? onOpenChange(true) : close())}>
-      <AlertDialogContent>
+      <AlertDialogContent className={DIALOG_PLATE}>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {refund ? `بازپرداخت ${formatToman(refund.amount)} لغو شود؟` : "لغو شود؟"}
+            {refund ? `بازپرداخت ${formatToman(refund.amount)} لغو بشه؟` : "لغو بشه؟"}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            هنوز پرداخت نشده، پس چیزی از دست نمی‌رود. مبلغش دوباره قابل بازپرداخت می‌شود.
+            هنوز پرداخت نشده، پس چیزی از دست نمی‌ره. مبلغش دوباره قابل بازپرداخت می‌شه.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <FormAlert message={cancel.failure?.message ?? undefined} />
-        <AlertDialogFooter>
+        <AlertDialogFooter className={DIALOG_FOOTER}>
           <AlertDialogCancel disabled={cancel.isPending}>نه</AlertDialogCancel>
           <AlertDialogAction disabled={cancel.isPending || !refund} onClick={() => refund && cancel.run(refund.id)}>
             {cancel.isPending && <Spinner aria-hidden />}

@@ -35,3 +35,13 @@ export function countByView(payments: readonly AdminPayment[]): Record<PaymentVi
     pending: payments.filter((payment) => matchesView(payment, "pending")).length,
   };
 }
+
+/*===== Flag Totals =====*/
+/** How many paid items got no enrollment over the whole list, and what they cost together (Rial), for the flag. */
+export function flagTotals(payments: readonly AdminPayment[]): { count: number; total: number } {
+  const count = payments.reduce((sum, payment) => sum + payment.paidNotEnrolledCount, 0);
+  const total = payments
+    .flatMap((payment) => payment.items.filter((item) => item.paidNotEnrolled))
+    .reduce((sum, item) => sum + item.price, 0);
+  return { count, total };
+}

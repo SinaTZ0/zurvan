@@ -23,6 +23,9 @@ import type { AdminPayment } from "~/orpc/checkout/contract";
 import { client } from "~/orpc/client";
 import { REFUND_REASON_MAX_LENGTH } from "~/orpc/refund/constants";
 
+import { DIALOG_FOOTER, DIALOG_PLATE } from "../dialog-plate";
+import { tomanDigits } from "../money";
+
 /*===== Create Refund Dialog =====*/
 /**
  * «ثبت بازپرداخت» for one paid payment: the Admin says how much goes back (in Toman, never more than what is left of
@@ -100,7 +103,7 @@ function CreateForm({
   const reasonError = local.reason ?? failure?.fields.reason;
 
   return (
-    <DialogContent showCloseButton={false}>
+    <DialogContent showCloseButton={false} className={DIALOG_PLATE}>
       <form
         noValidate
         className="grid gap-4"
@@ -108,9 +111,9 @@ function CreateForm({
           event.preventDefault();
           const rial = tomanToRial(amount);
           const next: { amount?: string; reason?: string } = {};
-          if (rial === null) next.amount = "مبلغ را به تومان و با عدد صحیح بنویس.";
-          else if (rial > remaining) next.amount = `بیشتر از مبلغ قابل بازپرداخت (${formatToman(remaining)}) نمی‌شود.`;
-          if (reason.trim() === "") next.reason = "دلیل بازپرداخت را بنویس.";
+          if (rial === null) next.amount = "مبلغ رو به تومان و با عدد صحیح بنویس.";
+          else if (rial > remaining) next.amount = `بیشتر از مبلغ قابل بازپرداخت (${formatToman(remaining)}) نمی‌شه.`;
+          if (reason.trim() === "") next.reason = "دلیل بازپرداخت رو بنویس.";
           setLocal(next);
           if (rial === null || next.amount || next.reason) return;
           onSubmit({ paymentId: payment.id, paymentItemId: itemId || null, amount: rial, reason });
@@ -119,10 +122,19 @@ function CreateForm({
         <DialogHeader>
           <DialogTitle>ثبت بازپرداخت برای {payment.customer.name}</DialogTitle>
           <DialogDescription>
-            این فقط تصمیم را ثبت می‌کند؛ پول را بیرون از برنامه بفرست و بعد «پرداخت شد» را بزن. قابل بازپرداخت:{" "}
-            {formatToman(remaining)}.
+            این فقط تصمیمت رو ثبت می‌کنه؛ پول رو بیرون از برنامه بفرست و بعد «پرداخت شد» رو بزن.
           </DialogDescription>
         </DialogHeader>
+
+        {/*------ The Ceiling ------*/}
+        {/* What can still be given back, on a small stub: the amount below may not go over it. */}
+        <p className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-2xl border border-dashed border-foreground/20 px-4 py-3">
+          <span className="text-sm text-muted-foreground">قابل بازپرداخت</span>
+          <span className="whitespace-nowrap">
+            <span className="font-display text-xl font-extrabold">{tomanDigits(remaining)}</span>{" "}
+            <span className="text-xs font-bold text-muted-foreground">تومان</span>
+          </span>
+        </p>
 
         <div className="grid gap-2">
           <label htmlFor="refund-amount" className="text-sm font-bold">
@@ -149,7 +161,7 @@ function CreateForm({
         {payment.items.length > 0 && (
           <div className="grid gap-2">
             <label htmlFor="refund-item" className="text-sm font-bold">
-              برای کدام دوره؟
+              برای کدوم دوره؟
             </label>
             <NativeSelect
               id="refund-item"
@@ -193,12 +205,12 @@ function CreateForm({
               {formatNumberFa(reason.length)} از {formatNumberFa(REFUND_REASON_MAX_LENGTH)}
             </p>
           </div>
-          <p className="text-xs text-muted-foreground">این دلیل فقط خودت می‌بینی، نه مشتری.</p>
+          <p className="text-xs text-muted-foreground">این دلیل رو فقط خودت می‌بینی، نه مشتری.</p>
         </div>
 
         <FormAlert message={failure?.message ?? undefined} />
 
-        <DialogFooter>
+        <DialogFooter className={DIALOG_FOOTER}>
           <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
             انصراف
           </Button>
