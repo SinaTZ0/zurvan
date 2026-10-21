@@ -9,8 +9,9 @@ import type { AdminEvaluation } from "~/orpc/evaluation/contract";
 
 /*===== Photo Gallery =====*/
 /**
- * The owner's photos as a grid of thumbnails; each opens the full-size picture in a lightbox, so the Admin can look at
- * the dog's coat, ears and stance while on the phone. One picture at a time is enough: no arrows.
+ * The owner's photos as a grid of prints (the row's strip, laid out flat); each opens the full-size picture in a
+ * lightbox, so the Admin can look at the dog's coat, ears and stance while on the phone. One picture at a time is
+ * enough: no arrows.
  */
 export function PhotoGallery({ photos, dogName }: { photos: AdminEvaluation["photos"]; dogName: string }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -18,16 +19,21 @@ export function PhotoGallery({ photos, dogName }: { photos: AdminEvaluation["pho
 
   return (
     <>
-      <ul className="grid grid-cols-3 gap-2">
+      <ul className="grid grid-cols-3 gap-2.5">
         {photos.map((photo, index) => (
           <li key={photo.id}>
             <button
               type="button"
               onClick={() => setOpenIndex(index)}
               aria-label={`باز کردن عکس ${formatNumberFa(index + 1)} از ${formatNumberFa(photos.length)}`}
-              className="block w-full overflow-hidden rounded-xl ring-1 ring-border outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+              className="group block w-full overflow-hidden rounded-xl bg-card ring-1 ring-foreground/20 transition-shadow outline-none hover:ring-foreground/40 focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <MediaImage media={photo} variant="thumb" alt="" className="aspect-4/3 w-full" />
+              <MediaImage
+                media={photo}
+                variant="thumb"
+                alt=""
+                className="aspect-4/3 w-full transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              />
             </button>
           </li>
         ))}
@@ -35,17 +41,17 @@ export function PhotoGallery({ photos, dogName }: { photos: AdminEvaluation["pho
 
       {/*===== Lightbox =====*/}
       <Dialog open={opened !== null} onOpenChange={(next) => !next && setOpenIndex(null)}>
-        <DialogContent showCloseButton={false} className="gap-0 p-2 sm:max-w-3xl">
+        <DialogContent showCloseButton={false} className="gap-0 rounded-3xl paper-grain p-2 sm:max-w-3xl">
           <DialogTitle className="sr-only">
-            عکس {formatNumberFa((openIndex ?? 0) + 1)} از {formatNumberFa(photos.length)} · {dogName}
+            عکس {formatNumberFa((openIndex ?? 0) + 1)} از {formatNumberFa(photos.length)}، {dogName}
           </DialogTitle>
-          <DialogDescription className="sr-only">عکسی که صاحب سگ فرستاده است.</DialogDescription>
+          <DialogDescription className="sr-only">عکسی که صاحب سگ فرستاده.</DialogDescription>
           {opened && (
             <MediaImage
               media={opened}
               variant="full"
               alt={`عکس ${dogName}`}
-              className="max-h-[80dvh] w-full rounded-lg object-contain"
+              className="max-h-[80dvh] w-full rounded-2xl object-contain"
             />
           )}
           <DialogClose
@@ -54,7 +60,7 @@ export function PhotoGallery({ photos, dogName }: { photos: AdminEvaluation["pho
                 variant="outline"
                 size="icon-sm"
                 aria-label="بستن"
-                className="absolute end-3 top-3 border-border bg-background/80"
+                className="absolute end-4 top-4 border-foreground/20 bg-background/80"
               />
             }
           >

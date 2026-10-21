@@ -13,7 +13,7 @@ export type EvaluationAnswer = { kind: AnswerKind; evaluation: AdminEvaluation }
 /*===== Reject Form =====*/
 // The server checks the reason again; this only catches an empty box before the request goes out.
 export const rejectFormSchema = z.object({
-  reason: z.string().trim().min(1, "دلیل را بنویس.").max(EVALUATION_REASON_MAX_LENGTH, "دلیل خیلی بلند است."),
+  reason: z.string().trim().min(1, "دلیل رو بنویس.").max(EVALUATION_REASON_MAX_LENGTH, "دلیل خیلی بلنده."),
 });
 
 export type RejectFormValues = z.infer<typeof rejectFormSchema>;

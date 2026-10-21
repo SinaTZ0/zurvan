@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { FormAlert } from "~/components/form-alert";
@@ -19,52 +20,70 @@ import { formatNumberFa } from "~/lib/digits";
 import { client } from "~/orpc/client";
 import { EVALUATION_REASON_MAX_LENGTH } from "~/orpc/evaluation/constants";
 import type { AdminEvaluation } from "~/orpc/evaluation/contract";
+import { DIALOG_FOOTER, DIALOG_PLATE, DIALOG_TITLE } from "~/routes/admin_evaluations/dialog-plate";
 import { rejectFormSchema, type RejectFormValues } from "~/routes/admin_evaluations/schema";
 
 /*===== Reject Dialog =====*/
 /**
  * «رد»: the Admin must give a reason, and the owner gets it in an SMS. Controlled, with no trigger of its own, so a row
- * button and the drawer's footer share it. The action lives here (so Escape can be refused while a request is in
- * flight); the form lives in the content, which is mounted only while the dialog is open, so the textbox starts empty
- * every time and keeps what was typed after a failure.
+ * button and the drawer's footer share it; the page remounts it for each opening, so the textbox starts empty every
+ * time, and it keeps what was typed after a failure.
+ *
+ * The action lives here (so Escape can be refused while a request is in flight). `onConfirmed` runs the moment the API
+ * has accepted the answer, before the list reloads, so the page can keep the row for its stamp; after a success focus
+ * goes to `returnFocus()`, since the button that opened it is gone.
  */
 export function RejectDialog({
   evaluation,
   open,
   onOpenChange,
+  onConfirmed,
+  returnFocus,
 }: {
-  /** The request being answered; the page keeps it while the dialog fades out. */
-  evaluation: AdminEvaluation | null;
+  evaluation: AdminEvaluation;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onConfirmed: (evaluation: AdminEvaluation) => void;
+  /** Where focus lands after a success: the open drawer, or the queue. */
+  returnFocus: () => HTMLElement | null;
 }) {
+  const succeeded = useRef(false);
+
   const reject = useAdminAction({
-    mutationFn: (vars: { id: string; reason: string }) => client.evaluation.admin.reject(vars),
+    mutationFn: async (vars: { id: string; reason: string }) => {
+      const result = await client.evaluation.admin.reject(vars);
+      succeeded.current = true;
+      onConfirmed(evaluation);
+      return result;
+    },
     success: (result) => `درخواست ${result.dog.name} رد شد.`,
     toastFailure: false,
-    onSuccess: () => close(),
+    onSuccess: () => onOpenChange(false),
     // Answered meanwhile: the hook has toasted why and reloaded the list.
-    onConflict: () => close(),
+    onConflict: () => onOpenChange(false),
   });
-
-  function close() {
-    reject.reset();
-    onOpenChange(false);
-  }
 
   return (
     // A request in flight can't be dismissed: closing would hide whether it worked.
-    <Dialog open={open} onOpenChange={(next) => !reject.isPending && (next ? onOpenChange(true) : close())}>
-      {evaluation && (
+    <Dialog open={open} onOpenChange={(next) => !reject.isPending && onOpenChange(next)}>
+      <DialogContent
+        showCloseButton={false}
+        className={DIALOG_PLATE}
+        finalFocus={() => {
+          if (!succeeded.current) return true;
+          returnFocus()?.focus({ preventScroll: true });
+          return false;
+        }}
+      >
         <RejectForm
           evaluation={evaluation}
           pending={reject.isPending}
           failure={reject.failure}
           onClearFailure={reject.reset}
           onSubmit={(reason) => reject.run({ id: evaluation.id, reason })}
-          onCancel={close}
+          onCancel={() => onOpenChange(false)}
         />
-      )}
+      </DialogContent>
     </Dialog>
   );
 }
@@ -100,49 +119,49 @@ function RejectForm({
   const reasonProps = register("reason", { onChange: onClearFailure });
 
   return (
-    <DialogContent showCloseButton={false}>
-      <form noValidate onSubmit={handleSubmit(({ reason }) => onSubmit(reason))} className="grid gap-4">
-        <DialogHeader>
-          <DialogTitle>رد درخواست {evaluation.dog.name}</DialogTitle>
-          <DialogDescription>این دلیل در پیامک به صاحب سگ می‌رسد.</DialogDescription>
-        </DialogHeader>
+    <form noValidate onSubmit={handleSubmit(({ reason }) => onSubmit(reason))} className="grid gap-4">
+      <DialogHeader>
+        <DialogTitle className={DIALOG_TITLE}>درخواست {evaluation.dog.name} رد بشه؟</DialogTitle>
+        <DialogDescription>
+          دلیلش رو بنویس؛ توی پیامک به صاحبش می‌رسه. بعدش می‌تونه دوباره درخواست بده.
+        </DialogDescription>
+      </DialogHeader>
 
-        {/*------ Reason ------*/}
-        <div className="grid gap-2">
-          <label htmlFor="reject-reason" className="text-sm font-bold">
-            دلیل رد
-          </label>
-          <Textarea
-            id="reject-reason"
-            rows={4}
-            maxLength={EVALUATION_REASON_MAX_LENGTH}
-            readOnly={pending}
-            aria-invalid={!!fieldError}
-            aria-describedby={fieldError ? "reject-reason-error" : undefined}
-            {...reasonProps}
-          />
-          <div className="flex items-start justify-between gap-3 text-xs">
-            <p id="reject-reason-error" role="alert" className="text-destructive">
-              {fieldError}
-            </p>
-            <p className="shrink-0 text-muted-foreground tabular-nums">
-              {formatNumberFa(length)} از {formatNumberFa(EVALUATION_REASON_MAX_LENGTH)}
-            </p>
-          </div>
+      {/*------ Reason ------*/}
+      <div className="grid gap-2">
+        <label htmlFor="reject-reason" className="text-sm font-bold">
+          دلیل رد
+        </label>
+        <Textarea
+          id="reject-reason"
+          rows={4}
+          maxLength={EVALUATION_REASON_MAX_LENGTH}
+          readOnly={pending}
+          aria-invalid={!!fieldError}
+          aria-describedby={fieldError ? "reject-reason-error" : undefined}
+          {...reasonProps}
+        />
+        <div className="flex min-h-5 items-start justify-between gap-3 text-xs">
+          <p id="reject-reason-error" role="alert" className="text-destructive">
+            {fieldError}
+          </p>
+          <p className="shrink-0 text-muted-foreground tabular-nums">
+            {formatNumberFa(length)} از {formatNumberFa(EVALUATION_REASON_MAX_LENGTH)}
+          </p>
         </div>
+      </div>
 
-        <FormAlert message={failure?.message ?? undefined} />
+      <FormAlert message={failure?.message ?? undefined} />
 
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
-            انصراف
-          </Button>
-          <Button type="submit" variant="destructive" disabled={pending}>
-            {pending && <Spinner aria-hidden />}
-            رد کن
-          </Button>
-        </DialogFooter>
-      </form>
-    </DialogContent>
+      <DialogFooter className={DIALOG_FOOTER}>
+        <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+          نه، بمونه
+        </Button>
+        <Button type="submit" variant="destructive" disabled={pending}>
+          {pending && <Spinner aria-hidden />}
+          رد کن
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
