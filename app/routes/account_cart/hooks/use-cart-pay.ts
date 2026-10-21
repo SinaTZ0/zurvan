@@ -6,9 +6,9 @@ import { client, orpc } from "~/orpc/client";
 import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
 
 /*===== Messages =====*/
-const CHANGED_MESSAGE = "وضعیت بعضی موردها عوض شده؛ سبد را دوباره بررسی کردیم. چیزی پرداخت نشد.";
+const CHANGED_MESSAGE = "وضعیت بعضی موردها عوض شده؛ سبد رو دوباره بررسی کردیم. چیزی پرداخت نشد.";
 const FAILED_MESSAGE = "پرداخت شروع نشد. دوباره امتحان کن.";
-const RULES_MESSAGE = "اول قوانین سایت را بپذیر؛ بعد پرداخت.";
+const RULES_MESSAGE = "اول قوانین سایت رو بپذیر؛ بعد پرداخت.";
 
 /*===== Cart Pay =====*/
 /**

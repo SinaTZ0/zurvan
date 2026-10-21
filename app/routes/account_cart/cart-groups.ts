@@ -81,7 +81,7 @@ export function summarize(items: readonly ReviewedItem[]) {
 /** The server had nothing to say about an item that still can't be paid (its course isn't sold): say so ourselves. */
 const NOT_FOR_SALE_PROBLEM = {
   kind: "not-for-sale",
-  message: "این دوره فعلاً فروخته نمی‌شود.",
+  message: "این دوره فعلاً فروخته نمی‌شه.",
   courseSlug: null,
 } as const;
 
