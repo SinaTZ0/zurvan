@@ -16,6 +16,7 @@ import {
   evaluation,
   evaluationPhoto,
   evaluationVideo,
+  logbookEntry,
   partner,
   partnerLead,
   payment,
@@ -135,12 +136,18 @@ const SECOND_PARTNER_PHONE = "09120000007";
 const SECOND_PARTNER_CODE = "niloofar-clinic";
 
 /**
- * Removes the demo customers' commissions, certificates, enrollments, refunds, payments, evaluations and passed courses, in the order their
- * references allow, so their dogs can go next.
+ * Removes the demo customers' diary sessions, commissions, certificates, enrollments, refunds, payments, evaluations and passed
+ * courses, in the order their references allow, so their dogs can go next.
  *
  * @returns The evaluation photos and the bucket keys of the evaluation videos, to delete once this commits.
  */
 async function removeDemoHistory({ tx, customerIds }: { tx: Transaction; customerIds: string[] }) {
+  // The demo seeds no diary, but sessions the Admin writes on a demo dog hold the dog and its enrollments.
+  await tx
+    .delete(logbookEntry)
+    .where(
+      inArray(logbookEntry.dogId, tx.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, customerIds))),
+    );
   await tx.delete(commission).where(inArray(commission.customerId, customerIds));
   // A certificate is never deleted by the app, but the demo's are remade with their enrollments.
   await tx
