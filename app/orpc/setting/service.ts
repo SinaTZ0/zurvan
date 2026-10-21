@@ -12,7 +12,7 @@ type UpdateSettingResult =
   { kind: "success"; setting: AdminSetting } | { kind: "invalid"; fields: Record<string, string> };
 
 /*===== Admin =====*/
-/** F10: the three settings in `SETTING_KEYS` order, each with the value in force (stored, else the default). */
+/** F10: the four settings in `SETTING_KEYS` order, each with the value in force (stored, else the default). */
 export async function adminGetSettings({ db }: { db: DatabaseOrTransaction }): Promise<AdminSetting[]> {
   const rows = await findSettingRows({ db });
   return SETTING_KEYS.map((key) => toAdminSetting({ key, record: rows.find((row) => row.key === key) }));

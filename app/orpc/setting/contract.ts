@@ -20,7 +20,7 @@ export const adminSettingSchema = z.object({
 export type AdminSetting = z.infer<typeof adminSettingSchema>;
 
 /*===== Procedures =====*/
-/** The three settings in `SETTING_KEYS` order. */
+/** The four settings in `SETTING_KEYS` order. */
 export const adminGetSettingsContract = oc
   .errors({ ...commonErrors, ...authErrors, ...roleErrors })
   .output(z.array(adminSettingSchema));

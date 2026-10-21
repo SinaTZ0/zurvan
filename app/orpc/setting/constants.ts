@@ -31,24 +31,24 @@ export const SETTING_DEFINITIONS: Record<
     defaultValue: DEFAULT_PARTNER_COMMISSION_PERCENT,
     min: 1,
     max: 50,
-    invalidMessage: "درصد باید یک عدد صحیح بین ۱ تا ۵۰ باشد.",
+    invalidMessage: "درصد باید یه عدد صحیح بین ۱ تا ۵۰ باشه.",
   },
   [DEPOSIT_PERCENT_KEY]: {
     defaultValue: DEFAULT_DEPOSIT_PERCENT,
     min: 1,
     max: 100,
-    invalidMessage: "درصد باید یک عدد صحیح بین ۱ تا ۱۰۰ باشد.",
+    invalidMessage: "درصد باید یه عدد صحیح بین ۱ تا ۱۰۰ باشه.",
   },
   [OTP_PER_PHONE_KEY]: {
     defaultValue: DEFAULT_OTP_REQUESTS_PER_PHONE_PER_HOUR,
     min: 1,
     max: 30,
-    invalidMessage: "عدد باید صحیح و بین ۱ تا ۳۰ باشد.",
+    invalidMessage: "عدد باید صحیح و بین ۱ تا ۳۰ باشه.",
   },
   [OTP_PER_IP_KEY]: {
     defaultValue: DEFAULT_OTP_REQUESTS_PER_IP_PER_HOUR,
     min: 5,
     max: 200,
-    invalidMessage: "عدد باید صحیح و بین ۵ تا ۲۰۰ باشد.",
+    invalidMessage: "عدد باید صحیح و بین ۵ تا ۲۰۰ باشه.",
   },
 };

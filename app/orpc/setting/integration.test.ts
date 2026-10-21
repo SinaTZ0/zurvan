@@ -72,7 +72,7 @@ afterAll(async () => {
   await db.delete(partner).where(eq(partner.userId, partnerUser.id));
   await db.delete(user).where(eq(user.id, partnerUser.id));
 
-  // Put the three keys back exactly as they were: rows that existed return with their values, the others are removed.
+  // Put the keys back exactly as they were: rows that existed return with their values, the others are removed.
   await db.delete(platformSetting).where(inArray(platformSetting.key, [...SETTING_KEYS]));
   if (savedRows.length > 0) await db.insert(platformSetting).values(savedRows);
   await db.$client.end();

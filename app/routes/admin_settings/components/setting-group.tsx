@@ -1,20 +1,22 @@
+import { cn } from "cn";
 import { useId } from "react";
+
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Setting Group =====*/
 /**
- * A titled group of setting cards. Wide screens put the group's name at the start and its cards at the end, like a
- * settings screen; phones stack the name above its cards. Not `lg`: beside the Admin rail the content is only about
- * 740px wide at 1024, too narrow for two columns.
+ * A titled group of setting plates: the Estedad heading sits above its plates, on the plates' start edge, so each group
+ * reads as one block down the page (the old layout floated the name alone in a wide start column).
  */
 export function SettingGroup({ title, children }: { title: string; children: React.ReactNode }) {
   const titleId = useId();
 
   return (
-    <section aria-labelledby={titleId} className="grid gap-4 xl:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] xl:gap-8">
-      <h2 id={titleId} className="text-lg font-extrabold">
+    <section aria-labelledby={titleId}>
+      <h2 id={titleId} className={cn(DISPLAY_HEADING, "mb-3 text-xl text-balance")}>
         {title}
       </h2>
-      <div className="flex flex-col gap-4">{children}</div>
+      <div className="flex flex-col gap-3">{children}</div>
     </section>
   );
 }
