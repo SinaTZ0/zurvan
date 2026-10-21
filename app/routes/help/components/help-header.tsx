@@ -1,13 +1,18 @@
-import { SpeechBubble } from "~/components/speech-bubble";
-import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { GroundStrip } from "~/components/ground-strip";
+import { MascotCut } from "~/components/mascot-cut";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Help Header =====*/
 /**
- * The page's top: the headline and one line of help, with the Malinois from the auth page beside them. Its bubble is
- * the page's key fact, "after you ask, he calls", and its outline drawing in is the page's one orchestrated moment.
+ * The page's top: the headline and one line of help, with the dog thinking in front of the notice board, as if the
+ * questions were pinned up on it. The page's key fact ("after you ask, the trainer calls") is the road's dog's line,
+ * not this one: here he only invites you to start.
  *
- * Desktop: words at the start, the framed photo at the end, the bubble over the photo's dark end with its tail across
- * at the dog. Phones: the photo on top and the bubble under it with the tail pointing up at the dog, then the words.
+ * Wide: words at the start, the stage (board, dog, bush, bubble) at the end. Phones: the stage on top, the words under.
+ *
+ * The stage's pieces are placed by physical sides: the board, the dog and the bubble's tail are tied to the picture
+ * (he looks to the right, at the words), not to the reading direction. His height sets the bubble's place above him.
  */
 export function HelpHeader() {
   return (
@@ -17,44 +22,54 @@ export function HelpHeader() {
     >
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-7">
-        <h1 id="help-title" className="font-display text-h1 font-black text-balance">
-          هر چی می‌خوای بدونی، همین‌جاست
+        {/* Two unbreakable halves: on phones the line breaks after the comma, not inside the first clause. */}
+        <h1 id="help-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
+          <span className="inline-block">هر چی می‌خوای بدونی،</span> <span className="inline-block">همین‌جاست</span>
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
           از ارزیابی رایگان تا روزی که دوره تموم می‌شه. جوابتو پیدا نکردی؟ زنگ بزن.
         </p>
       </div>
 
-      {/*===== Photo and Bubble =====*/}
-      <div className="relative order-1 md:max-w-lg lg:order-2 lg:col-span-5 lg:max-w-none">
-        <div className="overflow-hidden rounded-4xl border border-border">
-          <picture>
-            <source media="(min-width: 64rem)" srcSet="/photo/home/hero-2-1536.webp" />
-            <img
-              src="/photo/home/hero-2-900.webp"
-              alt="یک مالینویز با قلاده‌ی چرمی، شب کنار خیابان نشسته و به دوربین نگاه می‌کند"
-              width={900}
-              height={600}
-              fetchPriority="high"
-              decoding="async"
-              className="aspect-[4/3] w-full object-cover object-[8%_50%] lg:object-[0%_40%]"
-            />
-          </picture>
+      {/*===== Stage =====*/}
+      <div className="relative order-1 h-[14.5rem] lg:order-2 lg:col-span-5 lg:h-[22rem]">
+        {/* A pool of warm light where he stands. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(ellipse_50%_60%_at_58%_70%,rgb(255_194_26/0.08),transparent)]"
+        />
+
+        {/*------ Board, Bush and Path ------*/}
+        <div aria-hidden>
+          <MascotCut
+            name="board"
+            eager
+            className="absolute bottom-[0.9rem] left-0 w-[72%] translate-y-[6%] lg:bottom-[1.2rem] lg:w-[76%]"
+          />
+          <MascotCut
+            name="plants"
+            eager
+            className="lively-sway-2 absolute bottom-[0.9rem] left-[82%] w-[16%] translate-y-[6%] -scale-x-100 lg:bottom-[1.2rem] lg:left-[84%] lg:w-[15%]"
+          />
+          <GroundStrip className="absolute inset-x-0 bottom-0 h-7 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] lg:h-9" />
         </div>
 
+        {/*------ Dog ------*/}
+        <MascotCut
+          name="think"
+          eager
+          className="lively-breathe absolute bottom-[0.9rem] left-[58%] h-[7.5rem] w-auto -translate-x-1/2 lg:bottom-[1.2rem] lg:h-56"
+        />
+
         {/*------ Bubble ------*/}
-        {/* Phones: under the photo, overlapping its dark bottom edge, the tail up at the dog. Desktop: it moves onto the
-            photo's dark end (the start side) and its tail points across at the dog. */}
-        <div className="relative -mt-8 ps-4 lg:static lg:mt-0 lg:ps-0">
-          <SpeechBubble
-            drawIn
-            tail="top-end"
-            lgTail="bottom-end"
-            className="max-w-[16rem] sm:max-w-xs lg:absolute lg:start-5 lg:top-[14%] lg:max-w-[15rem] xl:start-6"
-          >
-            بعد از ثبت درخواستت، {HEAD_TRAINER.firstName} باهات تماس می‌گیره.
-          </SpeechBubble>
-        </div>
+        {/* Its tail is 36px in from its right edge, so its right edge sits 36px past the dog's centre; the tail then
+            points down at his head. */}
+        <ChalkBubble
+          tail="right"
+          className="absolute right-[calc(42%-36px)] bottom-[calc(0.9rem+7.5rem+0.5rem)] lg:bottom-[calc(1.2rem+14rem+1.6rem)]"
+        >
+          سؤال داری؟ از اینجا شروع کن!
+        </ChalkBubble>
       </div>
     </section>
   );
