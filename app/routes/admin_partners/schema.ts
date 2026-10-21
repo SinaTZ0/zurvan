@@ -13,8 +13,8 @@ const nameField = (label: string) =>
   z
     .string()
     .trim()
-    .min(1, `${label} را بنویس.`)
-    .max(NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(NAME_MAX_LENGTH)} حرف است.`);
+    .min(1, `${label} رو بنویس.`)
+    .max(NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(NAME_MAX_LENGTH)} حرف می‌تونه باشه.`);
 
 /*===== Create Form =====*/
 // Written for the person filling it in. The phone accepts Persian digits and `+98` (the server normalizes again); the
@@ -26,14 +26,14 @@ export const createPartnerSchema = z.object({
   phoneNumber: z
     .string()
     .trim()
-    .min(1, "شماره‌ی موبایل را بنویس.")
+    .min(1, "شماره‌ی موبایل رو بنویس.")
     .refine((value) => normalizePhoneNumber(value) !== null, "شماره‌ی موبایل درست نیست؛ مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس."),
   code: z
     .string()
     .trim()
     .refine(
       (value) => value === "" || CODE_PATTERN.test(value),
-      "کد فقط از حرف کوچک انگلیسی، رقم و خط تیره ساخته می‌شود و ۳ تا ۳۲ نویسه است.",
+      "کد فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ۳ تا ۳۲ نویسه باشه.",
     ),
 });
 

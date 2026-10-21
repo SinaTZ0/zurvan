@@ -4,7 +4,7 @@ import { formatNumberFa, toLatinDigits } from "~/lib/digits";
 import { isNormalizedPhoneNumber, normalizePhoneNumber } from "~/lib/phone";
 
 /*===== Messages =====*/
-export const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع شود و ۲۴ رقم بعد از آن داشته باشد.";
+export const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع بشه و ۲۴ رقم بعدش داشته باشه.";
 export const SHEBA_CHECKSUM_MESSAGE = "این شماره‌ی شبا درست نیست؛ دوباره نگاهش کن.";
 
 /*===== Normalization =====*/
@@ -67,14 +67,14 @@ export const addLeadInputSchema = z.object({ phoneNumber: phoneNumberSchema });
 /*===== New Partner =====*/
 export const PARTNER_NAME_MAX_LENGTH = 40;
 export const PARTNER_CODE_FORMAT_MESSAGE =
-  "کد فقط از حرف کوچک انگلیسی، رقم و خط تیره ساخته می‌شود و ۳ تا ۳۲ نویسه است.";
+  "کد فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ۳ تا ۳۲ نویسه باشه.";
 
 const nameSchema = (label: string) =>
   z
     .string()
     .trim()
-    .min(1, `${label} را بنویس.`)
-    .max(PARTNER_NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(PARTNER_NAME_MAX_LENGTH)} حرف است.`);
+    .min(1, `${label} رو بنویس.`)
+    .max(PARTNER_NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(PARTNER_NAME_MAX_LENGTH)} حرف می‌تونه باشه.`);
 
 // Blank means "generate one". The code is matched case-sensitively by the referral cookie and printed on a card and a
 // QR, so an uppercase code is refused instead of silently lowercased.
