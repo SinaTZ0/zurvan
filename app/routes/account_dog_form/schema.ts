@@ -32,13 +32,13 @@ export const dogFormSchema = z
     name: z
       .string()
       .trim()
-      .min(1, "اسم سگت را بنویس.")
-      .max(DOG_NAME_MAX_LENGTH, `اسم حداکثر ${formatNumberFa(DOG_NAME_MAX_LENGTH)} حرف است.`),
+      .min(1, "اسم سگت رو بنویس.")
+      .max(DOG_NAME_MAX_LENGTH, `اسم حداکثر ${formatNumberFa(DOG_NAME_MAX_LENGTH)} حرفه.`),
     breed: optionalText({
       max: DOG_BREED_MAX_LENGTH,
-      message: `نژاد حداکثر ${formatNumberFa(DOG_BREED_MAX_LENGTH)} حرف است.`,
+      message: `نژاد حداکثر ${formatNumberFa(DOG_BREED_MAX_LENGTH)} حرفه.`,
     }),
-    sex: z.enum(DOG_SEXES, { error: "نر است یا ماده؟" }),
+    sex: z.enum(DOG_SEXES, { error: "نره یا ماده؟" }),
     birthMode: z.enum(BIRTH_MODES),
     birthDay: z.string(),
     birthMonth: z.string(),
@@ -48,13 +48,13 @@ export const dogFormSchema = z
     weight: z
       .string()
       .trim()
-      .min(1, "وزنش را بنویس؛ تقریبی هم کافی است.")
+      .min(1, "وزنش رو بنویس؛ تقریبی هم کافیه.")
       // «۳۲٫۵», «32,5» and «32/5» are all how people type a decimal on a Persian keyboard.
       .transform((value) => Number(toLatinDigits(value).replace(/[٫,/]/g, ".")))
-      .refine((value) => !Number.isNaN(value), "وزن را با عدد بنویس، مثلاً ۱۲٫۵.")
+      .refine((value) => !Number.isNaN(value), "وزن رو با عدد بنویس، مثلاً ۱۲٫۵.")
       .refine(
         (value) => value >= DOG_WEIGHT_MIN_KG && value <= DOG_WEIGHT_MAX_KG,
-        `وزن بین ${formatNumberFa(DOG_WEIGHT_MIN_KG)} و ${formatNumberFa(DOG_WEIGHT_MAX_KG)} کیلو است.`,
+        `وزن باید بین ${formatNumberFa(DOG_WEIGHT_MIN_KG)} و ${formatNumberFa(DOG_WEIGHT_MAX_KG)} کیلو باشه.`,
       )
       .transform((value) => Math.round(value * 10) / 10),
     isNeutered: z.enum(["yes", "no"], { error: "عقیم شده یا نه؟" }),
@@ -62,7 +62,7 @@ export const dogFormSchema = z
     microchipNumber: z
       .string()
       .transform((value) => toLatinDigits(value).replace(/\s+/g, ""))
-      .refine((value) => /^\d{0,20}$/.test(value), "شماره میکروچیپ فقط عدد است، حداکثر ۲۰ رقم."),
+      .refine((value) => /^\d{0,20}$/.test(value), "شماره‌ی میکروچیپ فقط عدده، حداکثر ۲۰ رقم."),
     behaviorNotes: optionalText({
       max: DOG_NOTES_MAX_LENGTH,
       message: `حداکثر ${formatNumberFa(DOG_NOTES_MAX_LENGTH)} حرف.`,
@@ -77,20 +77,20 @@ export const dogFormSchema = z
       /*------ Birth Date ------*/
       if (values.birthMode === "approximate") {
         if (values.ageYears === "" || values.ageMonths === "") {
-          ctx.addIssue({ code: "custom", path: ["ageYears"], message: "حدوداً چند سال و چند ماهش است؟" });
+          ctx.addIssue({ code: "custom", path: ["ageYears"], message: "حدوداً چند سال و چند ماهشه؟" });
         }
         return;
       }
 
       if (!values.birthDay || !values.birthMonth || !values.birthYear) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "روز، ماه و سال تولد را انتخاب کن." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "روز، ماه و سال تولد رو انتخاب کن." });
         return;
       }
       const date = { year: Number(values.birthYear), month: Number(values.birthMonth), day: Number(values.birthDay) };
       if (!isValidJalali(date)) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "این روز در این ماه نیست." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "این روز توی این ماه نیست." });
       } else if (jalaliToIso(date) > todayIso()) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "تاریخ تولد نمی‌تواند در آینده باشد." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "تاریخ تولد نمی‌تونه توی آینده باشه." });
       }
     },
     // Zod skips object refinements while any field fails; the date parts are plain strings that always parse, so the
@@ -106,7 +106,7 @@ export type DogFormValues = z.output<typeof dogFormSchema>;
  * Shown under the birth date and the breed once the dog is evaluated (app-spec F2): the two decide eligibility, so
  * only the Admin changes them from then on.
  */
-export const LOCKED_FIELD_NOTE = `بعد از ارزیابی فقط ${HEAD_TRAINER.firstName} می‌تونه این را عوض کنه. اگه اشتباهی هست، بهش بگو.`;
+export const LOCKED_FIELD_NOTE = `بعد از ارزیابی فقط ${HEAD_TRAINER.firstName} می‌تونه اینا رو عوض کنه. اگه اشتباهی هست، بهش بگو.`;
 
 /*===== To the API =====*/
 /**
@@ -193,6 +193,6 @@ export const SERVER_FIELD_TO_FORM: Record<string, keyof DogFormInput> = {
   weightKg: "weight",
 };
 
-/** Ages offered in the «حدودی می‌دانم» selects. */
+/** Ages offered in the «حدودی می‌دونم» selects. */
 export const AGE_YEAR_OPTIONS = Array.from({ length: DOG_MAX_AGE_YEARS + 1 }, (_, index) => index);
 export const AGE_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => index);

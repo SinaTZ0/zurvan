@@ -1,11 +1,11 @@
 import { useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 
-import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
 import { FieldError } from "~/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
 import { isoToJalali, JALALI_MONTHS, jalaliMonthLength, todayIso } from "~/lib/jalali";
 import { DOG_MAX_AGE_YEARS } from "~/orpc/dog/constants";
+import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
 import {
   AGE_MONTH_OPTIONS,
   AGE_YEAR_OPTIONS,
@@ -41,8 +41,8 @@ export function BirthDateField({
       <ChoicePills
         legend="تاریخ تولد"
         options={[
-          { value: "exact", label: "تاریخش را می‌دانم" },
-          { value: "approximate", label: "حدودی می‌دانم" },
+          { value: "exact", label: "تاریخش رو می‌دونم" },
+          { value: "approximate", label: "حدودی می‌دونم" },
         ]}
         registration={register("birthMode")}
       />
@@ -94,7 +94,8 @@ export function BirthDateField({
         </div>
       )}
 
-      <FieldError errors={[error]} />
+      {/* Keyed by the message, so a new one rises in again. */}
+      <FieldError key={error?.message} errors={[error]} className="answer-in" />
     </div>
   );
 }

@@ -24,15 +24,28 @@ const FORM_FIELDS = new Set<string>([
  * Puts the server's messages next to their fields, and anything else in the form-level alert. The two procedures
  * (`dog.create` and `dog.update`) share one mutation, so its error isn't typed per procedure; the shared error shape
  * is checked here instead. Never throws: every failure ends as a field error or as `root`.
+ *
+ * Returns the form fields that got a message (empty when only `root` did), so the form can tell which plate's dog
+ * speaks the error line.
  */
-export function applyServerError({ error, setError }: { error: Error; setError: UseFormSetError<DogFormInput> }) {
+export function applyServerError({
+  error,
+  setError,
+}: {
+  error: Error;
+  setError: UseFormSetError<DogFormInput>;
+}): (keyof DogFormInput)[] {
   const parsed = error instanceof ORPCError ? errorDataSchema.safeParse(error.data) : null;
   const code = error instanceof ORPCError ? error.code : null;
 
   if (code === "INVALID_INPUT" && parsed?.success) {
+    const targets: (keyof DogFormInput)[] = [];
     for (const [field, message] of Object.entries(parsed.data.fields)) {
       const target = SERVER_FIELD_TO_FORM[field] ?? (FORM_FIELDS.has(field) ? (field as keyof DogFormInput) : null);
-      if (target) setError(target, { message });
+      if (target) {
+        setError(target, { message });
+        targets.push(target);
+      }
     }
     const [general] = parsed.data.errors;
     if (general) {
@@ -41,23 +54,24 @@ export function applyServerError({ error, setError }: { error: Error; setError: 
       // Only reachable when the dog was evaluated after this form opened, so the fields were still editable. The page
       // is stale, and the locked version shows after a refresh.
       setError("root", {
-        message: `همین حالا ارزیابی ${HEAD_TRAINER.firstName} ثبت شد و تاریخ تولد و نژاد قفل شدند. صفحه را تازه کن تا فرم را قفل‌شده ببینی، بعد دوباره ذخیره کن.`,
+        message: `همین حالا ارزیابی ${HEAD_TRAINER.firstName} ثبت شد و تاریخ تولد و نژاد قفل شدن. صفحه رو تازه کن تا فرم رو قفل‌شده ببینی، بعد دوباره ذخیره کن.`,
       });
     }
-    return;
+    return targets;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
-    return;
+    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
+    return [];
   }
   if (code === "NOT_FOUND") {
-    setError("root", { message: "این سگ دیگر در حسابت نیست." });
-    return;
+    setError("root", { message: "این سگ دیگه توی حسابت نیست." });
+    return [];
   }
   if (code === "INTERNAL_SERVER_ERROR") {
     const errorId = error instanceof ORPCError && typeof error.data?.errorId === "string" ? error.data.errorId : null;
     setError("root", { message: `ذخیره نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
-    return;
+    return [];
   }
-  setError("root", { message: "ذخیره نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: "ذخیره نشد. اینترنتت رو چک کن و دوباره امتحان کن." });
+  return [];
 }

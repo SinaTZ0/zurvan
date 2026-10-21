@@ -1,10 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "cn";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { FormAlert } from "~/components/form-alert";
+import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
+import { MascotCut } from "~/components/mascot-cut";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
@@ -16,11 +19,14 @@ import { DOG_SEX_LABELS, DOG_SEXES, VACCINATION_STATUS_LABELS, VACCINATION_STATU
 import type { Dog } from "~/orpc/dog/contract";
 import type { Media } from "~/orpc/media/contract";
 import { BREED_SUGGESTIONS } from "~/routes/account_dog_form/breeds";
+import { COLUMN } from "~/routes/account_dog_form/column";
 import { BirthDateField } from "~/routes/account_dog_form/components/birth-date-field";
 import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
-import { DogCard } from "~/routes/account_dog_form/components/dog-card";
-import { FormSection } from "~/routes/account_dog_form/components/form-section";
+import { FormMotion } from "~/routes/account_dog_form/components/form-motion";
+import { FormPlate, type PlateGuide } from "~/routes/account_dog_form/components/form-plate";
 import { LockedFields } from "~/routes/account_dog_form/components/locked-fields";
+import { PrintMount } from "~/routes/account_dog_form/components/print-mount";
+import { useDebouncedValue } from "~/routes/account_dog_form/hooks/use-debounced-value";
 import { useSaveDog } from "~/routes/account_dog_form/hooks/use-save-dog";
 import {
   type DogFormInput,
@@ -29,17 +35,72 @@ import {
   toDogInput,
   toFormDefaults,
 } from "~/routes/account_dog_form/schema";
-import type { DogFormSection } from "~/routes/account_dog_form/sections";
+import { type DogFormSection, firstFieldOf, firstSectionOf } from "~/routes/account_dog_form/sections";
 import { applyServerError } from "~/routes/account_dog_form/server-errors";
+
+/*===== The Guide's Words =====*/
+// The center's dog looks after each plate and says what it is for, in his first person, about his buddy («رفیقم»).
+// Every line is also said in plain words by the plate's description, so the bubbles are for the eyes only.
+const trainer = HEAD_TRAINER.firstName;
+
+const IDENTITY_LINES = {
+  new: "اسم رفیقمو بنویس تا بشناسمش!",
+  edit: "اگه چیزی عوض شده، همین‌جا درستش کن.",
+  evaluated: `نژاد و تولدش قفله؛ فقط ${trainer} عوضشون می‌کنه.`,
+} as const;
+const BODY_LINE = "اینا برای ایمنی جلسه‌هاشه.";
+const TRAINER_LINE = `از ترس‌ها و دردهاش بگو؛ ${trainer} قبل از جلسه‌ی اول می‌خونه.`;
+/** Said by the dog of the first plate with an error, after a failed submit. */
+const ERROR_LINE = "یه جاش جا مونده؛ قرمزها رو ببین.";
+
+/*===== The Guides =====*/
+// Each plate's dog and the scenery that means something there: the name card by the hall stand where his leash will
+// hang (the padlock once the identity is locked), the scale by the first-aid box, listening by the desk where the head
+// trainer reads the notes. Widths stay under about 1.3x each cut-out's natural width.
+const GUIDES: Record<"identity" | "locked" | "body" | "trainer", PlateGuide> = {
+  identity: {
+    dog: "badge",
+    dogClassName: "w-[4.75rem] sm:w-28",
+    idle: "lively-breathe",
+    scenery: "hall-stand",
+    sceneryClassName: "-ms-4 w-14 sm:-ms-6 sm:w-28",
+  },
+  locked: {
+    dog: "padlock",
+    dogClassName: "w-[4.75rem] sm:w-28",
+    idle: "lively-breathe",
+    scenery: "hall-stand",
+    sceneryClassName: "-ms-4 w-14 sm:-ms-6 sm:w-28",
+  },
+  body: {
+    dog: "scale",
+    dogClassName: "w-[5.5rem] sm:w-32",
+    idle: "lively-breathe",
+    scenery: "first-aid",
+    sceneryClassName: "-ms-3 w-14 sm:-ms-5 sm:w-28",
+  },
+  trainer: {
+    dog: "listen",
+    dogClassName: "w-[4.25rem] sm:w-24",
+    idle: "lively-tilt",
+    scenery: "desk",
+    sceneryClassName: "-ms-3 w-14 sm:-ms-4 sm:w-28",
+  },
+};
 
 /*===== Dog Form =====*/
 /**
- * The whole body of the page that adds a dog or edits one: the header the page passes in, the dog's card (its photo,
- * its name stamped as it is typed, a bubble that follows the section) and the form in three short sections.
+ * The whole body of the page that adds a dog or edits one: the header the page passes in, the print mount (the
+ * customer's dog's photo as a taped print that is also the picker, its name stamped as it is typed, its bubble) and the
+ * form in three plates, each looked after by the center's dog on its top edge.
  *
  * Saving a new dog goes to the Dashboard and saving an edit to the dog's page, or either goes back to `redirectTo`
  * when another page sent the owner here. Once the dog is evaluated its birth date and breed are locked (app-spec F2):
  * shown, not editable, and submitted as stored.
+ *
+ * **Who speaks:** one plate's dog at a time. On load it is the identity plate's (the load moment's bubble); focus
+ * moving into another plate hands him the word; a failed submit (the form's own check or the server's field errors)
+ * gives it to the first plate with an error, who says the error line while the form focuses its first red field.
  */
 export function DogForm({
   dog,
@@ -58,6 +119,7 @@ export function DogForm({
     control,
     handleSubmit,
     setError,
+    setFocus,
     setValue,
     formState: { errors },
   } = useForm<DogFormInput, unknown, DogFormValues>({
@@ -65,41 +127,91 @@ export function DogForm({
     defaultValues: toFormDefaults(dog),
   });
 
-  /*------ The Dog Card's State ------*/
+  /*------ The Print's State ------*/
   const values = useWatch({ control });
-  // The form submits only the photo's id; the card needs the uploaded image itself.
+  // The form submits only the photo's id; the print needs the uploaded image itself.
   const [photo, setPhoto] = useState<Media | null>(dog?.photo ?? null);
   // Submitting mid-upload would save the dog without the photo that is still on its way.
   const [busy, setBusy] = useState(false);
-  const [section, setSection] = useState<DogFormSection>("identity");
+  // The print's bubble answers a finished name, not every keystroke (the stamped name under it does that).
+  const settledName = useDebouncedValue({ value: values.name?.trim() ?? "", delay: 600 });
+  const saving = saveDog.isPending || saveDog.isSuccess;
+  const printLine = saving
+    ? dog
+      ? "دارم ذخیره‌ش می‌کنم…"
+      : "دارم میام تو!"
+    : settledName
+      ? `منم ${settledName}!`
+      : null;
 
-  /*------ Submit ------*/
-  const onSubmit = handleSubmit((submitted) => {
-    saveDog.mutate(toDogInput({ values: submitted, dog }), {
-      onSuccess: async (saved) => {
-        toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
-        // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
-        const destination = redirectTo ? (dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id })) : null;
-        // Without a `redirectTo`, a new dog goes to the Dashboard (where it now appears), an edit to the dog's page.
-        await navigate(destination ?? (dog ? `/account/dogs/${saved.id}` : "/account"), { viewTransition: true });
-      },
-      onError: (error) => applyServerError({ error, setError }),
-    });
+  /*------ Who Speaks ------*/
+  // `key` grows each time a plate takes the word, so that plate's bubble pops again even when it already had it.
+  const [speaker, setSpeaker] = useState<{ section: DogFormSection; error: boolean; key: number }>({
+    section: "identity",
+    error: false,
+    key: 0,
+  });
+  const focusSection = (section: DogFormSection) =>
+    // Staying inside the same plate keeps its words (an error line stays while its red fields are being fixed).
+    setSpeaker((current) => (current.section === section ? current : { section, error: false, key: current.key + 1 }));
+  const speakError = (fields: readonly string[]) => {
+    const section = firstSectionOf(fields);
+    if (section) setSpeaker((current) => ({ section, error: true, key: current.key + 1 }));
+  };
+  const plateVoice = (section: DogFormSection, line: string) => ({
+    line: speaker.section === section && speaker.error ? ERROR_LINE : line,
+    speaking: speaker.section === section,
+    speakerKey: speaker.key,
+    firstLoad: speaker.key === 0,
+    onFocusSection: focusSection,
   });
 
+  /*------ Submit ------*/
+  const onSubmit = handleSubmit(
+    (submitted) => {
+      saveDog.mutate(toDogInput({ values: submitted, dog }), {
+        onSuccess: async (saved) => {
+          toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
+          // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
+          const destination = redirectTo ? (dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id })) : null;
+          // Without a `redirectTo`, a new dog goes to the Dashboard (where it now appears), an edit to the dog's page.
+          await navigate(destination ?? (dog ? `/account/dogs/${saved.id}` : "/account"), { viewTransition: true });
+        },
+        onError: (error) => {
+          const fields = applyServerError({ error, setError });
+          speakError(fields);
+          // The person is at the button: take them to the server's first red field, as the form's own check does.
+          const first = firstFieldOf(fields);
+          if (first) setFocus(first);
+        },
+      });
+    },
+    // Called before the form focuses the first invalid field, whose focus then lands in the same plate.
+    (invalid) => speakError(Object.keys(invalid)),
+  );
+
   const cancelTo = redirectTo ?? (dog ? `/account/dogs/${dog.id}` : "/account");
-  const trainer = HEAD_TRAINER.firstName;
+  const identityLine = !dog ? IDENTITY_LINES.new : locked ? IDENTITY_LINES.evaluated : IDENTITY_LINES.edit;
 
   return (
-    <div className="site-container py-8 lg:py-14">
-      <div className="grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-16">
-        {/*===== Header =====*/}
-        <div className="pb-8 lg:col-start-1 lg:row-start-1 lg:pb-10">{header}</div>
+    <div className="overflow-x-clip">
+      <FormMotion />
 
-        {/*===== Dog Card =====*/}
+      <div
+        className={cn(
+          COLUMN,
+          "grid grid-cols-[minmax(0,1fr)] pt-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 lg:pt-12 xl:gap-x-16",
+        )}
+      >
+        {/*===== Header =====*/}
+        {/* Room under it for the first plate's bubble, which grows upwards when its line takes two lines. */}
+        <div className="pb-6 lg:col-start-1 lg:row-start-1 lg:pb-8">{header}</div>
+
+        {/*===== Print Mount =====*/}
         {/* Second in the document so phones see the dog between the heading and the form; desktop puts it at the end. */}
-        <DogCard
+        <PrintMount
           values={values}
+          bubbleLine={printLine}
           photo={photo}
           onPhotoChange={(media) => {
             setPhoto(media);
@@ -107,10 +219,7 @@ export function DogForm({
           }}
           onBusyChange={setBusy}
           photoError={errors.photoMediaId?.message}
-          section={section}
-          isEdit={dog !== null}
-          isEvaluated={locked}
-          className="mb-10 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mb-0 lg:self-start"
+          className="mb-12 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-2 lg:mb-0 lg:self-start"
         />
 
         {/*===== Form =====*/}
@@ -118,19 +227,20 @@ export function DogForm({
           method="post"
           onSubmit={onSubmit}
           noValidate
-          className="flex flex-col gap-12 lg:col-start-1 lg:row-start-2"
+          className="flex min-w-0 flex-col gap-14 lg:col-start-1 lg:row-start-2"
         >
           {/*------ Identity ------*/}
-          <FormSection
+          <FormPlate
             id="identity"
             title="شناسنامه"
-            description={`${trainer} با همین‌ها سگت را می‌شناسد.`}
-            onFocusSection={setSection}
+            description={`${trainer} با همینا سگت رو می‌شناسه.`}
+            guide={locked ? GUIDES.locked : GUIDES.identity}
+            {...plateVoice("identity", identityLine)}
           >
             <Field data-invalid={!!errors.name}>
               <FieldLabel htmlFor="dog-name">اسم</FieldLabel>
               <Input id="dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
-              <FieldError errors={[errors.name]} />
+              <FieldError key={errors.name?.message} errors={[errors.name]} className="answer-in" />
             </Field>
 
             <ChoicePills
@@ -163,20 +273,21 @@ export function DogForm({
                       </option>
                     ))}
                   </datalist>
-                  <FieldError errors={[errors.breed]} />
+                  <FieldError key={errors.breed?.message} errors={[errors.breed]} className="answer-in" />
                 </Field>
 
                 <BirthDateField register={register} control={control} errors={errors} />
               </>
             )}
-          </FormSection>
+          </FormPlate>
 
           {/*------ Body and Health ------*/}
-          <FormSection
+          <FormPlate
             id="body"
             title="بدن و سلامت"
             description="برای برنامه‌ی تمرین و ایمنی جلسه‌ها."
-            onFocusSection={setSection}
+            guide={GUIDES.body}
+            {...plateVoice("body", BODY_LINE)}
           >
             <Field data-invalid={!!errors.weight} className="max-w-56">
               <FieldLabel htmlFor="dog-weight">وزن (کیلو)</FieldLabel>
@@ -188,7 +299,7 @@ export function DogForm({
                 aria-invalid={!!errors.weight}
                 {...register("weight")}
               />
-              <FieldError errors={[errors.weight]} />
+              <FieldError key={errors.weight?.message} errors={[errors.weight]} className="answer-in" />
             </Field>
 
             <ChoicePills
@@ -213,7 +324,7 @@ export function DogForm({
 
             <Field data-invalid={!!errors.microchipNumber}>
               <FieldLabel htmlFor="dog-microchip">
-                شماره میکروچیپ <span className="font-medium text-muted-foreground">(اختیاری)</span>
+                شماره‌ی میکروچیپ <span className="font-medium text-muted-foreground">(اختیاری)</span>
               </FieldLabel>
               <Input
                 id="dog-microchip"
@@ -224,27 +335,32 @@ export function DogForm({
                 aria-invalid={!!errors.microchipNumber}
                 {...register("microchipNumber")}
               />
-              <FieldDescription>روی کارت واکسن یا مدارک دامپزشک نوشته شده است.</FieldDescription>
-              <FieldError errors={[errors.microchipNumber]} />
+              <FieldDescription>روی کارت واکسن یا مدارک دامپزشک نوشته شده.</FieldDescription>
+              <FieldError
+                key={errors.microchipNumber?.message}
+                errors={[errors.microchipNumber]}
+                className="answer-in"
+              />
             </Field>
-          </FormSection>
+          </FormPlate>
 
           {/*------ For the Trainer ------*/}
-          <FormSection
+          <FormPlate
             id="trainer"
-            title="برای مربی"
-            description={`این دو را فقط ${trainer} و مربی سگت می‌بینند، قبل از اولین جلسه.`}
-            onFocusSection={setSection}
+            title={`برای ${trainer}`}
+            description={`اینا رو فقط ${trainer} می‌خونه، قبل از اولین جلسه.`}
+            guide={GUIDES.trainer}
+            {...plateVoice("trainer", TRAINER_LINE)}
           >
             <Field data-invalid={!!errors.behaviorNotes}>
               <FieldLabel htmlFor="dog-behavior">رفتارش</FieldLabel>
               <Textarea
                 id="dog-behavior"
-                placeholder="مثلاً: از سگ‌های بزرگ می‌ترسد، روی مهمان می‌پرد"
+                placeholder="مثلاً: از سگ‌های بزرگ می‌ترسه، روی مهمون می‌پره"
                 aria-invalid={!!errors.behaviorNotes}
                 {...register("behaviorNotes")}
               />
-              <FieldError errors={[errors.behaviorNotes]} />
+              <FieldError key={errors.behaviorNotes?.message} errors={[errors.behaviorNotes]} className="answer-in" />
             </Field>
 
             <Field data-invalid={!!errors.medicalNotes}>
@@ -255,20 +371,25 @@ export function DogForm({
                 aria-invalid={!!errors.medicalNotes}
                 {...register("medicalNotes")}
               />
-              <FieldError errors={[errors.medicalNotes]} />
+              <FieldError key={errors.medicalNotes?.message} errors={[errors.medicalNotes]} className="answer-in" />
             </Field>
-          </FormSection>
+          </FormPlate>
 
           {/*------ Actions ------*/}
-          <div className="flex flex-col gap-4">
-            {/* Directly above the buttons, where the eye is after pressing one. */}
-            <FormAlert message={errors.root?.message} />
+          <div className="-mt-4 flex flex-col gap-4">
+            {/* Directly above the buttons, where the eye is after pressing one; keyed so a new message rises in. */}
+            {errors.root?.message && (
+              <div key={errors.root.message} className="answer-in">
+                <FormAlert message={errors.root.message} />
+              </div>
+            )}
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
                 type="submit"
+                variant="solid"
                 size="lg"
-                className="w-full sm:w-auto sm:min-w-44"
+                className="w-full sm:w-auto sm:min-w-48"
                 disabled={saveDog.isPending || busy}
               >
                 {saveDog.isPending && <Spinner data-icon="inline-start" />}
@@ -279,7 +400,17 @@ export function DogForm({
               </Link>
             </div>
 
-            {busy && <output className="block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>}
+            {busy && (
+              <output className="answer-in block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>
+            )}
+
+            {/*------ The Path ------*/}
+            {/* The form ends on a short stretch of path, a bush at each end; physical sides, a picture. */}
+            <div aria-hidden className="pointer-events-none relative mt-2 h-16 sm:h-20">
+              <GroundStrip className="absolute inset-x-0 bottom-0 h-8 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)] sm:h-10" />
+              <MascotCut name="plants" className="lively-sway absolute right-[3%] bottom-4 w-12 -scale-x-100 sm:w-16" />
+              <MascotCut name="plants" className="lively-sway-2 absolute bottom-4 left-[3%] w-10 sm:w-14" />
+            </div>
           </div>
         </form>
       </div>

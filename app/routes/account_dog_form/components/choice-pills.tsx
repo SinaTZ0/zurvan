@@ -7,8 +7,9 @@ import { FieldError } from "~/components/ui/field";
 /*===== Choice Pills =====*/
 /**
  * A short «pick one» question as a row of pills (نر / ماده, بله / نه). Native radios underneath, so arrow keys, the
- * form library and screen readers work as for any radio group. The look is the Assessment form's `ChoiceChip`: the
- * selected pill has a gold border, a tint and a tick, so selection is never told by colour alone.
+ * form library and screen readers work as for any radio group. The selected pill has a gold border, a tint and a
+ * tick, so selection is never told by colour alone; the tick pops in when a pill is picked (`df-tick`, form-motion.tsx)
+ * and an error rises in under the row.
  */
 export function ChoicePills({
   legend,
@@ -49,7 +50,7 @@ export function ChoicePills({
             >
               <CheckIcon
                 aria-hidden
-                className="hidden size-4 text-primary group-has-checked/pill:block"
+                className="df-tick hidden size-4 text-primary group-has-checked/pill:block"
                 strokeWidth={3}
               />
               {option.label}
@@ -59,7 +60,8 @@ export function ChoicePills({
       </div>
 
       <div id={errorId}>
-        <FieldError errors={[error]} />
+        {/* Keyed by the message, so a new one rises in again. */}
+        <FieldError key={error?.message} errors={[error]} className="answer-in" />
       </div>
     </fieldset>
   );

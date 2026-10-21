@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { CameraIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 
+import { DogTag } from "~/components/dog-tag";
 import { MediaImage } from "~/components/media-image";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
@@ -14,26 +15,34 @@ import type { Media } from "~/orpc/media/contract";
 
 const MAX_MB = MEDIA_MAX_BYTES / (1024 * 1024);
 
+/*===== Tape =====*/
+// A strip of translucent tape with torn ends, in a paper tone (the Dashboard's print): the print's border is ivory, so
+// ivory tape would vanish on it.
+const TAPE =
+  "pointer-events-none absolute h-4 w-10 bg-[rgb(214_196_150/0.8)] [clip-path:polygon(0_10%,6%_0,12%_12%,18%_0,82%_0,88%_10%,94%_0,100%_12%,100%_88%,94%_100%,88%_90%,82%_100%,18%_100%,12%_88%,6%_100%,0_90%)] lg:h-5 lg:w-20";
+
 /*===== Photo Picker =====*/
 /**
- * The dog's photo IS the picker: pick or drop an image and it uploads at once (docs/media.md, "Upload Flow"), so saving
- * the form only sends its id. While it uploads, the picked file shows dimmed from memory and a spinner sits on it;
- * afterwards, the stored image.
+ * The dog's photo IS the picker, and it is a print taped to the mount: pick or drop an image and it uploads at once
+ * (docs/media.md, "Upload Flow"), so saving the form only sends its id. While it uploads, the picked file shows dimmed
+ * from memory with a spinner on it; afterwards, the stored image. Without a photo the print holds the engraved tag
+ * (the name as typed, or «؟») and the «افزودن عکس» pill.
  *
- * It renders ONE file input and two grid cells of the dog card, with no wrapper box of its own (`display: contents`):
- * the frame (the photo, or the empty slot) and the actions under it (hint, «تغییر عکس», «حذف عکس», the error). The card
- * places both cells, because they sit differently on phones (a 96px slot beside the name) and on desktop (a 4:3 frame
- * under the bubble). The frame is also the drop target.
+ * It renders ONE file input and two grid cells of the mount, with no wrapper box of its own (`display: contents`): the
+ * print and the actions (the hint for screen readers, «افزودن عکس» on phones, «تغییر عکس», «حذف عکس», the error). The
+ * mount places both, because they sit differently on phones (a 7rem print beside the name) and on desktop (a 20rem
+ * print with the actions beside its bubble). The print is also the drop target.
  *
- * Keyboard and screen readers use the file input inside the frame; its label is the frame, and the focus ring shows on
- * the frame (`has-focus-visible`).
+ * The print drops onto the mount again whenever the photo changes (keyed by the media id, `df-drop`). The file input
+ * sits outside that keyed print, so a keyboard user's focus survives the re-drop; the print shows its focus ring.
  */
 export function PhotoPicker({
   media,
   onChange,
   onBusyChange,
   error,
-  fallback,
+  tagName,
+  microchipNumber,
   frameClassName,
   actionsClassName,
 }: {
@@ -43,9 +52,10 @@ export function PhotoPicker({
   onBusyChange: (busy: boolean) => void;
   /** A server message about the photo, from saving the form. */
   error?: string;
-  /** Desktop only: shown in the empty frame above the «افزودن عکس» pill (the engraved tag). */
-  fallback: React.ReactNode;
-  /** Placement and size of the frame (its grid cell, the phone slot, the desktop 4:3). */
+  /** The name on the engraved tag of an empty print. */
+  tagName: string;
+  microchipNumber: string | null;
+  /** Placement and size of the print's cell. */
   frameClassName?: string;
   /** Placement of the actions cell. */
   actionsClassName?: string;
@@ -70,7 +80,7 @@ export function PhotoPicker({
     if (!file || uploading) return;
     setProblem(null);
     if (file.size > MEDIA_MAX_BYTES) {
-      setProblem(`این عکس بزرگ‌تر از ${formatNumberFa(MAX_MB)} مگابایت است. عکس کوچک‌تری انتخاب کن.`);
+      setProblem(`این عکس بزرگ‌تر از ${formatNumberFa(MAX_MB)} مگابایته. یه عکس کوچیک‌تر انتخاب کن.`);
       return;
     }
     setLocalPreview(URL.createObjectURL(file));
@@ -91,18 +101,18 @@ export function PhotoPicker({
   };
 
   const message = problem ?? error;
-  const hasImage = Boolean(localPreview ?? media);
   const labelId = `${inputId}-label`;
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
+  const formats = `JPG یا PNG، تا ${formatNumberFa(MAX_MB)} مگابایت`;
 
   return (
     <div className="contents">
-      {/*===== Frame =====*/}
-      {/* Dropping a file is a mouse shortcut for the file input inside, which keyboards and screen readers use. */}
+      {/*===== Print =====*/}
+      {/* Dropping a file is a mouse shortcut for the file input, which keyboards and screen readers use. */}
       <div
         role="presentation"
-        className={frameClassName}
+        className={cn("group/print relative", frameClassName)}
         onDragOver={(event) => {
           event.preventDefault();
           setDragging(true);
@@ -114,107 +124,117 @@ export function PhotoPicker({
           pick(event.dataTransfer.files[0]);
         }}
       >
-        <label
-          htmlFor={inputId}
-          className={cn(
-            "group relative grid size-full cursor-pointer place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-sunken transition-colors lg:min-h-64 lg:rounded-3xl",
-            "has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
-            // A photo needs no outline. The empty phone slot is dashed so it reads as a place to put one; the desktop
-            // frame is already a filled box, so it only shows the dashes while a file is dragged over it.
-            hasImage ? "border-transparent" : "border-input/70 hover:border-primary/60 lg:border-transparent",
-            message && !hasImage && "border-destructive/60 lg:border-destructive/60",
-            dragging && "border-primary bg-primary/5 lg:border-primary",
-          )}
-        >
-          {/*------ Photo ------*/}
-          {localPreview ? (
-            <img src={localPreview} alt="" className="size-full object-cover opacity-50" />
-          ) : media ? (
-            <MediaImage media={media} variant="card" alt="عکس فعلی سگ" className="size-full" />
-          ) : (
-            <>
-              {/*------ Empty Slot (phone) ------*/}
-              <span className="flex flex-col items-center gap-1 text-muted-foreground lg:hidden">
-                <CameraIcon aria-hidden strokeWidth={1.5} className="size-6 text-primary" />
-                <span className="text-xs font-bold">عکس</span>
+        {/* A little crooked on the mount, taped across its top corners. */}
+        <div className="-rotate-2">
+          <figure key={media?.id ?? "none"} className="df-drop relative">
+            <label
+              htmlFor={inputId}
+              className={cn(
+                "block cursor-pointer rounded-sm bg-foreground p-1.5 shadow-[0_18px_40px_-16px_rgb(0_0_0/0.9)] transition-shadow lg:p-2.5",
+                "group-has-focus-visible/print:ring-4 group-has-focus-visible/print:ring-ring/60",
+                message && !media && "ring-3 ring-destructive/70",
+              )}
+            >
+              <span
+                className={cn(
+                  "relative grid h-[8.5rem] w-full place-items-center overflow-hidden bg-sunken paper-grain lg:h-[17rem]",
+                  dragging && "outline-2 -outline-offset-8 outline-primary outline-dashed",
+                )}
+              >
+                {/*------ Photo ------*/}
+                {localPreview ? (
+                  <img src={localPreview} alt="" className="size-full object-cover opacity-50" />
+                ) : media ? (
+                  <MediaImage media={media} variant="card" alt="عکس فعلی سگ" className="size-full object-cover" />
+                ) : (
+                  <>
+                    {/*------ Empty Print (phone) ------*/}
+                    <DogTag
+                      name={tagName}
+                      microchipNumber={microchipNumber}
+                      size="portrait"
+                      stampKey={tagName}
+                      className="lg:hidden"
+                    />
+
+                    {/*------ Empty Print (desktop) ------*/}
+                    <span className="hidden flex-col items-center gap-3 lg:flex">
+                      <DogTag name={tagName} microchipNumber={microchipNumber} size="lg" stampKey={tagName} />
+                      <span className="inline-flex h-10 items-center gap-2 rounded-full border border-primary/70 px-4 text-sm font-bold text-primary transition-colors group-hover/print:bg-primary/10">
+                        <CameraIcon aria-hidden strokeWidth={1.75} className="size-4" />
+                        افزودن عکس
+                      </span>
+                    </span>
+                  </>
+                )}
+
+                {uploading && (
+                  <span className="absolute inset-0 grid place-items-center">
+                    <Spinner aria-label="در حال بارگذاری" className="size-7 text-foreground" />
+                  </span>
+                )}
               </span>
+            </label>
+            <span aria-hidden className={`${TAPE} -top-1.5 -right-3 rotate-45 lg:-right-5`} />
+            <span aria-hidden className={`${TAPE} -top-1.5 -left-3 -rotate-45 lg:-left-5`} />
+          </figure>
+        </div>
 
-              {/*------ Empty Frame (desktop) ------*/}
-              <span className="hidden flex-col items-center gap-4 py-6 lg:flex">
-                {fallback}
-                <span className="inline-flex h-10 items-center gap-2 rounded-full border border-primary/60 px-4 text-sm font-bold text-primary transition-colors group-hover:bg-primary/10">
-                  <CameraIcon aria-hidden strokeWidth={1.75} className="size-4" />
-                  افزودن عکس
-                </span>
-              </span>
-            </>
-          )}
-
-          {uploading && (
-            <span className="absolute inset-0 grid place-items-center">
-              <Spinner aria-label="در حال بارگذاری" className="size-7 text-foreground" />
-            </span>
-          )}
-
-          <span id={labelId} className="sr-only">
-            عکس سگ (اختیاری)
-          </span>
-          <input
-            id={inputId}
-            type="file"
-            accept={MEDIA_ACCEPTED_TYPES}
-            aria-labelledby={labelId}
-            aria-describedby={message ? `${hintId} ${errorId}` : hintId}
-            aria-invalid={message ? true : undefined}
-            className="sr-only"
-            disabled={uploading}
-            onChange={(event) => {
-              pick(event.target.files?.[0]);
-              // Lets the same file be picked again after removing it.
-              event.target.value = "";
-            }}
-          />
-        </label>
+        <span id={labelId} className="sr-only">
+          عکس سگ (اختیاری)
+        </span>
+        <input
+          id={inputId}
+          type="file"
+          accept={MEDIA_ACCEPTED_TYPES}
+          aria-labelledby={labelId}
+          aria-describedby={message ? `${hintId} ${errorId}` : hintId}
+          aria-invalid={message ? true : undefined}
+          className="sr-only"
+          disabled={uploading}
+          onChange={(event) => {
+            pick(event.target.files?.[0]);
+            // Lets the same file be picked again after removing it.
+            event.target.value = "";
+          }}
+        />
       </div>
 
       {/*===== Actions =====*/}
       <div className={cn("flex min-w-0 flex-col items-start gap-2", actionsClassName)}>
-        {/* Phones have the slot's own «عکس» label, so the hint is read aloud there and shown only while uploading. */}
-        <p
-          id={hintId}
-          className={cn("text-xs text-pretty text-muted-foreground lg:text-sm", !uploading && "max-lg:sr-only")}
-        >
+        {/* Read aloud with the input; shown only while uploading (the empty desktop print has its own pill). */}
+        <p id={hintId} className={cn("text-xs text-pretty text-muted-foreground lg:text-sm", !uploading && "sr-only")}>
           {uploading
             ? "در حال بارگذاری…"
             : media
-              ? "عکس تازه‌ای انتخاب کن یا روی عکس رهایش کن."
-              : `عکس واضحی از خودش، JPG یا PNG تا ${formatNumberFa(MAX_MB)} مگابایت.`}
+              ? "یه عکس تازه انتخاب کن یا روی عکس رهاش کن."
+              : `یه عکس واضح از خودش، ${formats}.`}
         </p>
 
-        {media && !uploading && (
+        {!uploading && (
           <div className="flex flex-wrap items-center gap-1">
-            {/* A mouse and touch shortcut to the same input: keyboards reach the input in the frame. */}
+            {/* Mouse and touch shortcuts to the same input: keyboards reach the input itself. */}
             <label
               htmlFor={inputId}
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hidden cursor-pointer lg:inline-flex")}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "cursor-pointer border-primary/60 text-primary hover:text-primary",
+                !media && "lg:hidden",
+              )}
             >
               <CameraIcon aria-hidden strokeWidth={1.75} />
-              تغییر عکس
+              {media ? "تغییر عکس" : "افزودن عکس"}
             </label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              className="text-destructive max-lg:-ms-2.5 lg:h-10"
-              onClick={() => onChange(null)}
-            >
-              حذف عکس
-            </Button>
+            {media && (
+              <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => onChange(null)}>
+                حذف عکس
+              </Button>
+            )}
           </div>
         )}
 
         {message && (
-          <p id={errorId} role="alert" className="text-sm text-destructive">
+          <p id={errorId} role="alert" className="answer-in text-sm text-pretty text-destructive">
             {message}
           </p>
         )}
