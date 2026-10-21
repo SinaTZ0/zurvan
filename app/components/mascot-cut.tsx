@@ -97,6 +97,27 @@ export const MASCOT_CUTS = {
   lectern: { width: 461, height: 450 },
   hole: { width: 513, height: 279 },
   kennel: { width: 501, height: 423 },
+  // Poses for the account pages (the shell, the Dashboard and Dog Detail), cut from
+  // image-reference/generated/batch4/poses-8.png: holding up an empty picture frame, lying by an old phone waiting for
+  // it to ring, three gold medals round his neck, writing in a notebook with a pencil in his mouth, a play bow, a
+  // clipboard of ticked lines with a pencil behind his ear, sitting turned away looking back, lying with a paw on a cup.
+  frame: { width: 281, height: 375 },
+  "wait-phone": { width: 436, height: 213 },
+  medals: { width: 255, height: 389 },
+  write: { width: 375, height: 286 },
+  bow: { width: 384, height: 343 },
+  clipboard: { width: 271, height: 394 },
+  "look-back": { width: 215, height: 403 },
+  trophy: { width: 474, height: 282 },
+  // Scenery from image-reference/generated/batch4/scenery-6.png: a shelf of medals, rosettes and a cup, a cork board of
+  // blank pinned instant photos, a round dog bed with a rope toy, two bowls on a mat, an open chest of toys, a plain
+  // three-step podium.
+  "trophy-shelf": { width: 492, height: 443 },
+  "photo-board": { width: 455, height: 433 },
+  "dog-bed": { width: 513, height: 338 },
+  bowls: { width: 498, height: 272 },
+  "toy-box": { width: 484, height: 422 },
+  podium: { width: 516, height: 295 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
@@ -127,6 +148,12 @@ const DIMMED = new Set<MascotCutName>([
   "lectern",
   "hole",
   "kennel",
+  "trophy-shelf",
+  "photo-board",
+  "dog-bed",
+  "bowls",
+  "toy-box",
+  "podium",
 ]);
 
 /**
