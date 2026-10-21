@@ -20,7 +20,7 @@ import type { BuyCardState } from "~/routes/course_detail/components/use-buy-car
  *
  * The mascot is the card's only picture: the course photo shows on phones above the title (in the hero) and in the
  * catalogue, not here, so a drawn dog never stands on a photographed one. The price hangs from the card's top edge as a
- * chalk price tag, in ivory: gold is for the button alone.
+ * chalk price tag, in ivory.
  */
 export function BuyCard({
   course,
