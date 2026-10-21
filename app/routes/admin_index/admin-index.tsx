@@ -1,18 +1,20 @@
 import { cn } from "cn";
-import { useId } from "react";
 import { isRouteErrorResponse, useRevalidator } from "react-router";
 
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
 import { createServerClient } from "~/orpc/server-client.server";
 
-import { CountTile } from "./components/count-tile";
-import { CoursesTable } from "./components/courses-table";
-import { LatestPurchases } from "./components/latest-purchases";
-import { MoneyBlock } from "./components/money-block";
-import { PaidNotEnrolledTile } from "./components/paid-not-enrolled-tile";
+import { CoursesPlate } from "./components/courses-plate";
+import { EnrollmentsPlate } from "./components/enrollments-plate";
+import { MoneyPlate } from "./components/money-plate";
+import { PageMotion } from "./components/page-motion";
+import { SectionHead } from "./components/section-head";
+import { WaitingPlate } from "./components/waiting-plate";
+import { describeTodayInTehran } from "./today";
 import type { Route } from "./+types/admin-index";
 
 /*===== Meta =====*/
@@ -20,111 +22,76 @@ export const meta: Route.MetaFunction = () => [{ title: "نمای کلی | مد�
 
 /*===== Loader =====*/
 // The guard is the layout's. One call reads every number on the page; nothing here is cached, so a revalidation (the
-// layout runs one after any answer on another page) always shows the truth.
+// layout runs one after any answer on another page) always shows the truth. Today's date is computed here, on the
+// Tehran clock, so the server's render and the hydrated page can't disagree about the day.
 export async function loader({ request }: Route.LoaderArgs) {
   const overview = await createServerClient(request).dashboard.admin.overview();
 
-  return { overview };
+  return { overview, today: describeTodayInTehran() };
 }
 
-/*===== Block =====*/
-/** A titled section of the dashboard: an `h2` the section is labelled by. */
-function Block({ title, className, children }: { title: string; className?: string; children: React.ReactNode }) {
-  const titleId = useId();
-
-  return (
-    <section aria-labelledby={titleId} className={className}>
-      <h2 id={titleId} className="mb-3 text-base font-extrabold">
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-/*===== Admin Dashboard =====*/
+/*===== Admin Overview =====*/
 /**
- * F11: what is waiting for the Admin and how the center is doing, in one glance. The page is black and quiet; only what
- * waits for him is lit (gold number and ring), so on a good day it shows no gold and on a busy one the gold is exactly
- * the work. Every number links to the list already filtered to it. The page writes nothing.
+ * F11: what waits for the Admin today and how the center is doing, in one glance. Only the work is lit: one plate at
+ * the top holds the day's work (the counters in gold above zero, the latest purchases to call), and everything under it
+ * is calm ivory, so on a good day the page shows no gold at all. Every number links to its list, already filtered. The
+ * page writes nothing; its only motion answers a revalidation (a changed number pops, a strip slides).
  */
 export default function AdminIndexPage({ loaderData }: Route.ComponentProps) {
-  const { waiting, enrollments, money, courses } = loaderData.overview;
+  const { overview, today } = loaderData;
+  const { waiting, enrollments, money, courses } = overview;
 
   /*------ Pending ------*/
   // The layout revalidates after an answer elsewhere; the page dims while the new numbers load.
   const revalidator = useRevalidator();
   const pending = revalidator.state !== "idle";
 
+  // «،» rather than «·»: a middle dot beside a Persian digit reads as a zero («۲۹ مهر · ۲» looks like «۲۰»).
   const waitingCount = waiting.evaluationRequests + waiting.paidNotEnrolled.count;
+  const work = waitingCount > 0 ? `${formatNumberFa(waitingCount)} کار منتظر توست` : "کاری منتظرت نیست";
 
   return (
     <div>
-      {/*===== Header =====*/}
-      <AdminPageHeader
-        title="نمای کلی"
-        summary={waitingCount > 0 ? `${formatNumberFa(waitingCount)} مورد منتظر توست` : "کاری منتظر نیست"}
-      />
+      <PageMotion />
 
-      <div aria-busy={pending} className={cn("flex flex-col gap-8 transition-opacity", pending && "opacity-60")}>
+      {/*===== Header =====*/}
+      <AdminPageHeader title="نمای کلی" summary={`${today}، ${work}`} />
+
+      <div
+        aria-busy={pending}
+        className={cn("flex flex-col gap-8 transition-opacity lg:gap-10", pending && "opacity-60")}
+      >
         {/*===== Waiting =====*/}
-        <Block title="منتظر توست">
-          {/* The tiles stack at the start, the purchases take the rest. Below `xl` the content beside the rail is too narrow for two columns. */}
-          <div className="grid gap-3 xl:grid-cols-12 xl:items-start">
-            <div className="flex flex-col gap-3 xl:col-span-4">
-              <CountTile
-                to="/admin/evaluations"
-                count={waiting.evaluationRequests}
-                label={waiting.evaluationRequests > 0 ? "درخواست ارزیابی منتظر جواب است" : "درخواستی منتظر نیست"}
-                tone={waiting.evaluationRequests > 0 ? "lit" : "calm"}
-              />
-              <PaidNotEnrolledTile count={waiting.paidNotEnrolled.count} amount={waiting.paidNotEnrolled.amount} />
-            </div>
-            <div className="xl:col-span-8">
-              <LatestPurchases purchases={waiting.latestPurchases} />
-            </div>
-          </div>
-        </Block>
+        <section aria-labelledby="overview-waiting-title">
+          <SectionHead id="overview-waiting-title" title="منتظر توست" />
+          <WaitingPlate waiting={waiting} />
+        </section>
 
         {/*===== Enrollments and Money =====*/}
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+        {/* Side by side from `xl` (7/5); below it the column beside the rail is too narrow for the big amount. */}
+        <div className="grid gap-8 xl:grid-cols-12">
           {/*------ Enrollments ------*/}
-          <Block title="ثبت‌نام‌ها">
-            <div className="grid grid-cols-3 gap-3">
-              <CountTile
-                to="/admin/enrollments?status=active"
-                count={enrollments.active}
-                label="در حال آموزش"
-                tone="plain"
-                layout="stacked"
-              />
-              <CountTile
-                to="/admin/enrollments?status=completed"
-                count={enrollments.completed}
-                label="تمام شده"
-                tone="plain"
-                layout="stacked"
-              />
-              <CountTile
-                to="/admin/enrollments?status=cancelled"
-                count={enrollments.cancelled}
-                label="لغو شده"
-                tone="plain"
-                layout="stacked"
-              />
+          <section aria-labelledby="overview-enrollments-title" className="flex flex-col xl:col-span-7">
+            <SectionHead id="overview-enrollments-title" title="ثبت‌نام‌ها" />
+            <div className="flex-1">
+              <EnrollmentsPlate enrollments={enrollments} />
             </div>
-          </Block>
+          </section>
 
           {/*------ Money ------*/}
-          <Block title="پول">
-            <MoneyBlock money={money} />
-          </Block>
+          <section aria-labelledby="overview-money-title" className="flex flex-col xl:col-span-5">
+            <SectionHead id="overview-money-title" title="پول" />
+            <div className="flex-1">
+              <MoneyPlate money={money} />
+            </div>
+          </section>
         </div>
 
         {/*===== Courses =====*/}
-        <Block title="دوره‌ها">
-          <CoursesTable courses={courses} />
-        </Block>
+        <section aria-labelledby="overview-courses-title">
+          <SectionHead id="overview-courses-title" title="دوره‌ها" />
+          <CoursesPlate courses={courses} />
+        </section>
       </div>
     </div>
   );
@@ -136,16 +103,25 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
   return (
-    <section aria-labelledby="admin-index-error-title" className="py-8">
-      <h1 id="admin-index-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این صفحه پیدا نشد" : "نمای کلی باز نشد"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/admin" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به مدیریت
-      </Link>
-    </section>
+    <div>
+      <AdminPageHeader
+        title={notFound ? "این صفحه پیدا نشد" : "نمای کلی باز نشد"}
+        summary={notFound ? "آدرسش درست نیست یا دیگه وجود نداره." : "عددها نرسیدن."}
+      />
+      <div className={cn(ADMIN_PLATE, "flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6")}>
+        <p className="max-w-xl text-sm text-pretty text-muted-foreground">
+          {notFound
+            ? "از منو برو سراغ صفحه‌ای که می‌خوای."
+            : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."}
+        </p>
+        <Link
+          to="/admin"
+          reloadDocument={!notFound}
+          className={buttonVariants({ variant: "solid", className: "w-full shrink-0 px-6 sm:w-auto" })}
+        >
+          {notFound ? "برگرد به نمای کلی" : "دوباره باز کن"}
+        </Link>
+      </div>
+    </div>
   );
 }
