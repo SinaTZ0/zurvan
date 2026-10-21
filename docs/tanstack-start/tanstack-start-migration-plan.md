@@ -68,6 +68,10 @@ The owner decided all of these on 2026-10-22.
      `env.server` (the site origin for links, showcase mode), instead of adding those fields to each page's own
      procedure. Links and QR codes that need the origin (partner link, dog file card, certificate cards) are still built
      inside their own procedures.
+6. **Typed links (decided after B0).** Every link, `navigate()` and `redirect()` uses TanStack Router's typed
+   options: `to` is a route path (`"/courses/$slug"`), with `params`, `search` and `hash` as their own props. A typo,
+   a missing param or a wrong search value is a compile error, which is one of the reasons for the move. The spike's
+   wrapper that took any string (`"/help#x"`) and cast it is not carried over.
 
 ## Phase A: Prepare on React Router (on `tanstack-start`)
 
@@ -224,8 +228,9 @@ Playwright scripts behind these answers. Everything was checked on a production 
 - **Storybook filter.** Start adds Vite plugins named `tanstack*`, `nitro:*` and `fullstack:*`; Storybook must drop
   those and keep `@tailwindcss/vite:*` and `vite:react-swc*`. Not run in the spike.
 - **`Link` string paths need translating.** TanStack's `Link` doesn't parse a hash or query out of `to`, and has no
-  `className` function. The spike's wrappers split React-Router-style strings (`"/help#x"`, `"#buy-card"`) and compute
-  `isActive`; B7 decides whether call sites move to typed `to` + `hash` + `search` instead.
+  `className` function. The spike's wrappers split React-Router-style strings (`"/help#x"`, `"#buy-card"`) and cast
+  them, which throws away the type checking; decision 6 moves call sites to typed `to` + `params` + `hash` +
+  `search` instead.
 
 ### B1. App shell
 
@@ -319,9 +324,13 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
 - `Link`/`NavLink` wrappers keep their rules on TanStack's `Link`: `preload` = `"viewport"` (storefront, account),
   `"intent"` (Admin), `false` for same-pathname and `reloadDocument` links; `viewTransition` only when the pathname
   changes; same-page hash links set `resetScroll: false` and `hashScrollIntoView: false` so Lenis can glide (B0).
-- Decide how call sites pass hashes and queries: TanStack's `Link` doesn't parse them out of `to`. Either keep the
-  spike's wrapper that splits React-Router-style strings, or move the 125 call sites to typed `to` + `hash` + `search`.
-  `NavLink` needs its own `isActive` (no `className` function on TanStack's `Link`).
+- Typed links (decision 6). Build the wrappers with `createLink`, which keeps `Link`'s type parameters, and add the
+  defaults above on top. Move the ~125 call sites to typed options: template strings like `` `/courses/${slug}` ``
+  become `to="/courses/$slug" params={{ slug }}`, `"#buy-card"` becomes `hash="buy-card"`, and query strings move
+  into `search`. The same goes for `navigate()` and `redirect()`. `npm run typecheck` then flags any link to a page
+  that doesn't exist.
+- `NavLink` needs its own `isActive`, because TanStack's `Link` has no `className` function. Use `activeProps` /
+  `activeOptions` or the render-prop `children`.
 - Update `.oxlintrc.json`'s restricted import to `@tanstack/react-router`'s `Link`.
 - Delete `app/hooks/use-default-prefetch.ts`'s React Router note; the "data isn't reused" caveat no longer applies.
 
