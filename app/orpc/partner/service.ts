@@ -30,9 +30,9 @@ type NotFoundResult = { kind: "not-found" };
 type InvalidResult = { kind: "invalid"; errors: string[]; fields: Record<string, string> };
 
 /*===== Messages =====*/
-const LEAD_ALREADY_REGISTERED_MESSAGE = "این شماره قبلاً در سایت ثبت‌نام کرده؛ دیگر نمی‌شود به نام تو ثبت شود.";
-const LEAD_REPEAT_MESSAGE = "این شماره را قبلاً ثبت کرده‌ای.";
-const PARTNER_INACTIVE_MESSAGE = "همکاری‌ات فعلاً متوقف است؛ شماره‌ی تازه ثبت نمی‌شود.";
+const LEAD_ALREADY_REGISTERED_MESSAGE = "این شماره قبلاً توی سایت ثبت‌نام کرده؛ دیگه نمی‌شه به اسم تو ثبت بشه.";
+const LEAD_REPEAT_MESSAGE = "این شماره رو قبلاً ثبت کردی.";
+const PARTNER_INACTIVE_MESSAGE = "همکاریت فعلاً متوقفه؛ شماره‌ی تازه ثبت نمی‌شه.";
 const PARTNER_PHONE_TAKEN_MESSAGE = "این شماره قبلاً در سایت ثبت‌نام کرده. هر شماره یک نقش دارد.";
 const PARTNER_CODE_TAKEN_MESSAGE = "این کد قبلاً گرفته شده.";
 

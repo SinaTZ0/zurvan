@@ -36,31 +36,36 @@ function stopsOf(person: PartnerPerson): Stop[] {
 
 /*===== Lead Road =====*/
 /**
- * A person's chalk road in miniature (the one `/help` uses): number, sign-up, purchase, joined by a line. Reached
- * stops are gold discs with a check and their date; the next stop is an empty ring; the line is gold up to where the
- * person has got. A lost person's road is grey and stops after the first disc in a dashed trail, and the sentence
- * «به اسم تو ثبت نشد.» sits where the dates would be: no reason, no name, nobody else (F12).
+ * A person's road: number (or link), sign-up, purchase, three stops in equal thirds so every row's road lines up with
+ * the next and the gold reads down the list. Reached stops are gold discs with a check and their date; the line is gold
+ * up to where the person got; the next stop is an empty ring, a stop past it a fainter one. A lost person's road is grey
+ * after its first disc, a dashed trail that stops, with «به اسم تو ثبت نشد.» where the dates would be: no reason, no
+ * name, nobody else (F12).
+ *
+ * It draws itself as its row arrives (page-motion.tsx): the first disc pops, each line grows in reading direction and
+ * the disc it reaches pops after it. `delay` is the row's place in the stagger, in seconds.
  *
  * Decorative: the row carries one sentence for screen readers, so the road is `aria-hidden` there.
  */
-export function LeadRoad({ person }: { person: PartnerPerson }) {
+export function LeadRoad({ person, delay }: { person: PartnerPerson; delay: number }) {
   const lost = person.stage === "lost";
   const stops = stopsOf(person);
   // The first stop that is not reached yet; later ones are fainter.
   const nextIndex = stops.findIndex((stop) => !stop.reached);
 
   return (
-    <ol className="grid grid-cols-3">
+    <ol className="grid grid-cols-3" style={{ "--road-delay": `${delay}s` } as React.CSSProperties}>
       {stops.map((stop, index) => {
         const isFirst = index === 0;
         const isLast = index === stops.length - 1;
+        const nextReached = stops[index + 1]?.reached ?? false;
 
         /*------ Lost: the road ends after the first disc ------*/
         if (lost && !isFirst) {
           return (
             <li key={stop.label} className="relative">
               {index === 1 && (
-                <p className="absolute inset-x-0 top-8 w-[200%] text-xs text-pretty text-muted-foreground">
+                <p className="pl-disc absolute inset-x-0 top-9 w-[200%] text-xs text-pretty text-muted-foreground [--disc-step:1]">
                   به اسم تو ثبت نشد.
                 </p>
               )}
@@ -71,17 +76,21 @@ export function LeadRoad({ person }: { person: PartnerPerson }) {
         return (
           <li key={stop.label} className="relative flex flex-col items-center gap-1 text-center">
             {/*------ Line to the next stop ------*/}
-            {/* Drawn from this disc's centre toward the end side; the opaque discs hide the ends. Gold when the next
-                stop is reached, dashed otherwise (and for the whole trail of a lost person). */}
+            {/* From this disc's centre to the next one's (a third of the road), drawn under the opaque discs. Gold when
+                the next stop is reached; a dashed ink trail when it isn't; for a lost person a grey dash that fades out
+                halfway, the road that stopped. */}
             {!isLast && (
               <span
                 aria-hidden
                 className={cn(
-                  "absolute start-1/2 top-3 border-t-2",
-                  lost ? "w-[130%] border-dashed border-muted-foreground/40" : "w-full",
-                  !lost && stops[index + 1]?.reached && "border-primary",
-                  !lost && !stops[index + 1]?.reached && "border-dashed border-border",
+                  "pl-line absolute start-1/2 top-[0.8125rem] h-0 w-full",
+                  lost
+                    ? "w-[70%] border-t-2 border-dashed border-muted-foreground/40 [mask-image:linear-gradient(to_right,transparent,black_60%)]"
+                    : nextReached
+                      ? "border-t-[3px] border-primary"
+                      : "border-t-2 border-dashed border-foreground/25",
                 )}
+                style={{ "--disc-step": index } as React.CSSProperties}
               />
             )}
 
@@ -89,22 +98,30 @@ export function LeadRoad({ person }: { person: PartnerPerson }) {
             <span
               aria-hidden
               className={cn(
-                "relative grid size-6 place-items-center rounded-full",
+                "pl-disc relative grid size-7 place-items-center rounded-full",
                 stop.reached && !lost && "bg-primary text-primary-foreground",
-                stop.reached && lost && "bg-muted-foreground/40 text-card",
-                !stop.reached && index === nextIndex && "border-2 border-muted-foreground/70 bg-card",
-                !stop.reached && index !== nextIndex && "border-2 border-border bg-card",
+                stop.reached && lost && "bg-muted-foreground/45 text-card",
+                !stop.reached && index === nextIndex && "border-2 border-foreground/55 bg-card",
+                !stop.reached && index !== nextIndex && "border-2 border-foreground/20 bg-card",
               )}
+              style={{ "--disc-step": index } as React.CSSProperties}
             >
-              {stop.reached && <CheckIcon className="size-3.5" strokeWidth={3} />}
+              {stop.reached && <CheckIcon className="size-4" strokeWidth={3} />}
             </span>
 
             {/*------ Label and date ------*/}
-            <span className={cn("text-xs font-bold", stop.reached ? "text-foreground" : "text-muted-foreground")}>
+            <span
+              className={cn(
+                "mt-0.5 text-xs font-bold",
+                stop.reached && !lost ? "text-foreground" : "text-muted-foreground",
+              )}
+            >
               {stop.label}
             </span>
             {stop.reached && stop.date && (
-              <span className="text-xs text-muted-foreground tabular-nums">{formatJalaliTimestamp(stop.date)}</span>
+              <span className="text-[0.6875rem] leading-tight whitespace-nowrap text-muted-foreground tabular-nums">
+                {formatJalaliTimestamp(stop.date)}
+              </span>
             )}
           </li>
         );

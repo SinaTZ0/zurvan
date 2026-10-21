@@ -25,16 +25,16 @@ export function applyAddLeadServerError({
     if (message) setError("phoneNumber", { message });
     const [general] = parsed.data.errors;
     if (general) setError("root", { message: general });
-    if (!message && !general) setError("root", { message: "ثبت نشد. شماره را بررسی کن و دوباره امتحان کن." });
+    if (!message && !general) setError("root", { message: "ثبت نشد. شماره رو بررسی کن و دوباره امتحان کن." });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
+    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
     return;
   }
   if (code === "FORBIDDEN" || code === "NOT_FOUND") {
     setError("root", {
-      message: `برای این حساب شماره ثبت نمی‌شود. اگر فکر می‌کنی اشتباه است، به ${HEAD_TRAINER.firstName} خبر بده.`,
+      message: `برای این حساب شماره ثبت نمی‌شه. اگه فکر می‌کنی اشتباهه، به ${HEAD_TRAINER.firstName} خبر بده.`,
     });
     return;
   }
@@ -43,5 +43,5 @@ export function applyAddLeadServerError({
     setError("root", { message: `ثبت نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
     return;
   }
-  setError("root", { message: "ثبت نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: "ثبت نشد. اتصال اینترنتت رو بررسی کن و دوباره امتحان کن." });
 }

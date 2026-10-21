@@ -1,35 +1,79 @@
 import { ChevronDownIcon } from "lucide-react";
-
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import { useId, useState } from "react";
 
 /*===== Constants =====*/
-// Three rules a partner asks about: who wins a shared number, who wins a link, and what he sees of a customer (F7, F12).
+// What a partner asks about: who wins a shared number, who wins a link, what he sees of a customer, and where his
+// commission shows (F7, F12).
 const RULES = [
-  "اگر چند همکار یک شماره را بنویسند، اولین ثبت می‌ماند.",
-  "اگر مشتری با لینک یک همکار بیاید، لینک مقدم است.",
-  "بعد از ثبت‌نام، اسم مشتری را می‌بینی؛ قیمت و سگش را نه.",
-  "برای هر خریدار، پورسانتت و این‌که واریز شده یا نه را همین‌جا می‌بینی.",
+  "اگه چند همکار یه شماره رو بنویسن، اولین ثبت می‌مونه.",
+  "اگه مشتری با لینک یه همکار بیاد، لینک مقدمه.",
+  "بعد از ثبت‌نام، اسم مشتری رو می‌بینی؛ قیمت و سگش رو نه.",
+  "برای هر خریدار، پورسانتت و این‌که واریز شده یا نه رو همین‌جا می‌بینی.",
 ];
 
 /*===== How It Counts =====*/
-/** The closed-by-default note under the form: «چطور حساب می‌شود؟». It opens to the three rules above. */
+/**
+ * The folded note under the form, «چطور حساب می‌شه؟», closed by default. It opens as one motion: the panel stays mounted
+ * and its grid row grows from 0fr to 1fr while the lines lift and fade in, and the chevron turns. Closed, the panel is
+ * `inert` and hidden once the fold has run, so nothing in it is reachable or read out.
+ */
 export function HowItCounts() {
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+
   return (
-    <Collapsible>
-      <CollapsibleTrigger className="group/trigger flex min-h-11 items-center gap-1.5 rounded-lg text-sm font-bold text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50">
-        چطور حساب می‌شود؟
+    <div className="rounded-3xl border border-dashed border-foreground/20">
+      {/*------ Trigger ------*/}
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((current) => !current)}
+        className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-3xl px-5 text-start text-sm font-bold text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:text-foreground"
+      >
+        چطور حساب می‌شه؟
         <ChevronDownIcon
           aria-hidden
-          className="size-4 transition-transform motion-safe:group-data-[panel-open]/trigger:rotate-180"
+          className="size-4 shrink-0 transition-transform duration-300 group-aria-expanded:rotate-180 motion-reduce:transition-none"
         />
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <ul className="flex list-disc flex-col gap-2 ps-5 pb-2 text-sm text-pretty text-muted-foreground marker:text-muted-foreground/60">
-          {RULES.map((rule) => (
-            <li key={rule}>{rule}</li>
-          ))}
-        </ul>
-      </CollapsibleContent>
-    </Collapsible>
+      </button>
+
+      {/*------ Panel ------*/}
+      <div id={panelId} className="pl-fold" data-open={open} inert={!open}>
+        <div className="min-h-0 overflow-hidden">
+          <ul className="flex flex-col gap-3 px-5 pt-1 pb-5 text-sm text-pretty text-muted-foreground">
+            {RULES.map((rule, index) => (
+              <li
+                key={rule}
+                className="pl-fold-line flex items-start gap-2.5"
+                style={{ "--line-delay": `${index * 50}ms` } as React.CSSProperties}
+              >
+                <ChalkTick />
+                {rule}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/*===== Chalk Tick =====*/
+/** A small hand-drawn gold tick before each rule. */
+function ChalkTick() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 20 20"
+      fill="none"
+      className="mt-0.5 size-4 shrink-0 text-primary"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3.5 10.5c1.4 1.1 2.6 2.4 3.6 4 1.9-4.2 4.6-7.6 9.1-10.6" />
+    </svg>
   );
 }

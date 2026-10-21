@@ -342,7 +342,7 @@ describe("partner people", () => {
     expect(await addLead({ db, userId: pA.id, input: { phoneNumber: phone } })).toEqual({
       kind: "invalid",
       errors: [],
-      fields: { phoneNumber: "این شماره را قبلاً ثبت کرده‌ای." },
+      fields: { phoneNumber: "این شماره رو قبلاً ثبت کردی." },
     });
     expect(await db.select().from(partnerLead).where(eq(partnerLead.phoneNumber, phone))).toHaveLength(1);
 
@@ -356,7 +356,7 @@ describe("partner people", () => {
     expect(await addLead({ db, userId: pA.id, input: { phoneNumber: registered } })).toEqual({
       kind: "invalid",
       errors: [],
-      fields: { phoneNumber: "این شماره قبلاً در سایت ثبت‌نام کرده؛ دیگر نمی‌شود به نام تو ثبت شود." },
+      fields: { phoneNumber: "این شماره قبلاً توی سایت ثبت‌نام کرده؛ دیگه نمی‌شه به اسم تو ثبت بشه." },
     });
     expect(await db.select().from(partnerLead).where(eq(partnerLead.phoneNumber, registered))).toEqual([]);
   });
