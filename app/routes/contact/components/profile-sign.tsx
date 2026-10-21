@@ -18,7 +18,7 @@ export function ProfileSign({
   const Icon = SOCIAL_ICONS[profile.href];
 
   return (
-    <li className="relative">
+    <li className="ct-sign relative">
       {/*------ Cords ------*/}
       {/* A nail at the top of each, a knot at the bottom. They sit under the plate, so only the gap shows. */}
       {["start-[18%]", "end-[18%]"].map((side) => (

@@ -66,6 +66,24 @@ export function MessagesWall() {
           ))}
         </ul>
       </div>
+
+      {/* A sign swings a few degrees on its cords when its plate is hovered or focused, pivoting on the nails (the
+          cords' tops, `--cord` above the plate) and settling back. Off for reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .ct-sign { transform-origin: 50% calc(var(--cord) * -1); }
+          .ct-sign:has(> a:hover), .ct-sign:has(> a:focus-visible) {
+            animation: ct-swing 1.1s cubic-bezier(.3,.6,.4,1);
+          }
+        }
+        @keyframes ct-swing {
+          0%, 100% { transform: none; }
+          18% { transform: rotate(3deg); }
+          42% { transform: rotate(-2deg); }
+          64% { transform: rotate(1deg); }
+          84% { transform: rotate(-.4deg); }
+        }
+      `}</style>
     </section>
   );
 }

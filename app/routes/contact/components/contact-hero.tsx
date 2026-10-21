@@ -50,7 +50,7 @@ export function ContactHero() {
                 <MascotCut name="phone" eager className="lively-wiggle lively-pet relative block w-full" />
                 <ChalkBubble
                   tail="right"
-                  className="absolute right-[78%] bottom-[58%] w-max max-w-[10.5rem] text-pretty lg:right-[84%] lg:max-w-[14rem]"
+                  className="ct-pop absolute right-[78%] bottom-[58%] w-max max-w-[10.5rem] text-pretty lg:right-[84%] lg:max-w-[14rem]"
                 >
                   الو؟ زروانم! شماره همینه.
                 </ChalkBubble>
@@ -75,6 +75,17 @@ export function ContactHero() {
           </div>
         </div>
       </div>
+
+      {/* The page's one load moment: the phone dog's bubble pops from its tail (bottom right, 2.25rem in) once the page
+          is up. Off for reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .ct-pop {
+            transform-origin: calc(100% - 2.25rem) 100%;
+            animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) .5s both;
+          }
+        }
+      `}</style>
     </section>
   );
 }
