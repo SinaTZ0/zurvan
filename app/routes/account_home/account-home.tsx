@@ -1,16 +1,28 @@
-import { PlusIcon } from "lucide-react";
 import { isRouteErrorResponse } from "react-router";
 
-import { ChalkDoodle } from "~/components/chalk-doodle";
+import { ChalkBubble } from "~/components/chalk-bubble";
+import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
+import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { getDogStatus } from "~/lib/dog-status";
 import { requireSession } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
-import { DogCard } from "~/routes/account_home/components/dog-card";
+import { COLUMN } from "~/routes/account_home/column";
+import { DogPanel } from "~/routes/account_home/components/dog-panel";
+import { RoadChalk } from "~/routes/account_home/components/dog-road";
+import { HomeHero } from "~/routes/account_home/components/home-hero";
+import { NextStepsBand } from "~/routes/account_home/components/next-steps-band";
 import { NoDogs } from "~/routes/account_home/components/no-dogs";
+import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
 
 import type { Route } from "./+types/account-home";
+
+/*===== Handle =====*/
+// The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
+// padding when a page's handle sets this.
+export const handle: AccountLayoutHandle = { flushFooter: true };
 
 /*===== Guard =====*/
 // The account layout lets partners in too, but my dogs, requests and courses are a customer's (docs/app-spec.md, Pages).
@@ -45,60 +57,88 @@ export async function loader({ request }: Route.LoaderArgs) {
       b.dog.createdAt.getTime() - a.dog.createdAt.getTime(),
   );
 
-  return { cards };
+  /*------ Tally ------*/
+  // The hero's three numbers, from what was read above: only the customer's own dogs' courses.
+  const tally = {
+    dogs: cards.length,
+    training: cards.reduce((sum, card) => sum + card.activeEnrollments.length, 0),
+    passed: cards.reduce((sum, card) => sum + card.dog.passedCourses.length, 0),
+  };
+
+  return { cards, tally };
 }
 
 /*===== Dashboard =====*/
 /**
- * F2/F3/F6's customer home: one card per dog, each saying where the dog stands and offering the one next step. Open
- * requests and enrollments belong to their dog's card instead of sections of their own.
+ * F2/F3/F6's customer home, «سگ‌های من»: the center's dog welcomes the customer in front of his friends' board, then one
+ * panel per dog, each saying where the dog stands (its bubble and its road) and offering the one next step, and at
+ * the end the brick band of what happens from here. Open requests and enrollments belong to their dog's panel instead
+ * of sections of their own.
  */
 export default function AccountHomePage({ loaderData }: Route.ComponentProps) {
-  const { cards } = loaderData;
+  const { cards, tally } = loaderData;
 
   return (
-    <div className="site-container py-8 lg:py-14">
-      {/*===== Header =====*/}
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-4 lg:mb-10">
-        <div className="flex items-center gap-4">
-          <h1 className="font-display text-h1 font-black text-balance">سگ‌های من</h1>
-          <ChalkDoodle name="paw" className="w-9 -rotate-12 lg:w-11" />
-        </div>
-        <Link to="/account/dogs/new" className={buttonVariants({ variant: "outline" })}>
-          <PlusIcon aria-hidden />
-          معرفی سگ تازه
-        </Link>
-      </header>
+    <>
+      {/*===== Hero =====*/}
+      <HomeHero tally={cards.length > 0 ? tally : null} />
 
       {/*===== Dogs =====*/}
-      {cards.length === 0 ? (
-        <NoDogs />
-      ) : (
-        <div className="flex flex-col gap-6 lg:gap-8">
-          {cards.map(({ dog, status, activeEnrollments }) => (
-            <DogCard key={dog.id} dog={dog} status={status} activeEnrollments={activeEnrollments} />
-          ))}
-        </div>
-      )}
-    </div>
+      <div className={COLUMN}>
+        {cards.length === 0 ? (
+          <NoDogs />
+        ) : (
+          <div className="flex flex-col gap-6">
+            <RoadChalk />
+            {cards.map(({ dog, status, activeEnrollments }, index) => (
+              <DogPanel key={dog.id} dog={dog} status={status} activeEnrollments={activeEnrollments} index={index} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/*===== What Happens From Here =====*/}
+      <NextStepsBand />
+    </>
   );
 }
 
 /*===== Error Boundary =====*/
+// Inside the account shell, so a failed list still has the header, the footer and a way on.
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
   return (
-    <section aria-labelledby="account-home-error-title" className="site-container py-16">
-      <h1 id="account-home-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این صفحه پیدا نشد" : "سگ‌هایت باز نشدند"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به صفحه‌ی اصلی
-      </Link>
+    <section aria-labelledby="account-home-error-title" className={`${COLUMN} py-section-md`}>
+      <div className="grid items-end gap-y-8 md:grid-cols-[minmax(0,34rem)_16rem] md:gap-x-16">
+        {/*------ Words ------*/}
+        <div className="max-w-xl md:pb-8">
+          <h1 id="account-home-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
+            {notFound ? "این صفحه پیدا نشد" : "سگ‌هات باز نشدن"}
+          </h1>
+          <p className="mt-4 text-lead text-pretty text-muted-foreground">
+            یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.
+          </p>
+          <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7" })}>
+            برگرد به صفحه‌ی اصلی
+          </Link>
+        </div>
+
+        {/*------ The Sorry Dog ------*/}
+        {/* Physical sides: his bubble's tail is aimed at his head, which faces right. */}
+        <div aria-hidden className="relative h-56">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_48%_55%_at_50%_80%,rgb(255_194_26/0.08),transparent)]" />
+          <GroundStrip className="absolute inset-x-0 bottom-0 h-7 [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]" />
+          <div className="absolute bottom-[0.9rem] left-1/2 w-28 -translate-x-1/2 translate-y-[3%]">
+            <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[80%] w-[55%]" />
+            <MascotCut name="plants" className="lively-sway-2 absolute right-[84%] bottom-0 w-[45%] -scale-x-100" />
+            <MascotCut name="sorry" className="lively-breathe relative block w-full" />
+          </div>
+          <ChalkBubble tail="right" className="absolute top-0 right-[calc(50%-0.5rem)] text-pretty">
+            ببخشید!
+          </ChalkBubble>
+        </div>
+      </div>
     </section>
   );
 }
