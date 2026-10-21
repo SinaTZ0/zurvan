@@ -32,12 +32,17 @@ const DETAILS = [
 ];
 
 /*===== Technical Details Section =====*/
-/** Collapsed by default: a native `<details>`, so it works before hydration and from the keyboard. */
+/**
+ * Collapsed by default: a native `<details>`, so it works before hydration and from the keyboard, on a grained plate.
+ * The plus turns into a cross, and the rows rise in when it opens (`details[open]`, so every opening replays them);
+ * where the browser supports `::details-content`, the panel also grows and shrinks, so closing is a motion too.
+ * All of it is off for reduced motion, which just shows or hides the list.
+ */
 export function TechnicalDetails() {
   return (
     <section id="technical" aria-labelledby="technical-title" className="scroll-mt-24">
-      <details className="group/details rounded-3xl border border-border">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-3xl p-5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 [&::-webkit-details-marker]:hidden">
+      <details className="pv-details group/details rounded-3xl border border-border bg-card paper-grain shadow-sm">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-3xl p-5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:px-6 [&::-webkit-details-marker]:hidden">
           <h2 id="technical-title" className="font-display text-h3 font-black text-balance">
             جزئیات فنی، برای کسی که می‌خواد بدونه
           </h2>
@@ -49,15 +54,34 @@ export function TechnicalDetails() {
           </span>
         </summary>
 
-        <dl className="divide-y divide-border border-t border-border px-5">
-          {DETAILS.map(({ term, text }) => (
-            <div key={term} className="grid gap-2 py-4 lg:grid-cols-3 lg:gap-8">
+        <dl className="divide-y divide-border border-t border-border px-5 sm:px-6">
+          {DETAILS.map(({ term, text }, index) => (
+            <div
+              key={term}
+              style={{ "--answer-delay": `${Math.min(index, 4) * 60}ms` } as React.CSSProperties}
+              className="pv-row grid gap-2 py-4 lg:grid-cols-3 lg:gap-8"
+            >
               <dt className="font-extrabold">{term}</dt>
               <dd className="text-pretty text-muted-foreground lg:col-span-2">{text}</dd>
             </div>
           ))}
         </dl>
       </details>
+
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .pv-details[open] .pv-row { animation: answer-in .32s cubic-bezier(.2,.8,.2,1) var(--answer-delay, 0s) both; }
+          @supports (selector(::details-content)) {
+            .pv-details { interpolate-size: allow-keywords; }
+            .pv-details::details-content {
+              block-size: 0;
+              overflow: clip;
+              transition: block-size .35s cubic-bezier(.2,.8,.2,1), content-visibility .35s allow-discrete;
+            }
+            .pv-details[open]::details-content { block-size: auto; }
+          }
+        }
+      `}</style>
     </section>
   );
 }
