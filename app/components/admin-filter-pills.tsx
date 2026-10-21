@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { formatNumberFa } from "~/lib/digits";
 
@@ -19,6 +19,7 @@ export type AdminFilterOption<Value extends string> = {
  *
  * It holds no state and doesn't call nuqs: the page passes the value and a callback, so the pills stay reusable. On
  * phones the row scrolls sideways and snaps to each pill instead of wrapping into a second line; from `sm` it wraps.
+ * A page opened on a pill far down the row (`?status=withdrawn` on a phone) scrolls the row once so that pill shows.
  */
 export function AdminFilterPills<Value extends string>({
   label,
@@ -34,8 +35,25 @@ export function AdminFilterPills<Value extends string>({
   onChange: (value: Value) => void;
   className?: string;
 }) {
+  const rowRef = useRef<HTMLFieldSetElement>(null);
+
+  /*------ Bring the Chosen Pill Into View ------*/
+  // Only the row scrolls, by the pill's overflow: `scrollIntoView` could also move the page. A delta is the same in
+  // RTL and LTR, where `scrollLeft` itself is not.
+  useEffect(() => {
+    const row = rowRef.current;
+    const pill = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!row || !pill || row.scrollWidth <= row.clientWidth) return;
+    const rowBox = row.getBoundingClientRect();
+    const pillBox = pill.getBoundingClientRect();
+    const inset = 16;
+    if (pillBox.left < rowBox.left + inset) row.scrollBy({ left: pillBox.left - rowBox.left - inset });
+    else if (pillBox.right > rowBox.right - inset) row.scrollBy({ left: pillBox.right - rowBox.right + inset });
+  }, []);
+
   return (
     <fieldset
+      ref={rowRef}
       className={cn(
         "-mx-4 flex min-w-0 snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-2 overflow-x-auto border-0 px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0",
         className,
