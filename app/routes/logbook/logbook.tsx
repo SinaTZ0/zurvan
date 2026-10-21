@@ -3,9 +3,11 @@ import { redirect } from "react-router";
 import { authForHeaders } from "~/lib/auth.server";
 import { normalizeFileNumber } from "~/lib/dog-file";
 import { createServerClient } from "~/orpc/server-client.server";
-import { LookupForm } from "~/routes/logbook/components/lookup-form";
+import { LookupHero } from "~/routes/logbook/components/lookup-hero";
 import { PrivateRecord } from "~/routes/logbook/components/private-record";
 import { PublicRecord } from "~/routes/logbook/components/public-record";
+import { WhoSees } from "~/routes/logbook/components/who-sees";
+import type { PublicLayoutHandle } from "~/routes/layout_public/layout-public";
 
 import type { Route } from "./+types/logbook";
 
@@ -23,6 +25,11 @@ export const headers: Route.HeadersFunction = ({ parentHeaders }) => {
   result.set("Cache-Control", "no-store");
   return result;
 };
+
+/*===== Handle =====*/
+// The lookup and the private state end on the brick band, which runs into the footer, so the shell drops its bottom
+// padding; the public record, which has no band, carries its own.
+export const handle: PublicLayoutHandle = { flushFooter: true };
 
 /*===== Loader =====*/
 /**
@@ -60,11 +67,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 /*===== Page =====*/
 export default function LogbookPage({ loaderData }: Route.ComponentProps) {
+  if (loaderData.mode === "public") return <PublicRecord record={loaderData.record} />;
+
   return (
-    <section aria-labelledby="logbook-title" className="site-container pt-section-sm pb-section-md">
-      {loaderData.mode === "lookup" && <LookupForm />}
-      {loaderData.mode === "private" && <PrivateRecord signInPath={loaderData.signInPath} />}
-      {loaderData.mode === "public" && <PublicRecord record={loaderData.record} />}
-    </section>
+    <>
+      {loaderData.mode === "lookup" ? <LookupHero /> : <PrivateRecord signInPath={loaderData.signInPath} />}
+      <WhoSees />
+    </>
   );
 }
