@@ -2,8 +2,6 @@ import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { buildCertificateCard } from "~/lib/certificate.server";
-import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
@@ -57,14 +55,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     evaluations,
     enrollments,
     logbook,
-    certificates: certificates.map((certificate) => ({
-      certificate,
-      ...buildCertificateCard({ number: certificate.number }),
-    })),
+    certificates: certificates.map(({ link, qr, ...certificate }) => ({ certificate, link, qr })),
     publicStatus,
     // The approved wording the owner agrees to, present only once the owner has approved one.
     wording: PUBLIC_RECORD_CONSENT,
-    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+    fileCard: dog.fileCard,
     // The hero's three numbers, from what is already read. A revoked certificate isn't counted: it proves nothing.
     counts: {
       active: enrollments.filter((enrollment) => enrollment.status === "active").length,

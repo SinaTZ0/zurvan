@@ -92,6 +92,14 @@ Also move the types that components import from `.server` files (`account_dog_de
 certificate-card,file-card}.tsx`, `account_partner/components/shop-card.tsx`) into shared, non-server modules. Start's
 import protection denies `*.server.*` in the client build; whether a type-only import passes is unconfirmed.
 
+**Done (2026-10-22).** The `viewer` became `session.get` (decision 5), which also replaced the getSession calls in
+`course_detail`, `logbook` and `auth`; `site.config` gives `auth` showcase mode and `admin_sms` / `admin_partners` the
+origin. `roleHomePath` moved to `app/lib/role-home.ts`, `Qr` and its schema to `app/lib/qr.ts`. `partner.getMine`,
+`certificate.listMine`, `dog.get` and `dog.admin.get` return their link and QR (`app/lib/referral-card.server.ts`,
+`certificate.server.ts`, `dog-file.server.ts`). Page loaders now import no `*.server` module except
+`createServerClient`, `session-guard.server` and, until A3, `referral.server`. One behavior change: a blocked customer
+on a course page reads as a visitor instead of hitting an error.
+
 ### A2. One session procedure for page guards
 
 Add a procedure that returns the session state a guard needs (signed in, has a name, role, blocked) and revokes a

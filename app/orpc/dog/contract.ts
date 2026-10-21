@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+import { qrLinkSchema } from "~/lib/qr";
 import { DOG_SEXES, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { mediaSchema } from "~/orpc/media/contract";
@@ -41,6 +42,14 @@ export const adminDogSchema = dogSchema.extend({
 });
 
 export type AdminDog = z.infer<typeof adminDogSchema>;
+
+/** The public address of a dog's record and that address as a QR code: the file card on its detail pages. */
+const fileCardShape = { fileCard: qrLinkSchema };
+
+/** One dog, as its detail pages open it. */
+export const dogDetailSchema = dogSchema.extend(fileCardShape);
+
+export const adminDogDetailSchema = adminDogSchema.extend(fileCardShape);
 
 // Structure only. Trimming, empty-to-null, Persian digits, limits, the date rules and the allowed values are checked by
 // `validation.ts`. `isEvaluated` and the passed courses are deliberately absent: customers can never set them, and `strictObject` rejects them.
@@ -87,7 +96,7 @@ export const listDogsContract = oc.errors(baseErrors).output(z.array(dogSchema))
 export const getDogContract = oc
   .errors({ ...baseErrors, ...dogErrors })
   .input(dogIdInputSchema)
-  .output(dogSchema);
+  .output(dogDetailSchema);
 
 export const createDogContract = oc.errors(baseErrors).input(createDogInputSchema).output(dogSchema);
 
@@ -102,7 +111,7 @@ export const adminListDogsContract = oc.errors(baseErrors).output(z.array(adminD
 export const adminGetDogContract = oc
   .errors({ ...baseErrors, ...dogErrors })
   .input(dogIdInputSchema)
-  .output(adminDogSchema);
+  .output(adminDogDetailSchema);
 
 export const adminUpdateDogContract = oc
   .errors({ ...baseErrors, ...dogErrors })

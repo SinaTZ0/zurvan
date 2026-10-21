@@ -1,8 +1,8 @@
 import { Outlet, useMatches } from "react-router";
 
 import { CartSync } from "~/components/cart-sync";
-import { authForHeaders } from "~/lib/auth.server";
-import { roleHomePath } from "~/lib/session-guard.server";
+import { roleHomePath } from "~/lib/role-home";
+import { createServerClient } from "~/orpc/server-client.server";
 import { SiteFooter } from "~/routes/layout_public/components/site-footer";
 import { SiteHeader } from "~/routes/layout_public/components/site-header";
 import { TabBar } from "~/routes/layout_public/components/tab-bar";
@@ -16,18 +16,16 @@ import type { Route } from "./+types/layout-public";
  * account that hasn't given its name yet all look like a visitor, and the page itself still renders for them.
  */
 export async function loader({ request }: Route.LoaderArgs): Promise<{ viewer: Viewer | null }> {
-  const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
-  const user = session?.user;
+  const session = await createServerClient(request).session.get();
+  if (session.status !== "active") return { viewer: null };
 
-  if (!user || user.status === "blocked" || !user.firstName) return { viewer: null };
-  if (user.role !== "customer" && user.role !== "partner" && user.role !== "admin") return { viewer: null };
-
+  const { user } = session;
   const home = roleHomePath(user.role);
   return {
     viewer: {
       role: user.role,
       firstName: user.firstName,
-      phoneNumber: user.phoneNumber ?? null,
+      phoneNumber: user.phoneNumber,
       homePath: user.role !== "customer" && home !== "/" ? home : null,
     },
   };

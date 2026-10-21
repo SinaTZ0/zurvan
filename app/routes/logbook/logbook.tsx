@@ -1,6 +1,5 @@
 import { redirect } from "react-router";
 
-import { authForHeaders } from "~/lib/auth.server";
 import { normalizeFileNumber } from "~/lib/dog-file";
 import { createServerClient } from "~/orpc/server-client.server";
 import { LookupHero } from "~/routes/logbook/components/lookup-hero";
@@ -45,23 +44,22 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   if (params.fileNumber === undefined) return { mode: "lookup" as const };
 
   const fileNumber = normalizeFileNumber(params.fileNumber);
-  const session = await authForHeaders(request.headers).api.getSession({ headers: request.headers });
-  const user = session?.user;
+  const client = createServerClient(request);
+  const session = await client.session.get();
 
-  if (fileNumber && user && user.status !== "blocked" && user.firstName) {
-    const located = await createServerClient(request)
-      .logbook.locate({ fileNumber })
-      .catch(() => null);
+  if (fileNumber && session.status === "active") {
+    const located = await client.logbook.locate({ fileNumber }).catch(() => null);
     if (located) throw redirect(located.path);
   }
 
   if (fileNumber) {
-    const answer = await createServerClient(request).logbook.record({ fileNumber });
+    const answer = await client.logbook.record({ fileNumber });
     if (answer.kind === "public") return { mode: "public" as const, record: answer.record };
   }
 
   // The sign-in page returns here, so an owner who wasn't signed in can reach their dog's page from the code.
-  const signInPath = user ? null : `/auth?redirectTo=${encodeURIComponent(`/logbook/${fileNumber ?? ""}`)}`;
+  const signInPath =
+    session.status !== "anonymous" ? null : `/auth?redirectTo=${encodeURIComponent(`/logbook/${fileNumber ?? ""}`)}`;
   return { mode: "private" as const, signInPath: fileNumber ? signInPath : null };
 }
 

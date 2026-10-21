@@ -9,7 +9,6 @@ import { AdminFilterPills, type AdminFilterOption } from "~/components/admin-fil
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { env } from "~/env.server";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
@@ -54,9 +53,13 @@ export const meta: Route.MetaFunction = () => [{ title: "همکاران | مدی
 // referral link as it will be printed.
 export async function loader({ request }: Route.LoaderArgs) {
   const client = createServerClient(request);
-  const [partners, commissions] = await Promise.all([client.partner.admin.list(), client.commission.admin.list({})]);
+  const [partners, commissions, site] = await Promise.all([
+    client.partner.admin.list(),
+    client.commission.admin.list({}),
+    client.site.config(),
+  ]);
 
-  return { partners, commissions, siteOrigin: env.BETTER_AUTH_URL.replace(/\/+$/, "") };
+  return { partners, commissions, siteOrigin: site.origin };
 }
 
 /*===== Admin Partners =====*/

@@ -10,7 +10,6 @@ import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { Pagination } from "~/components/pagination";
 import { buttonVariants } from "~/components/ui/button";
-import { env } from "~/env.server";
 import { ADMIN_HAIRLINE, ADMIN_PLATE, ADMIN_TEAR } from "~/lib/admin-plate";
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
 import { formatJalaliTimestamp } from "~/lib/jalali";
@@ -37,9 +36,13 @@ export const meta: Route.MetaFunction = () => [{ title: "پیامک‌ها | م�
 // narrower) is redirected to the last page, so the URL always shows what the list shows.
 export async function loader({ request }: Route.LoaderArgs) {
   const { kind, page } = loadSmsSearchParams(request);
-  const sms = createServerClient(request).sms.admin;
+  const client = createServerClient(request);
+  const sms = client.sms.admin;
 
-  const list = await sms.list({ kind: kind ?? undefined, page: Math.max(page - 1, 0) });
+  const [list, site] = await Promise.all([
+    sms.list({ kind: kind ?? undefined, page: Math.max(page - 1, 0) }),
+    client.site.config(),
+  ]);
 
   const pageCount = Math.max(1, Math.ceil(list.total / SMS_PAGE_SIZE));
   const current = Math.min(Math.max(page, 1), pageCount);
@@ -68,7 +71,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     allTotal,
     newest: everything.items[0]?.createdAt ?? null,
     // The links the app writes into its own messages start with this, so a bubble can open them here.
-    appOrigin: new URL(env.BETTER_AUTH_URL).origin,
+    appOrigin: site.origin,
   };
 }
 

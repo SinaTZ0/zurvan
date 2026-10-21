@@ -1,7 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
-import { env } from "~/env.server";
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { COLUMN } from "~/routes/account_partner/column";
@@ -13,7 +12,6 @@ import { PartnerHero } from "~/routes/account_partner/components/partner-hero";
 import { PartnerNotices } from "~/routes/account_partner/components/partner-notices";
 import { ShopCard } from "~/routes/account_partner/components/shop-card";
 import type { PartnerFunnel } from "~/routes/account_partner/funnel";
-import { buildReferralQr } from "~/routes/account_partner/qr.server";
 
 import type { Route } from "./+types/account-partner";
 
@@ -42,10 +40,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     client.partner.leads.list(),
   ]);
 
-  /*------ Link And QR ------*/
-  // The referral link lands on the home page; the QR is the same link as a code the customer's phone can scan.
-  const link = `${env.BETTER_AUTH_URL.replace(/\/$/, "")}/?ref=${encodeURIComponent(profile.code)}`;
-
   /*------ Funnel ------*/
   // Lost people are not this partner's to count. «ثبت‌نام‌شده» includes those who went on to buy, as the road shows.
   const funnel: PartnerFunnel = {
@@ -67,8 +61,9 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     isActive: profile.isActive,
     shebaNumber: profile.shebaNumber,
     commissionPercent: profile.commissionPercent,
-    link,
-    qr: buildReferralQr({ link }),
+    // The referral link lands on the home page; the QR is the same link as a code the customer's phone can scan.
+    link: profile.link,
+    qr: profile.qr,
     funnel,
     commissions: sorted,
     unpaidAmount,

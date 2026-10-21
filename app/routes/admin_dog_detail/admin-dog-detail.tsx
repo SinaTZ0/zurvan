@@ -10,7 +10,6 @@ import { DogFileCard } from "~/components/dog-file-card";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_PLATE } from "~/lib/admin-plate";
-import { buildDogFileCard } from "~/lib/dog-file.server";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
 import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
@@ -65,7 +64,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     certificates,
     // Whether an owner can make a record public at all (approved wording exists); the session form offers its mark only then.
     publicRecordsAvailable: PUBLIC_RECORD_CONSENT !== null,
-    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+    fileCard: dog.fileCard,
   };
 }
 

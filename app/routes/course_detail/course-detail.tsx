@@ -5,7 +5,6 @@ import { data, isRouteErrorResponse } from "react-router";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { authForHeaders } from "~/lib/auth.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { BuyCard } from "~/routes/course_detail/components/buy-card";
 import { ClosingBand } from "~/routes/course_detail/components/closing-band";
@@ -43,19 +42,20 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       throw error;
     }),
     client.course.list(),
-    authForHeaders(request.headers).api.getSession({ headers: request.headers }),
+    client.session.get(),
   ]);
 
   /*------ Viewer ------*/
   // A customer who hasn't given a name yet is still finishing sign-up: for this page they are a visitor, and the sign-in
-  // page asks for the name before sending them back here.
-  const viewer: Viewer = !session
-    ? "visitor"
-    : session.user.role !== "customer"
-      ? "other"
-      : session.user.firstName
-        ? "customer"
-        : "visitor";
+  // page asks for the name before sending them back here. A blocked account reads as signed out.
+  const viewer: Viewer =
+    session.status === "anonymous"
+      ? "visitor"
+      : session.user.role !== "customer"
+        ? "other"
+        : session.status === "active"
+          ? "customer"
+          : "visitor";
 
   /*------ Which Dogs Can Buy ------*/
   // Only a customer, and only for a course that has a price (a working or sport course isn't sold online).

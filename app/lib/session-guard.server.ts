@@ -1,6 +1,7 @@
 import { createContext, redirect, type MiddlewareFunction } from "react-router";
 
 import { authForHeaders, type AuthSession, revokeUserSessions } from "~/lib/auth.server";
+import { roleHomePath } from "~/lib/role-home";
 import type { UserRole } from "~/lib/user-constants";
 
 /*===== Session Context =====*/
@@ -9,20 +10,6 @@ import type { UserRole } from "~/lib/user-constants";
  * it with `context.get(sessionContext)` instead of fetching the session again.
  */
 export const sessionContext = createContext<AuthSession>();
-
-/*===== Role Homes =====*/
-// Where a signed-in person belongs when they open a page their role can't use. Partners have their own dashboard in
-// the account shell (app-spec, Pages).
-const ROLE_HOME: Record<UserRole, string> = {
-  customer: "/account",
-  partner: "/account/partner",
-  admin: "/admin",
-};
-
-/** The landing page for a role. Unknown roles (a value removed from the list) go to the storefront. */
-export function roleHomePath(role: string | null | undefined): string {
-  return ROLE_HOME[role as UserRole] ?? "/";
-}
 
 /*===== Guard =====*/
 /**

@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+import { qrLinkSchema } from "~/lib/qr";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
 
@@ -18,6 +19,9 @@ export const partnerProfileSchema = z.object({
 });
 
 export type PartnerProfile = z.infer<typeof partnerProfileSchema>;
+
+/** The profile as the partner opens it, with their referral link (`/?ref=<code>`) and that link as a QR code. */
+export const myPartnerProfileSchema = partnerProfileSchema.extend(qrLinkSchema.shape);
 
 /**
  * Where a person stands on the road (F7): `lead` (the number is entered, nobody has signed up with it), `registered`
@@ -92,7 +96,9 @@ const notFoundError = {
 const baseErrors = { ...commonErrors, ...authErrors, ...roleErrors };
 
 /*===== Procedures =====*/
-export const getMyPartnerProfileContract = oc.errors({ ...baseErrors, ...notFoundError }).output(partnerProfileSchema);
+export const getMyPartnerProfileContract = oc
+  .errors({ ...baseErrors, ...notFoundError })
+  .output(myPartnerProfileSchema);
 
 /**
  * The input is the raw text as typed: the server normalizes it (spaces, Persian digits, case) and checks the format and

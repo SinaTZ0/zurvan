@@ -1,5 +1,5 @@
 import { MascotCut } from "~/components/mascot-cut";
-import type { Qr } from "~/lib/qr.server";
+import type { Qr } from "~/lib/qr";
 import type { Certificate } from "~/orpc/certificate/contract";
 import { CertificateCard } from "~/routes/account_dog_detail/components/certificate-card";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";

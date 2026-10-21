@@ -1,15 +1,10 @@
 import { encode } from "uqr";
 
+import type { Qr } from "~/lib/qr";
+
 /*===== QR Codes =====*/
 /** Empty modules around the code. The spec asks for four; a printed card can't crop them, so they are part of the path. */
 const QUIET_ZONE = 4;
-
-export type Qr = {
-  /** Side length in modules, quiet zone included: the SVG's `viewBox` is `0 0 size size`. */
-  size: number;
-  /** One SVG path with a square per dark module, so the whole code is a single element in the page and in the PNG. */
-  path: string;
-};
 
 /**
  * Encodes text (a link) as a QR code the browser can draw. Built on the server so the client never ships a QR encoder.

@@ -1,3 +1,4 @@
+import { buildDogFileCard } from "~/lib/dog-file.server";
 import {
   adminGetDog,
   adminListDogs,
@@ -29,7 +30,7 @@ export const getDogProcedure = base.dog.get
 
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
 
-    return result.dog;
+    return { ...result.dog, fileCard: buildDogFileCard({ fileNumber: result.dog.fileNumber }) };
   });
 
 /*===== Create =====*/
@@ -74,7 +75,7 @@ export const adminGetDogProcedure = base.dog.admin.get
   .handler(async ({ context, input, errors }) => {
     const result = await adminGetDog({ db: context.db, id: input.id });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
-    return result.dog;
+    return { ...result.dog, fileCard: buildDogFileCard({ fileNumber: result.dog.fileNumber }) };
   });
 
 export const adminUpdateDogProcedure = base.dog.admin.update
