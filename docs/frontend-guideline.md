@@ -64,6 +64,10 @@ Not every slice needs every file. Start with the route module alone and split it
 - Import `Link` from `~/components/link` and `NavLink` from `~/components/nav-link`, not from `react-router`. They fade
   the page when the pathname changes, and a lint rule blocks the direct imports. See
   [`view-transitions.md`](./view-transitions.md).
+- The same wrappers set React Router's `prefetch` by default: `viewport` on the storefront and account pages,
+  `intent` in the Admin area, and `none` for links that keep the current pathname or reload the document
+  (`app/hooks/use-default-prefetch.ts`). Pass `prefetch` to override one link. Only the JS and CSS are reused on the
+  click: the `.data` responses carry no cache headers, so the loader data is fetched again and stays fresh.
 - `<Form>` and `useNavigate()` aren't wrapped. Pass `viewTransition` yourself when the result is another page, and
   leave it off for anything that stays on the same page.
 
