@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { LockIcon } from "lucide-react";
 
 import { FormAlert } from "~/components/form-alert";
 import { Button } from "~/components/ui/button";
@@ -23,13 +24,14 @@ import {
   toAdminUpdateInput,
   toFormDefaults,
 } from "~/routes/admin_dog_detail/schema";
+import { INK_OUTLINE, SHEET_FOOTER, SHEET_GROUP } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Types =====*/
 export type DogUpdateInput = ReturnType<typeof toAdminUpdateInput>;
 
 /*===== Edit Form =====*/
 /**
- * The dog's details as a form, inside the edit sheet: a scrolling body and a footer with «ذخیره» / «انصراف». The sheet
+ * The dog's details as a form, inside the edit sheet: a scrolling body in four groups split by the tear (who, age and weight, health, notes) and a footer with «انصراف» / «ذخیره». The sheet
  * owns the request; this component validates, hands the sheet the API input, and puts the sheet's `failure` back on the
  * fields (`data.fields`) and in the alert above the buttons. Input is kept after a failure.
  */
@@ -80,135 +82,140 @@ export function EditForm({
   return (
     <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
       {/*===== Fields (scrolling) =====*/}
-      <div data-lenis-prevent className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto p-4">
-        {/*------ Name ------*/}
-        <Field data-invalid={!!errors.name}>
-          <FieldLabel htmlFor="edit-dog-name">نام</FieldLabel>
-          <Input id="edit-dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
-          <FieldError errors={[errors.name]} />
-        </Field>
+      <div data-lenis-prevent className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/*------ Who ------*/}
+        <div className={SHEET_GROUP}>
+          <Field data-invalid={!!errors.name}>
+            <FieldLabel htmlFor="edit-dog-name">اسم</FieldLabel>
+            <Input id="edit-dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
+            <FieldError errors={[errors.name]} />
+          </Field>
 
-        {/*------ Breed ------*/}
-        <Field data-invalid={!!errors.breed}>
-          <FieldLabel htmlFor="edit-dog-breed">نژاد</FieldLabel>
-          <Input
-            id="edit-dog-breed"
-            list="edit-dog-breed-suggestions"
-            autoComplete="off"
-            placeholder="مثلاً ژرمن شپرد، یا دورگه"
-            aria-invalid={!!errors.breed}
-            {...register("breed")}
+          <Field data-invalid={!!errors.breed}>
+            <FieldLabel htmlFor="edit-dog-breed">نژاد</FieldLabel>
+            <Input
+              id="edit-dog-breed"
+              list="edit-dog-breed-suggestions"
+              autoComplete="off"
+              placeholder="مثلاً ژرمن شپرد، یا دورگه"
+              aria-invalid={!!errors.breed}
+              {...register("breed")}
+            />
+            <datalist id="edit-dog-breed-suggestions">
+              {BREED_SUGGESTIONS.map((breed) => (
+                <option key={breed} value={breed}>
+                  {breed}
+                </option>
+              ))}
+            </datalist>
+            <FieldError errors={[errors.breed]} />
+          </Field>
+
+          <ChoicePills
+            legend="جنس"
+            options={DOG_SEXES.map((sex) => ({ value: sex, label: DOG_SEX_LABELS[sex] }))}
+            registration={register("sex")}
+            error={errors.sex}
           />
-          <datalist id="edit-dog-breed-suggestions">
-            {BREED_SUGGESTIONS.map((breed) => (
-              <option key={breed} value={breed}>
-                {breed}
-              </option>
-            ))}
-          </datalist>
-          <FieldError errors={[errors.breed]} />
-        </Field>
+        </div>
 
-        {/*------ Sex ------*/}
-        <ChoicePills
-          legend="جنس"
-          options={DOG_SEXES.map((sex) => ({ value: sex, label: DOG_SEX_LABELS[sex] }))}
-          registration={register("sex")}
-          error={errors.sex}
-        />
-
-        {/*------ Birth Date ------*/}
-        <BirthDateField
-          register={register}
-          control={control}
-          errors={errors}
-          onApproximateChange={(approximate) => setValue("birthDateApproximate", approximate, { shouldDirty: true })}
-        />
-
-        {/* Both fields are locked for the owner once the dog is evaluated; here they stay editable. */}
-        {dog.isEvaluated && (
-          <p className="-mt-3 text-sm text-pretty text-muted-foreground">
-            بعد از ارزیابی فقط تو می‌تونی این دو را عوض کنی؛ صاحبش نمی‌تونه.
-          </p>
-        )}
-
-        {/*------ Weight ------*/}
-        <Field data-invalid={!!errors.weight} className="max-w-56">
-          <FieldLabel htmlFor="edit-dog-weight">وزن (کیلو)</FieldLabel>
-          <Input
-            id="edit-dog-weight"
-            inputMode="decimal"
-            autoComplete="off"
-            placeholder="مثلاً ۱۲٫۵"
-            aria-invalid={!!errors.weight}
-            {...register("weight")}
+        {/*------ Age and Weight ------*/}
+        <div className={SHEET_GROUP}>
+          <BirthDateField
+            register={register}
+            control={control}
+            errors={errors}
+            onApproximateChange={(approximate) => setValue("birthDateApproximate", approximate, { shouldDirty: true })}
           />
-          <FieldError errors={[errors.weight]} />
-        </Field>
 
-        {/*------ Neutered and Vaccines ------*/}
-        <ChoicePills
-          legend="عقیم‌شده"
-          options={[
-            { value: "yes", label: "بله" },
-            { value: "no", label: "نه" },
-          ]}
-          registration={register("isNeutered")}
-          error={errors.isNeutered}
-        />
+          {/* The breed and the birth date lock for the owner once the dog is evaluated; here they stay editable. */}
+          {dog.isEvaluated && (
+            <p className="-mt-3 flex items-start gap-2 text-sm text-pretty text-muted-foreground">
+              <LockIcon aria-hidden strokeWidth={1.8} className="mt-0.5 size-4 shrink-0" />
+              نژاد و تاریخ تولد بعد از ارزیابی برای صاحبش قفل شده؛ فقط تو می‌تونی عوضشون کنی.
+            </p>
+          )}
 
-        <ChoicePills
-          legend="واکسن"
-          options={VACCINATION_STATUSES.map((status) => ({
-            value: status,
-            label: VACCINATION_STATUS_LABELS[status],
-          }))}
-          registration={register("vaccinationStatus")}
-          error={errors.vaccinationStatus}
-        />
+          <Field data-invalid={!!errors.weight} className="max-w-56">
+            <FieldLabel htmlFor="edit-dog-weight">وزن (کیلو)</FieldLabel>
+            <Input
+              id="edit-dog-weight"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="مثلاً ۱۲٫۵"
+              aria-invalid={!!errors.weight}
+              {...register("weight")}
+            />
+            <FieldError errors={[errors.weight]} />
+          </Field>
+        </div>
 
-        {/*------ Microchip ------*/}
-        <Field data-invalid={!!errors.microchipNumber}>
-          <FieldLabel htmlFor="edit-dog-microchip">میکروچیپ</FieldLabel>
-          <Input
-            id="edit-dog-microchip"
-            dir="ltr"
-            inputMode="numeric"
-            autoComplete="off"
-            className="text-end tabular-nums"
-            aria-invalid={!!errors.microchipNumber}
-            {...register("microchipNumber")}
+        {/*------ Health ------*/}
+        <div className={SHEET_GROUP}>
+          <ChoicePills
+            legend="عقیم‌شده"
+            options={[
+              { value: "yes", label: "بله" },
+              { value: "no", label: "نه" },
+            ]}
+            registration={register("isNeutered")}
+            error={errors.isNeutered}
           />
-          <FieldDescription>فقط عدد، حداکثر ۲۰ رقم.</FieldDescription>
-          <FieldError errors={[errors.microchipNumber]} />
-        </Field>
+
+          <ChoicePills
+            legend="واکسن"
+            options={VACCINATION_STATUSES.map((status) => ({
+              value: status,
+              label: VACCINATION_STATUS_LABELS[status],
+            }))}
+            registration={register("vaccinationStatus")}
+            error={errors.vaccinationStatus}
+          />
+
+          <Field data-invalid={!!errors.microchipNumber}>
+            <FieldLabel htmlFor="edit-dog-microchip">میکروچیپ</FieldLabel>
+            <Input
+              id="edit-dog-microchip"
+              dir="ltr"
+              inputMode="numeric"
+              autoComplete="off"
+              className="text-end tabular-nums"
+              aria-invalid={!!errors.microchipNumber}
+              {...register("microchipNumber")}
+            />
+            <FieldDescription>فقط عدد، حداکثر ۲۰ رقم.</FieldDescription>
+            <FieldError errors={[errors.microchipNumber]} />
+          </Field>
+        </div>
 
         {/*------ Notes ------*/}
-        <Field data-invalid={!!errors.behaviorNotes}>
-          <FieldLabel htmlFor="edit-dog-behavior">یادداشت رفتاری</FieldLabel>
-          <Textarea id="edit-dog-behavior" aria-invalid={!!errors.behaviorNotes} {...register("behaviorNotes")} />
-          <FieldError errors={[errors.behaviorNotes]} />
-        </Field>
+        <div className={SHEET_GROUP}>
+          <Field data-invalid={!!errors.behaviorNotes}>
+            <FieldLabel htmlFor="edit-dog-behavior">یادداشت رفتاری</FieldLabel>
+            <Textarea id="edit-dog-behavior" aria-invalid={!!errors.behaviorNotes} {...register("behaviorNotes")} />
+            <FieldError errors={[errors.behaviorNotes]} />
+          </Field>
 
-        <Field data-invalid={!!errors.medicalNotes}>
-          <FieldLabel htmlFor="edit-dog-medical">یادداشت پزشکی</FieldLabel>
-          <Textarea id="edit-dog-medical" aria-invalid={!!errors.medicalNotes} {...register("medicalNotes")} />
-          <FieldError errors={[errors.medicalNotes]} />
-        </Field>
+          <Field data-invalid={!!errors.medicalNotes}>
+            <FieldLabel htmlFor="edit-dog-medical">یادداشت پزشکی</FieldLabel>
+            <Textarea id="edit-dog-medical" aria-invalid={!!errors.medicalNotes} {...register("medicalNotes")} />
+            <FieldError errors={[errors.medicalNotes]} />
+          </Field>
+        </div>
       </div>
 
       {/*===== Footer (fixed) =====*/}
-      <footer className="flex flex-col gap-3 border-t border-border p-4">
+      <footer className={SHEET_FOOTER}>
         {/* Directly above the buttons, where the eye is after pressing one. */}
         <FormAlert message={alert || undefined} />
 
         <div className="flex gap-2">
+          <Button type="button" variant="outline" className={INK_OUTLINE} onClick={onCancel}>
+            انصراف
+          </Button>
           <Button type="submit" variant="solid" className="flex-1" disabled={isPending}>
             {isPending && <Spinner aria-hidden />}
-            {isPending ? "در حال ذخیره…" : "ذخیره"}
-          </Button>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            انصراف
+            {isPending ? "داره ذخیره می‌شه…" : "ذخیره"}
           </Button>
         </div>
       </footer>

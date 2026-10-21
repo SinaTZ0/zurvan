@@ -1,18 +1,21 @@
 import { ORPCError } from "@orpc/client";
 import { cn } from "cn";
 import { useQueryStates } from "nuqs";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { data, isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
 
 import { getDogEvaluationState } from "~/components/dog-evaluation-stamp";
+import { AdminPageHeader } from "~/components/admin-page-header";
 import { DogFileCard } from "~/components/dog-file-card";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { ADMIN_PLATE } from "~/lib/admin-plate";
 import { buildDogFileCard } from "~/lib/dog-file.server";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
 import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
+import { DetailMotion } from "~/routes/admin_dog_detail/components/detail-motion";
 import { DetailsSection } from "~/routes/admin_dog_detail/components/details-section";
 import { DogHeader } from "~/routes/admin_dog_detail/components/dog-header";
 import { EditSheet } from "~/routes/admin_dog_detail/components/edit-sheet";
@@ -23,6 +26,7 @@ import { EvaluationsSection } from "~/routes/admin_dog_detail/components/evaluat
 import { IdentityPanel } from "~/routes/admin_dog_detail/components/identity-panel";
 import { LogbookSection } from "~/routes/admin_dog_detail/components/logbook-section";
 import { SessionSheet } from "~/routes/admin_dog_detail/components/session-sheet";
+import { useStickyColumn } from "~/routes/admin_dog_detail/hooks/use-sticky-column";
 import { summarizeEvaluations } from "~/routes/admin_dog_detail/evaluation-summary";
 import { buildLadder } from "~/routes/admin_dog_detail/ladder";
 import { ADMIN_DOGS_PATH, adminDogDetailSearchParams } from "~/routes/admin_dog_detail/search-params";
@@ -67,9 +71,14 @@ export async function loader({ request, params }: Route.LoaderArgs) {
 
 /*===== Admin Dog Detail =====*/
 /**
- * One dog, for the Admin (F2, F3, F4): its details to correct, what he already knows about it (evaluated, courses
- * passed), and why it can or can't take each course. Desktop puts the identity and evaluation in a sticky start column
- * beside the ladder, enrollments, evaluations and details; phones read them in that order.
+ * One dog, for the Admin (F2, F3, F4, F6, F14): its file. Everything about the dog in one place (who owns it, where it
+ * is on the ladder, its enrollments, certificates, diary and evaluations) and the few things he does here.
+ *
+ * - From `xl`: two columns. The start one (22rem, sticky) holds the photo and owner, the evaluation card and the file
+ *   card; the end one the ladder, then the sections.
+ * - Below `xl`: one column in the order he reads it: the photo and owner, the evaluation card, the ladder, the sections,
+ *   and the file card last. The start column's wrapper is `display: contents` there, so its cards are items of the one
+ *   grid and the file card can move to the end with `order` (it is rendered once).
  */
 export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
   const { dog, eligibility, evaluations, enrollments, logbook, certificates, publicRecordsAvailable, fileCard } =
@@ -89,6 +98,10 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
   const revalidator = useRevalidator();
   const busy = navigation.state !== "idle" || revalidator.state !== "idle";
 
+  /*------ Sticky Column ------*/
+  const startColumn = useRef<HTMLDivElement>(null);
+  useStickyColumn(startColumn);
+
   /*------ Derived ------*/
   const { waiting, evaluated } = summarizeEvaluations(evaluations);
   const stamp = getDogEvaluationState({ isEvaluated: dog.isEvaluated, hasWaitingRequest: waiting !== null });
@@ -96,14 +109,18 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
 
   return (
     <div>
+      <DetailMotion />
       <DogHeader dog={dog} onEdit={() => setParams({ edit: true })} />
 
       <div
         aria-busy={busy}
-        className={cn("grid gap-6 transition-opacity lg:grid-cols-12 lg:items-start lg:gap-x-8", busy && "opacity-60")}
+        className={cn(
+          "grid grid-cols-1 gap-6 transition-opacity xl:grid-cols-[22rem_minmax(0,1fr)] xl:items-start xl:gap-8",
+          busy && "opacity-60",
+        )}
       >
-        {/*===== Identity and Evaluation =====*/}
-        <div className="flex flex-col gap-6 lg:sticky lg:top-20 lg:col-span-5">
+        {/*===== Start Column: Who, Evaluation, File =====*/}
+        <div ref={startColumn} className="contents xl:sticky xl:top-20 xl:flex xl:min-w-0 xl:flex-col xl:gap-6">
           <IdentityPanel dog={dog} state={stamp} />
           <EvaluationCard
             isEvaluated={dog.isEvaluated}
@@ -111,22 +128,36 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
             waiting={waiting}
             onEvaluate={() => setEvaluating(true)}
           />
-          <DogFileCard
-            dogName={dog.name}
-            fileNumber={dog.fileNumber}
-            link={fileCard.link}
-            qr={fileCard.qr}
-            note="هر کس غیر از تو و صاحب سگ، با اسکن این کد «پرونده‌ی خصوصی» را می‌بیند."
-          />
+
+          {/*------ File Card ------*/}
+          {/* The shared card, framed in the plate: its own card surface and gold copy button give way to the Admin's
+              ink, since nothing waits for him here. */}
+          <div
+            className={cn(
+              ADMIN_PLATE,
+              "order-last min-w-0 xl:order-none",
+              "[&>section]:rounded-3xl [&>section]:border-0 [&>section]:bg-transparent",
+              "[&_button.border-primary]:border-foreground/20 [&_button.text-primary]:text-foreground [&_h2]:font-display [&_h2]:text-xl",
+            )}
+          >
+            <DogFileCard
+              dogName={dog.name}
+              fileNumber={dog.fileNumber}
+              link={fileCard.link}
+              qr={fileCard.qr}
+              note="هر کسی جز تو و صاحبش این کد رو اسکن کنه، «پرونده‌ی خصوصی» رو می‌بینه."
+            />
+          </div>
         </div>
 
-        {/*===== Courses, Enrollments, Evaluations, Details =====*/}
-        <div className="flex flex-col gap-6 lg:col-span-7">
+        {/*===== End Column: Ladder and Sections =====*/}
+        <div className="flex min-w-0 flex-col gap-8">
           <CourseLadder dog={dog} rungs={rungs} />
           <EnrollmentsSection enrollments={enrollments} />
           <CertificatesSection enrollments={enrollments} certificates={certificates} />
           <LogbookSection
             entries={logbook}
+            publicRecordsAvailable={publicRecordsAvailable}
             onAdd={() => setParams({ session: "new" })}
             onEdit={(entry) => setParams({ session: entry.id })}
           />
@@ -166,18 +197,18 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
   return (
-    <section aria-labelledby="admin-dog-error-title" className="py-10">
-      <h1 id="admin-dog-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این سگ پیدا نشد" : "سگ باز نشد"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        {notFound
-          ? "شاید از فهرست برداشته شده باشد."
-          : "مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
-      </p>
-      <Link to={notFound ? ADMIN_DOGS_PATH : "/admin"} className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        {notFound ? "همه‌ی سگ‌ها" : "برگرد به مدیریت"}
+    <div>
+      <AdminPageHeader
+        title={notFound ? "این سگ پیدا نشد" : "پرونده‌ی سگ باز نشد"}
+        summary={
+          notFound
+            ? "شاید از فهرست برداشته شده، یا لینکش درست نیست."
+            : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."
+        }
+      />
+      <Link to={notFound ? ADMIN_DOGS_PATH : "/admin"} className={buttonVariants({ variant: "outline" })}>
+        {notFound ? "همه‌ی سگ‌ها" : "برگرد به نمای کلی"}
       </Link>
-    </section>
+    </div>
   );
 }

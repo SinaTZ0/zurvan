@@ -32,8 +32,8 @@ export const sessionFormSchema = z
     notes: z
       .string()
       .trim()
-      .min(1, "بنویس توی جلسه چه کار کردید.")
-      .max(LOGBOOK_NOTES_MAX_LENGTH, `یادداشت حداکثر ${formatNumberFa(LOGBOOK_NOTES_MAX_LENGTH)} حرف است.`),
+      .min(1, "بنویس توی جلسه چی کار کردید.")
+      .max(LOGBOOK_NOTES_MAX_LENGTH, `یادداشت حداکثر ${formatNumberFa(LOGBOOK_NOTES_MAX_LENGTH)} حرفه.`),
     exercises: z
       .string()
       .refine(
@@ -42,26 +42,26 @@ export const sessionFormSchema = z
       )
       .refine(
         (value) => exerciseLines(value).every((line) => line.length <= LOGBOOK_EXERCISE_MAX_LENGTH),
-        `هر تمرین حداکثر ${formatNumberFa(LOGBOOK_EXERCISE_MAX_LENGTH)} حرف است.`,
+        `هر تمرین حداکثر ${formatNumberFa(LOGBOOK_EXERCISE_MAX_LENGTH)} حرفه.`,
       ),
     progress: z
       .string()
       .trim()
-      .max(LOGBOOK_PROGRESS_MAX_LENGTH, `جمع‌بندی حداکثر ${formatNumberFa(LOGBOOK_PROGRESS_MAX_LENGTH)} حرف است.`),
+      .max(LOGBOOK_PROGRESS_MAX_LENGTH, `جمع‌بندی حداکثر ${formatNumberFa(LOGBOOK_PROGRESS_MAX_LENGTH)} حرفه.`),
     /** The entry may be shown on the dog's public record (only if its owner makes the record public). */
     isPublic: z.boolean(),
   })
   .superRefine(
     (values, ctx) => {
       if (!values.day || !values.month || !values.year) {
-        ctx.addIssue({ code: "custom", path: ["day"], message: "روز، ماه و سال جلسه را انتخاب کن." });
+        ctx.addIssue({ code: "custom", path: ["day"], message: "روز، ماه و سال جلسه رو انتخاب کن." });
         return;
       }
       const date = { year: Number(values.year), month: Number(values.month), day: Number(values.day) };
       if (!isValidJalali(date)) {
-        ctx.addIssue({ code: "custom", path: ["day"], message: "این روز در این ماه نیست." });
+        ctx.addIssue({ code: "custom", path: ["day"], message: "این ماه این روز رو نداره." });
       } else if (jalaliToIso(date) > todayIso()) {
-        ctx.addIssue({ code: "custom", path: ["day"], message: "تاریخ جلسه نمی‌تواند در آینده باشد." });
+        ctx.addIssue({ code: "custom", path: ["day"], message: "تاریخ جلسه نمی‌تونه توی آینده باشه." });
       }
     },
     // The date parts are plain strings that always parse, so the date is checked even while another field fails.

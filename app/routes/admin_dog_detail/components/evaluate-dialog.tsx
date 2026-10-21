@@ -13,6 +13,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { useAdminAction } from "~/hooks/use-admin-action";
 import { client } from "~/orpc/client";
 import type { AdminDog } from "~/orpc/dog/contract";
+import { DIALOG_FOOTER, DIALOG_PLATE, DIALOG_TITLE, INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Evaluate Dialog =====*/
 /**
@@ -49,20 +50,22 @@ export function EvaluateDialog({
   return (
     // A request in flight can't be dismissed: closing would hide whether it worked.
     <AlertDialog open={open} onOpenChange={(next) => !evaluate.isPending && (next ? onOpenChange(true) : close())}>
-      <AlertDialogContent>
+      <AlertDialogContent className={`${DIALOG_PLATE} data-[size=default]:sm:max-w-md`}>
         <AlertDialogHeader>
-          <AlertDialogTitle>{dog.name} ارزیابی‌شده ثبت شود؟</AlertDialogTitle>
-          <AlertDialogDescription>
-            دوره‌هایش برای خرید باز می‌شوند و نژاد و تاریخ تولدش برای صاحبش قفل می‌شود. به صاحبش پیامک می‌رود.
-            {hasWaitingRequest && " درخواستش هم جواب داده می‌شود."}
+          <AlertDialogTitle className={DIALOG_TITLE}>{dog.name} ارزیابی‌شده ثبت بشه؟</AlertDialogTitle>
+          <AlertDialogDescription className="leading-6">
+            دوره‌هاش برای خرید باز می‌شن و نژاد و تاریخ تولدش برای صاحبش قفل می‌شه. به صاحبش پیامک می‌ره.
+            {hasWaitingRequest && " درخواستش هم جواب داده می‌شه."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <FormAlert message={evaluate.failure?.message ?? undefined} />
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={evaluate.isPending}>نه، هنوز</AlertDialogCancel>
-          <AlertDialogAction disabled={evaluate.isPending} onClick={() => evaluate.run(dog.id)}>
+        <AlertDialogFooter className={DIALOG_FOOTER}>
+          <AlertDialogCancel className={INK_OUTLINE} disabled={evaluate.isPending}>
+            نه، هنوز
+          </AlertDialogCancel>
+          <AlertDialogAction variant="solid" disabled={evaluate.isPending} onClick={() => evaluate.run(dog.id)}>
             {evaluate.isPending && <Spinner aria-hidden />}
             ارزیابی شد
           </AlertDialogAction>

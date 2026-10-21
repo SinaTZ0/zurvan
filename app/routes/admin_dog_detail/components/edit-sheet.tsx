@@ -7,6 +7,7 @@ import { useIsMobile } from "~/hooks/use-mobile";
 import { client } from "~/orpc/client";
 import type { AdminDog } from "~/orpc/dog/contract";
 import { EditForm, type DogUpdateInput } from "~/routes/admin_dog_detail/components/edit-form";
+import { SHEET_HEAD, SHEET_PLATE, SHEET_TITLE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Edit Sheet =====*/
 /**
@@ -39,16 +40,12 @@ export function EditSheet({ dog, open, onClose }: { dog: AdminDog; open: boolean
   return (
     // A save in flight can't be dismissed: closing would hide whether it worked.
     <Sheet open={open} onOpenChange={(next) => !next && !save.isPending && close()}>
-      <SheetContent
-        side={isMobile ? "bottom" : "left"}
-        showCloseButton={false}
-        className="gap-0 p-0 data-[side=bottom]:max-h-[90dvh] data-[side=bottom]:rounded-t-3xl data-[side=left]:w-full data-[side=left]:sm:max-w-md"
-      >
+      <SheetContent side={isMobile ? "bottom" : "left"} showCloseButton={false} className={SHEET_PLATE}>
         {/*===== Header (fixed) =====*/}
-        <header className="flex items-center gap-3 border-b border-border p-4">
+        <header className={SHEET_HEAD}>
           <div className="min-w-0 flex-1">
-            <SheetTitle className="truncate text-lg font-extrabold">ویرایش مشخصات</SheetTitle>
-            <SheetDescription className="mt-0.5 truncate text-xs">
+            <SheetTitle className={SHEET_TITLE}>ویرایش مشخصات</SheetTitle>
+            <SheetDescription className="mt-1 truncate text-sm">
               <bdi>{dog.name}</bdi>
             </SheetDescription>
           </div>

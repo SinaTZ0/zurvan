@@ -13,6 +13,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { useAdminAction } from "~/hooks/use-admin-action";
 import { client } from "~/orpc/client";
 import type { AdminEnrollment } from "~/orpc/enrollment/contract";
+import { DIALOG_FOOTER, DIALOG_PLATE, DIALOG_TITLE, INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Issue Certificate Dialog =====*/
 /**
@@ -45,24 +46,27 @@ export function IssueCertificateDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={(next) => !issue.isPending && (next ? onOpenChange(true) : close())}>
-      <AlertDialogContent>
+      <AlertDialogContent className={`${DIALOG_PLATE} data-[size=default]:sm:max-w-md`}>
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className={DIALOG_TITLE}>
             {enrollment
-              ? `گواهی «${enrollment.course.title}» برای ${enrollment.dog.name} صادر شود؟`
-              : "گواهی صادر شود؟"}
+              ? `گواهی «${enrollment.course.title}» برای ${enrollment.dog.name} صادر بشه؟`
+              : "گواهی صادر بشه؟"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            گواهی یک شماره‌ی عمومی می‌گیرد و هر کس شماره یا QR آن را داشته باشد می‌تواند معتبر بودنش را ببیند. صاحب سگ
-            گواهی را توی صفحه‌ی سگش می‌بیند. اگر اشتباه صادر شد، می‌شود باطلش کرد.
+          <AlertDialogDescription className="leading-6">
+            گواهی یه شماره‌ی عمومی می‌گیره و هر کسی شماره یا QR‌ش رو داشته باشه می‌تونه ببینه معتبره یا نه. صاحب سگ
+            گواهی رو توی صفحه‌ی سگش می‌بینه. اگه اشتباه صادر شد، می‌شه باطلش کرد.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <FormAlert message={issue.failure?.message ?? undefined} />
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={issue.isPending}>نه، هنوز</AlertDialogCancel>
+        <AlertDialogFooter className={DIALOG_FOOTER}>
+          <AlertDialogCancel className={INK_OUTLINE} disabled={issue.isPending}>
+            نه، هنوز
+          </AlertDialogCancel>
           <AlertDialogAction
+            variant="solid"
             disabled={issue.isPending || !enrollment}
             onClick={() => enrollment && issue.run(enrollment.id)}
           >

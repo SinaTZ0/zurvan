@@ -16,6 +16,7 @@ import { useAdminAction } from "~/hooks/use-admin-action";
 import type { ApiFailure } from "~/lib/api-error";
 import { client } from "~/orpc/client";
 import type { Certificate } from "~/orpc/certificate/contract";
+import { DIALOG_FOOTER, DIALOG_PLATE, DIALOG_TITLE, INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Revoke Certificate Dialog =====*/
 /**
@@ -79,10 +80,10 @@ function RevokeForm({
 }) {
   const [reason, setReason] = useState("");
   const [missing, setMissing] = useState(false);
-  const fieldError = missing ? "دلیل باطل کردن را بنویس." : failure?.fields.reason;
+  const fieldError = missing ? "دلیل باطل کردن رو بنویس." : failure?.fields.reason;
 
   return (
-    <DialogContent showCloseButton={false}>
+    <DialogContent showCloseButton={false} className={DIALOG_PLATE}>
       <form
         noValidate
         onSubmit={(event) => {
@@ -96,9 +97,9 @@ function RevokeForm({
         className="grid gap-4"
       >
         <DialogHeader>
-          <DialogTitle>گواهی «{certificate.course.title}» باطل شود؟</DialogTitle>
-          <DialogDescription>
-            گواهی روی سابقه می‌ماند، ولی صفحه‌ی عمومی‌اش می‌گوید «باطل شده». این کار برگشت ندارد. دلیلت فقط خودت
+          <DialogTitle className={DIALOG_TITLE}>گواهی «{certificate.course.title}» باطل بشه؟</DialogTitle>
+          <DialogDescription className="leading-6">
+            گواهی توی سابقه می‌مونه، ولی صفحه‌ی عمومی‌ش می‌گه «باطل شده». این کار برگشت نداره. دلیلت رو فقط خودت
             می‌بینی.
           </DialogDescription>
         </DialogHeader>
@@ -126,8 +127,8 @@ function RevokeForm({
 
         <FormAlert message={failure?.message ?? undefined} />
 
-        <DialogFooter>
-          <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+        <DialogFooter className={DIALOG_FOOTER}>
+          <Button type="button" variant="outline" className={INK_OUTLINE} disabled={pending} onClick={onCancel}>
             انصراف
           </Button>
           <Button type="submit" variant="destructive" disabled={pending}>

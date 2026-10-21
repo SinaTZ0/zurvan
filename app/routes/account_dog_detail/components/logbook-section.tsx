@@ -10,8 +10,7 @@ import { SectionHead } from "~/routes/account_dog_detail/components/section-head
 /*===== Logbook Section =====*/
 /**
  * F14 on the dog's page: the diary the head trainer writes after each session, newest first, read-only for the owner
- * and private (only the owner and the trainer see it). The public record's chalk timeline, copied here (the shared
- * `LogbookEntryCard` stays the Admin's): a dashed gold line down the start side, a dot per entry, each entry a grained
+ * and private (only the owner and the trainer see it). The public record's chalk timeline, copied here: a dashed gold line down the start side, a dot per entry, each entry a grained
  * card with the day as its heading, the notes, the exercises as chips and «جمع‌بندی».
  *
  * The `write` dog lies on the section's top edge writing in his notebook. With no entry yet the dimmed lectern stands

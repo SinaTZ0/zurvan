@@ -27,13 +27,13 @@ export const dogEditSchema = z
     name: z
       .string()
       .trim()
-      .min(1, "نام سگ را بنویس.")
-      .max(DOG_NAME_MAX_LENGTH, `نام حداکثر ${formatNumberFa(DOG_NAME_MAX_LENGTH)} حرف است.`),
+      .min(1, "اسم سگ رو بنویس.")
+      .max(DOG_NAME_MAX_LENGTH, `اسم حداکثر ${formatNumberFa(DOG_NAME_MAX_LENGTH)} حرفه.`),
     breed: optionalText({
       max: DOG_BREED_MAX_LENGTH,
-      message: `نژاد حداکثر ${formatNumberFa(DOG_BREED_MAX_LENGTH)} حرف است.`,
+      message: `نژاد حداکثر ${formatNumberFa(DOG_BREED_MAX_LENGTH)} حرفه.`,
     }),
-    sex: z.enum(DOG_SEXES, { error: "جنس را انتخاب کن." }),
+    sex: z.enum(DOG_SEXES, { error: "جنس رو انتخاب کن." }),
     birthDay: z.string(),
     birthMonth: z.string(),
     birthYear: z.string(),
@@ -41,22 +41,22 @@ export const dogEditSchema = z
     weight: z
       .string()
       .trim()
-      .min(1, "وزن را بنویس.")
+      .min(1, "وزن رو بنویس.")
       // «۳۲٫۵», «32,5» and «32/5» are all how people type a decimal on a Persian keyboard.
       .transform((value) => Number(toLatinDigits(value).replace(/[٫,/]/g, ".")))
-      .refine((value) => !Number.isNaN(value), "وزن را با عدد بنویس، مثلاً ۱۲٫۵.")
+      .refine((value) => !Number.isNaN(value), "وزن رو با عدد بنویس، مثلاً ۱۲٫۵.")
       .refine(
         (value) => value >= DOG_WEIGHT_MIN_KG && value <= DOG_WEIGHT_MAX_KG,
-        `وزن بین ${formatNumberFa(DOG_WEIGHT_MIN_KG)} و ${formatNumberFa(DOG_WEIGHT_MAX_KG)} کیلو است.`,
+        `وزن باید بین ${formatNumberFa(DOG_WEIGHT_MIN_KG)} و ${formatNumberFa(DOG_WEIGHT_MAX_KG)} کیلو باشه.`,
       )
-      .refine((value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9, "وزن حداکثر یک رقم اعشار دارد.")
+      .refine((value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9, "وزن حداکثر یه رقم اعشار داره.")
       .transform((value) => Math.round(value * 10) / 10),
-    isNeutered: z.enum(["yes", "no"], { error: "عقیم‌شده است یا نه؟" }),
+    isNeutered: z.enum(["yes", "no"], { error: "عقیم‌شده یا نه؟" }),
     vaccinationStatus: z.enum(VACCINATION_STATUSES),
     microchipNumber: z
       .string()
       .transform((value) => toLatinDigits(value).replace(/\s+/g, ""))
-      .refine((value) => /^\d{0,20}$/.test(value), "شماره میکروچیپ فقط عدد است، حداکثر ۲۰ رقم."),
+      .refine((value) => /^\d{0,20}$/.test(value), "شماره‌ی میکروچیپ فقط عدده، حداکثر ۲۰ رقم."),
     behaviorNotes: optionalText({
       max: DOG_NOTES_MAX_LENGTH,
       message: `حداکثر ${formatNumberFa(DOG_NOTES_MAX_LENGTH)} حرف.`,
@@ -70,14 +70,14 @@ export const dogEditSchema = z
     (values, ctx) => {
       /*------ Birth Date ------*/
       if (!values.birthDay || !values.birthMonth || !values.birthYear) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "روز، ماه و سال تولد را انتخاب کن." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "روز، ماه و سال تولد رو انتخاب کن." });
         return;
       }
       const date = { year: Number(values.birthYear), month: Number(values.birthMonth), day: Number(values.birthDay) };
       if (!isValidJalali(date)) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "این روز در این ماه نیست." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "این ماه این روز رو نداره." });
       } else if (jalaliToIso(date) > todayIso()) {
-        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "تاریخ تولد نمی‌تواند در آینده باشد." });
+        ctx.addIssue({ code: "custom", path: ["birthDay"], message: "تاریخ تولد نمی‌تونه توی آینده باشه." });
       }
     },
     // Zod skips object refinements while any field fails; the date parts are plain strings that always parse, so the

@@ -9,6 +9,7 @@ import type { AdminDog } from "~/orpc/dog/contract";
 import type { AdminEnrollment } from "~/orpc/enrollment/contract";
 import type { LogbookEntry } from "~/orpc/logbook/contract";
 import { SessionForm, type SessionInput } from "~/routes/admin_dog_detail/components/session-form";
+import { SHEET_HEAD, SHEET_PLATE, SHEET_TITLE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Session Sheet =====*/
 /**
@@ -55,15 +56,11 @@ export function SessionSheet({
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && !save.isPending && close()}>
-      <SheetContent
-        side={isMobile ? "bottom" : "left"}
-        showCloseButton={false}
-        className="gap-0 p-0 data-[side=bottom]:max-h-[90dvh] data-[side=bottom]:rounded-t-3xl data-[side=left]:w-full data-[side=left]:sm:max-w-md"
-      >
-        <header className="flex items-center gap-3 border-b border-border p-4">
+      <SheetContent side={isMobile ? "bottom" : "left"} showCloseButton={false} className={SHEET_PLATE}>
+        <header className={SHEET_HEAD}>
           <div className="min-w-0 flex-1">
-            <SheetTitle className="truncate text-lg font-extrabold">{entry ? "ویرایش جلسه" : "ثبت جلسه"}</SheetTitle>
-            <SheetDescription className="mt-0.5 truncate text-xs">
+            <SheetTitle className={SHEET_TITLE}>{entry ? "ویرایش جلسه" : "ثبت جلسه"}</SheetTitle>
+            <SheetDescription className="mt-1 truncate text-sm">
               <bdi>{dog.name}</bdi>
             </SheetDescription>
           </div>
