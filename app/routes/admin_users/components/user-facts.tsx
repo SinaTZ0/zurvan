@@ -1,49 +1,36 @@
-import { toPersianDigits } from "~/lib/digits";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { AdminUser } from "~/orpc/user/contract";
-import { ROLE_WORDS } from "~/routes/admin_users/components/user-chips";
+import { describeLastLogin, isRecent } from "~/routes/admin_users/dates";
 
 /*===== User Facts =====*/
 /**
- * What the Admin can read but not change: the number and the role are fixed (one role per phone number, F1), so the
- * dialog says why instead of showing a disabled input.
+ * What the Admin can read but not change. The number and the role sit in the dialog's head; the line under the dates
+ * says why neither has an input (one role per phone number, F1).
  */
 export function UserFacts({ user }: { user: AdminUser }) {
   return (
-    <dl className="grid gap-3 text-sm">
-      <Fact term="شماره‌ی موبایل" note="با همین شماره وارد می‌شود، پس عوض نمی‌شود.">
-        {user.phoneNumber === null ? (
-          <span className="text-muted-foreground">بدون شماره</span>
-        ) : (
-          <bdi dir="ltr" className="font-bold tabular-nums">
-            {toPersianDigits(user.phoneNumber)}
-          </bdi>
-        )}
-      </Fact>
-      <Fact term="نقش" note="هر شماره یک نقش دارد؛ نقش عوض نمی‌شود.">
-        <span className="font-bold">{ROLE_WORDS[user.role]}</span>
-      </Fact>
-      <Fact term="ثبت‌نام">{formatJalaliTimestamp(user.createdAt)}</Fact>
-      <Fact term="آخرین ورود">
-        {user.lastLoginAt ? (
-          formatJalaliTimestamp(user.lastLoginAt)
-        ) : (
-          <span className="text-muted-foreground">هنوز وارد نشده</span>
-        )}
-      </Fact>
-    </dl>
-  );
-}
+    <div className="grid gap-3">
+      <dl className="grid grid-cols-[6.5rem_minmax(0,1fr)] gap-x-3 gap-y-2 text-sm">
+        <dt className="text-muted-foreground">ثبت‌نام</dt>
+        <dd>{formatJalaliTimestamp(user.createdAt)}</dd>
 
-/*===== Fact =====*/
-function Fact({ term, note, children }: { term: string; note?: string; children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-[7rem_minmax(0,1fr)] gap-x-3 gap-y-0.5">
-      <dt className="text-muted-foreground">{term}</dt>
-      <dd>
-        {children}
-        {note && <p className="mt-0.5 text-xs text-muted-foreground">{note}</p>}
-      </dd>
+        <dt className="text-muted-foreground">آخرین ورود</dt>
+        <dd>
+          {user.lastLoginAt === null ? (
+            <span className="text-muted-foreground">هنوز وارد نشده</span>
+          ) : isRecent({ moment: user.lastLoginAt }) ? (
+            <>
+              {describeLastLogin({ moment: user.lastLoginAt })}
+              <span className="text-muted-foreground">، {formatJalaliTimestamp(user.lastLoginAt)}</span>
+            </>
+          ) : (
+            formatJalaliTimestamp(user.lastLoginAt)
+          )}
+        </dd>
+      </dl>
+      <p className="text-xs leading-5 text-pretty text-muted-foreground">
+        شماره و نقش عوض نمی‌شن: با همین شماره وارد می‌شه و هر شماره فقط یه نقش داره.
+      </p>
     </div>
   );
 }

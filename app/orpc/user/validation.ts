@@ -11,8 +11,8 @@ const namePart = (label: string) =>
   z
     .string()
     .trim()
-    .min(1, `${label} را بنویس.`)
-    .max(USER_NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(USER_NAME_MAX_LENGTH)} حرف است.`);
+    .min(1, `${label} رو بنویس.`)
+    .max(USER_NAME_MAX_LENGTH, `${label} حداکثر ${formatNumberFa(USER_NAME_MAX_LENGTH)} حرف می‌تونه باشه.`);
 
 /** The two name parts as the service accepts them (trimmed). */
 export const updateUserInputSchema = z.object({

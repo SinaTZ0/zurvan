@@ -5,8 +5,10 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 
 /*===== User Search Field =====*/
 /**
- * The roll's search. The value is the URL's `q`, which the page updates on every keystroke (debounced in the URL).
- * It is not a form: the list filters as one types, so Enter has nothing to submit.
+ * The roll's search, a grained field on the sunken paper, as on the Dogs register. The value is the URL's `q`, which
+ * the page updates on every keystroke (debounced in the URL). It is not a form: the list filters as he types, so Enter
+ * has nothing to submit. The clear button (40px) appears once there is something to clear and gives focus back to the
+ * field.
  */
 export function UserSearchField({
   value,
@@ -20,11 +22,11 @@ export function UserSearchField({
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <search className="w-full sm:w-80">
+    <search>
       <label htmlFor="admin-users-search" className="sr-only">
-        جست‌وجوی اسم یا شماره
+        جستجوی اسم یا شماره
       </label>
-      <InputGroup className="h-11 rounded-full">
+      <InputGroup className="h-11 rounded-full border-foreground/15 bg-sunken paper-grain shadow-[inset_0_1px_0_rgb(0_0_0/0.5)] hover:border-foreground/25 dark:bg-sunken">
         <InputGroupAddon>
           <SearchIcon strokeWidth={1.7} aria-hidden />
         </InputGroupAddon>
@@ -34,17 +36,18 @@ export function UserSearchField({
           type="search"
           value={value}
           autoComplete="off"
-          placeholder="جست‌وجوی اسم یا شماره"
+          enterKeyHint="search"
+          placeholder="اسم یا شماره‌ی موبایل"
           onChange={(event) => onChange(event.target.value)}
           // Our own clear button replaces the browser's cross, so both don't show.
-          className="[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none"
+          className="text-sm placeholder:text-muted-foreground/80 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-cancel-button]:appearance-none"
         />
         {value !== "" && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
-              aria-label="پاک کردن جست‌وجو"
+              aria-label="پاک کردن جستجو"
               size="icon-sm"
-              className="rounded-full"
+              className="size-10 rounded-full text-muted-foreground hover:text-foreground"
               onClick={() => {
                 onClear();
                 inputRef.current?.focus();

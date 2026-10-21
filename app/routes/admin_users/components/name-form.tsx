@@ -16,7 +16,8 @@ import { NAME_FIELDS, type UserNameInput, type UserNameValues, userNameSchema } 
 /**
  * «نام» and «نام خانوادگی»: the only thing the Admin can change about a person (he fixes misspelt names). The form owns
  * its request, so a failure shows right under the fields it came from; a save toasts, refreshes the list, and the
- * dialog stays open. The server's per-field messages go beside the fields (`data.fields`).
+ * dialog stays open (the row flashes once when he closes it). The server's per-field messages go beside the fields
+ * (`data.fields`). Its «ذخیره‌ی اسم» is the dialog's one gold button, lit only once the name has been changed.
  */
 export function NameForm({ user, onGone }: { user: AdminUser; onGone: () => void }) {
   const {
@@ -24,7 +25,7 @@ export function NameForm({ user, onGone }: { user: AdminUser; onGone: () => void
     handleSubmit,
     setError,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<UserNameInput, unknown, UserNameValues>({
     resolver: zodResolver(userNameSchema),
     defaultValues: { firstName: user.firstName, lastName: user.lastName },
@@ -33,7 +34,7 @@ export function NameForm({ user, onGone }: { user: AdminUser; onGone: () => void
   /*------ Save ------*/
   const save = useAdminAction({
     mutationFn: (input: { id: string; firstName: string; lastName: string }) => client.user.admin.update(input),
-    success: "نام ذخیره شد",
+    success: "اسم ذخیره شد",
     // The form shows the failure itself (fields and alert), so a toast would say it twice.
     toastFailure: false,
     // The saved names (trimmed by the server) become the form's new starting point.
@@ -60,30 +61,42 @@ export function NameForm({ user, onGone }: { user: AdminUser; onGone: () => void
   return (
     <form
       noValidate
+      aria-labelledby="admin-user-name-title"
       onSubmit={handleSubmit((values) => {
         // A new attempt starts clean: the last failure's alert must not sit beside a request in flight.
         save.reset();
         save.run({ id: user.id, ...values });
       })}
-      className="flex flex-col gap-4"
+      className="grid gap-4"
     >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field data-invalid={!!errors.firstName}>
-          <FieldLabel htmlFor="admin-user-first-name">نام</FieldLabel>
+      <h3 id="admin-user-name-title" className="text-sm font-bold">
+        اسم
+      </h3>
+
+      {/*------ Fields ------*/}
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
+        <Field data-invalid={!!errors.firstName} className="gap-2">
+          <FieldLabel htmlFor="admin-user-first-name" className="text-xs text-muted-foreground">
+            نام
+          </FieldLabel>
           <Input
             id="admin-user-first-name"
             autoComplete="off"
+            className="h-11 sm:h-10"
             aria-invalid={!!errors.firstName}
             {...register("firstName")}
           />
           <FieldError errors={[errors.firstName]} />
         </Field>
 
-        <Field data-invalid={!!errors.lastName}>
-          <FieldLabel htmlFor="admin-user-last-name">نام خانوادگی</FieldLabel>
+        <Field data-invalid={!!errors.lastName} className="gap-2">
+          <FieldLabel htmlFor="admin-user-last-name" className="text-xs text-muted-foreground">
+            نام خانوادگی
+          </FieldLabel>
           <Input
             id="admin-user-last-name"
             autoComplete="off"
+            className="h-11 sm:h-10"
             aria-invalid={!!errors.lastName}
             {...register("lastName")}
           />
@@ -93,9 +106,9 @@ export function NameForm({ user, onGone }: { user: AdminUser; onGone: () => void
 
       <FormAlert message={save.isPending ? undefined : alert || undefined} />
 
-      <Button type="submit" variant="solid" className="w-full sm:w-fit" disabled={save.isPending}>
+      <Button type="submit" variant={isDirty ? "solid" : "outline"} className="h-11 w-full sm:h-10 sm:w-fit" disabled={save.isPending}>
         {save.isPending && <Spinner aria-hidden />}
-        ذخیره‌ی نام
+        ذخیره‌ی اسم
       </Button>
     </form>
   );

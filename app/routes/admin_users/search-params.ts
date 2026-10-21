@@ -1,7 +1,7 @@
 import { createSerializer, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 /*===== Constants =====*/
-/** People per page: one card each, so twenty is about two screens of rows on a phone. */
+/** People per page: twenty dense rows, about a screen and a half at 1440 and two screens on a phone. */
 export const PAGE_SIZE = 20;
 
 export const ROLE_FILTERS = ["all", "customer", "partner", "admin"] as const;

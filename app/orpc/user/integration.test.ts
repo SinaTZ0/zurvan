@@ -160,7 +160,7 @@ describe("updating a name", () => {
       input: { firstName: "سارا", lastName: "ا".repeat(41) },
     });
 
-    expect(blank).toMatchObject({ kind: "invalid", fields: { firstName: expect.stringContaining("را بنویس") } });
+    expect(blank).toMatchObject({ kind: "invalid", fields: { firstName: expect.stringContaining("رو بنویس") } });
     expect(tooLong).toMatchObject({ kind: "invalid", fields: { lastName: expect.stringContaining("حداکثر") } });
     const [row] = await db.select().from(user).where(eq(user.id, bystander.id));
     expect(row?.name).toBe("سارا احمدی");
