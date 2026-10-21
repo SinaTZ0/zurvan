@@ -76,12 +76,34 @@ export const MASCOT_CUTS = {
   chest: { width: 421, height: 241 },
   cabinet: { width: 319, height: 293 },
   counter: { width: 434, height: 292 },
+  // Poses for the Dog Record, Certificate Check, Rules and Not Found pages, cut from
+  // image-reference/generated/batch3/poses-8.png: nose down on a scent, a paw on his collar's tag, hugging a closed
+  // folder, lying reading a book, ears back and sorry, a magnifying glass in his mouth, a paw pointing up, digging.
+  sniff: { width: 287, height: 186 },
+  tag: { width: 180, height: 286 },
+  folder: { width: 194, height: 288 },
+  read: { width: 289, height: 200 },
+  sorry: { width: 221, height: 283 },
+  magnify: { width: 209, height: 316 },
+  "point-up": { width: 221, height: 321 },
+  dig: { width: 273, height: 283 },
+  // Scenery from image-reference/generated/batch3/scenery-6.png: a gold rosette on a tuft of grass, a framed blank
+  // certificate on an easel, a padlocked garden gate in a hedge, an open book on a lectern, a dug hole with a bone, a
+  // dog house with a blank name plate. `seal-disc` is the rosette alone, cut round, to stamp on a card.
+  seal: { width: 456, height: 464 },
+  "seal-disc": { width: 326, height: 326 },
+  easel: { width: 439, height: 472 },
+  gate: { width: 536, height: 404 },
+  lectern: { width: 461, height: 450 },
+  hole: { width: 513, height: 279 },
+  kennel: { width: 501, height: 423 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
 
 // The scenery steps back so the dog stays the brightest thing on the page (`scenery-dim`, app.css). The dog cut-outs
-// are never dimmed; the key and the flag stay bright too, as the steps' two gold accents (the unlock and the finish).
+// are never dimmed; the key and the flag stay bright too, as the steps' two gold accents (the unlock and the finish),
+// and so do the seal and its disc (a certificate's gold mark).
 const DIMMED = new Set<MascotCutName>([
   "plants",
   "ground",
@@ -100,6 +122,11 @@ const DIMMED = new Set<MascotCutName>([
   "chest",
   "cabinet",
   "counter",
+  "easel",
+  "gate",
+  "lectern",
+  "hole",
+  "kennel",
 ]);
 
 /**
