@@ -1,20 +1,24 @@
+import { cn } from "cn";
+import { InboxIcon, type LucideIcon } from "lucide-react";
 import { useId } from "react";
 
-import { SpeechBubble } from "~/components/speech-bubble";
+import { ADMIN_TEAR } from "~/lib/admin-plate";
+import { DISPLAY_HEADING } from "~/lib/display-heading";
 
 /*===== Admin Empty State =====*/
 /**
- * An Admin list with nothing in it. The dog barely speaks in the Admin area, so this is small: the cut-out dog with one
- * short line, a title and a sentence. No button: an Admin list has no "add" to offer (rows come from customers).
+ * An Admin list with nothing in it: a line icon in an ink ring, a title and a sentence, on a dashed grained plate (the
+ * slip's tear drawn all round, a place where rows will be). The Admin area has the site's style but not its story, so
+ * no dog speaks here. No button: an Admin list has no "add" to offer (rows come from customers).
  */
 export function AdminEmptyState({
-  bubble,
   title,
+  icon: Icon = InboxIcon,
   children,
 }: {
-  /** The dog's own few words. */
-  bubble: string;
   title: string;
+  /** The list's own icon, usually the one its page has in the rail. */
+  icon?: LucideIcon;
   children?: React.ReactNode;
 }) {
   const titleId = useId();
@@ -22,28 +26,19 @@ export function AdminEmptyState({
   return (
     <section
       aria-labelledby={titleId}
-      className="flex flex-col items-center gap-5 overflow-hidden rounded-3xl border border-dashed border-border px-6 pt-8 text-center sm:flex-row sm:items-end sm:gap-8 sm:px-10 sm:text-start"
+      className={cn(
+        "flex flex-col items-center gap-4 rounded-3xl border bg-sunken/60 paper-grain px-6 py-10 text-center sm:flex-row sm:gap-6 sm:px-10 sm:text-start",
+        ADMIN_TEAR,
+      )}
     >
-      {/*------ Dog ------*/}
-      <img
-        src="/photo/home/eval-dog-640.webp"
-        alt="ژرمن‌شپردی با عینک آفتابی و دستمال‌گردن زرد که با دهان باز می‌خندد"
-        width={640}
-        height={879}
-        className="order-2 h-auto w-32 shrink-0 sm:order-1 sm:w-40"
-      />
-
-      {/*------ Words ------*/}
-      <div className="order-1 flex flex-col items-center gap-4 pb-2 sm:order-2 sm:items-start sm:pb-8">
-        <SpeechBubble tail="bottom-end" lgTail="bottom-start" className="max-w-[16rem]">
-          {bubble}
-        </SpeechBubble>
-        <div>
-          <h2 id={titleId} className="text-lg font-extrabold text-balance">
-            {title}
-          </h2>
-          {children && <p className="mt-1 max-w-md text-sm text-pretty text-muted-foreground">{children}</p>}
-        </div>
+      <span className="flex size-14 shrink-0 items-center justify-center rounded-full border border-foreground/20 text-muted-foreground">
+        <Icon aria-hidden strokeWidth={1.5} className="size-6" />
+      </span>
+      <div className="min-w-0">
+        <h2 id={titleId} className={cn(DISPLAY_HEADING, "text-xl text-balance")}>
+          {title}
+        </h2>
+        {children && <p className="mt-1.5 max-w-md text-sm leading-6 text-pretty text-muted-foreground">{children}</p>}
       </div>
     </section>
   );

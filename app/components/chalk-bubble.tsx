@@ -2,9 +2,8 @@ import { cn } from "cn";
 
 /*===== Chalk Bubble =====*/
 /**
- * The mascot's hand-drawn speech bubble, the current one: ink outline, a fill of the surface it sits on
+ * The mascot's hand-drawn speech bubble: ink outline, a fill of the surface it sits on
  * (`bg-background`, so inside a `surface-inverse` band it is cut from the band's grey), and a tail that points at him.
- * The older `SpeechBubble` (white chalk) stays on the pages not yet redesigned; a page moves to this one when it is.
  *
  * `tail` is a physical side (left/right) because the tail is a rotated square and must aim at the dog, whichever way
  * the page reads. `tailEdge` puts it on the bottom edge (the dog is below) or the top edge (the speaker is above, as a

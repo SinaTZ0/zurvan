@@ -99,7 +99,7 @@ export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProp
 
       {enrollments.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState bubble="هنوز کسی ثبت‌نام نکرده" title="ثبت‌نامی نیست">
+        <AdminEmptyState title="ثبت‌نامی نیست">
           بعد از اولین پرداخت، آموزش‌ها اینجا می‌آیند تا به صاحبشان زنگ بزنی.
         </AdminEmptyState>
       ) : (

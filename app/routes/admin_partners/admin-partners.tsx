@@ -125,7 +125,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
 
       {partners.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState bubble="اولین همکارت کجاست؟" title="هنوز همکاری نیست">
+        <AdminEmptyState title="هنوز همکاری نیست">
           کلینیک، آرایشگاه یا پت‌شاپی که بهش قول داده‌ای را بساز؛ لینک و QR خودش را می‌گیرد.
         </AdminEmptyState>
       ) : (
@@ -144,7 +144,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
             {view === "unpaid" &&
               (unpaidBlocks.length === 0 ? (
                 /*===== Pay Sheet: Nothing Owed =====*/
-                <AdminEmptyState bubble="حساب همه صاف است" title="پورسانتی منتظر نیست">
+                <AdminEmptyState title="پورسانتی منتظر نیست">
                   وقتی مشتریِ یکی از همکارها اولین خریدش را بکند، پورسانتش اینجا می‌آید تا پرداختش کنی.
                 </AdminEmptyState>
               ) : (

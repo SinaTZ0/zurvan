@@ -67,7 +67,7 @@ export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) 
     return (
       <>
         <AdminPageHeader title="پرداخت‌ها" summary={summary} />
-        <AdminEmptyState bubble="هنوز پرداختی نیست" title="پرداختی ثبت نشده">
+        <AdminEmptyState title="پرداختی ثبت نشده">
           هر پرداختی که مشتری‌ها بکنند، با دوره‌هایش اینجا می‌آید.
         </AdminEmptyState>
       </>

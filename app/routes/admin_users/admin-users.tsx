@@ -118,7 +118,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
 
       {users.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState bubble="اینجا هنوز کسی نیست" title="کاربری نیست">
+        <AdminEmptyState title="کاربری نیست">
           وقتی کسی با شماره‌اش ثبت‌نام کند، اینجا می‌آید.
         </AdminEmptyState>
       ) : (

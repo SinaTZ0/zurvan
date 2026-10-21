@@ -100,7 +100,7 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
 
       {evaluations.length === 0 ? (
         /*===== Nothing At All =====*/
-        <AdminEmptyState bubble="هنوز کسی درخواست نداده" title="درخواستی نیست">
+        <AdminEmptyState title="درخواستی نیست">
           وقتی صاحب سگی ارزیابی رایگان بخواهد، اینجا می‌بینی‌اش و پیامک هم می‌گیری.
         </AdminEmptyState>
       ) : (

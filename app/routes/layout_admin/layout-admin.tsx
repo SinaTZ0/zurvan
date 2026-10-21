@@ -2,10 +2,11 @@ import { Outlet } from "react-router";
 
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
-import { ADMIN_EVALUATIONS_PATH, ADMIN_NAV_ITEMS } from "~/routes/layout_admin/admin-nav";
+import { ADMIN_NAV_ITEMS, type AdminNavItem } from "~/routes/layout_admin/admin-nav";
 import { AdminBottomTabs } from "~/routes/layout_admin/components/admin-bottom-tabs";
 import { AdminHeader } from "~/routes/layout_admin/components/admin-header";
 import { AdminRail } from "~/routes/layout_admin/components/admin-rail";
+import { ShellMotion } from "~/routes/layout_admin/components/shell-motion";
 
 import type { Route } from "./+types/layout-admin";
 
@@ -21,33 +22,43 @@ export const meta: Route.MetaFunction = () => [{ name: "robots", content: "noind
 /*===== Loader =====*/
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { user } = context.get(sessionContext);
-  // The count on the Evaluations tab: requests waiting for his answer (F11, "Waiting for him"). Reloaded with every
-  // revalidation, so it drops as soon as he answers one.
-  const waiting = await createServerClient(request).evaluation.admin.list({ status: "requested" });
+  // The counts on the rail: the three kinds of work that wait for him (F11, "Waiting for him"), read from the Overview's
+  // one call. Reloaded with every revalidation, so a count drops (and its badge pops) as soon as he answers.
+  const { waiting, money } = await createServerClient(request).dashboard.admin.overview();
 
   return {
     // The guard only lets named accounts through, so `firstName` is set.
     firstName: user.firstName ?? "",
     phoneNumber: user.phoneNumber ?? null,
-    waitingEvaluations: waiting.length,
+    counts: {
+      evaluationRequests: waiting.evaluationRequests,
+      paidNotEnrolled: waiting.paidNotEnrolled.count,
+      unpaidCommissions: money.unpaidCommissions.count,
+    },
   };
 }
 
 /*===== Admin Layout =====*/
-/** The Admin's shell at `/admin`: a top bar, a rail on desktop, bottom tabs on phones, and the page in between. */
+/** The Admin's shell at `/admin`: a top bar, a rail on desktop, a floating tab bar on phones, and the page in between. */
 export default function AdminLayout({ loaderData }: Route.ComponentProps) {
-  // The count comes from the server, so the items are built here and not in the static list.
-  const navItems = ADMIN_NAV_ITEMS.map((item) =>
-    item.to === ADMIN_EVALUATIONS_PATH ? { ...item, badge: loaderData.waitingEvaluations } : item,
-  );
+  const { counts } = loaderData;
+  // The counts come from the server, so they are put on the items here and not in the static list. Each says on a
+  // screen reader what it counts.
+  const badges: Record<string, Pick<AdminNavItem, "badge" | "badgeLabel">> = {
+    "/admin/evaluations": { badge: counts.evaluationRequests, badgeLabel: "درخواست منتظر جواب" },
+    "/admin/payments": { badge: counts.paidNotEnrolled, badgeLabel: "خرید ثبت‌نام‌نشده" },
+    "/admin/partners": { badge: counts.unpaidCommissions, badgeLabel: "پورسانت پرداخت‌نشده" },
+  };
+  const navItems = ADMIN_NAV_ITEMS.map((item) => ({ ...item, ...badges[item.to] }));
 
   return (
     <div className="flex min-h-svh flex-col">
+      <ShellMotion />
       <AdminHeader firstName={loaderData.firstName} phoneNumber={loaderData.phoneNumber} />
       <div className="flex flex-1">
         <AdminRail items={navItems} />
         <main id="main" className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 lg:py-10">
             <Outlet />
           </div>
         </main>

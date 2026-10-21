@@ -282,8 +282,8 @@
 /* One theme, and it is dark: the mascot-led look the owner chose on 2026-10-20 (the home page; docs/storefront-design.md).
    A neutral near-black paper with a faint grain (`--grain`, on the body), ivory ink, and a bright yellow gold for
    actions, icons and small accents only: big gold on the first screen reads as a bullion shop, so headlines are ivory.
-   The surfaces stay neutral greys: a warm or tinted black under gold reads as mud. Chalk white is for the old
-   `SpeechBubble` and the doodles; the mascot's `ChalkBubble` is drawn in the ink.
+   The surfaces stay neutral greys: a warm or tinted black under gold reads as mud. Chalk white is for the
+   doodles; the mascot's `ChalkBubble` is drawn in the ink.
 
    Layers, from back to front. Each step is a lighter neutral grey plus a deeper shadow:
      sunken      bands that hold a shelf of cards, wells inside cards (date chips, tab tracks)

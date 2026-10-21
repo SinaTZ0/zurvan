@@ -15,12 +15,13 @@ import {
 /*===== Admin Navigation =====*/
 // The Admin's pages (docs/app-spec.md, Pages), in the order he works through a day: answer the requests, call the
 // customers, check the money. After those come the setup pages (courses, users, SMS, settings): the list has two groups
-// and the rail and the «بیشتر» sheet draw a hairline between them. Add each page here when it is built; the rail and the phone's bottom tabs both read this
-// list. With more than four pages the tabs keep the first three and put the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`).
+// and the rail and the «بیشتر» sheet draw the slip's dashed tear between them. Add each page here when it is built; the
+// rail and the phone's tab bar both read this list. With more than four pages the bar keeps the first three and puts
+// the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`). The counts are added by the layout, from its loader.
 
 /** One page in the Admin's rail and bottom tabs. */
 export type AdminNavItem = {
-  /** `daily` pages come first; `setup` pages follow after a hairline. Items must be listed with the daily ones first. */
+  /** `daily` pages come first; `setup` pages follow after the tear. Items must be listed with the daily ones first. */
   group: "daily" | "setup";
   label: string;
   to: string;
@@ -49,5 +50,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
 /** How many pages the phone's tab bar shows when there are more than four; the rest wait in the «بیشتر» sheet. */
 export const PHONE_TAB_COUNT = 3;
 
-/** The Evaluations page, which the Admin's landing redirects to and which carries the waiting count. */
-export const ADMIN_EVALUATIONS_PATH = "/admin/evaluations";
+/** Whether the URL is the page of an item (the Overview matches only its exact URL, the others their subpages too). */
+export function isCurrentNavItem({ item, pathname }: { item: AdminNavItem; pathname: string }): boolean {
+  return item.end ? pathname === item.to : pathname === item.to || pathname.startsWith(`${item.to}/`);
+}

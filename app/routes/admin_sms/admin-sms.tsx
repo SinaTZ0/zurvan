@@ -96,7 +96,7 @@ export default function AdminSmsPage({ loaderData }: Route.ComponentProps) {
         <p className="mb-5 text-sm text-pretty text-muted-foreground">
           پیامک واقعی فرستاده نمی‌شود؛ هر پیامی که برنامه می‌فرستاد، اینجا می‌ماند.
         </p>
-        <AdminEmptyState bubble="هنوز نفرستاده‌ام" title="پیامکی نرفته">
+        <AdminEmptyState title="پیامکی نرفته">
           وقتی کسی کد ورود بخواهد یا خریدی انجام شود، پیامش اینجا می‌آید.
         </AdminEmptyState>
       </>

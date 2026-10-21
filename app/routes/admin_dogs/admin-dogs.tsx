@@ -86,7 +86,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
 
       {dogs.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState bubble="هنوز سگی ثبت نشده" title="سگی نیست">
+        <AdminEmptyState title="سگی نیست">
           وقتی صاحبی برای سگش پروفایل بسازد، اینجا می‌آید.
         </AdminEmptyState>
       ) : (

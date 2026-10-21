@@ -89,7 +89,7 @@ export default function AdminCoursesPage({ loaderData }: Route.ComponentProps) {
 
       {courses.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState bubble="قفسه‌ام خالیه!" title="هنوز دوره‌ای نیست">
+        <AdminEmptyState title="هنوز دوره‌ای نیست">
           اولین دوره را بساز تا در فهرست و صفحه‌ی اصلی بیاید.
         </AdminEmptyState>
       ) : (
