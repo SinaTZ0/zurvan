@@ -3,7 +3,7 @@ import type { IneligibilityKind } from "~/lib/eligibility";
 
 /*===== Dog Verdict =====*/
 // What a dog says about a course, from `checkout.eligibility` or `checkout.review` (docs/app-spec.md, F4). The server's messages are written
-// about the dog in the third person («لئو اول باید دوره‌ی … را تمام کند»), so the bubble speaks a short first-person line
+// about the dog in the third person («لئو اول باید دوره‌ی … رو تموم کنه»), so the bubble speaks a short first-person line
 // chosen by the kind of the first problem, and the server's own message goes under it as the exact reason.
 
 /** The dog's first-person line for the reason it can't take the course. */
@@ -53,7 +53,7 @@ export function getDogVerdict({ dogId, eligible, problems }: VerdictInput): DogV
         problem.kind === "not-evaluated"
           ? { label: "ارزیابی رایگان", to: `/assessment?dog=${dogId}` }
           : problem.kind === "prerequisite" && problem.courseSlug
-            ? { label: "این دوره را ببین", to: `/courses/${problem.courseSlug}` }
+            ? { label: "این دوره رو ببین", to: `/courses/${problem.courseSlug}` }
             : null,
     })),
   };

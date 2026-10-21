@@ -101,7 +101,7 @@ export function checkEligibility({
   earlyAgeException?: EarlyAgeException | null;
 }): Ineligibility[] {
   if (course.status !== "approved" || course.price === null || course.price <= 0) {
-    return [{ kind: "not-for-sale", message: "این دوره فعلاً فروخته نمی‌شود.", courseSlug: null }];
+    return [{ kind: "not-for-sale", message: "این دوره فعلاً فروخته نمی‌شه.", courseSlug: null }];
   }
 
   const problems: Ineligibility[] = [];
@@ -110,7 +110,7 @@ export function checkEligibility({
   if (!isEvaluated && !qualifiesForEarlyAge({ dog, course, exception: earlyAgeException, today })) {
     problems.push({
       kind: "not-evaluated",
-      message: `${dog.name} هنوز ارزیابی نشده. اول باید ارزیابی رایگان انجام شود.`,
+      message: `${dog.name} هنوز ارزیابی نشده. اول باید ارزیابی رایگان انجام بشه.`,
       courseSlug: null,
     });
   }
@@ -120,7 +120,7 @@ export function checkEligibility({
     if (passedCourseIds.has(required.id)) continue;
     problems.push({
       kind: "prerequisite",
-      message: `${dog.name} اول باید دوره‌ی ${required.title} را تمام کند.`,
+      message: `${dog.name} اول باید دوره‌ی ${required.title} رو تموم کنه.`,
       courseSlug: required.slug,
     });
   }
@@ -130,14 +130,14 @@ export function checkEligibility({
   if (course.minAgeMonths !== null && age < course.minAgeMonths) {
     problems.push({
       kind: "too-young",
-      message: `حداقل سن این دوره ${formatNumberFa(course.minAgeMonths)} ماه است.`,
+      message: `حداقل سن این دوره ${formatNumberFa(course.minAgeMonths)} ماهه.`,
       courseSlug: null,
     });
   }
   if (course.maxAgeMonths !== null && age > course.maxAgeMonths) {
     problems.push({
       kind: "too-old",
-      message: `حداکثر سن این دوره ${formatNumberFa(course.maxAgeMonths)} ماه است.`,
+      message: `حداکثر سن این دوره ${formatNumberFa(course.maxAgeMonths)} ماهه.`,
       courseSlug: null,
     });
   }
@@ -146,7 +146,7 @@ export function checkEligibility({
   if (hasActiveEnrollment) {
     problems.push({
       kind: "active-enrollment",
-      message: `${dog.name} همین حالا این دوره را می‌گذراند.`,
+      message: `${dog.name} همین الان داره این دوره رو می‌گذرونه.`,
       courseSlug: null,
     });
   }
