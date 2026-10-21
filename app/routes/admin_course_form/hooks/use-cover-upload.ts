@@ -28,7 +28,7 @@ export function useCoverUpload({ onUploaded }: { onUploaded: (media: Media) => v
     if (!file || upload.isPending) return;
     setProblem(null);
     if (file.size > MEDIA_MAX_BYTES) {
-      setProblem(`این عکس بزرگ‌تر از ${formatNumberFa(MAX_MB)} مگابایت است. عکس کوچک‌تری انتخاب کن.`);
+      setProblem(`این عکس از ${formatNumberFa(MAX_MB)} مگابایت بزرگ‌تره. یه عکس کوچیک‌تر انتخاب کن.`);
       return;
     }
     setPreview(URL.createObjectURL(file));
@@ -39,7 +39,7 @@ export function useCoverUpload({ onUploaded }: { onUploaded: (media: Media) => v
         onError: (error) => {
           const fieldMessage =
             isDefinedError(error) && error.code === "INVALID_INPUT" ? error.data.fields.file : undefined;
-          setProblem(fieldMessage ?? "عکس بارگذاری نشد. دوباره امتحان کن.");
+          setProblem(fieldMessage ?? "عکس بار نشد. دوباره امتحان کن.");
         },
         onSettled: () => setPreview(null),
       },

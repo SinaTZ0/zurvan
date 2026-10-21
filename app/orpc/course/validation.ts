@@ -21,18 +21,18 @@ export const COURSE_MIN_PRICE = 10_000;
 export const COURSE_MAX_PRICE = 100_000_000_000;
 
 /*===== Messages =====*/
-export const COURSE_SLUG_TAKEN_MESSAGE = "این نشانی قبلاً برای دوره‌ی دیگری گرفته شده.";
-export const COURSE_COVER_REQUIRED_MESSAGE = "یک عکس برای دوره بگذار.";
-export const COURSE_COVER_INVALID_MESSAGE = "عکس را دوباره بارگذاری کن.";
-export const COURSE_PREREQUISITE_UNKNOWN_MESSAGE = "یکی از پیش‌نیازها پیدا نشد؛ صفحه را تازه کن.";
-export const COURSE_PREREQUISITE_SELF_MESSAGE = "یک دوره نمی‌تواند پیش‌نیاز خودش باشد.";
+export const COURSE_SLUG_TAKEN_MESSAGE = "این نشانی رو قبلاً یه دوره‌ی دیگه گرفته.";
+export const COURSE_COVER_REQUIRED_MESSAGE = "یه عکس برای دوره بذار.";
+export const COURSE_COVER_INVALID_MESSAGE = "عکس رو دوباره بفرست.";
+export const COURSE_PREREQUISITE_UNKNOWN_MESSAGE = "یکی از پیش‌نیازها پیدا نشد؛ صفحه رو دوباره باز کن.";
+export const COURSE_PREREQUISITE_SELF_MESSAGE = "یه دوره نمی‌تونه پیش‌نیاز خودش باشه.";
 
 /** A cycle would lock both courses for ever: each waits for the other to be passed. */
 export function courseCycleMessage({ requiredTitle, title }: { requiredTitle: string; title: string }): string {
-  return `این دوره‌ها همدیگر را لازم دارند: ${requiredTitle} از قبل ${title} را لازم دارد.`;
+  return `این دوره‌ها همدیگه رو لازم دارن: ${requiredTitle} از قبل ${title} رو لازم داره.`;
 }
 
-const SLUG_MESSAGE = `نشانی فقط از حرف کوچک انگلیسی، رقم و خط تیره ساخته می‌شود و ${formatNumberFa(COURSE_SLUG_MIN_LENGTH)} تا ${formatNumberFa(COURSE_SLUG_MAX_LENGTH)} نویسه است.`;
+const SLUG_MESSAGE = `نشانی فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ${formatNumberFa(COURSE_SLUG_MIN_LENGTH)} تا ${formatNumberFa(COURSE_SLUG_MAX_LENGTH)} نویسه باشه.`;
 
 /*===== Fields =====*/
 /** A required one-line name: trimmed, so a name of spaces counts as empty. */
@@ -40,8 +40,8 @@ function nameSchema({ label, max }: { label: string; max: number }) {
   return z
     .string()
     .trim()
-    .min(1, `${label} را بنویس.`)
-    .max(max, `${label} حداکثر ${formatNumberFa(max)} حرف است.`);
+    .min(1, `${label} رو بنویس.`)
+    .max(max, `${label} حداکثر ${formatNumberFa(max)} حرف می‌تونه باشه.`);
 }
 
 /**
@@ -52,15 +52,15 @@ function linesSchema({ label, maxLines }: { label: string; maxLines: number }) {
   return z
     .array(z.string())
     .transform((lines) => lines.map((line) => line.trim()).filter(Boolean))
-    .refine((lines) => lines.length <= maxLines, `${label} حداکثر ${formatNumberFa(maxLines)} خط است.`)
+    .refine((lines) => lines.length <= maxLines, `${label} حداکثر ${formatNumberFa(maxLines)} خط می‌تونه باشه.`)
     .refine(
       (lines) => lines.every((line) => line.length <= COURSE_LINE_MAX_LENGTH),
-      `هر خطِ ${label} حداکثر ${formatNumberFa(COURSE_LINE_MAX_LENGTH)} حرف است.`,
+      `هر خط ${label} حداکثر ${formatNumberFa(COURSE_LINE_MAX_LENGTH)} حرف می‌تونه باشه.`,
     );
 }
 
 function monthsSchema(label: string) {
-  const message = `${label} باید بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه باشد.`;
+  const message = `${label} باید بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه باشه.`;
   return z.number().int().min(0, message).max(COURSE_MAX_AGE_MONTHS, message).nullable();
 }
 
@@ -68,8 +68,8 @@ function priceSchema(label: string) {
   return z
     .number()
     .int()
-    .min(COURSE_MIN_PRICE, `${label} حداقل ${formatNumberFa(COURSE_MIN_PRICE / 10)} تومان است.`)
-    .max(COURSE_MAX_PRICE, `${label} حداکثر ${formatNumberFa(COURSE_MAX_PRICE / 10)} تومان است.`)
+    .min(COURSE_MIN_PRICE, `${label} حداقل ${formatNumberFa(COURSE_MIN_PRICE / 10)} تومانه.`)
+    .max(COURSE_MAX_PRICE, `${label} حداکثر ${formatNumberFa(COURSE_MAX_PRICE / 10)} تومانه.`)
     .nullable();
 }
 
@@ -82,41 +82,41 @@ export const courseFormSchema = z
   .object({
     title: nameSchema({ label: "نام دوره", max: COURSE_TITLE_MAX_LENGTH }),
     latinName: nameSchema({ label: "نام لاتین", max: COURSE_TITLE_MAX_LENGTH }),
-    family: z.enum(SELLABLE_COURSE_FAMILIES, "خانواده‌ی دوره را انتخاب کن."),
+    family: z.enum(SELLABLE_COURSE_FAMILIES, "خانواده‌ی دوره رو انتخاب کن."),
     summary: z
       .string()
       .trim()
-      .min(1, "توضیح کوتاه را بنویس.")
-      .max(COURSE_SUMMARY_MAX_LENGTH, `توضیح کوتاه حداکثر ${formatNumberFa(COURSE_SUMMARY_MAX_LENGTH)} حرف است.`),
+      .min(1, "توضیح کوتاه رو بنویس.")
+      .max(COURSE_SUMMARY_MAX_LENGTH, `توضیح کوتاه حداکثر ${formatNumberFa(COURSE_SUMMARY_MAX_LENGTH)} حرف می‌تونه باشه.`),
     highlights: linesSchema({ label: "نتیجه‌ها", maxLines: COURSE_HIGHLIGHTS_MAX_LINES }),
     commands: linesSchema({ label: "فرمان‌ها", maxLines: COURSE_COMMANDS_MAX_LINES }),
     coverAlt: z
       .string()
       .trim()
-      .min(COURSE_COVER_ALT_MIN_LENGTH, "توضیح عکس را بنویس: صحنه‌ی عکس را در یک جمله بگو.")
-      .max(COURSE_COVER_ALT_MAX_LENGTH, `توضیح عکس حداکثر ${formatNumberFa(COURSE_COVER_ALT_MAX_LENGTH)} حرف است.`),
+      .min(COURSE_COVER_ALT_MIN_LENGTH, "توضیح عکس رو بنویس: صحنه‌ی عکس رو توی یه جمله بگو.")
+      .max(COURSE_COVER_ALT_MAX_LENGTH, `توضیح عکس حداکثر ${formatNumberFa(COURSE_COVER_ALT_MAX_LENGTH)} حرف می‌تونه باشه.`),
     minAgeMonths: monthsSchema("حداقل سن"),
     maxAgeMonths: monthsSchema("حداکثر سن"),
     sessionCount: z
       .number()
       .int()
-      .min(1, "تعداد جلسه‌ها حداقل یکی است.")
-      .max(COURSE_MAX_SESSIONS, `تعداد جلسه‌ها حداکثر ${formatNumberFa(COURSE_MAX_SESSIONS)} است.`)
+      .min(1, "تعداد جلسه‌ها حداقل یکیه.")
+      .max(COURSE_MAX_SESSIONS, `تعداد جلسه‌ها حداکثر ${formatNumberFa(COURSE_MAX_SESSIONS)} تاست.`)
       .nullable(),
     place: z.enum(COURSE_PLACES).nullable(),
     price: priceSchema("قیمت"),
     boardingPrice: priceSchema("قیمت نگهداری"),
     prerequisites: z
       .array(z.string().trim())
-      .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شود گذاشت.`)
-      .refine((slugs) => new Set(slugs).size === slugs.length, "یک دوره را دو بار انتخاب کرده‌ای."),
+      .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`)
+      .refine((slugs) => new Set(slugs).size === slugs.length, "یه دوره رو دو بار انتخاب کردی."),
   })
   .superRefine((value, context) => {
     if (value.minAgeMonths !== null && value.maxAgeMonths !== null && value.minAgeMonths > value.maxAgeMonths) {
       context.addIssue({
         code: "custom",
         path: ["maxAgeMonths"],
-        message: "حداکثر سن نمی‌تواند از حداقل سن کمتر باشد.",
+        message: "حداکثر سن نمی‌تونه از حداقل سن کمتر باشه.",
       });
     }
   });

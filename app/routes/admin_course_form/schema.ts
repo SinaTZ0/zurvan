@@ -72,23 +72,23 @@ function linesField({ label, maxLines }: { label: string; maxLines: number }) {
   return z
     .string()
     .transform(splitLines)
-    .refine((lines) => lines.length <= maxLines, `${label} حداکثر ${formatNumberFa(maxLines)} خط است.`)
+    .refine((lines) => lines.length <= maxLines, `${label} حداکثر ${formatNumberFa(maxLines)} خط می‌تونه باشه.`)
     .refine(
       (lines) => lines.every((line) => line.length <= COURSE_LINE_MAX_LENGTH),
-      `هر خطِ ${label} حداکثر ${formatNumberFa(COURSE_LINE_MAX_LENGTH)} حرف است.`,
+      `هر خط ${label} حداکثر ${formatNumberFa(COURSE_LINE_MAX_LENGTH)} حرف می‌تونه باشه.`,
     );
 }
 
 function priceField(label: string) {
   return optionalWholeNumber({
-    message: `${label} را با عدد بنویس، بین ${formatNumberFa(MIN_PRICE_TOMAN)} و ${formatNumberFa(MAX_PRICE_TOMAN)} تومان.`,
+    message: `${label} رو با عدد بنویس، بین ${formatNumberFa(MIN_PRICE_TOMAN)} و ${formatNumberFa(MAX_PRICE_TOMAN)} تومان.`,
     min: MIN_PRICE_TOMAN,
     max: MAX_PRICE_TOMAN,
   });
 }
 
-const COVER_REQUIRED_MESSAGE = "یک عکس برای دوره بگذار.";
-const SLUG_MESSAGE = `نشانی فقط از حرف کوچک انگلیسی، رقم و خط تیره ساخته می‌شود و ${formatNumberFa(COURSE_SLUG_MIN_LENGTH)} تا ${formatNumberFa(COURSE_SLUG_MAX_LENGTH)} نویسه است.`;
+const COVER_REQUIRED_MESSAGE = "یه عکس برای دوره بذار.";
+const SLUG_MESSAGE = `نشانی فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ${formatNumberFa(COURSE_SLUG_MIN_LENGTH)} تا ${formatNumberFa(COURSE_SLUG_MAX_LENGTH)} نویسه باشه.`;
 
 /*===== Schema =====*/
 /**
@@ -101,13 +101,13 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
       title: z
         .string()
         .trim()
-        .min(1, "نام دوره را بنویس.")
-        .max(COURSE_TITLE_MAX_LENGTH, `نام دوره حداکثر ${formatNumberFa(COURSE_TITLE_MAX_LENGTH)} حرف است.`),
+        .min(1, "نام دوره رو بنویس.")
+        .max(COURSE_TITLE_MAX_LENGTH, `نام دوره حداکثر ${formatNumberFa(COURSE_TITLE_MAX_LENGTH)} حرف می‌تونه باشه.`),
       latinName: z
         .string()
         .trim()
-        .min(1, "نام لاتین را بنویس.")
-        .max(COURSE_TITLE_MAX_LENGTH, `نام لاتین حداکثر ${formatNumberFa(COURSE_TITLE_MAX_LENGTH)} حرف است.`),
+        .min(1, "نام لاتین رو بنویس.")
+        .max(COURSE_TITLE_MAX_LENGTH, `نام لاتین حداکثر ${formatNumberFa(COURSE_TITLE_MAX_LENGTH)} حرف می‌تونه باشه.`),
       slug: isNew
         ? z
             .string()
@@ -116,30 +116,36 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
             .max(COURSE_SLUG_MAX_LENGTH, SLUG_MESSAGE)
             .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, SLUG_MESSAGE)
         : z.string(),
-      family: z.enum(SELLABLE_COURSE_FAMILIES, "خانواده‌ی دوره را انتخاب کن."),
+      family: z.enum(SELLABLE_COURSE_FAMILIES, "خانواده‌ی دوره رو انتخاب کن."),
       summary: z
         .string()
         .trim()
-        .min(1, "توضیح کوتاه را بنویس.")
-        .max(COURSE_SUMMARY_MAX_LENGTH, `توضیح کوتاه حداکثر ${formatNumberFa(COURSE_SUMMARY_MAX_LENGTH)} حرف است.`),
+        .min(1, "توضیح کوتاه رو بنویس.")
+        .max(
+          COURSE_SUMMARY_MAX_LENGTH,
+          `توضیح کوتاه حداکثر ${formatNumberFa(COURSE_SUMMARY_MAX_LENGTH)} حرف می‌تونه باشه.`,
+        ),
       coverMediaId: isNew ? z.string(COVER_REQUIRED_MESSAGE).min(1, COVER_REQUIRED_MESSAGE) : z.string().nullable(),
       coverAlt: z
         .string()
         .trim()
-        .min(COURSE_COVER_ALT_MIN_LENGTH, "توضیح عکس را بنویس: صحنه‌ی عکس را در یک جمله بگو.")
-        .max(COURSE_COVER_ALT_MAX_LENGTH, `توضیح عکس حداکثر ${formatNumberFa(COURSE_COVER_ALT_MAX_LENGTH)} حرف است.`),
+        .min(COURSE_COVER_ALT_MIN_LENGTH, "توضیح عکس رو بنویس: صحنه‌ی عکس رو توی یه جمله بگو.")
+        .max(
+          COURSE_COVER_ALT_MAX_LENGTH,
+          `توضیح عکس حداکثر ${formatNumberFa(COURSE_COVER_ALT_MAX_LENGTH)} حرف می‌تونه باشه.`,
+        ),
       minAgeMonths: optionalWholeNumber({
-        message: `حداقل سن عدد کامل بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه است.`,
+        message: `حداقل سن باید یه عدد کامل بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه باشه.`,
         min: 0,
         max: COURSE_MAX_AGE_MONTHS,
       }),
       maxAgeMonths: optionalWholeNumber({
-        message: `حداکثر سن عدد کامل بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه است.`,
+        message: `حداکثر سن باید یه عدد کامل بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه باشه.`,
         min: 0,
         max: COURSE_MAX_AGE_MONTHS,
       }),
       sessionCount: optionalWholeNumber({
-        message: `تعداد جلسه‌ها عدد کامل بین ${formatNumberFa(1)} تا ${formatNumberFa(COURSE_MAX_SESSIONS)} است.`,
+        message: `تعداد جلسه‌ها باید یه عدد کامل بین ${formatNumberFa(1)} تا ${formatNumberFa(COURSE_MAX_SESSIONS)} باشه.`,
         min: 1,
         max: COURSE_MAX_SESSIONS,
       }),
@@ -148,19 +154,30 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
       boardingPrice: priceField("قیمت نگهداری"),
       prerequisites: z
         .array(z.string())
-        .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شود گذاشت.`),
+        .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`),
       highlights: linesField({ label: "نتیجه‌ها", maxLines: COURSE_HIGHLIGHTS_MAX_LINES }),
       commands: linesField({ label: "فرمان‌ها", maxLines: COURSE_COMMANDS_MAX_LINES }),
     })
-    .superRefine((value, context) => {
-      if (value.minAgeMonths !== null && value.maxAgeMonths !== null && value.minAgeMonths > value.maxAgeMonths) {
-        context.addIssue({
-          code: "custom",
-          path: ["maxAgeMonths"],
-          message: "حداکثر سن نمی‌تواند از حداقل سن کمتر باشد.",
-        });
-      }
-    });
+    .superRefine(
+      (value, context) => {
+        // `typeof` and not `!== null`: with `when` below this also runs while other fields are wrong, and then only
+        // the two ages are known to have parsed.
+        const { minAgeMonths, maxAgeMonths } = value;
+        if (typeof minAgeMonths === "number" && typeof maxAgeMonths === "number" && minAgeMonths > maxAgeMonths) {
+          context.addIssue({
+            code: "custom",
+            path: ["maxAgeMonths"],
+            message: "حداکثر سن نمی‌تونه از حداقل سن کمتر باشه.",
+          });
+        }
+      },
+      {
+        // Zod skips an object's refinement while any field has failed, so the age order would only be told after
+        // everything else was fixed. It runs whenever both ages parsed, so every message shows on the first submit.
+        when: (payload) =>
+          !payload.issues.some((issue) => issue.path?.[0] === "minAgeMonths" || issue.path?.[0] === "maxAgeMonths"),
+      },
+    );
 }
 
 export type CourseFormInput = z.input<ReturnType<typeof createCourseFormSchema>>;

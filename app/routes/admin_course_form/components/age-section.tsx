@@ -1,10 +1,11 @@
 import { useFormContext, useWatch } from "react-hook-form";
 
-import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui/field";
+import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { COURSE_PLACE_LABELS, COURSE_PLACES } from "~/orpc/course/constants";
 import { formatNumberFa } from "~/lib/digits";
+import { COURSE_PLACE_LABELS, COURSE_PLACES } from "~/orpc/course/constants";
 import { ChoicePills } from "~/routes/admin_course_form/components/choice-pills";
+import { FieldHint, FieldMessage, describedBy } from "~/routes/admin_course_form/components/field-parts";
 import { FormSection } from "~/routes/admin_course_form/components/form-section";
 import { type CourseFormInput, NO_PLACE, parseWholeNumber } from "~/routes/admin_course_form/schema";
 
@@ -14,11 +15,16 @@ const PLACE_OPTIONS = [
   { value: NO_PLACE, label: "بعد از ارزیابی" },
 ];
 
-/** «حدود ۲ سال» under an age typed in months, so 24 is read as two years at a glance. */
-function describeYears(months: number | null): string | null {
-  if (months === null) return null;
-  if (months < 12) return "کمتر از یک سال";
-  return `حدود ${formatNumberFa(Math.round((months / 12) * 10) / 10)} سال`;
+/**
+ * An age typed in months, said in years under the field («۲ سال و ۶ ماه»), so 30 is read as two and a half years at a
+ * glance. An empty field means no limit, and says so.
+ */
+function describeMonths(months: number | null): string {
+  if (months === null) return "خالی یعنی بدون محدودیت";
+  if (months < 12) return "کمتر از یه سال";
+  const years = Math.floor(months / 12);
+  const rest = months % 12;
+  return rest === 0 ? `${formatNumberFa(years)} سال` : `${formatNumberFa(years)} سال و ${formatNumberFa(rest)} ماه`;
 }
 
 /*===== Age Section =====*/
@@ -29,59 +35,76 @@ export function AgeSection() {
     control,
     formState: { errors },
   } = useFormContext<CourseFormInput>();
-  const minYears = describeYears(parseWholeNumber(useWatch({ control, name: "minAgeMonths" }) ?? ""));
-  const maxYears = describeYears(parseWholeNumber(useWatch({ control, name: "maxAgeMonths" }) ?? ""));
+  const minText = useWatch({ control, name: "minAgeMonths" }) ?? "";
+  const maxText = useWatch({ control, name: "maxAgeMonths" }) ?? "";
+  // Text that isn't a number yet says nothing; the message on submit says why.
+  const minWords =
+    minText.trim() && parseWholeNumber(minText) === null ? null : describeMonths(parseWholeNumber(minText));
+  const maxWords =
+    maxText.trim() && parseWholeNumber(maxText) === null ? null : describeMonths(parseWholeNumber(maxText));
 
   return (
-    <FormSection title="سن و جلسه‌ها">
-      {/*------ Ages ------*/}
-      <div className="grid grid-cols-2 gap-3">
-        <Field data-invalid={!!errors.minAgeMonths}>
-          <FieldLabel htmlFor="course-min-age">حداقل سن (ماه)</FieldLabel>
+    <FormSection id="ages">
+      {/*------ Ages and Sessions ------*/}
+      <div className="grid grid-cols-2 gap-x-3 gap-y-5 sm:grid-cols-3 sm:gap-x-4">
+        <Field data-invalid={!!errors.minAgeMonths} className="gap-2">
+          <FieldLabel htmlFor="course-minAgeMonths">حداقل سن (ماه)</FieldLabel>
           <Input
-            id="course-min-age"
+            id="course-minAgeMonths"
             inputMode="numeric"
             autoComplete="off"
             className="h-11 text-sm"
             aria-invalid={!!errors.minAgeMonths}
+            aria-describedby={describedBy({
+              id: "course-minAgeMonths",
+              hint: !!minWords,
+              error: !!errors.minAgeMonths,
+            })}
             {...register("minAgeMonths")}
           />
-          {minYears && <FieldDescription>{minYears}</FieldDescription>}
-          <FieldError errors={[errors.minAgeMonths]} />
+          {minWords && <FieldHint id="course-minAgeMonths">{minWords}</FieldHint>}
+          <FieldMessage id="course-minAgeMonths" message={errors.minAgeMonths?.message} />
         </Field>
-        <Field data-invalid={!!errors.maxAgeMonths}>
-          <FieldLabel htmlFor="course-max-age">حداکثر سن (ماه)</FieldLabel>
+
+        <Field data-invalid={!!errors.maxAgeMonths} className="gap-2">
+          <FieldLabel htmlFor="course-maxAgeMonths">حداکثر سن (ماه)</FieldLabel>
           <Input
-            id="course-max-age"
+            id="course-maxAgeMonths"
             inputMode="numeric"
             autoComplete="off"
             className="h-11 text-sm"
             aria-invalid={!!errors.maxAgeMonths}
+            aria-describedby={describedBy({
+              id: "course-maxAgeMonths",
+              hint: !!maxWords,
+              error: !!errors.maxAgeMonths,
+            })}
             {...register("maxAgeMonths")}
           />
-          {maxYears && <FieldDescription>{maxYears}</FieldDescription>}
-          <FieldError errors={[errors.maxAgeMonths]} />
+          {maxWords && <FieldHint id="course-maxAgeMonths">{maxWords}</FieldHint>}
+          <FieldMessage id="course-maxAgeMonths" message={errors.maxAgeMonths?.message} />
+        </Field>
+
+        {/* On phones the sessions take the full width under the two ages, so each age keeps half. */}
+        <Field data-invalid={!!errors.sessionCount} className="col-span-2 gap-2 sm:col-span-1">
+          <FieldLabel htmlFor="course-sessionCount">تعداد جلسه‌ها</FieldLabel>
+          <Input
+            id="course-sessionCount"
+            inputMode="numeric"
+            autoComplete="off"
+            className="h-11 text-sm max-sm:max-w-[calc(50%-0.375rem)]"
+            aria-invalid={!!errors.sessionCount}
+            aria-describedby={describedBy({ id: "course-sessionCount", hint: true, error: !!errors.sessionCount })}
+            {...register("sessionCount")}
+          />
+          <FieldHint id="course-sessionCount">حدودیه؛ جلسه‌ها توی برنامه دنبال نمی‌شن.</FieldHint>
+          <FieldMessage id="course-sessionCount" message={errors.sessionCount?.message} />
         </Field>
       </div>
 
-      {/*------ Sessions ------*/}
-      <Field data-invalid={!!errors.sessionCount} className="max-w-sm">
-        <FieldLabel htmlFor="course-sessions">تعداد جلسه‌ها</FieldLabel>
-        <Input
-          id="course-sessions"
-          inputMode="numeric"
-          autoComplete="off"
-          className="h-11 text-sm"
-          aria-invalid={!!errors.sessionCount}
-          {...register("sessionCount")}
-        />
-        <FieldDescription>حدوداً؛ جلسه‌ها در برنامه دنبال نمی‌شوند.</FieldDescription>
-        <FieldError errors={[errors.sessionCount]} />
-      </Field>
-
       {/*------ Place ------*/}
       <ChoicePills
-        legend="کجا برگزار می‌شود"
+        legend="کجا برگزار می‌شه"
         options={PLACE_OPTIONS}
         registration={register("place")}
         error={errors.place}

@@ -1,23 +1,31 @@
 import { cn } from "cn";
-import { CameraIcon } from "lucide-react";
-import { useEffect, useId } from "react";
+import { CameraIcon, CheckIcon } from "lucide-react";
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { buttonVariants } from "~/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui/field";
+import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
 import { MEDIA_ACCEPTED_TYPES } from "~/orpc/media/constants";
 import type { Media } from "~/orpc/media/contract";
+import { FieldHint, FieldMessage, describedBy } from "~/routes/admin_course_form/components/field-parts";
 import { FormSection } from "~/routes/admin_course_form/components/form-section";
+import { INK_OUTLINE } from "~/routes/admin_course_form/surfaces";
 import { useCoverUpload } from "~/routes/admin_course_form/hooks/use-cover-upload";
 import type { CourseFormInput } from "~/routes/admin_course_form/schema";
 
+const INPUT_ID = "course-coverMediaId";
+
 /*===== Cover Section =====*/
 /**
- * «عکس دوره»: the cover at 3:2, the way the card crops it, a button to pick or replace it, and its description. A
- * picked file uploads at once and the form keeps only its id; on `edit` the course's own cover shows until a new one
- * is uploaded, and nothing is sent for it if none is.
+ * «عکس دوره»: the cover as a print at 16:9, the way the card crops it, a button to pick or replace it, and its
+ * description. A picked file uploads at once and the form keeps only its id; on `edit` the course's own cover shows
+ * until a new one is uploaded, and nothing is sent for it if none is.
+ *
+ * The print answers each step: dimmed with a spinner while the file is on its way, pressed in when it has arrived
+ * (`animate-tag-stamp`, keyed by the photo), and a destructive frame with the reason when it failed (the photo that
+ * was there stays).
  */
 export function CoverSection({
   uploaded,
@@ -40,9 +48,6 @@ export function CoverSection({
     register,
     formState: { errors },
   } = useFormContext<CourseFormInput>();
-  const inputId = useId();
-  const hintId = `${inputId}-hint`;
-  const errorId = `${inputId}-error`;
 
   const cover = useCoverUpload({ onUploaded });
   const { isPending } = cover;
@@ -56,37 +61,46 @@ export function CoverSection({
   const hasPhoto = Boolean(cover.preview ?? shownSrc);
 
   return (
-    <FormSection title="عکس دوره">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        {/*------ Frame ------*/}
+    <FormSection id="cover">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
+        {/*------ Print ------*/}
+        {/* A print on the plate: the card's paper round the photo and an ink ring, as the Evaluations prints are. */}
         <div
           className={cn(
-            "relative aspect-[3/2] w-full shrink-0 overflow-hidden rounded-xl border bg-sunken sm:w-64",
-            message ? "border-destructive/60" : "border-border",
+            "w-full shrink-0 rounded-2xl bg-card p-1.5 ring-1 sm:w-72",
+            message ? "ring-destructive/60" : "ring-foreground/15",
           )}
         >
-          {cover.preview ? (
-            <img src={cover.preview} alt="" className="size-full object-cover opacity-50" />
-          ) : shownSrc ? (
-            <img src={shownSrc} alt="" className="size-full object-cover" />
-          ) : (
-            <span className="absolute inset-0 grid place-items-center text-muted-foreground">
-              <CameraIcon aria-hidden strokeWidth={1.5} className="size-7" />
-            </span>
-          )}
-          {isPending && (
-            <span className="absolute inset-0 grid place-items-center">
-              <Spinner aria-label="در حال بارگذاری" className="size-7 text-foreground" />
-            </span>
-          )}
+          <div
+            key={uploaded?.id ?? "saved"}
+            className={cn(
+              "relative aspect-video overflow-hidden rounded-xl bg-sunken",
+              uploaded && "motion-safe:animate-tag-stamp",
+            )}
+          >
+            {cover.preview ? (
+              <img src={cover.preview} alt="" className="size-full object-cover opacity-45" />
+            ) : shownSrc ? (
+              <img src={shownSrc} alt="" className="size-full object-cover" />
+            ) : (
+              <span className="absolute inset-0 grid place-items-center text-muted-foreground">
+                <CameraIcon aria-hidden strokeWidth={1.5} className="size-7" />
+              </span>
+            )}
+            {isPending && (
+              <span className="absolute inset-0 grid place-items-center">
+                <Spinner aria-hidden className="size-7 text-foreground" />
+              </span>
+            )}
+          </div>
         </div>
 
         {/*------ Picker ------*/}
-        <div className="flex min-w-0 flex-col items-start gap-2">
+        <div className="flex min-w-0 flex-col items-start gap-2.5">
           <label
-            htmlFor={inputId}
+            htmlFor={INPUT_ID}
             className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
+              buttonVariants({ variant: "outline", className: INK_OUTLINE }),
               "cursor-pointer has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
               isPending && "pointer-events-none opacity-50",
             )}
@@ -94,10 +108,10 @@ export function CoverSection({
             <CameraIcon aria-hidden strokeWidth={1.75} />
             {hasPhoto ? "عوض کردن عکس" : "انتخاب عکس"}
             <input
-              id={inputId}
+              id={INPUT_ID}
               type="file"
               accept={MEDIA_ACCEPTED_TYPES}
-              aria-describedby={message ? `${hintId} ${errorId}` : hintId}
+              aria-describedby={describedBy({ id: INPUT_ID, hint: true, error: !!message })}
               aria-invalid={message ? true : undefined}
               className="sr-only"
               disabled={isPending}
@@ -108,29 +122,37 @@ export function CoverSection({
               }}
             />
           </label>
-          <p id={hintId} className="text-sm text-pretty text-muted-foreground">
-            {isPending ? "در حال بارگذاری…" : "عکس افقی بهتر است؛ از دو طرف بریده می‌شود."}
-          </p>
-          {message && (
-            <p id={errorId} role="alert" className="text-sm text-destructive">
-              {message}
-            </p>
-          )}
+          <FieldHint id={INPUT_ID}>
+            <span aria-live="polite">
+              {isPending ? (
+                "داره بار می‌شه…"
+              ) : uploaded ? (
+                <span className="inline-flex items-start gap-1.5 text-foreground/85">
+                  <CheckIcon aria-hidden strokeWidth={2.2} className="mt-0.5 size-3.5 shrink-0" />
+                  عکس تازه رسید؛ با ذخیره سر جاش می‌شینه.
+                </span>
+              ) : (
+                "عکس افقی بهتره؛ از دو طرف بریده می‌شه."
+              )}
+            </span>
+          </FieldHint>
+          <FieldMessage id={INPUT_ID} message={message} />
         </div>
       </div>
 
       {/*------ Description ------*/}
-      <Field data-invalid={!!errors.coverAlt}>
-        <FieldLabel htmlFor="course-cover-alt">توضیح عکس</FieldLabel>
+      <Field data-invalid={!!errors.coverAlt} className="gap-2">
+        <FieldLabel htmlFor="course-coverAlt">توضیح عکس</FieldLabel>
         <Input
-          id="course-cover-alt"
+          id="course-coverAlt"
           autoComplete="off"
           className="h-11 text-sm"
           aria-invalid={!!errors.coverAlt}
+          aria-describedby={describedBy({ id: "course-coverAlt", hint: true, error: !!errors.coverAlt })}
           {...register("coverAlt")}
         />
-        <FieldDescription>برای کسی که عکس را نمی‌بیند: صحنه را بنویس.</FieldDescription>
-        <FieldError errors={[errors.coverAlt]} />
+        <FieldHint id="course-coverAlt">برای کسی که عکس رو نمی‌بینه: صحنه رو بنویس.</FieldHint>
+        <FieldMessage id="course-coverAlt" message={errors.coverAlt?.message} />
       </Field>
     </FormSection>
   );
