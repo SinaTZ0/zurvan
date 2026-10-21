@@ -1,0 +1,44 @@
+import { CircleAlertIcon } from "lucide-react";
+
+import { Link } from "~/components/link";
+import { buttonVariants } from "~/components/ui/button";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
+import type { Gate } from "~/routes/buy/buy-lists";
+import { StagePanel } from "~/routes/buy/components/stage-panel";
+
+/*===== Gate Panel =====*/
+/**
+ * The reason every course on sale shares for this dog (in practice: it hasn't been evaluated), said once instead of on
+ * every row: the server's sentence in plain words with an icon, and the gold «ارزیابی رایگان» for this dog. The
+ * center's dog keeps the padlocked garden gate; his bubble says the same thing as flavour.
+ */
+export function GatePanel({ gate, arrive }: { gate: Gate; arrive: boolean }) {
+  return (
+    <StagePanel
+      titleId="gate-title"
+      title="قدم اول: ارزیابی رایگان"
+      arrive={arrive}
+      scene={{
+        box: [19, 25],
+        scenery: { name: "gate", width: [10.5, 15], left: [0, 0] },
+        dog: { name: "padlock", height: [8, 12], left: [9.75, 13.5], head: 0.66 },
+        bubble: `اول باید ${HEAD_TRAINER.firstName} ببینتش!`,
+      }}
+    >
+      <p className="mt-4 flex max-w-lg items-start gap-2.5 text-pretty text-destructive">
+        <CircleAlertIcon aria-hidden strokeWidth={2} className="mt-1 size-5 shrink-0" />
+        <span>{gate.message}</span>
+      </p>
+      <p className="mt-3 max-w-lg text-pretty text-muted-foreground">
+        ارزیابی رایگانه؛ {HEAD_TRAINER.firstName} باهات تماس می‌گیره و سگت رو از نزدیک می‌بینه. بعدش دوره‌هایی که براش
+        باز شدن همین‌جا با قیمتشون میان.
+      </p>
+      <Link
+        to={gate.way.to}
+        className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
+      >
+        {gate.way.label}
+      </Link>
+    </StagePanel>
+  );
+}

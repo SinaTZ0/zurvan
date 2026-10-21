@@ -1,15 +1,30 @@
-import { isRouteErrorResponse, useLocation } from "react-router";
+import { cn } from "cn";
+import { isRouteErrorResponse, useNavigation } from "react-router";
 
-import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
 import { isShownFamily } from "~/lib/course-families";
 import { requireSession } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
-import { BuyCourseRow } from "~/routes/buy/components/buy-course-row";
-import { BuyDogPicker } from "~/routes/buy/components/buy-dog-picker";
+import { splitCourses } from "~/routes/buy/buy-lists";
+import { BuyError } from "~/routes/buy/components/buy-error";
+import { BuyHero } from "~/routes/buy/components/buy-hero";
+import { CanTakeSection } from "~/routes/buy/components/can-take-section";
 import { CartBar } from "~/routes/buy/components/cart-bar";
+import { GatePanel } from "~/routes/buy/components/gate-panel";
+import { LaterSection } from "~/routes/buy/components/later-section";
+import { NoDogsPanel } from "~/routes/buy/components/no-dogs-panel";
+import { PageEnd } from "~/routes/buy/components/page-end";
+import { PageMotion } from "~/routes/buy/components/page-motion";
+import { PickFirstPanel } from "~/routes/buy/components/pick-first-panel";
+import { useChanged } from "~/routes/buy/hooks/use-changed";
+import { COLUMN } from "~/routes/buy/plate";
+import type { PublicLayoutHandle } from "~/routes/layout_public/layout-public";
 
 import type { Route } from "./+types/buy";
+
+/*===== Handle =====*/
+// The page ends on a stretch of path that runs straight into the footer: the public shell drops `main`'s bottom
+// padding when a page's handle sets this.
+export const handle: PublicLayoutHandle = { flushFooter: true };
 
 /*===== Guard =====*/
 // Customers only. A visitor is sent to sign in and brought back here, the query string included (`requireSession`); a
@@ -18,8 +33,8 @@ export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: [
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [
-  { title: "خرید دوره | زروان" },
-  { name: "description", content: "اول سگت را انتخاب کن؛ برای هر دوره می‌بینی مناسبش هست یا اول چه کاری لازم است." },
+  { title: "خرید دوره | آموزش K9" },
+  { name: "description", content: "اول سگت رو انتخاب کن؛ برای هر دوره می‌بینی مناسبشه یا اول چی لازمه." },
 ];
 
 /*===== Headers =====*/
@@ -55,75 +70,82 @@ export async function loader({ request }: Route.LoaderArgs) {
 
 /*===== Page =====*/
 /**
- * «خرید دوره»: for people who know what they want. Pick the dog first, then see the courses it can take (with the price
- * and a button) and the ones it can't (with why, and the way out). Adding goes to the cart; «پرداخت» is there.
+ * «خرید دوره»: for people who know what they want (F5). The center's stall: the customer's dogs line up as prints, the
+ * picked one steps forward, and the plates below show what fits it: «الان می‌تونه» (price and «افزودن به سبد») and
+ * «بعداً باز می‌شن» (each reason and the way out), with a reason every course shares (no evaluation) lifted into a gate
+ * first. Adding goes to the cart; «پرداخت» is there, behind the floating cart bar.
+ *
+ * Picking a dog is a navigation (`?dog=`): while it loads, the pressed print lifts at once (the pending location's dog)
+ * and the plates below dim; when it lands, the h1 and the bubbles re-key and the plates arrive staggered.
  */
 export default function BuyPage({ loaderData }: Route.ComponentProps) {
   const { dogs, dogId, courses, verdicts } = loaderData;
   const dog = dogs.find((candidate) => candidate.id === dogId) ?? null;
+  const lists = dog ? splitCourses({ courses, verdicts, dogId: dog.id }) : null;
+  const changed = useChanged(dogId ?? "none");
+
+  /*------ The Dog Being Opened ------*/
+  const navigation = useNavigation();
+  const pending =
+    navigation.state === "loading" && navigation.location.pathname === "/buy"
+      ? new URLSearchParams(navigation.location.search).get("dog")
+      : null;
+  const pendingDog = pending ? dogs.find((candidate) => candidate.id === pending) : undefined;
+  const pickedId = pendingDog?.id ?? dogId;
+  const loading = pendingDog !== undefined && pendingDog.id !== dogId;
 
   return (
-    <section aria-labelledby="buy-title" className="site-container pt-section-sm pb-section-md">
-      <h1 id="buy-title" className="font-display text-h1 font-black text-balance">
-        خرید دوره
-      </h1>
-      <p className="mt-4 max-w-xl text-lead text-pretty text-muted-foreground">
-        اول بگو برای کدوم سگ؛ برای هر دوره می‌بینی مناسبشه یا اول چه کاری لازمه.
-      </p>
+    <>
+      <PageMotion />
 
-      {/*===== Dog =====*/}
-      <div className="mt-10">
-        <BuyDogPicker dogs={dogs} dogId={dogId} />
+      {/*===== Hero: the Stall and the Line-up =====*/}
+      <BuyHero
+        dogs={dogs}
+        pickedId={pickedId}
+        dogName={dog?.name ?? null}
+        pickBubble={dog && lists && !loading ? { dogId: dog.id, line: lists.line, changed } : null}
+        changed={changed}
+      />
+
+      {/*===== What Fits =====*/}
+      <div
+        key={dogId ?? "none"}
+        className={cn(
+          COLUMN,
+          "mt-10 flex flex-col gap-y-14 motion-safe:transition-opacity motion-safe:duration-300 lg:mt-14 lg:gap-y-20",
+          loading && "opacity-45",
+        )}
+      >
+        {dogs.length === 0 ? (
+          <NoDogsPanel />
+        ) : !dog || !lists ? (
+          <PickFirstPanel />
+        ) : (
+          <>
+            {lists.gate && <GatePanel gate={lists.gate} arrive={changed} />}
+            {/* A dog with nothing to buy now has no offer plate: the gate (or the list of reasons) leads. */}
+            {lists.canTake.length > 0 && (
+              <CanTakeSection courses={lists.canTake} dogId={dog.id} dogName={dog.name} arrive={changed} />
+            )}
+            {lists.later.length > 0 && (
+              <LaterSection
+                rows={lists.later}
+                gated={lists.gate !== null}
+                arrive={changed}
+                delay={lists.canTake.length > 0 ? 160 : 80}
+              />
+            )}
+          </>
+        )}
       </div>
 
-      {/*===== Courses =====*/}
-      {dog && (
-        <div className="mt-12">
-          <h2 className="text-h3 font-bold text-balance">دوره‌ها برای {dog.name}</h2>
-          <ul className="mt-5 flex flex-col gap-3">
-            {courses.map((course) => {
-              const verdict = verdicts.find((entry) => entry.courseSlug === course.slug);
-              return (
-                <BuyCourseRow
-                  key={course.slug}
-                  course={course}
-                  dog={{ id: dog.id, name: dog.name }}
-                  verdict={verdict ?? null}
-                />
-              );
-            })}
-          </ul>
-        </div>
-      )}
-
+      <PageEnd />
       <CartBar />
-    </section>
+    </>
   );
 }
 
 /*===== Error Boundary =====*/
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const { pathname, search } = useLocation();
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
-  return (
-    <section aria-labelledby="buy-error-title" className="site-container py-section-md">
-      <div className="max-w-xl">
-        <h1 id="buy-error-title" className="font-display text-h1 font-black text-balance">
-          {notFound ? "این صفحه پیدا نشد" : "صفحه‌ی خرید باز نشد"}
-        </h1>
-        <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          مشکلی پیش آمد. دوباره امتحان کن یا از صفحه‌ی دوره‌ها شروع کن.
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link to={`${pathname}${search}`} reloadDocument className={buttonVariants({ variant: "solid", size: "lg" })}>
-            دوباره امتحان کن
-          </Link>
-          <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            دوره‌ها
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
+  return <BuyError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
