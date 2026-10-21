@@ -118,7 +118,7 @@ export function DogBag({
 
         {/*===== Bag =====*/}
         <div className={cn(PLATE, "p-4 sm:p-6 lg:p-8")}>
-          <div className="grid gap-y-5 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-x-8">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-y-5 lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-x-8">
             {/*------ Print and Its Bubble ------*/}
             <div className="flex items-center gap-4 lg:flex-col lg:items-stretch lg:gap-0 lg:self-start">
               <TapedPrint
