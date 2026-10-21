@@ -1,11 +1,9 @@
-import { redirect } from "react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { db } from "~/db/client.server";
 import { getPaymentGateway } from "~/lib/payment-gateway.server";
 import { CART_RESULT_PATH } from "~/orpc/checkout/constants";
 import { completeGatewayPayment } from "~/orpc/checkout/service";
-
-import type { Route } from "./+types/payment-callback";
 
 /*===== Payment Callback =====*/
 /**
@@ -13,7 +11,16 @@ import type { Route } from "./+types/payment-callback";
  * the demo gateway follows). The payment is verified server-side and settled exactly once (F5), then the customer lands
  * on the Cart with the result as a banner. No session is needed: the authority token identifies the payment.
  */
-export async function loader({ request }: Route.LoaderArgs) {
+export const Route = createFileRoute("/payment/callback")({
+  server: { handlers: { GET: ({ request }) => settle(request) } },
+});
+
+/** A plain 302, as the gateway's redirect back expects; the Cart page is a full page load. */
+function redirect(location: string) {
+  return new Response(null, { status: 302, headers: { Location: location, "Cache-Control": "no-store" } });
+}
+
+async function settle(request: Request) {
   const params = new URL(request.url).searchParams;
   const authority = params.get("Authority");
   if (!authority) return redirect(CART_RESULT_PATH);

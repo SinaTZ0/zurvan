@@ -1,11 +1,9 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { rpcHandler } from "~/orpc/handler.server";
 
-import type { Route } from "./+types/rpc";
-
 /*===== RPC Endpoint =====*/
-/**
- * Hands the request to oRPC. Anything that isn't a known procedure is a 404.
- */
+/** Hands the request to oRPC. Anything that isn't a known procedure is a 404. */
 async function handleRequest(request: Request) {
   const { response } = await rpcHandler.handle(request, {
     // Must match this route's path and the browser link's `url` (`~/orpc/client`).
@@ -15,12 +13,7 @@ async function handleRequest(request: Request) {
   return response ?? new Response("Not found", { status: 404 });
 }
 
-// React Router sends GET/HEAD to the loader. The handler rejects them with a proper oRPC response
-// instead of a React Router 405.
-export function loader({ request }: Route.LoaderArgs) {
-  return handleRequest(request);
-}
-
-export function action({ request }: Route.ActionArgs) {
-  return handleRequest(request);
-}
+// Every method goes to oRPC, which answers the ones it doesn't take with a proper oRPC response.
+export const Route = createFileRoute("/rpc/$")({
+  server: { handlers: { ANY: ({ request }) => handleRequest(request) } },
+});
