@@ -117,6 +117,14 @@ normalization stays until B4.
 `setCookie` / `getCookie` (`@tanstack/react-start/server`) or a request middleware. Keep
 `app/lib/auth.server.test.ts` passing.
 
+**Done (2026-10-22).** `referral.server.ts` uses the `cookie` package: `referralCookie({ requestUrl, headers })`
+returns `{ name, value, options }` (the shape of Start's `setCookie`), `serializeReferralCookie` makes the header for
+React Router, and `readReferralCode` is synchronous. The value keeps `createCookie`'s encoding (the JSON string in
+base64), so cookies already in browsers still read; a test checks that. The cookie is now set by a root `middleware`
+in `app/root.tsx` on `/` and `/auth` (and their `.data` URLs), not in those loaders; the home page has no loader any
+more. In B1 the middleware becomes a Start request middleware. Small difference: a signed-in person opening
+`/auth?ref=…` now gets the cookie with the redirect (it was dropped before); signup ignores it for them.
+
 ### A4. Small cleanups that help both
 
 - Fix the stale comment in `app/root.tsx` ("Loader data seeds most queries": nothing seeds queries today).

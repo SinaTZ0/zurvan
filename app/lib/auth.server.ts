@@ -193,7 +193,7 @@ function createAuth(baseURL: string) {
           before: async (newUser, context) => {
             const partnerId = await findPartnerForNewCustomer({
               db,
-              referralCode: context?.headers ? await readReferralCode(context.headers) : null,
+              referralCode: context?.headers ? readReferralCode(context.headers) : null,
               phoneNumber: typeof newUser.phoneNumber === "string" ? newUser.phoneNumber : null,
             });
             return partnerId ? { data: { ...newUser, referredByPartnerId: partnerId } } : undefined;

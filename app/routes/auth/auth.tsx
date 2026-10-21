@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { data, redirect } from "react-router";
+import { redirect } from "react-router";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { referralCookieFromUrl } from "~/lib/referral.server";
 import { SITE_RULES } from "~/lib/site-rules";
 import { createServerClient } from "~/orpc/server-client.server";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
@@ -27,27 +26,20 @@ export const meta: Route.MetaFunction = () => [
 export async function loader({ request }: Route.LoaderArgs) {
   const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
   const client = createServerClient(request);
-  const [session, site, referralCookie] = await Promise.all([
-    client.session.get(),
-    client.site.config(),
-    // A partner's link can land here too: remember its `?ref=` code so signup can attribute the customer (F7).
-    referralCookieFromUrl(request.url, request.headers),
-  ]);
+  // A partner's link can land here too: the root middleware remembers its `?ref=` code (F7).
+  const [session, site] = await Promise.all([client.session.get(), client.site.config()]);
 
   // Signed-in people have nothing to do here, unless their new account still has no name. A blocked account's
   // sessions are revoked on the way, so it reads as signed out and starts again at the phone step.
   if (session.status === "active") throw redirect(redirectTo);
 
-  return data(
-    // `rulesPublished`: the name step asks for the tick only when approved rules exist (F13).
-    {
-      showcase: site.showcase,
-      redirectTo,
-      needsName: session.status === "unnamed",
-      rulesPublished: SITE_RULES !== null,
-    },
-    referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined,
-  );
+  return {
+    showcase: site.showcase,
+    redirectTo,
+    needsName: session.status === "unnamed",
+    // The name step asks for the tick only when approved rules exist (F13).
+    rulesPublished: SITE_RULES !== null,
+  };
 }
 
 /** Only same-site paths, so a crafted `?redirectTo=` link can't send someone to another site after signing in. */

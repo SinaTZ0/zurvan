@@ -1,10 +1,7 @@
-import { data } from "react-router";
-
 import { GroundStrip } from "~/components/ground-strip";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { referralCookieFromUrl } from "~/lib/referral.server";
 import { StoryClosing } from "~/routes/home/components/story-closing";
 import { StoryFormats } from "~/routes/home/components/story-formats";
 import { StoryHero } from "~/routes/home/components/story-hero";
@@ -27,14 +24,6 @@ export const meta: Route.MetaFunction = () => [
 
 // The closing scene's dog stands on the footer's top edge, so there is no gap above it.
 export const handle: PublicLayoutHandle = { flushFooter: true };
-
-/*===== Loader =====*/
-// The page is copy and pictures, so the server does one small thing: remember a partner's referral code from `?ref=`,
-// so signup can attribute the customer later (app-spec F7).
-export async function loader({ request }: Route.LoaderArgs) {
-  const referralCookie = await referralCookieFromUrl(request.url, request.headers);
-  return data(null, referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined);
-}
 
 /*===== Page =====*/
 /**

@@ -9,9 +9,27 @@ import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { referralCookie, serializeReferralCookie } from "~/lib/referral.server";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+
+/*===== Referral Code =====*/
+// A partner's link opens the home page with `?ref=<code>`, and the sign-in page can carry it on. The cookie is set here,
+// on the server's response, rather than in those pages' loaders: TanStack Start's loaders also run in the browser,
+// where this becomes a request middleware. A client navigation asks for `<path>.data` (`/_.data` for the home page).
+const REFERRAL_LANDINGS = new Set(["/", "/_.data", "/auth", "/auth.data"]);
+
+const rememberReferral: Route.MiddlewareFunction = async ({ request }, next) => {
+  const response = await next();
+  if (!REFERRAL_LANDINGS.has(new URL(request.url).pathname)) return response;
+
+  const cookie = referralCookie({ requestUrl: request.url, headers: request.headers });
+  if (cookie) response.headers.append("Set-Cookie", serializeReferralCookie(cookie));
+  return response;
+};
+
+export const middleware: Route.MiddlewareFunction[] = [rememberReferral];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   // One client per render tree (like the Jotai store): a module-level client on the server would
