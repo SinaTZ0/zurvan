@@ -139,6 +139,27 @@ export const MASCOT_CUTS = {
   tripod: { width: 438, height: 507 },
   clock: { width: 409, height: 522 },
   safe: { width: 457, height: 402 },
+  // Poses for the money pages (Cart, Purchases, Buy a Course), cut from image-reference/generated/batch6/poses-8.png:
+  // standing up pushing a small wire shopping cart, a long blank receipt in his mouth, a blank gold bank card in his
+  // mouth, leaping for joy, a blank price tag in his mouth, lying counting a stack of gold coins, dropping a tennis ball
+  // into an open travel bag, lying with a paw on a big open blank book.
+  "cart-push": { width: 413, height: 396 },
+  receipt: { width: 281, height: 392 },
+  card: { width: 268, height: 392 },
+  jump: { width: 404, height: 291 },
+  "price-tag": { width: 280, height: 371 },
+  coins: { width: 394, height: 245 },
+  pack: { width: 372, height: 345 },
+  ledger: { width: 391, height: 352 },
+  // Scenery from image-reference/generated/batch6/scenery-6.png: an old brass cash register with its drawer open, an
+  // empty wire shopping cart, a market stall with a striped awning and empty crates, an archive box of slips and folders,
+  // a packed leather travel bag with a leash and a ball, a blank A-frame chalkboard.
+  register: { width: 503, height: 447 },
+  "shop-cart": { width: 421, height: 412 },
+  stall: { width: 518, height: 444 },
+  archive: { width: 515, height: 407 },
+  suitcase: { width: 497, height: 414 },
+  chalkboard: { width: 471, height: 427 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
