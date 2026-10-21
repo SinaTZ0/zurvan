@@ -1,7 +1,7 @@
 import { parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
 
 /*===== Constants =====*/
-/** Dogs per page. The register is one card per dog, so twenty is about two screens of rows on a phone. */
+/** Dogs per page. The register is one row per dog, so twenty is about two screens of rows on a phone. */
 export const PAGE_SIZE = 20;
 
 export const DOG_STATE_FILTERS = ["all", "none", "evaluated"] as const;
