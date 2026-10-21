@@ -1,10 +1,9 @@
 import { ORPCError } from "@orpc/client";
 import { data } from "react-router";
 
-import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
 import { sessionContext } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
+import { ProfileError } from "~/routes/account_profile/components/profile-error";
 import { ProfileSettings } from "~/routes/account_profile/components/profile-settings";
 
 import type { Route } from "./+types/account-profile";
@@ -46,27 +45,16 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
 /*===== Profile Settings =====*/
 /**
- * F1's profile page for customers and partners: the name, the password, and for a partner the Sheba the Admin pays
- * commission to. Your own tag is engraved as you type; the page itself is `ProfileSettings`.
+ * F1's profile page for customers and partners: the name, the password, and for a partner the Sheba the head trainer
+ * pays commission to. The idea is the person's own tag on the house's hall stand, engraved as they type, with the
+ * center's dog looking after each card; the page itself is `ProfileSettings`.
  */
 export default function AccountProfilePage({ loaderData }: Route.ComponentProps) {
   return <ProfileSettings {...loaderData} />;
 }
 
 /*===== Error Boundary =====*/
-// Inside the account shell, so the header stays on screen; the way back is the storefront, which both roles can reach.
+// Inside the account shell, so the header and its way back stay on screen.
 export function ErrorBoundary() {
-  return (
-    <section aria-labelledby="profile-error-title" className="site-container py-16">
-      <h1 id="profile-error-title" className="text-2xl font-extrabold">
-        تنظیمات حساب باز نشد
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به صفحه‌ی اصلی
-      </Link>
-    </section>
-  );
+  return <ProfileError />;
 }

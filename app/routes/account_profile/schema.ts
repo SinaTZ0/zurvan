@@ -8,15 +8,15 @@ import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "~/lib/user-constants";
 const namePart = (missing: string) => z.string().trim().min(2, missing).max(40, "حداکثر ۴۰ حرف.");
 
 export const nameFormSchema = z.object({
-  firstName: namePart("اسمت را بنویس."),
-  lastName: namePart("نام خانوادگی‌ات را بنویس."),
+  firstName: namePart("اسمت رو بنویس."),
+  lastName: namePart("نام خانوادگی‌ت رو بنویس."),
 });
 
 export type NameFormValues = z.infer<typeof nameFormSchema>;
 
 /*===== Sheba =====*/
-const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع شود و ۲۴ رقم بعد از آن داشته باشد.";
-const SHEBA_CHECKSUM_MESSAGE = "این شماره‌ی شبا درست نیست؛ دوباره نگاهش کن.";
+const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع بشه و ۲۴ رقم بعدش داشته باشه.";
+const SHEBA_CHECKSUM_MESSAGE = "این شماره‌ی شبا درست نیست؛ دوباره نگاش کن.";
 
 /**
  * The 24 digits after «IR» from whatever was typed: Persian or Arabic digits, spaces (and dashes, and the zero-width
@@ -75,16 +75,16 @@ export const passwordFormSchema = z
   .object({
     newPassword: z
       .string()
-      .min(1, "رمز عبور را بنویس.")
+      .min(1, "رمز عبور رو بنویس.")
       .refine((value) => Array.from(value).length >= PASSWORD_MIN_LENGTH, {
-        message: `رمز عبور باید حداقل ${toPersianDigits(String(PASSWORD_MIN_LENGTH))} نویسه باشد.`,
+        message: `رمز عبور باید دست‌کم ${toPersianDigits(String(PASSWORD_MIN_LENGTH))} نویسه باشه.`,
       })
-      .max(PASSWORD_MAX_LENGTH, `رمز عبور حداکثر ${toPersianDigits(String(PASSWORD_MAX_LENGTH))} نویسه می‌تواند باشد.`),
-    confirmPassword: z.string().min(1, "رمز عبور را یک بار دیگر بنویس."),
+      .max(PASSWORD_MAX_LENGTH, `رمز عبور حداکثر ${toPersianDigits(String(PASSWORD_MAX_LENGTH))} نویسه می‌تونه باشه.`),
+    confirmPassword: z.string().min(1, "رمز عبور رو یه بار دیگه بنویس."),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
     path: ["confirmPassword"],
-    message: "دو رمز عبور یکی نیستند.",
+    message: "دو تا رمز عبور یکی نیستن.",
   });
 
 export type PasswordFormValues = z.infer<typeof passwordFormSchema>;

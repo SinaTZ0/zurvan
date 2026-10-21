@@ -1,15 +1,16 @@
 import { ORPCError } from "@orpc/client";
 import type { UseFormSetError } from "react-hook-form";
 
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { errorDataSchema } from "~/orpc/errors";
 import type { PasswordFormValues, ShebaFormInput } from "~/routes/account_profile/schema";
 
 /*===== Better-Auth =====*/
 /** Why saving the name failed, in words that say what to do next. Better-Auth's own messages are English. */
 export function describeNameError(error: { status?: number } | null): string {
-  if (error?.status === 401) return "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو.";
-  if (error?.status === 429) return "تعداد درخواست‌ها زیاد بود. کمی صبر کن و دوباره امتحان کن.";
-  return "ذخیره نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن.";
+  if (error?.status === 401) return "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو.";
+  if (error?.status === 429) return "تعداد درخواست‌ها زیاد بود. یه کم صبر کن و دوباره امتحان کن.";
+  return "ذخیره نشد. اینترنتت رو چک کن و دوباره امتحان کن.";
 }
 
 /*===== Sheba =====*/
@@ -32,15 +33,17 @@ export function applyShebaServerError({
     if (message) setError("shebaNumber", { message });
     const [general] = parsed.data.errors;
     if (general) setError("root", { message: general });
-    if (!message && !general) setError("root", { message: "ذخیره نشد. شماره‌ی شبا را بررسی کن و دوباره امتحان کن." });
+    if (!message && !general) setError("root", { message: "ذخیره نشد. شماره‌ی شبا رو چک کن و دوباره امتحان کن." });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
+    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
     return;
   }
   if (code === "FORBIDDEN" || code === "NOT_FOUND") {
-    setError("root", { message: "برای این حساب شبا ثبت نمی‌شود. اگر فکر می‌کنی اشتباه است، به طلا خبر بده." });
+    setError("root", {
+      message: `برای این حساب شبا ثبت نمی‌شه. اگه فکر می‌کنی اشتباهه، به ${HEAD_TRAINER.firstName} خبر بده.`,
+    });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {
@@ -48,7 +51,7 @@ export function applyShebaServerError({
     setError("root", { message: `ذخیره نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
     return;
   }
-  setError("root", { message: "ذخیره نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: "ذخیره نشد. اینترنتت رو چک کن و دوباره امتحان کن." });
 }
 
 /*===== Password =====*/
@@ -74,18 +77,18 @@ export function applyPasswordServerError({
     if (message) setError("newPassword", { message });
     const [general] = parsed.data.errors;
     if (general) setError("root", { message: general });
-    if (!message && !general) setError("root", { message: "ذخیره نشد. رمز عبور را بررسی کن و دوباره امتحان کن." });
+    if (!message && !general) setError("root", { message: "ذخیره نشد. رمز عبور رو چک کن و دوباره امتحان کن." });
     return;
   }
   if (code === SESSION_TOO_OLD_CODE) {
     setError("root", {
       message:
-        "برای امنیت، رمز عبور را فقط تا نیم ساعت بعد از ورود می‌شود عوض کرد. یک بار از حسابت خارج شو، با کد پیامکی دوباره وارد شو و همان لحظه رمز را بگذار.",
+        "برای امنیت، رمز عبور رو فقط تا نیم ساعت بعد از ورود می‌شه عوض کرد. یه بار از حسابت خارج شو، با کد پیامکی دوباره وارد شو و همون لحظه رمز رو بذار.",
     });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
+    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {
@@ -93,5 +96,5 @@ export function applyPasswordServerError({
     setError("root", { message: `ذخیره نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
     return;
   }
-  setError("root", { message: "ذخیره نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: "ذخیره نشد. اینترنتت رو چک کن و دوباره امتحان کن." });
 }

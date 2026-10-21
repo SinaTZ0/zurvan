@@ -12,8 +12,17 @@ import { type NameFormValues, nameFormSchema } from "~/routes/account_profile/sc
  *
  * `saved` starts from the loader and moves to the submitted values on success, so the tag and the disabled save button
  * are right at once, without waiting for the route to reload (which still happens: the headers need the new name).
+ * `onFailed` runs for a refused submit, the form's own checks or the server's, so the card's dog can say so.
  */
-export function useNameForm({ initial, onSaved }: { initial: NameFormValues; onSaved: () => void }) {
+export function useNameForm({
+  initial,
+  onSaved,
+  onFailed,
+}: {
+  initial: NameFormValues;
+  onSaved: () => void;
+  onFailed: () => void;
+}) {
   const [saved, setSaved] = useState(initial);
   const saveName = useSaveName();
   const form = useForm<NameFormValues>({ resolver: zodResolver(nameFormSchema), defaultValues: initial });
@@ -37,9 +46,12 @@ export function useNameForm({ initial, onSaved }: { initial: NameFormValues; onS
         toast.add({ title: "ذخیره شد.", type: "success" });
         onSaved();
       },
-      onError: (error) => form.setError("root", { message: error.message }),
+      onError: (error) => {
+        form.setError("root", { message: error.message });
+        onFailed();
+      },
     });
-  });
+  }, onFailed);
 
   return { form, onSubmit, isPending: saveName.isPending, isDirty, preview };
 }
