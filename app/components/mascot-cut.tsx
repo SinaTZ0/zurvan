@@ -41,13 +41,41 @@ export const MASCOT_CUTS = {
   key: { width: 360, height: 250 },
   flag: { width: 360, height: 313 },
   bone: { width: 360, height: 174 },
+  // Poses for the About, Contact and Help pages (and later ones), cut from image-reference/generated/batch1/poses-8.png.
+  // They are smaller than the course poses: keep them under about 1.3x their width here.
+  phone: { width: 256, height: 294 },
+  think: { width: 196, height: 297 },
+  wave: { width: 223, height: 307 },
+  diploma: { width: 210, height: 300 },
+  basket: { width: 292, height: 267 },
+  celebrate: { width: 241, height: 281 },
+  letter: { width: 183, height: 292 },
+  sleep: { width: 259, height: 172 },
+  // Scenery from image-reference/generated/batch1/scenery-4.png: the Tehran skyline (Milad tower, the Alborz), a
+  // mailbox, a notice board with blank papers, a park bench with a street lamp.
+  tehran: { width: 768, height: 294 },
+  mailbox: { width: 320, height: 405 },
+  board: { width: 628, height: 399 },
+  bench: { width: 634, height: 444 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
 
 // The scenery steps back so the dog stays the brightest thing on the page (`scenery-dim`, app.css). The dog cut-outs
 // are never dimmed; the key and the flag stay bright too, as the steps' two gold accents (the unlock and the finish).
-const DIMMED = new Set<MascotCutName>(["plants", "ground", "home", "center", "lodge", "signpost", "bone"]);
+const DIMMED = new Set<MascotCutName>([
+  "plants",
+  "ground",
+  "home",
+  "center",
+  "lodge",
+  "signpost",
+  "bone",
+  "tehran",
+  "mailbox",
+  "board",
+  "bench",
+]);
 
 /**
  * One mascot or scenery cut-out. Position and size come from `className`; the aspect ratio is kept by `h-auto`.
