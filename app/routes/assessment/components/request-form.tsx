@@ -1,17 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ORPCError } from "@orpc/client";
 import { useCallback, useEffect, useState } from "react";
-import { useForm, useWatch, type UseFormSetError } from "react-hook-form";
+import { useForm, useWatch, type FieldErrors, type UseFormSetError } from "react-hook-form";
 
 import { FormAlert } from "~/components/form-alert";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { errorDataSchema } from "~/orpc/errors";
 import type { Evaluation } from "~/orpc/evaluation/contract";
 import { DogPicker, type DogChoice } from "~/routes/assessment/components/dog-picker";
 import { EvaluationMediaField } from "~/routes/assessment/components/evaluation-media-field";
-import type { GuideProgress } from "~/routes/assessment/components/dog-guide";
+import { FormPlate } from "~/routes/assessment/components/form-plate";
 import { WhenFreeFields } from "~/routes/assessment/components/when-free-fields";
+import { GUIDE, type GuideMood } from "~/routes/assessment/guide";
 import { useRequestEvaluation } from "~/routes/assessment/hooks/use-request-evaluation";
 import {
   evaluationRequestSchema,
@@ -21,27 +23,59 @@ import {
   type EvaluationRequestValues,
 } from "~/routes/assessment/schema";
 
+/*===== Plates =====*/
+/** Which plate each form field lives on, for «the first plate with an error». */
+const FIELD_PLATE: Partial<Record<keyof EvaluationRequestInput, 1 | 2 | 3>> = {
+  dogId: 1,
+  earliestDay: 2,
+  earliestMonth: 2,
+  earliestYear: 2,
+  availableDays: 2,
+  availablePeriods: 2,
+  photoMediaIds: 3,
+  videoIds: 3,
+};
+
+function platesWithErrors(errors: FieldErrors<EvaluationRequestInput>): Set<number> {
+  const plates = new Set<number>();
+  for (const field of Object.keys(errors) as (keyof EvaluationRequestInput)[]) {
+    const plate = FIELD_PLATE[field];
+    if (plate) plates.add(plate);
+  }
+  return plates;
+}
+
+// The phone plates' dogs, each with the dimmed piece behind him (the sticky guide isn't on screen on a phone).
+const CALENDAR_DOG = { name: "calendar", width: "w-24", scenery: { name: "clock", width: "62%" } } as const;
+const CAMERA_DOG = { name: "camera", width: "w-[5.5rem]", scenery: { name: "tripod", width: "78%" } } as const;
+
 /*===== Request Form =====*/
 /**
- * The evaluation request: which dog, when the owner is free, and optionally photos and videos. Three plain sections in
- * one raised card. It tells the page how far it has got (`onProgressChange`) so the dog beside it can react, and hands over
- * the saved evaluation (`onSent`) so the page can swap this card for the confirmation.
+ * The evaluation request: which dog, when the owner is free, and optionally photos and videos, as three numbered plates
+ * joined by a chalk line, then the submit. It tells the page how the guide dog should look (`onGuideChange`: his mood,
+ * from how far the form has got, the sending and a failed submit) and hands over the saved evaluation (`onSent`) so the
+ * page can swap the plates for the receipt.
  */
 export function RequestForm({
   dogs,
   defaultDogId,
-  onProgressChange,
+  locked,
+  onGuideChange,
   onSent,
   onNotRequestable,
 }: {
   dogs: readonly DogChoice[];
   /** The dog to start on: the only requestable one, or the one `?dog=` named. Empty when the owner must pick. */
   defaultDogId: string;
-  onProgressChange: (progress: GuideProgress) => void;
+  /** The request went through and the plates are on their way out: nothing more to send. */
+  locked: boolean;
+  /** `phonePlate1Failed`: a failed submit's first error is in plate ۱, which has no dog of its own on a phone. */
+  onGuideChange: (guide: { mood: GuideMood; phonePlate1Failed: boolean }) => void;
   onSent: (evaluation: Evaluation) => void;
   /** The server says a dog already has an open request: the page reloads the dogs' states. */
   onNotRequestable: () => void;
 }) {
+  const trainer = HEAD_TRAINER.firstName;
   const requestEvaluation = useRequestEvaluation();
   const {
     register,
@@ -49,28 +83,46 @@ export function RequestForm({
     handleSubmit,
     setError,
     setValue,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm<EvaluationRequestInput, unknown, EvaluationRequestValues>({
     resolver: zodResolver(evaluationRequestSchema),
     defaultValues: toFormDefaults({ dogId: defaultDogId }),
   });
   // True while any file is still uploading: sending then would leave it out without the owner noticing.
   const [busy, setBusy] = useState(false);
+  // The plate the person is in, for the phone plates' dogs.
+  const [focused, setFocused] = useState<number | null>(null);
 
-  /*------ Progress for the Dog ------*/
+  /*------ How Far the Form Has Got ------*/
   const [dogId, photoMediaIds, videoIds, availableDays, availablePeriods] = useWatch({
     control,
     name: ["dogId", "photoMediaIds", "videoIds", "availableDays", "availablePeriods"],
   });
-  const progress: GuideProgress =
-    availableDays.length > 0 && availablePeriods.length > 0
-      ? 3
-      : photoMediaIds.length + videoIds.length > 0
-        ? 2
-        : dogId
-          ? 1
-          : 0;
-  useEffect(() => onProgressChange(progress), [progress, onProgressChange]);
+  const fileCount = photoMediaIds.length + videoIds.length;
+  const whenDone = availableDays.length > 0 && availablePeriods.length > 0;
+  const sending = requestEvaluation.isPending;
+
+  /*------ The Guide's Mood ------*/
+  // A failed submit wins while its errors stand; the field errors clear as they are fixed (the form re-validates on
+  // change after a submit), a server's general refusal stays until the next try.
+  const errorPlates = platesWithErrors(errors);
+  const failed = submitCount > 0 && (errorPlates.size > 0 || !!errors.root);
+  const mood: GuideMood = sending
+    ? "sending"
+    : failed
+      ? errorPlates.size > 0
+        ? "failed"
+        : "serverFailed"
+      : fileCount > 0
+        ? "photos"
+        : whenDone
+          ? "ready"
+          : dogId
+            ? "when"
+            : "pick";
+  const firstErrorPlate = failed ? Math.min(...errorPlates) : null;
+  const phonePlate1Failed = firstErrorPlate === 1;
+  useEffect(() => onGuideChange({ mood, phonePlate1Failed }), [mood, phonePlate1Failed, onGuideChange]);
 
   /*------ A Dog That Just Became Unavailable ------*/
   // After a conflict the page reloads the dogs' states; a chosen dog that now has a request is let go.
@@ -99,44 +151,92 @@ export function RequestForm({
     });
   });
 
-  const sending = requestEvaluation.isPending;
+  /*------ What the Phone Plates' Dogs Say ------*/
+  const errorLine = GUIDE.failed.line;
+  const whenSpeech = focused === 2 ? (errorPlates.has(2) && failed ? errorLine : GUIDE.when.line) : null;
+  const filesSpeech =
+    focused === 3
+      ? errorPlates.has(3) && failed
+        ? errorLine
+        : fileCount > 0
+          ? GUIDE.photos.line
+          : "عکس و فیلم هم اگه داری، بذار."
+      : null;
 
   return (
-    <form
-      method="post"
-      onSubmit={onSubmit}
-      noValidate
-      className="flex flex-col gap-10 rounded-4xl border border-border bg-card p-6 shadow-sm sm:p-8 lg:p-10"
-    >
-      <FormAlert message={errors.root?.message} />
+    <form method="post" onSubmit={onSubmit} noValidate className="flex flex-col">
+      {/*===== Plates =====*/}
+      <div className="flex flex-col gap-(--plate-gap) [--plate-gap:8rem] lg:[--plate-gap:3.5rem]">
+        {/*------ ۱ Which Dog ------*/}
+        <FormPlate
+          number={1}
+          titleId="plate-dog-title"
+          title="کدوم سگ؟"
+          description={`سگی رو انتخاب کن که می‌خوای ${trainer} ببینه. هر سگ یه ارزیابی رایگان داره.`}
+          done={!!dogId}
+          onEnter={() => setFocused(1)}
+        >
+          <DogPicker dogs={dogs} pickedId={dogId} registration={register("dogId")} error={errors.dogId?.message} />
+        </FormPlate>
 
-      {/*===== Which Dog =====*/}
-      <DogPicker dogs={dogs} registration={register("dogId")} error={errors.dogId?.message} />
+        {/*------ ۲ When Free ------*/}
+        <FormPlate
+          number={2}
+          titleId="plate-when-title"
+          title="کی وقت داری؟"
+          description={`${trainer} زنگ می‌زنه و با هم یه وقت دقیق می‌ذارید؛ اینجا فقط بگو معمولاً کی آزادی.`}
+          done={whenDone}
+          dog={CALENDAR_DOG}
+          speech={whenSpeech}
+          onEnter={() => setFocused(2)}
+        >
+          <WhenFreeFields register={register} control={control} setValue={setValue} errors={errors} />
+        </FormPlate>
 
-      {/*===== When Free =====*/}
-      <section aria-labelledby="when-title" className="min-w-0">
-        <h2 id="when-title" className="mb-4 text-lg font-extrabold">
-          کی وقت داری؟
-        </h2>
-        <WhenFreeFields register={register} control={control} setValue={setValue} errors={errors} />
-      </section>
-
-      {/*===== Photos and Videos =====*/}
-      {/* Last and optional: the owner's notes (2026-10-19) say photos and videos are not the main step and not a
-          substitute for the form. The field is its own section and carries its heading and the word «اختیاری». */}
-      <EvaluationMediaField
-        onChange={handleFiles}
-        onBusyChange={setBusy}
-        errors={{ photos: errors.photoMediaIds?.message, videos: errors.videoIds?.message }}
-      />
+        {/*------ ۳ Photos and Videos ------*/}
+        {/* Last and optional: the owner's notes (2026-10-19) say photos and videos are not the main step and not a
+            substitute for the form. */}
+        <FormPlate
+          number={3}
+          titleId="plate-files-title"
+          title={
+            <>
+              عکس و فیلم <span className="font-sans text-base font-medium text-muted-foreground">(اختیاری)</span>
+            </>
+          }
+          description={`چند عکس و فیلم کوتاه از سگت کمک می‌کنه ${trainer} بهتر بشناسدش.`}
+          done={fileCount > 0}
+          last
+          dog={CAMERA_DOG}
+          speech={filesSpeech}
+          onEnter={() => setFocused(3)}
+        >
+          <EvaluationMediaField
+            onChange={handleFiles}
+            onBusyChange={setBusy}
+            errors={{ photos: errors.photoMediaIds?.message, videos: errors.videoIds?.message }}
+          />
+        </FormPlate>
+      </div>
 
       {/*===== Submit =====*/}
-      <div className="flex flex-col gap-3 border-t pt-8">
-        <Button type="submit" size="lg" disabled={sending || busy} className="w-full sm:w-fit sm:min-w-64">
+      <div className="mt-10 flex flex-col gap-3 lg:mt-12">
+        {errors.root?.message && (
+          <div key={errors.root.message} className="answer-in mb-2">
+            <FormAlert message={errors.root.message} />
+          </div>
+        )}
+        <Button
+          type="submit"
+          variant="solid"
+          size="lg"
+          disabled={sending || busy || locked}
+          className="w-full sm:w-fit sm:min-w-72"
+        >
           {sending && <Spinner />}
           درخواست ارزیابی رایگان
         </Button>
-        {busy && <output className="block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>}
+        {busy && <output className="answer-in block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>}
         <p className="text-sm text-pretty text-muted-foreground">رایگانه و هیچ تعهدی نداره.</p>
       </div>
     </form>
@@ -146,7 +246,7 @@ export function RequestForm({
 /*===== Server Errors =====*/
 /**
  * Puts each failure where the owner will look: a field's message beside the field, a conflict (the dog already has a
- * request) and every other failure in the form-level alert.
+ * request) and every other failure in the alert above the button.
  */
 function applyServerError({ error, setError }: { error: Error; setError: UseFormSetError<EvaluationRequestInput> }) {
   const parsed = error instanceof ORPCError ? errorDataSchema.safeParse(error.data) : null;
@@ -163,15 +263,15 @@ function applyServerError({ error, setError }: { error: Error; setError: UseForm
   }
   if (code === "NOT_REQUESTABLE") {
     const [message] = parsed?.success ? parsed.data.errors : [];
-    setError("root", { message: message ?? "این سگ همین حالا یک درخواست باز یا ارزیابی انجام‌شده دارد." });
+    setError("root", { message: message ?? "این سگ همین حالا یه درخواست باز یا ارزیابی انجام‌شده داره." });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شده‌ای. صفحه را تازه کن و دوباره وارد شو." });
+    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
     return;
   }
   if (code === "NOT_FOUND") {
-    setError("root", { message: "این سگ دیگر در حسابت نیست." });
+    setError("root", { message: "این سگ دیگه توی حسابت نیست." });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {
@@ -179,5 +279,5 @@ function applyServerError({ error, setError }: { error: Error; setError: UseForm
     setError("root", { message: `درخواست ثبت نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
     return;
   }
-  setError("root", { message: "درخواست ثبت نشد. اتصال اینترنتت را بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: "درخواست ثبت نشد. اتصال اینترنتت رو بررسی کن و دوباره امتحان کن." });
 }

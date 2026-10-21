@@ -5,10 +5,8 @@ import { useCallback, useEffect, useEffectEvent, useId, useReducer, useRef, useS
 import { MediaImage } from "~/components/media-image";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
-import { FieldError } from "~/components/ui/field";
 import { Spinner } from "~/components/ui/spinner";
 import { formatNumberFa } from "~/lib/digits";
-import { HEAD_TRAINER } from "~/lib/head-trainer";
 import {
   EVALUATION_MAX_PHOTOS,
   EVALUATION_MAX_VIDEOS,
@@ -19,10 +17,16 @@ import type { EvaluationVideo } from "~/orpc/evaluation/contract";
 import { MEDIA_ACCEPTED_TYPES, MEDIA_MAX_BYTES } from "~/orpc/media/constants";
 import type { Media } from "~/orpc/media/contract";
 
+import { RisingError } from "~/routes/assessment/components/rising-error";
 import { usePhotoUpload } from "~/routes/assessment/hooks/use-photo-upload";
 import { useVideoUpload } from "~/routes/assessment/hooks/use-video-upload";
 
 /*===== Constants =====*/
+// The thumbnails are small taped prints: a strip of tape with torn ends across each top, the tilts alternating.
+const TAPE =
+  "pointer-events-none absolute -top-2 left-1/2 h-3.5 w-10 -translate-x-1/2 bg-foreground/25 [clip-path:polygon(0_10%,6%_0,12%_12%,18%_0,82%_0,88%_10%,94%_0,100%_12%,100%_88%,94%_100%,88%_90%,82%_100%,18%_100%,12%_88%,6%_100%,0_90%)]";
+const PRINT_TILTS = ["-rotate-2", "rotate-[1.5deg]", "-rotate-1", "rotate-2"] as const;
+
 const BYTES_PER_MB = 1024 * 1024;
 const ACCEPT = `${MEDIA_ACCEPTED_TYPES},${EVALUATION_VIDEO_ACCEPTED_TYPES}`;
 
@@ -189,12 +193,12 @@ export function EvaluationMediaField({
       const refuse = (error: string) => added.push({ ...base, status: "error", error });
 
       if (kind === "other") {
-        refuse("این نوع فایل پشتیبانی نمی‌شود.");
+        refuse("این نوع فایل پشتیبانی نمی‌شه.");
       } else if (kind === "photo") {
         if (photos >= EVALUATION_MAX_PHOTOS) {
-          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس می‌شود.`);
+          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس می‌شه.`);
         } else if (file.size > MEDIA_MAX_BYTES) {
-          refuse(`این عکس بزرگ‌تر از ${formatNumberFa(MEDIA_MAX_BYTES / BYTES_PER_MB)} مگابایت است.`);
+          refuse(`این عکس بزرگ‌تر از ${formatNumberFa(MEDIA_MAX_BYTES / BYTES_PER_MB)} مگابایته.`);
         } else {
           photos += 1;
           const preview = URL.createObjectURL(file);
@@ -213,9 +217,9 @@ export function EvaluationMediaField({
         }
       } else {
         if (videos >= EVALUATION_MAX_VIDEOS) {
-          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم می‌شود.`);
+          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم می‌شه.`);
         } else if (file.size > EVALUATION_VIDEO_MAX_BYTES) {
-          refuse(`این فیلم بزرگ‌تر از ${formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایت است.`);
+          refuse(`این فیلم بزرگ‌تر از ${formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایته.`);
         } else {
           videos += 1;
           added.push({ ...base, status: "uploading" });
@@ -252,24 +256,16 @@ export function EvaluationMediaField({
   const problems = items.filter((item) => item.status === "error");
 
   const inputId = `${baseId}-input`;
-  const headingId = `${baseId}-heading`;
   const hintId = `${baseId}-hint`;
 
   return (
-    <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-3">
-      {/*===== Heading and Limits =====*/}
-      <div className="flex flex-col gap-1">
-        <h2 id={headingId} className="font-sans text-lg font-extrabold">
-          عکس و فیلم <span className="font-medium text-muted-foreground">(اختیاری)</span>
-        </h2>
-        <p className="text-sm text-pretty text-muted-foreground">
-          چند عکس و فیلم کوتاه از من کمک می‌کنه {HEAD_TRAINER.firstName} بهتر منو بشناسه.
-        </p>
-        <p id={hintId} className="text-sm text-pretty text-muted-foreground">
-          تا {formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس (JPG یا PNG)، تا {formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم؛
-          هر فیلم تا {formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایت، mp4 یا mov.
-        </p>
-      </div>
+    <div className="flex min-w-0 flex-col gap-4">
+      {/*===== Limits =====*/}
+      {/* The plate around the field carries its heading («عکس و فیلم», اختیاری) and what the files are for. */}
+      <p id={hintId} className="text-sm text-pretty text-muted-foreground">
+        تا {formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس (JPG یا PNG)، تا {formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم؛ هر
+        فیلم تا {formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایت، mp4 یا mov.
+      </p>
 
       {/*===== Drop Zone =====*/}
       {/* Dropping is a mouse shortcut for the real file input inside, which keyboards and screen readers use. */}
@@ -289,8 +285,8 @@ export function EvaluationMediaField({
         <label
           htmlFor={inputId}
           className={cn(
-            "flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-dashed border-input bg-sunken px-4 py-8 text-center transition-colors",
-            "hover:border-primary/60 has-focus-visible:border-ring has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
+            "flex cursor-pointer flex-col items-center gap-2 rounded-3xl border-2 border-dashed px-4 py-9 text-center transition-colors",
+            "border-foreground/25 hover:border-primary/60 has-focus-visible:border-ring has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
             dragging && "border-primary bg-primary/5",
           )}
         >
@@ -298,7 +294,7 @@ export function EvaluationMediaField({
             <CameraIcon aria-hidden strokeWidth={1.5} className="size-8" />
             <VideoIcon aria-hidden strokeWidth={1.5} className="size-8" />
           </span>
-          <span className="text-sm font-bold">عکس و فیلم را اینجا بینداز یا انتخاب کن</span>
+          <span className="text-sm font-bold">عکس و فیلم رو اینجا بنداز یا انتخاب کن</span>
           <input
             id={inputId}
             type="file"
@@ -316,32 +312,35 @@ export function EvaluationMediaField({
       </div>
 
       {/*===== Photos =====*/}
+      {/* Small prints taped to the plate, a little crooked, alternating; each rises in as it is picked. */}
       {photos.length > 0 && (
-        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+        <ul className="grid grid-cols-3 gap-x-3 gap-y-5 pt-2 sm:grid-cols-4">
           {photos.map((item, index) => (
-            <li
-              key={item.key}
-              className="relative aspect-[4/3] overflow-hidden rounded-2xl border bg-sunken motion-safe:animate-in motion-safe:fade-in"
-            >
-              {item.media ? (
-                <MediaImage
-                  media={item.media}
-                  variant="thumb"
-                  alt={`عکس ${formatNumberFa(index + 1)}`}
-                  className="size-full"
-                />
-              ) : (
-                <>
-                  {item.preview && <img src={item.preview} alt="" className="size-full object-cover opacity-50" />}
-                  <span className="absolute inset-0 grid place-items-center">
-                    <Spinner aria-label="در حال بارگذاری" className="size-6 text-foreground" />
-                  </span>
-                </>
-              )}
+            <li key={item.key} className={cn("answer-in relative", PRINT_TILTS[index % PRINT_TILTS.length])}>
+              <div className="rounded-[3px] bg-foreground p-1 shadow-[0_10px_22px_-10px_rgb(0_0_0/0.95)]">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[2px] bg-sunken">
+                  {item.media ? (
+                    <MediaImage
+                      media={item.media}
+                      variant="thumb"
+                      alt={`عکس ${formatNumberFa(index + 1)}`}
+                      className="size-full"
+                    />
+                  ) : (
+                    <>
+                      {item.preview && <img src={item.preview} alt="" className="size-full object-cover opacity-50" />}
+                      <span className="absolute inset-0 grid place-items-center">
+                        <Spinner aria-label="در حال بارگذاری" className="size-6 text-foreground" />
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+              <span aria-hidden className={TAPE} />
               <RemoveButton
                 label={`حذف عکس ${formatNumberFa(index + 1)}`}
                 onClick={() => remove(item)}
-                className="absolute end-1.5 top-1.5"
+                className="absolute -end-2 -top-2"
               />
             </li>
           ))}
@@ -352,7 +351,10 @@ export function EvaluationMediaField({
       {videos.length > 0 && (
         <ul className="flex flex-col gap-2">
           {videos.map((item) => (
-            <li key={item.key} className="flex items-center gap-3 rounded-2xl border bg-card p-3">
+            <li
+              key={item.key}
+              className="answer-in flex items-center gap-3 rounded-2xl border border-foreground/15 bg-card paper-grain p-3"
+            >
               <FileVideoIcon aria-hidden strokeWidth={1.5} className="size-6 shrink-0 text-primary" />
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-3 text-sm">
@@ -391,7 +393,10 @@ export function EvaluationMediaField({
       {/* Always rendered, so a screen reader announces a row appearing in it. */}
       <ul aria-live="polite" className="flex flex-col gap-2 empty:hidden">
         {problems.map((item) => (
-          <li key={item.key} className="flex items-center gap-3 rounded-2xl border border-destructive/40 bg-card p-3">
+          <li
+            key={item.key}
+            className="answer-in flex items-center gap-3 rounded-2xl border border-destructive/40 bg-card paper-grain p-3"
+          >
             <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-sm">
               <bdi dir="ltr" className="truncate font-bold">
                 {item.name}
@@ -412,9 +417,9 @@ export function EvaluationMediaField({
       </ul>
 
       {/*===== Server Messages =====*/}
-      {errors?.photos && <FieldError>{errors.photos}</FieldError>}
-      {errors?.videos && <FieldError>{errors.videos}</FieldError>}
-    </section>
+      <RisingError id={`${baseId}-photos-error`} message={errors?.photos} />
+      <RisingError id={`${baseId}-videos-error`} message={errors?.videos} />
+    </div>
   );
 }
 
@@ -427,7 +432,7 @@ function RemoveButton({ label, onClick, className }: { label: string; onClick: (
       size="icon-xs"
       aria-label={label}
       onClick={onClick}
-      className={cn("rounded-full bg-background/80 hover:bg-background", className)}
+      className={cn("rounded-full border border-foreground/20 bg-background hover:bg-muted", className)}
     >
       <XIcon aria-hidden />
     </Button>

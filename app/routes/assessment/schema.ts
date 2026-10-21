@@ -11,12 +11,12 @@ import { EVALUATION_PERIODS, EVALUATION_WEEKDAYS } from "~/orpc/evaluation/const
 
 export const evaluationRequestSchema = z
   .object({
-    dogId: z.string().min(1, "کدوم سگ؟ یکی را انتخاب کن."),
+    dogId: z.string().min(1, "کدوم سگ؟ یکی رو انتخاب کن."),
     earliestDay: z.string(),
     earliestMonth: z.string(),
     earliestYear: z.string(),
-    availableDays: z.array(z.enum(EVALUATION_WEEKDAYS)).min(1, "دست‌کم یک روز را انتخاب کن."),
-    availablePeriods: z.array(z.enum(EVALUATION_PERIODS)).min(1, "دست‌کم یک زمان از روز را انتخاب کن."),
+    availableDays: z.array(z.enum(EVALUATION_WEEKDAYS)).min(1, "دست‌کم یه روز رو انتخاب کن."),
+    availablePeriods: z.array(z.enum(EVALUATION_PERIODS)).min(1, "دست‌کم یه زمان از روز رو انتخاب کن."),
     photoMediaIds: z.array(z.string()),
     videoIds: z.array(z.string()),
   })
@@ -24,9 +24,9 @@ export const evaluationRequestSchema = z
     /*------ Earliest Date ------*/
     const jalali = earliestJalali(values);
     if (!isValidJalali(jalali)) {
-      context.addIssue({ code: "custom", path: ["earliestDay"], message: "این تاریخ در تقویم نیست." });
+      context.addIssue({ code: "custom", path: ["earliestDay"], message: "این تاریخ توی تقویم نیست." });
     } else if (jalaliToIso(jalali) < todayIso()) {
-      context.addIssue({ code: "custom", path: ["earliestDay"], message: "تاریخ نباید گذشته باشد." });
+      context.addIssue({ code: "custom", path: ["earliestDay"], message: "تاریخ نباید گذشته باشه." });
     }
   })
   .transform((values) => ({

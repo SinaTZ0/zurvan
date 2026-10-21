@@ -7,8 +7,6 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 
-import { ChoiceChip } from "~/components/choice-chip";
-import { FieldError } from "~/components/ui/field";
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
 import { toPersianDigits, formatNumberFa } from "~/lib/digits";
 import { isoToJalali, JALALI_MONTHS, jalaliMonthLength, todayIso } from "~/lib/jalali";
@@ -18,12 +16,15 @@ import {
   EVALUATION_WEEKDAY_LABELS,
   EVALUATION_WEEKDAYS,
 } from "~/orpc/evaluation/constants";
+import { PickChip } from "~/routes/assessment/components/pick-chip";
+import { RisingError } from "~/routes/assessment/components/rising-error";
 import type { EvaluationRequestInput, EvaluationRequestValues } from "~/routes/assessment/schema";
 
 /*===== When Free Fields =====*/
 /**
  * «کی وقت داری؟»: the earliest day as three selects (Jalali, Persian digits), then the weekdays and times of day the
- * owner is usually free. The Admin calls to agree a real time; the app only records these (F3).
+ * owner is usually free, as pills. The Admin calls to agree a real time; the app only records these (F3). One column on
+ * the plate, labels above their inputs, nothing decorative between them.
  */
 export function WhenFreeFields({
   register,
@@ -57,7 +58,7 @@ export function WhenFreeFields({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       {/*===== Earliest Date =====*/}
       <fieldset
         className="min-w-0"
@@ -106,9 +107,7 @@ export function WhenFreeFields({
             ))}
           </NativeSelect>
         </div>
-        <div id="earliest-error" className="mt-2">
-          <FieldError errors={[errors.earliestDay]} />
-        </div>
+        <RisingError id="earliest-error" message={dateError} />
       </fieldset>
 
       {/*===== Weekdays =====*/}
@@ -148,6 +147,7 @@ function ChipGroup({
   error?: string;
 }) {
   const { field } = useController({ control, name });
+  // The form library focuses an invalid field through its ref: the group's first chip takes it.
   const picked: readonly string[] = field.value;
   const errorId = `${name}-error`;
 
@@ -155,11 +155,13 @@ function ChipGroup({
     <fieldset className="min-w-0" aria-invalid={!!error} aria-describedby={error ? errorId : undefined}>
       <legend className="mb-2 text-sm font-bold">{legend}</legend>
       <div className="flex flex-wrap gap-2">
-        {options.map((option) => (
-          <ChoiceChip
+        {options.map((option, index) => (
+          <PickChip
             key={option.value}
             name={name}
             label={option.label}
+            invalid={!!error}
+            inputRef={index === 0 ? field.ref : undefined}
             checked={picked.includes(option.value)}
             onChange={(checked) => {
               // Keep the list in the options' order (the Persian week), whatever order they were tapped in.
@@ -171,9 +173,7 @@ function ChipGroup({
           />
         ))}
       </div>
-      <div id={errorId} className="mt-2">
-        <FieldError errors={[error ? { message: error } : undefined]} />
-      </div>
+      <RisingError id={errorId} message={error} />
     </fieldset>
   );
 }

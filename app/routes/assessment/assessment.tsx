@@ -1,17 +1,22 @@
 import { useCallback, useState } from "react";
 import { isRouteErrorResponse, useRevalidator } from "react-router";
 
-import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
-import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { requireSession } from "~/lib/session-guard.server";
 import type { Evaluation } from "~/orpc/evaluation/contract";
 import { createServerClient } from "~/orpc/server-client.server";
-import { DogGuide, type GuideProgress } from "~/routes/assessment/components/dog-guide";
+import { COLUMN } from "~/routes/assessment/column";
+import { AssessmentError } from "~/routes/assessment/components/assessment-error";
+import { ChalkDefs } from "~/routes/assessment/components/chalk-defs";
 import type { DogChoice } from "~/routes/assessment/components/dog-picker";
-import { NoDogCard } from "~/routes/assessment/components/no-dog-card";
+import { GuidePanel } from "~/routes/assessment/components/guide-panel";
+import type { RoadStep } from "~/routes/assessment/components/header-road";
+import { NoDogsPlate } from "~/routes/assessment/components/no-dogs-plate";
+import { NothingToAskPlate } from "~/routes/assessment/components/nothing-to-ask-plate";
+import { PageHeader } from "~/routes/assessment/components/page-header";
+import { PageMotion } from "~/routes/assessment/components/page-motion";
 import { RequestForm } from "~/routes/assessment/components/request-form";
-import { RequestSent } from "~/routes/assessment/components/request-sent";
+import { RequestReceipt } from "~/routes/assessment/components/request-receipt";
+import { GUIDE, type GuideMood } from "~/routes/assessment/guide";
 
 import type { Route } from "./+types/assessment";
 
@@ -49,17 +54,32 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { dogs: choices, preselectedDogId };
 }
 
+/*===== Timing =====*/
+/** How long the form's plates take to fade out before the receipt takes their place (`as-leave`). */
+const LEAVE_MS = 260;
+
 /*===== Evaluation Request =====*/
 /**
- * F3's request page. A dog stands beside the form and talks; its words follow how far the form has got, and after
- * sending, the form card is replaced in place by what was sent and what happens next.
+ * F3's request page. The idea: the center's dog takes the request to the head trainer. The start column has the
+ * heading with the road of four stops, then the form as three numbered plates; the end column (sticky on a laptop) is
+ * the guide, the dog whose pose and line follow the form, and «بعدش چی می‌شه؟». On a phone the guide is a compact band
+ * over the plates, and the plates' own dogs take over from it. Once sent, the plates give way in place to the receipt,
+ * the heading becomes «درخواستت رسید» and the road walks on to the call.
+ *
+ * Without a dog to ask for there is no form: a plate says why, with one way on (no dogs: introduce one; none left: the
+ * Dashboard).
  */
 export default function EvaluationRequestPage({ loaderData }: Route.ComponentProps) {
   const { dogs, preselectedDogId } = loaderData;
   const revalidator = useRevalidator();
 
-  const [progress, setProgress] = useState<GuideProgress>(0);
+  const [guide, setGuide] = useState<{ mood: GuideMood; phonePlate1Failed: boolean }>({
+    mood: "pick",
+    phonePlate1Failed: false,
+  });
   const [sent, setSent] = useState<Evaluation | null>(null);
+  // The request went through and the plates are fading out.
+  const [leaving, setLeaving] = useState(false);
   // A new key remounts the form, so «another dog» starts from a clean one.
   const [formKey, setFormKey] = useState(0);
 
@@ -68,89 +88,107 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
     requestable.find((dog) => dog.id === preselectedDogId)?.id ?? (requestable.length === 1 ? requestable[0]!.id : "");
 
   /*------ Events ------*/
-  // The dogs' states changed on the server (this one now has a request), so reload them for «another dog».
+  // The dogs' states changed on the server (this one now has a request), so reload them for «another dog». The plates
+  // fade out first, then the receipt rises in their place (at once for reduced motion).
   const handleSent = useCallback(
     (evaluation: Evaluation) => {
-      setSent(evaluation);
       void revalidator.revalidate();
+      const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setLeaving(true);
+      window.setTimeout(
+        () => {
+          setSent(evaluation);
+          setLeaving(false);
+        },
+        still ? 0 : LEAVE_MS,
+      );
     },
     [revalidator],
   );
   const handleAnotherDog = useCallback(() => {
     setSent(null);
-    setProgress(0);
+    setGuide({ mood: "pick", phonePlate1Failed: false });
     setFormKey((key) => key + 1);
   }, []);
   const handleNotRequestable = useCallback(() => void revalidator.revalidate(), [revalidator]);
 
   /*------ What Stands in the Form's Place ------*/
-  // No form without a dog to ask for: the guide says why, and one button says where to go.
   const noDogs = dogs.length === 0;
   const nothingToAsk = !noDogs && requestable.length === 0 && !sent;
+  const showForm = !noDogs && !nothingToAsk && !sent;
+
+  /*------ The Road and the Guide ------*/
+  const anyWaiting = dogs.some((dog) => dog.state === "pending");
+  const step: RoadStep = noDogs ? 0 : sent ? 2 : nothingToAsk ? (anyWaiting ? 2 : 3) : 1;
+  const mood: GuideMood = noDogs
+    ? "noDogs"
+    : nothingToAsk
+      ? "nothing"
+      : sent
+        ? "sent"
+        : leaving
+          ? "sending"
+          : guide.mood;
+  // The phone band keeps his first line while the form is open (the plates' dogs take over there), except for a
+  // failed submit whose first error is in plate ۱, the one without a dog of its own.
+  const phoneMood: GuideMood = !showForm
+    ? mood
+    : guide.phonePlate1Failed && guide.mood === "failed"
+      ? "failed"
+      : "pick";
 
   return (
-    <div className="site-container py-8 lg:py-14">
-      <div className="grid lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-16">
-        {/*===== Header =====*/}
-        <header className="pb-8 lg:col-start-1 lg:row-start-1 lg:pb-10">
-          <h1 className="font-display text-h1 font-black text-balance">
-            {sent ? `حالا منتظر ${HEAD_TRAINER.firstName} باش` : `درخواستمو بفرست، بقیه‌ش با ${HEAD_TRAINER.firstName}`}
-          </h1>
-          {!sent && (
-            <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-              رایگانه و هیچ تعهدی نداره. بعد از این‌که {HEAD_TRAINER.firstName} منو دید، دوره‌هام باز می‌شن.
-            </p>
-          )}
-        </header>
+    <div className="overflow-x-clip">
+      <PageMotion />
+      <ChalkDefs />
 
-        {/*===== Dog =====*/}
-        {/* Second in the document so phones see it between the heading and the card; desktop puts it at the end. */}
-        <DogGuide
-          progress={progress}
-          sent={sent !== null}
-          message={
-            noDogs
-              ? "اول باید منو معرفی کنی"
-              : nothingToAsk
-                ? `همه‌ی سگ‌هات یا منتظر جواب ${HEAD_TRAINER.firstName} هستن یا ارزیابی شدن!`
-                : undefined
-          }
-          className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start"
-        />
+      {/* The guide's words for screen readers, once per change (his bubbles are decoration). */}
+      <p aria-live="polite" className="sr-only">
+        {GUIDE[mood].line}
+      </p>
+
+      <div
+        className={`${COLUMN} grid grid-cols-[minmax(0,1fr)] pt-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-x-12 lg:pt-section-sm xl:gap-x-16`}
+      >
+        {/*===== Header =====*/}
+        <div className="lg:col-start-1 lg:row-start-1">
+          <PageHeader step={step} walkedFrom={sent ? 1 : null} sent={sent !== null} />
+        </div>
+
+        {/*===== Guide =====*/}
+        {/* Phones: a compact band between the heading and the plates. Desktop: the sticky end column. */}
+        <GuidePanel variant="phone" mood={phoneMood} className="mb-12 lg:hidden" />
+        <aside
+          aria-label="راهنما"
+          className="hidden lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block lg:self-start"
+        >
+          <GuidePanel variant="desk" mood={mood} nextSteps={!sent} />
+        </aside>
 
         {/*===== Form, or What Stands for It =====*/}
-        <div className="lg:col-start-1 lg:row-start-2">
+        <div className="min-w-0 lg:col-start-1 lg:row-start-2">
           {noDogs ? (
-            <NoDogCard
-              title="اول سگت را معرفی کن"
-              detail={`ارزیابی برای یک سگ مشخصه؛ اسم و نژادش را بنویس تا ${HEAD_TRAINER.firstName} بشناسدش. بعدش برمی‌گردی همین‌جا.`}
-              action={{ to: "/account/dogs/new?redirectTo=/assessment", label: "معرفی سگ" }}
-            />
+            <NoDogsPlate />
           ) : nothingToAsk ? (
-            <NoDogCard
-              title="درخواستی برای فرستادن نمونده"
-              detail="هر سگی فقط یک ارزیابی داره؛ سگ‌هات یا درخواستشون منتظر جواب مونده یا ارزیابی شدن. وضعیتشون را توی حسابت می‌بینی."
-              action={{ to: "/account", label: "برو به حساب من" }}
-              extraLink={{ to: "/account/dogs/new?redirectTo=/assessment", label: "+ معرفی سگ تازه" }}
-            />
+            <NothingToAskPlate dogs={dogs} />
           ) : sent ? (
-            <RequestSent
-              dogName={sent.dog.name}
-              earliestDate={sent.earliestDate ?? ""}
-              availableDays={sent.availableDays}
-              availablePeriods={sent.availablePeriods}
+            <RequestReceipt
+              evaluation={sent}
               anotherDogRequestable={requestable.some((dog) => dog.id !== sent.dog.id)}
               onAnotherDog={handleAnotherDog}
             />
           ) : (
-            <RequestForm
-              key={formKey}
-              dogs={dogs}
-              defaultDogId={defaultDogId}
-              onProgressChange={setProgress}
-              onSent={handleSent}
-              onNotRequestable={handleNotRequestable}
-            />
+            <div className={leaving ? "as-leave" : undefined}>
+              <RequestForm
+                key={formKey}
+                dogs={dogs}
+                defaultDogId={defaultDogId}
+                locked={leaving}
+                onGuideChange={setGuide}
+                onSent={handleSent}
+                onNotRequestable={handleNotRequestable}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -160,19 +198,5 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
 
 /*===== Error Boundary =====*/
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
-  return (
-    <section aria-labelledby="assessment-error-title" className="site-container py-16">
-      <h1 id="assessment-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این صفحه پیدا نشد" : "صفحه‌ی ارزیابی باز نشد"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به صفحه‌ی اصلی
-      </Link>
-    </section>
-  );
+  return <AssessmentError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

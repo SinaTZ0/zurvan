@@ -6,7 +6,7 @@ import type { Media } from "~/orpc/media/contract";
 
 /*===== Messages =====*/
 const GENERIC_MESSAGE = "عکس بارگذاری نشد. دوباره امتحان کن.";
-const HEIC_MESSAGE = "عکس را به‌صورت JPG یا PNG بفرست.";
+const HEIC_MESSAGE = "عکس رو به‌صورت JPG یا PNG بفرست.";
 
 /** iPhone photos: the server refuses them with a Persian message, this is the fallback if it has none. */
 function looksLikeHeic(file: File): boolean {
