@@ -11,14 +11,29 @@ const TONES: Record<EnrollmentStatus, string> = {
   cancelled: "border-transparent bg-muted text-muted-foreground",
 };
 
+// The Admin pages keep gold for the work waiting for him, and a training in progress waits for nothing, so there it is
+// an ink outline.
+const QUIET_ACTIVE = "border-foreground/25 bg-transparent text-foreground/80";
+
 /*===== Enrollment Status Badge =====*/
-/** An enrollment's status as a small pill with its Persian label. */
-export function EnrollmentStatusBadge({ status, className }: { status: EnrollmentStatus; className?: string }) {
+/**
+ * An enrollment's status as a small pill with its Persian label. `quiet` is for the Admin pages: «در حال آموزش» is
+ * drawn in ink instead of gold; the customer pages leave it off.
+ */
+export function EnrollmentStatusBadge({
+  status,
+  quiet = false,
+  className,
+}: {
+  status: EnrollmentStatus;
+  quiet?: boolean;
+  className?: string;
+}) {
   return (
     <span
       className={cn(
         "inline-flex h-6 shrink-0 items-center rounded-full border px-2.5 text-xs font-bold whitespace-nowrap",
-        TONES[status],
+        quiet && status === "active" ? QUIET_ACTIVE : TONES[status],
         className,
       )}
     >

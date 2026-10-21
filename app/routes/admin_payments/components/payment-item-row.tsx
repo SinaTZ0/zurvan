@@ -52,7 +52,7 @@ export function PaymentItemRow({
       </div>
 
       {chip && (
-        <EnrollmentStatusBadge status={chip} className="col-start-2 row-start-2 w-fit sm:col-start-3 sm:row-start-1" />
+        <EnrollmentStatusBadge status={chip} quiet className="col-start-2 row-start-2 w-fit sm:col-start-3 sm:row-start-1" />
       )}
 
       <p className="col-start-3 row-start-1 text-sm font-bold whitespace-nowrap sm:col-start-4">

@@ -37,7 +37,7 @@ export function EnrollmentsSection({ enrollments }: { enrollments: AdminEnrollme
             >
               <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
                 <span className="text-sm font-bold text-pretty">{enrollment.course.title}</span>
-                <EnrollmentStatusBadge status={enrollment.status} />
+                <EnrollmentStatusBadge status={enrollment.status} quiet />
               </div>
               <div className="flex items-baseline gap-3 text-xs text-muted-foreground">
                 <span className="font-bold text-foreground">{formatToman(enrollment.price)}</span>

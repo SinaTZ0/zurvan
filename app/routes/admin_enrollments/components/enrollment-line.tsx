@@ -9,11 +9,6 @@ import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { AdminEnrollment } from "~/orpc/enrollment/contract";
 import type { FinishKind } from "~/routes/admin_enrollments/components/finish-dialog";
 
-/*===== Constants =====*/
-// The Admin keeps gold for what waits on him: in «همه» an active line's chip is drawn in ink, since its gold «تمام شد»
-// button already says the line is open.
-const ACTIVE_CHIP = "border-foreground/25 bg-transparent text-foreground/80";
-
 /*===== Types =====*/
 /** How a closed line is leaving, once its exit has started. */
 export type LineExit = { kind: FinishKind; fold: boolean };
@@ -76,7 +71,7 @@ export function EnrollmentLine({
                 >
                   <bdi>{dog.name}</bdi>
                 </Link>
-                {showBadge && isActive && <EnrollmentStatusBadge status={status} className={ACTIVE_CHIP} />}
+                {showBadge && isActive && <EnrollmentStatusBadge status={status} quiet />}
               </p>
               <p className="relative mt-0.5 w-fit max-w-full text-sm text-pretty text-foreground/85">
                 {course.title}{" "}
@@ -146,7 +141,7 @@ export function EnrollmentLine({
             </div>
           ) : (
             <div className="flex items-center gap-2 md:justify-end">
-              <EnrollmentStatusBadge status={status} className={cn(stamped && "ae-chip-stamp")} />
+              <EnrollmentStatusBadge status={status} quiet className={cn(stamped && "ae-chip-stamp")} />
               <EndedOn enrollment={enrollment} />
             </div>
           )}
