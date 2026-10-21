@@ -1,33 +1,114 @@
-import { LogbookEntryCard } from "~/components/logbook-entry-card";
+import { cn } from "cn";
+
+import { MascotCut } from "~/components/mascot-cut";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatJalaliDate } from "~/lib/jalali";
 import type { LogbookEntry } from "~/orpc/logbook/contract";
+import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
+import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
 
 /*===== Logbook Section =====*/
 /**
- * F14 on the dog's page: the diary the head trainer writes after each session, newest first. Read-only for the owner. It
- * is private: only the owner and the trainer see it.
+ * F14 on the dog's page: the diary the head trainer writes after each session, newest first, read-only for the owner
+ * and private (only the owner and the trainer see it). The public record's chalk timeline, copied here (the shared
+ * `LogbookEntryCard` stays the Admin's): a dashed gold line down the start side, a dot per entry, each entry a grained
+ * card with the day as its heading, the notes, the exercises as chips and «جمع‌بندی».
+ *
+ * The `write` dog lies on the section's top edge writing in his notebook. With no entry yet the dimmed lectern stands
+ * behind him, and the plate shows the timeline's shape faintly (the line and one empty dot) beside what will go there.
+ *
+ * Motion: the chalk line draws itself down as the list scrolls through (`dd-draw`); the cards rise in.
  */
 export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
+  const empty = entries.length === 0;
+
   return (
     <section aria-labelledby="logbook-title">
       {/* «لاگ‌بوک» is the owner's word for the dog's file (2026-10-19): it is named first so it can be found by it. */}
-      <h2 id="logbook-title" className="font-sans text-xl font-extrabold">
-        لاگ‌بوک؛ دفترچه‌ی تمرین
-      </h2>
-
-      {entries.length === 0 ? (
-        <div className="mt-4 rounded-3xl border bg-card p-5 sm:p-6">
-          <p className="font-bold">هنوز جلسه‌ای ثبت نشده</p>
-          <p className="mt-1 text-sm text-pretty text-muted-foreground">
-            بعد از هر جلسه، مربی همین‌جا می‌نویسه چه کار کردید و پیشرفت چطور بود.
-          </p>
+      <SectionHead id="logbook-title" title="لاگ‌بوک؛ دفترچه‌ی تمرین">
+        {/* On phones the lectern needs the room the corner's margin would take. */}
+        <div className={cn("relative", empty && "me-8 sm:me-0")}>
+          {empty && (
+            <MascotCut name="lectern" className="absolute right-[80%] bottom-0 w-16 translate-y-[3%] sm:w-24" />
+          )}
+          <EdgeDog name="write" wide className="w-28 sm:w-36" />
         </div>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-3">
-          {entries.map((entry) => (
-            <LogbookEntryCard key={entry.id} entry={entry} />
-          ))}
-        </ul>
-      )}
+      </SectionHead>
+
+      <div className="relative rounded-4xl border border-border/60 bg-sunken paper-grain p-4 sm:p-6">
+        {/*------ The Chalk Line ------*/}
+        <svg
+          aria-hidden
+          className={cn(
+            "pointer-events-none absolute start-[calc(1rem+1.05rem)] top-8 bottom-8 h-[calc(100%-4rem)] w-1 sm:start-[calc(1.5rem+1.05rem)]",
+            empty ? "text-primary/25" : "dd-draw text-primary/60",
+          )}
+          preserveAspectRatio="none"
+          viewBox="0 0 4 100"
+        >
+          <line
+            x1="2"
+            x2="2"
+            y1="0"
+            y2="100"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeDasharray="1.5 2.5"
+            vectorEffect="non-scaling-stroke"
+            strokeLinecap="round"
+          />
+        </svg>
+
+        {empty ? (
+          /*------ Nothing Yet ------*/
+          <div className="relative py-2 ps-12">
+            <span
+              aria-hidden
+              className="absolute start-[0.55rem] top-3 size-4 rounded-full border-2 border-dashed border-primary/50 bg-sunken"
+            />
+            <p className="font-bold">هنوز جلسه‌ای ثبت نشده</p>
+            <p className="mt-1 max-w-md text-sm text-pretty text-muted-foreground">
+              بعد از هر جلسه، {HEAD_TRAINER.firstName} همین‌جا می‌نویسه چی کار کردید و پیشرفت چطور بود.
+            </p>
+          </div>
+        ) : (
+          /*------ Entries ------*/
+          <ol className="relative flex flex-col gap-5">
+            {entries.map((entry) => (
+              <li key={entry.id} className="lively-reveal relative ps-12">
+                <span
+                  aria-hidden
+                  className="absolute start-[0.55rem] top-6 size-4 rounded-full border-[3px] border-primary bg-sunken"
+                />
+                <div className="flex flex-col gap-3 rounded-3xl border border-border bg-card paper-grain p-5 shadow-[0_14px_30px_-18px_rgb(0_0_0/0.9)]">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 className="font-display text-lg font-extrabold">
+                      <time dateTime={entry.occurredOn}>{formatJalaliDate(entry.occurredOn)}</time>
+                    </h3>
+                    {entry.course && <span className="text-sm text-muted-foreground">{entry.course.title}</span>}
+                  </div>
+                  <p className="text-pretty whitespace-pre-line">{entry.notes}</p>
+                  {entry.exercises.length > 0 && (
+                    <ul aria-label="تمرین‌ها" className="flex flex-wrap gap-2">
+                      {entry.exercises.map((exercise) => (
+                        <li key={exercise} className="rounded-full border border-primary/40 px-3 py-1 text-sm">
+                          {exercise}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {entry.progress && (
+                    <p className="text-sm text-pretty text-muted-foreground">
+                      <span className="font-bold text-foreground">جمع‌بندی: </span>
+                      {entry.progress}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
     </section>
   );
 }

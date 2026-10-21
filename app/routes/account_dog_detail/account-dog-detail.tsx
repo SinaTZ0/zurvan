@@ -1,22 +1,32 @@
 import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
-import { DogFileCard } from "~/components/dog-file-card";
-import { DogProfile } from "~/components/dog-profile";
-import { Link } from "~/components/link";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { buildCertificateCard } from "~/lib/certificate.server";
 import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { createServerClient } from "~/orpc/server-client.server";
-import { DogHeader } from "~/routes/account_dog_detail/components/dog-header";
+import { COLUMN } from "~/routes/account_dog_detail/column";
+import { BuddyCorner } from "~/routes/account_dog_detail/components/buddy-corner";
 import { CertificatesSection } from "~/routes/account_dog_detail/components/certificates-section";
+import { DogDetailError } from "~/routes/account_dog_detail/components/dog-detail-error";
+import { DogHero } from "~/routes/account_dog_detail/components/dog-hero";
+import { DogProfile } from "~/routes/account_dog_detail/components/dog-profile";
 import { EnrollmentsSection } from "~/routes/account_dog_detail/components/enrollments-section";
 import { EvaluationsSection } from "~/routes/account_dog_detail/components/evaluations-section";
+import { FileCard } from "~/routes/account_dog_detail/components/file-card";
 import { LogbookSection } from "~/routes/account_dog_detail/components/logbook-section";
+import { MedalsBand } from "~/routes/account_dog_detail/components/medals-band";
+import { PageMotion } from "~/routes/account_dog_detail/components/page-motion";
 import { PublicRecordCard } from "~/routes/account_dog_detail/components/public-record-card";
+import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
 
 import type { Route } from "./+types/account-dog-detail";
+
+/*===== Handle =====*/
+// The page ends on the medals' brick band, which runs into the footer, so the shell drops its bottom padding.
+export const handle: AccountLayoutHandle = { flushFooter: true };
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -55,50 +65,75 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     // The approved wording the owner agrees to, present only once the owner has approved one.
     wording: PUBLIC_RECORD_CONSENT,
     fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+    // The hero's three numbers, from what is already read. A revoked certificate isn't counted: it proves nothing.
+    counts: {
+      active: enrollments.filter((enrollment) => enrollment.status === "active").length,
+      passed: dog.passedCourses.length,
+      certificates: certificates.filter((certificate) => certificate.revokedAt === null).length,
+    },
   };
 }
 
 /*===== Dog Detail =====*/
 /**
- * F2, F3, F6 and F14 on one dog: evaluated or not, the courses it passed, its evaluation requests with their photos and
- * videos, its enrollments, and the diary the trainer writes. Phones read courses, evaluations, profile; desktop puts the profile in a sticky end
- * column.
+ * F2, F3, F6 and F14 on one dog, as the dog's own room: its photo pinned as a big print beside its name (the hero), then
+ * its courses, certificates, diary and evaluations in the main column and its profile and file card in a sticky side
+ * column (phones: one column, main first), and at the end the medals of the courses it passed on a brick wall.
+ *
+ * The customer's dog is the photo and speaks its state; the center's dog keeps his buddy's file down the page (the
+ * clipboard on the courses, the diploma by the certificates, writing the diary, waiting by the phone for the evaluation
+ * call, the tag on the file card, the medals on the wall). He never stands on the photo.
  */
 export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments, logbook, certificates, publicStatus, wording, fileCard } = loaderData;
+  const { dog, evaluations, enrollments, logbook, certificates, publicStatus, wording, fileCard, counts } = loaderData;
   const status = getDogStatus({ dog, evaluations, enrollments });
 
   return (
-    <div className="site-container flex flex-col gap-8 py-6 lg:gap-12 lg:py-10">
-      {/*===== Header =====*/}
-      <DogHeader dog={dog} status={status} />
+    <div className="overflow-x-clip">
+      <PageMotion />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-12">
-        {/*===== Courses and Evaluations =====*/}
-        <div className="flex flex-col gap-8 lg:gap-10">
+      {/*===== Hero =====*/}
+      <DogHero dog={dog} status={status} counts={counts} />
+
+      {/*===== The File =====*/}
+      <div
+        className={`${COLUMN} grid grid-cols-[minmax(0,1fr)] gap-y-16 pt-section-sm lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start lg:gap-x-12 xl:gap-x-16`}
+      >
+        {/*------ Courses, Certificates, Diary, Evaluations ------*/}
+        <div className="flex flex-col gap-16 lg:self-stretch">
           <EnrollmentsSection enrollments={enrollments} isEvaluated={dog.isEvaluated} />
           <CertificatesSection certificates={certificates} />
           <LogbookSection entries={logbook} />
-          <EvaluationsSection evaluations={evaluations} />
+          <EvaluationsSection evaluations={evaluations} status={status} />
+          <BuddyCorner />
         </div>
 
-        {/*===== Profile =====*/}
-        <div className="flex flex-col gap-8 lg:sticky lg:top-24">
+        {/*------ Profile and File Card ------*/}
+        <div className="flex flex-col gap-16 lg:sticky lg:top-24">
           <DogProfile dog={dog} />
-          <DogFileCard
+          <FileCard
             dogName={dog.name}
             fileNumber={dog.fileNumber}
             link={fileCard.link}
             qr={fileCard.qr}
             note={
               publicStatus.isPublic
-                ? "پرونده عمومیه: هر کس این کد را اسکن کند پرونده‌ی عمومی را می‌بیند."
-                : "هر کس این کد را اسکن کند «پرونده‌ی خصوصی» را می‌بیند. فقط تو و مربی پرونده را می‌بینید."
+                ? "پرونده عمومیه: هر کی این کد رو اسکن کنه، پرونده‌ی عمومی‌ش رو می‌بینه."
+                : `هر کی این کد رو اسکن کنه، فقط می‌بینه که پرونده خصوصیه. پرونده رو فقط تو و ${HEAD_TRAINER.firstName} می‌بینید.`
             }
           />
           <PublicRecordCard dogId={dog.id} dogName={dog.name} status={publicStatus} wording={wording} />
         </div>
       </div>
+
+      {/*===== Medals =====*/}
+      <MedalsBand
+        dogName={dog.name}
+        courses={dog.passedCourses}
+        active={enrollments
+          .filter((enrollment) => enrollment.status === "active")
+          .map((enrollment) => enrollment.course)}
+      />
     </div>
   );
 }
@@ -106,21 +141,5 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
 /*===== Error Boundary =====*/
 // Inside the account shell, so the header and its way back stay on screen.
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
-  return (
-    <section aria-labelledby="dog-detail-error-title" className="site-container py-16">
-      <h1 id="dog-detail-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این سگ پیدا نشد" : "صفحه‌ی سگ باز نشد"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        {notFound
-          ? "شاید از حسابت برداشته شده باشد."
-          : "مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
-      </p>
-      <Link to="/account" className="mt-6 inline-block font-bold text-primary underline-offset-4 hover:underline">
-        سگ‌های من
-      </Link>
-    </section>
-  );
+  return <DogDetailError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
