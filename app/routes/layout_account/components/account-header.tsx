@@ -1,61 +1,67 @@
-import { BrandLogo } from "~/components/brand-logo";
-import { PROFILE_LINK } from "~/lib/account-links";
+import { ArrowUpLeft } from "lucide-react";
+
+import { BrandEmblem } from "~/components/brand-emblem";
 import { Link } from "~/components/link";
 import { PersonMenu } from "~/components/person-menu";
-import { BOTTOM_TABS_FROM, type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
+import { PROFILE_LINK } from "~/lib/account-links";
+import { CENTER_DESCRIPTOR } from "~/lib/contact";
+import { type DeskExitLink, type DeskNavItem } from "~/routes/layout_account/account-nav";
 import { AccountTabs } from "~/routes/layout_account/components/account-tabs";
+
+const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 /*===== Account Header =====*/
 /**
- * The storefront's header bar, turned into a desk: the logo, the desk's sections, a way back out and the person menu.
- * Same height and surface as the storefront's, so moving between the two doesn't jump. The customer's account and the
- * trainer area share it, each with its own sections.
+ * The storefront header's frame (the paper over a hairline, the emblem and wordmark), turned into the account's room:
+ * a gold-outlined chip names the room, the sections are the storefront's nav links, then the way back out and the
+ * person menu. Below `lg` it is only the app bar; the sections live in the floating tab bar (`AccountTabBar`), so the
+ * person menu keeps just the settings.
  */
 export function AccountHeader({
   firstName,
   phoneNumber,
-  roleLabel,
+  roomLabel,
   navItems,
-  navLabel,
   exitLink,
 }: {
   firstName: string;
   phoneNumber: string | null;
-  roleLabel?: string;
+  /** The room's name, e.g. «حساب من». */
+  roomLabel: string;
   navItems: readonly DeskNavItem[];
-  /** The sections' landmark name, e.g. «حساب من». */
-  navLabel: string;
   exitLink: DeskExitLink;
 }) {
-  // Below three sections phones have no bottom tab bar, so the person menu lists the sections and the exit link for
-  // them. Desktop always shows them in the header.
-  const sectionsInMenu = navItems.length < BOTTOM_TABS_FROM;
-  const sectionLinks = sectionsInMenu
-    ? [...navItems, exitLink].map(({ label, to }) => ({ label, to, phonesOnly: true }))
-    : [];
-  // Settings are never a tab, so the menu lists them on every screen size.
-  const menuLinks = [...sectionLinks, PROFILE_LINK];
-
   return (
-    <header className="border-b border-foreground/10 bg-jet">
-      <div className="site-container flex h-16 items-stretch gap-6 lg:h-20">
-        {/*------ Logo ------*/}
-        <Link to="/" className="flex shrink-0 items-center self-center rounded-sm" aria-label="زروان، صفحه‌ی اصلی">
-          <BrandLogo className="text-[1.625rem] lg:text-[1.875rem]" />
-        </Link>
+    <header className="relative z-30 mx-auto w-full max-w-6xl px-4 pt-3 md:px-8">
+      <div className="flex items-center justify-between gap-4 border-b border-foreground/25 pb-3">
+        {/*------ Wordmark and the room ------*/}
+        <div className="flex items-center gap-4">
+          <Link to="/" aria-label="زروان، صفحه‌ی اصلی" className={`flex items-center gap-2.5 rounded ${FOCUS}`}>
+            <BrandEmblem className="size-12" />
+            <span className="flex flex-col leading-tight">
+              <span className="font-display text-3xl font-black text-foreground">زروان</span>
+              {/* Dropped on the narrowest phones, where it would crowd the person menu. */}
+              <span className="hidden text-[11px] text-foreground/65 min-[380px]:block">{CENTER_DESCRIPTOR}</span>
+            </span>
+          </Link>
+          <span className="hidden rounded-full border border-primary/60 px-3 py-1 text-xs font-bold text-primary lg:inline-block">
+            {roomLabel}
+          </span>
+        </div>
 
-        {/*------ Sections ------*/}
-        <AccountTabs items={navItems} label={navLabel} className="hidden lg:block" />
+        {/*------ Sections (wide only) ------*/}
+        <AccountTabs items={navItems} label={roomLabel} className="hidden lg:block" />
 
-        {/*------ Actions ------*/}
-        <div className="ms-auto flex items-center gap-2 lg:gap-4">
+        {/*------ The way out and the person ------*/}
+        <div className="flex items-center gap-3">
           <Link
             to={exitLink.to}
-            className="hidden rounded-sm px-2 py-2 text-sm font-bold text-muted-foreground transition-colors hover:text-foreground lg:block"
+            className={`hidden items-center gap-1 rounded px-1 py-1 text-[15px] text-foreground/85 transition-colors hover:text-foreground lg:inline-flex ${FOCUS}`}
           >
             {exitLink.label}
+            <ArrowUpLeft aria-hidden className="size-3.5 text-foreground/50" />
           </Link>
-          <PersonMenu firstName={firstName} phoneNumber={phoneNumber} roleLabel={roleLabel} links={menuLinks} />
+          <PersonMenu firstName={firstName} phoneNumber={phoneNumber} links={[PROFILE_LINK]} />
         </div>
       </div>
     </header>

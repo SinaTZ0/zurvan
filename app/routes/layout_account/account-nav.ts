@@ -1,36 +1,52 @@
+import { BookOpen, PawPrint, ReceiptText, ShoppingBag, Store, UsersRound, type LucideIcon } from "lucide-react";
+
 import { ACCOUNT_LINKS } from "~/lib/account-links";
+import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
 
 /*===== Account Navigation =====*/
-// The account area's sections, shared by the desktop tabs and the phone menu. Only built pages are listed; add each
-// one here when its page exists (docs/customer-area-design.md, "Shell"). From three sections on, phones get a bottom
-// tab bar instead of listing them in the person menu.
+// The account area's sections, shared by the desktop nav and the phone tab bar. Only built pages are listed; add each
+// one here when its page exists (docs/storefront-design.md, "Account Shell"). Both roles get the floating tab bar on
+// phones, so the person menu no longer lists the sections.
 
-/** One section in a desk's header. The Admin's area will pass its own list to the same header. */
+/** One section in a desk's header and tab bar. */
 export type DeskNavItem = {
   label: string;
+  /** A shorter name for the tab bar, where the label would crowd its neighbours. */
+  short?: string;
   to: string;
+  icon: LucideIcon;
   /** Active only on this exact URL: a desk's landing page would otherwise stay underlined on every page below it. */
   end?: boolean;
-  /** A count shown beside the label, e.g. requests waiting for the Admin. Nothing shows for 0. */
+  /** A count shown beside the label, e.g. the cart's items. Nothing shows for 0. */
   badge?: number;
-  /** What a screen reader says after the count; «در انتظار» when absent. The Cart's count is items, not waiting requests. */
+  /** What a screen reader says after the count. */
   badgeLabel?: string;
 };
 
-/** The link at the end of the header, back out of the desk. */
-export type DeskExitLink = { label: string; to: string };
+/** The link at the end of the header and the last tab: back out of the desk into the store. */
+export type DeskExitLink = { label: string; to: string; icon: LucideIcon };
 
-// The pages of docs/app-spec.md (Dashboard, Cart, Purchases). The Cart's count is added at render time by
-// `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
-export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS;
+// The customer's pages (Dashboard, Cart, Purchases) come from the shared list, so the storefront's person menu and
+// this shell always name and order them the same; the icons are the shell's own. The Cart's count is added at render
+// time by `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
+const ACCOUNT_ICONS: Record<string, LucideIcon> = {
+  "/account": PawPrint,
+  [CART_PATH]: ShoppingBag,
+  [PURCHASES_PATH]: ReceiptText,
+};
 
-/** The partner's pages (F7): the dashboard and the leads. Two sections, so phones list them in the person menu. */
+export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS.map((link) => ({
+  ...link,
+  icon: ACCOUNT_ICONS[link.to] ?? PawPrint,
+}));
+
+/** The partner's pages (F7): the dashboard and the leads. */
 export const PARTNER_NAV_ITEMS: readonly DeskNavItem[] = [
-  { label: "همکاری من", to: "/account/partner", end: true },
-  { label: "شماره‌ها و مشتری‌ها", to: "/account/partner/leads" },
+  { label: "همکاری من", to: "/account/partner", end: true, icon: Store },
+  { label: "شماره‌ها و مشتری‌ها", short: "مشتری‌ها", to: "/account/partner/leads", icon: UsersRound },
 ];
 
-export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses" };
+export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses", icon: BookOpen };
 
-/** Phones show a bottom tab bar once there are this many sections. */
-export const BOTTOM_TABS_FROM = 3;
+/** The room's name, the chip after the wordmark. */
+export const ROOM_LABEL = { customer: "حساب من", partner: "همکار" } as const;
