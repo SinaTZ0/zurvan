@@ -57,6 +57,25 @@ export const MASCOT_CUTS = {
   mailbox: { width: 320, height: 405 },
   board: { width: 628, height: 399 },
   bench: { width: 634, height: 444 },
+  // Poses for the Auth, Privacy and Partner Enquiry pages, cut from image-reference/generated/batch2/poses-8.png: the
+  // key in his mouth, a smartphone in his paws, listening, on guard, lying watchful, a shopping bag, groomed with a bow
+  // tie, a paw out showing the way.
+  "key-carry": { width: 356, height: 439 },
+  smartphone: { width: 282, height: 426 },
+  listen: { width: 255, height: 443 },
+  guard: { width: 269, height: 458 },
+  watch: { width: 370, height: 216 },
+  shopping: { width: 423, height: 403 },
+  groomed: { width: 285, height: 436 },
+  present: { width: 354, height: 428 },
+  // Scenery from image-reference/generated/batch2/scenery-6.png: a pet shop front, a small vet clinic, a front door in
+  // a stretch of brick wall, a chest with a padlock, a drawer cabinet with folders, a shop counter with a card stand.
+  petshop: { width: 419, height: 320 },
+  clinic: { width: 393, height: 327 },
+  door: { width: 395, height: 319 },
+  chest: { width: 421, height: 241 },
+  cabinet: { width: 319, height: 293 },
+  counter: { width: 434, height: 292 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
@@ -75,6 +94,12 @@ const DIMMED = new Set<MascotCutName>([
   "mailbox",
   "board",
   "bench",
+  "petshop",
+  "clinic",
+  "door",
+  "chest",
+  "cabinet",
+  "counter",
 ]);
 
 /**
