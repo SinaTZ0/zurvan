@@ -132,6 +132,10 @@ more. In B1 the middleware becomes a Start request middleware. Small difference:
   value down or read it from a query instead of a hardcoded route id.
 - `certificate/components/certificate-hero.tsx` imports `../+types/certificate`; give it its own props type.
 
+**Done (2026-10-22).** The root comment says what is true; `HomeHero` takes `firstName` from the account home's own
+loader (its guard's `sessionContext`); `CertificateHero` uses `CertificateVerification` from the certificate contract.
+No component reads another route's loader data or `+types` any more.
+
 ## Phase B: Switch to Start (branch `tanstack-start`; B0 in the `tanstack-start-spike` worktree)
 
 ### B0. Spike: prove the risky parts first

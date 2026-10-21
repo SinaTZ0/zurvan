@@ -7,7 +7,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { getDogStatus } from "~/lib/dog-status";
-import { requireSession } from "~/lib/session-guard.server";
+import { requireSession, sessionContext } from "~/lib/session-guard.server";
 import { createServerClient } from "~/orpc/server-client.server";
 import { COLUMN } from "~/routes/account_home/column";
 import { DogPanel } from "~/routes/account_home/components/dog-panel";
@@ -32,7 +32,8 @@ export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: [
 export const meta: Route.MetaFunction = () => [{ title: "سگ‌های من | آموزش K9" }];
 
 /*===== Loader =====*/
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const { firstName } = context.get(sessionContext);
   const client = createServerClient(request);
   const [dogs, evaluations, enrollments] = await Promise.all([
     client.dog.list(),
@@ -65,7 +66,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     passed: cards.reduce((sum, card) => sum + card.dog.passedCourses.length, 0),
   };
 
-  return { cards, tally };
+  return { firstName, cards, tally };
 }
 
 /*===== Dashboard =====*/
@@ -76,12 +77,12 @@ export async function loader({ request }: Route.LoaderArgs) {
  * of sections of their own.
  */
 export default function AccountHomePage({ loaderData }: Route.ComponentProps) {
-  const { cards, tally } = loaderData;
+  const { firstName, cards, tally } = loaderData;
 
   return (
     <>
       {/*===== Hero =====*/}
-      <HomeHero tally={cards.length > 0 ? tally : null} />
+      <HomeHero firstName={firstName} tally={cards.length > 0 ? tally : null} />
 
       {/*===== Dogs =====*/}
       <div className={COLUMN}>

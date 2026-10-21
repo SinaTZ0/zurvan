@@ -37,7 +37,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
-        // Loader data seeds most queries, so don't refetch it the moment the page hydrates.
+        // Pages get their data from loaders; the few `useQuery` reads (the cart's sync and review, the rules' consent)
+        // fetch in the browser, and 30 s keeps a remount or a second reader from fetching the same thing again. The move
+        // to TanStack Start replaces this with the freshness policy in docs/tanstack-start/.
         defaultOptions: { queries: { staleTime: 30_000 } },
       }),
   );

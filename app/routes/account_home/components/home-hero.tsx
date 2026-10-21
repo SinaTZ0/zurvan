@@ -1,6 +1,5 @@
 import { cn } from "cn";
 import { PawPrintIcon, PlusIcon } from "lucide-react";
-import { useRouteLoaderData } from "react-router";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
@@ -14,9 +13,6 @@ import { COLUMN } from "~/routes/account_home/column";
 
 /*===== Types =====*/
 export type Tally = { dogs: number; training: number; passed: number };
-
-// The account shell's loader answers `{ firstName, … }`. Read by its route id, without importing the shell's slice.
-const SHELL_ROUTE_ID = "routes/layout_account/layout-account";
 
 /*===== Home Hero =====*/
 /**
@@ -32,10 +28,7 @@ const SHELL_ROUTE_ID = "routes/layout_account/layout-account";
  * The page's one load moment (`ah-*` below): the dog dips once into his bow, his bubble pops at 0.4s, the tally's
  * numbers rise in one after another. Off for reduced motion, which shows the finished hero.
  */
-export function HomeHero({ tally }: { tally: Tally | null }) {
-  const shell = useRouteLoaderData(SHELL_ROUTE_ID) as { firstName?: string } | undefined;
-  const firstName = shell?.firstName ?? "";
-
+export function HomeHero({ firstName, tally }: { firstName: string; tally: Tally | null }) {
   return (
     <section aria-labelledby="account-home-title" className="pt-4 pb-10 lg:pt-section-sm lg:pb-14">
       <div className={`${COLUMN} grid gap-y-6 lg:grid-cols-12 lg:gap-x-12`}>
