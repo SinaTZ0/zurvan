@@ -1,8 +1,8 @@
 import { cn } from "cn";
-import { PlusIcon } from "lucide-react";
+import { CheckCheckIcon, HandshakeIcon, PlusIcon, WalletIcon } from "lucide-react";
 import { useQueryStates } from "nuqs";
-import { useMemo, useState } from "react";
-import { isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { isRouteErrorResponse, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills, type AdminFilterOption } from "~/components/admin-filter-pills";
@@ -10,18 +10,21 @@ import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { env } from "~/env.server";
+import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
 import type { AdminCommission } from "~/orpc/commission/contract";
 import { createServerClient } from "~/orpc/server-client.server";
 import { CreateSheet } from "~/routes/admin_partners/components/create-sheet";
 import { DeactivateDialog } from "~/routes/admin_partners/components/deactivate-dialog";
+import { LEAVE_MS, PageMotion } from "~/routes/admin_partners/components/page-motion";
 import { PaidLedger } from "~/routes/admin_partners/components/paid-ledger";
 import { PartnerDrawer } from "~/routes/admin_partners/components/partner-drawer";
-import { PartnerRow } from "~/routes/admin_partners/components/partner-row";
+import { PartnerRow, ROSTER_BOX, ROSTER_COLUMNS } from "~/routes/admin_partners/components/partner-row";
 import { PayDialog } from "~/routes/admin_partners/components/pay-dialog";
-import { UnpaidBlock } from "~/routes/admin_partners/components/unpaid-block";
-import { groupUnpaid, isUnpaid, listPaid } from "~/routes/admin_partners/partner-views";
+import { PaySlip } from "~/routes/admin_partners/components/pay-slip";
+import { countsAsUnpaid, type LeavingLine, withLeavingLines } from "~/routes/admin_partners/leaving";
+import { groupUnpaid, listPaid } from "~/routes/admin_partners/partner-views";
 import {
   ADMIN_PARTNERS_PATH,
   adminPartnersSearchParams,
@@ -37,6 +40,10 @@ const VIEW_LABELS: Record<PartnerView, string> = {
   paid: "پرداخت‌شده",
   partners: "همکاران",
 };
+
+/** The stagger between slips or rows as a view arrives; after the sixth they come together. */
+const RISE_STEP_S = 0.06;
+const MAX_STAGGERED = 5;
 
 /*===== Meta =====*/
 export const meta: Route.MetaFunction = () => [{ title: "همکاران | مدیریت آموزش K9" }];
@@ -55,9 +62,13 @@ export async function loader({ request }: Route.LoaderArgs) {
 /*===== Admin Partners =====*/
 /**
  * F7 and F9 for the Admin: where he pays the partners what they earned and opens or closes a partner's account. The
- * first view is the pay sheet (a block per partner who is owed, with the Sheba to copy and a «پرداخت شد» per
+ * first view is the pay sheet (a slip per partner who is owed: the Sheba to copy, the sum, and a «پرداخت شد» per
  * commission); the others are the ledger of what he paid and the roster. The money itself moves in his bank app: the
  * page only records it.
+ *
+ * A line he pays doesn't just vanish when the list reloads: the page keeps its unpaid copy for under a second
+ * (`leaving`), so it can be stamped and fold away (and its slip with it, if it was the last), while the sum and the
+ * pill's count change as the stamp lands.
  */
 export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) {
   const { partners, commissions, siteOrigin } = loaderData;
@@ -66,7 +77,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
   const [{ view, partner: openId, new: creating }, setParams] = useQueryStates(adminPartnersSearchParams);
 
   /*------ Dialogs ------*/
-  // One pay dialog for every «پرداخت شد» (page and drawer). The target outlives the dialog's closing so its words
+  // One pay dialog for every «پرداخت شد» (slips and drawer). The target outlives the dialog's closing so its words
   // don't blank mid-fade, and `session` remounts it for each opening so an old failure doesn't come back.
   const [payTarget, setPayTarget] = useState<{ commission: AdminCommission; session: number } | null>(null);
   const [payOpen, setPayOpen] = useState(false);
@@ -74,15 +85,71 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
   const [deactivateOpen, setDeactivateOpen] = useState(false);
 
   /*------ Busy ------*/
+  // Only a reload of this page dims the list (a navigation to it, or the revalidation after a write); leaving for
+  // another Admin page shouldn't flash it.
+  const location = useLocation();
   const navigation = useNavigation();
   const revalidator = useRevalidator();
-  const busy = navigation.state !== "idle" || revalidator.state !== "idle";
+  const busy =
+    revalidator.state === "loading" ||
+    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+
+  /*------ Leaving Lines ------*/
+  const [leaving, setLeaving] = useState<LeavingLine[]>([]);
+  const batchRef = useRef(0);
+  const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
+
+  // A removal timer must not fire into an unmounted page.
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      for (const timer of timers) clearTimeout(timer);
+      timers.clear();
+    };
+  }, []);
+
+  /*------ List Arrival ------*/
+  // `arrival` counts the view changes he makes, so the new list rises in (never on load); `settled` counts the exits
+  // that finished, so the empty pay sheet left by his last payment rises in too instead of snapping into place.
+  const [arrival, setArrival] = useState(0);
+  const [settled, setSettled] = useState(0);
 
   /*------ Derived Lists ------*/
-  const unpaidBlocks = useMemo(() => groupUnpaid({ commissions, partners }), [commissions, partners]);
-  const paidCommissions = useMemo(() => listPaid(commissions), [commissions]);
-  const unpaidCount = commissions.filter(isUnpaid).length;
-  const unpaidTotal = commissions.filter(isUnpaid).reduce((sum, commission) => sum + commission.amount, 0);
+  const waiting = useMemo(
+    () => new Set(leaving.filter((line) => line.batch === undefined).map((line) => line.commission.id)),
+    [leaving],
+  );
+  const motion = useMemo(
+    () => ({
+      leaving: new Set(leaving.map((line) => line.commission.id)),
+      playing: new Set(leaving.filter((line) => line.batch !== undefined).map((line) => line.commission.id)),
+    }),
+    [leaving],
+  );
+
+  const unpaidBlocks = useMemo(
+    () => groupUnpaid({ commissions: withLeavingLines({ commissions, leaving }), partners }),
+    [commissions, leaving, partners],
+  );
+  const paidCommissions = useMemo(
+    () => listPaid(commissions).filter((commission) => !waiting.has(commission.id)),
+    [commissions, waiting],
+  );
+  const counted = commissions.filter((commission) => countsAsUnpaid({ commission, waiting }));
+  const unpaidCount = counted.length;
+  const unpaidTotal = counted.reduce((sum, commission) => sum + commission.amount, 0);
+
+  // What he has already paid each partner, for the slip's foot; a line still waiting for its stamp isn't in it yet.
+  const paidByPartner = useMemo(() => {
+    const totals = new Map<string, { count: number; amount: number }>();
+    for (const commission of paidCommissions) {
+      const entry = totals.get(commission.partner.id) ?? { count: 0, amount: 0 };
+      entry.count += 1;
+      entry.amount += commission.amount;
+      totals.set(commission.partner.id, entry);
+    }
+    return totals;
+  }, [paidCommissions]);
 
   const options: AdminFilterOption<PartnerView>[] = [
     { value: "unpaid", label: VIEW_LABELS.unpaid, count: unpaidCount },
@@ -101,23 +168,79 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
     [commissions, openId],
   );
 
+  const listRef = useRef<HTMLDivElement>(null);
+  const drawerBodyRef = useRef<HTMLDivElement>(null);
+
+  /*------ Handlers ------*/
+  const hrefFor = (partnerId: string) =>
+    serializeAdminPartnersSearchParams(ADMIN_PARTNERS_PATH, { view, partner: partnerId });
+  const openPartner = (partnerId: string) => void setParams({ partner: partnerId });
+
+  /** A new view: drops every kept line (a new view never shows another view's exit) and lets the list rise in. */
+  function changeView(next: PartnerView) {
+    if (next === view) return;
+    setLeaving([]);
+    setArrival((previous) => previous + 1);
+    // Replace, not push: a view isn't a place to go Back to.
+    void setParams({ view: next }, { history: "replace" });
+  }
+
   function askToPay(commission: AdminCommission) {
     setPayTarget((previous) => ({ commission, session: (previous?.session ?? 0) + 1 }));
     setPayOpen(true);
   }
 
+  /** The API accepted a payment made on the pay sheet: keep the line, in its place, until its exit has played. */
+  function keepLeavingLine(commission: AdminCommission) {
+    // From the drawer the line stays in his file (its chip is pressed in there); the sheet behind it just updates.
+    if (view !== "unpaid" || openId !== null) return;
+    // Under reduced motion there is no exit to play: the reload simply takes the line away.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setLeaving((previous) => [...previous.filter((line) => line.commission.id !== commission.id), { commission }]);
+  }
+
+  /** The dialog closed: the lines it paid start their exit now (not under its backdrop), and leave when it's done. */
+  function closePayDialog() {
+    setPayOpen(false);
+
+    const batch = ++batchRef.current;
+    let started = false;
+    setLeaving((previous) => {
+      if (!previous.some((line) => line.batch === undefined)) return previous;
+      started = true;
+      return previous.map((line) => (line.batch === undefined ? { ...line, batch } : line));
+    });
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      setLeaving((previous) => previous.filter((line) => line.batch !== batch));
+      if (started) setSettled((previous) => previous + 1);
+    }, LEAVE_MS);
+    timersRef.current.add(timer);
+  }
+
+  /*------ Rendering Helpers ------*/
+  const rise = (index: number) => (arrival > 0 ? Math.min(index, MAX_STAGGERED) * RISE_STEP_S : null);
+
   return (
     <div>
+      <PageMotion />
+
       {/*===== Header =====*/}
       <AdminPageHeader
         title="همکاران"
         summary={
           unpaidCount > 0
-            ? `${formatNumberFa(unpaidCount)} پورسانت منتظر پرداخت است؛ جمعش ${formatToman(unpaidTotal)}`
-            : "پورسانتی منتظر پرداخت نیست"
+            ? `${formatNumberFa(unpaidCount)} پورسانت منتظر پرداخته · جمعش ${formatToman(unpaidTotal)}`
+            : "پورسانتی منتظر نیست"
         }
       >
-        <Button type="button" variant="solid" onClick={() => void setParams({ new: "1" })}>
+        {/* Outline, not gold: on this page gold stays for the money waiting. */}
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 border-foreground/20 bg-transparent ps-3.5 md:h-10 dark:bg-transparent"
+          onClick={() => void setParams({ new: "1" })}
+        >
           <PlusIcon aria-hidden strokeWidth={1.7} />
           همکار تازه
         </Button>
@@ -125,59 +248,97 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
 
       {partners.length === 0 ? (
         /*===== Nothing at All =====*/
-        <AdminEmptyState title="هنوز همکاری نیست">
-          کلینیک، آرایشگاه یا پت‌شاپی که بهش قول داده‌ای را بساز؛ لینک و QR خودش را می‌گیرد.
+        <AdminEmptyState title="هنوز همکاری نیست" icon={HandshakeIcon}>
+          کلینیک، آرایشگاه یا پت‌شاپی که باهاش قرار گذاشتی رو با «همکار تازه» بساز؛ لینک و QR خودش رو می‌گیره.
         </AdminEmptyState>
       ) : (
         <>
           {/*===== Views =====*/}
-          <AdminFilterPills
-            label="نمایش"
-            options={options}
-            value={view}
-            // Replace, not push: a view isn't a place to go Back to.
-            onChange={(value) => void setParams({ view: value }, { history: "replace" })}
-            className="mb-5"
-          />
+          {/* A count that changes under him pops inside the pills themselves. */}
+          <div className="mb-5">
+            <AdminFilterPills label="نمایش" options={options} value={view} onChange={changeView} />
+          </div>
 
-          <div aria-busy={busy} className={cn("transition-opacity", busy && "opacity-60")}>
+          {/* Focusable so focus has somewhere to land when the line he just paid leaves. */}
+          <div
+            ref={listRef}
+            tabIndex={-1}
+            aria-busy={busy}
+            aria-label={VIEW_LABELS[view]}
+            className={cn("scroll-mt-24 rounded-3xl transition-opacity outline-none", busy && "opacity-60")}
+          >
+            {/*===== Pay Sheet =====*/}
             {view === "unpaid" &&
               (unpaidBlocks.length === 0 ? (
-                /*===== Pay Sheet: Nothing Owed =====*/
-                <AdminEmptyState title="پورسانتی منتظر نیست">
-                  وقتی مشتریِ یکی از همکارها اولین خریدش را بکند، پورسانتش اینجا می‌آید تا پرداختش کنی.
-                </AdminEmptyState>
+                <div key={`${arrival}-${settled}`} className={cn((arrival > 0 || settled > 0) && "answer-in")}>
+                  <AdminEmptyState title="پورسانتی منتظر نیست" icon={CheckCheckIcon}>
+                    وقتی مشتریِ یکی از همکارها اولین خریدش رو بکنه، پورسانتش این‌جا میاد تا پرداختش کنی.
+                  </AdminEmptyState>
+                </div>
               ) : (
-                /*===== Pay Sheet =====*/
-                <ul aria-label="همکارانی که پورسانت طلب دارند" className="flex flex-col gap-4">
-                  {unpaidBlocks.map((block) => (
-                    <UnpaidBlock key={block.partnerId} block={block} onPay={askToPay} />
+                <ul key={arrival} aria-label="همکارهایی که پورسانت طلب دارن" className="-mb-4 flex flex-col">
+                  {unpaidBlocks.map((block, index) => (
+                    <PaySlip
+                      key={block.partnerId}
+                      block={block}
+                      href={hrefFor(block.partnerId)}
+                      paidBefore={paidByPartner.get(block.partnerId) ?? { count: 0, amount: 0 }}
+                      motion={motion}
+                      rise={rise(index)}
+                      onOpen={() => openPartner(block.partnerId)}
+                      onPay={askToPay}
+                    />
                   ))}
                 </ul>
               ))}
 
+            {/*===== Paid Ledger =====*/}
             {view === "paid" &&
               (paidCommissions.length === 0 ? (
-                <p className="rounded-2xl border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground">
-                  هنوز پورسانتی پرداخت نشده
-                </p>
+                <div key={arrival} className={cn(arrival > 0 && "answer-in")}>
+                  <AdminEmptyState title="هنوز پورسانتی پرداخت نشده" icon={WalletIcon}>
+                    هر پورسانتی که «پرداخت شد» بزنی، با روزش این‌جا می‌مونه.
+                  </AdminEmptyState>
+                </div>
               ) : (
-                /*===== Paid Ledger =====*/
-                <PaidLedger commissions={paidCommissions} />
+                <PaidLedger
+                  key={arrival}
+                  commissions={paidCommissions}
+                  hrefFor={hrefFor}
+                  onOpen={openPartner}
+                  rise={rise}
+                />
               ))}
 
+            {/*===== Roster =====*/}
             {view === "partners" && (
-              /*===== Roster =====*/
-              <ul aria-label="فهرست همکاران" className="flex flex-col gap-2">
-                {partners.map((partner) => (
-                  <PartnerRow
-                    key={partner.id}
-                    partner={partner}
-                    href={serializeAdminPartnersSearchParams(ADMIN_PARTNERS_PATH, { view, partner: partner.id })}
-                    onOpen={() => void setParams({ partner: partner.id })}
-                  />
-                ))}
-              </ul>
+              <div className={cn(ADMIN_PLATE, "overflow-hidden")}>
+                {/*------ Column Head ------*/}
+                {/* Only where the row is one line in fixed tracks; the rows say the same to a screen reader. */}
+                <div aria-hidden className={cn("hidden border-b py-1 xl:block", ADMIN_HAIRLINE)}>
+                  <div className={cn(ROSTER_BOX, "grid py-1.5 text-xs text-muted-foreground", ROSTER_COLUMNS)}>
+                    <span />
+                    <span>همکار</span>
+                    <span>کد لینک</span>
+                    <span>شماره</span>
+                    <span>آدم‌هاش</span>
+                    <span className="text-end">طلبش</span>
+                  </div>
+                </div>
+
+                {/*------ Rows ------*/}
+                <ul key={arrival} aria-label="فهرست همکاران" className={cn("divide-y", ADMIN_HAIRLINE)}>
+                  {partners.map((partner, index) => (
+                    <PartnerRow
+                      key={partner.id}
+                      partner={partner}
+                      href={hrefFor(partner.id)}
+                      rise={rise(index)}
+                      onOpen={() => openPartner(partner.id)}
+                    />
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         </>
@@ -189,6 +350,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
         partner={opened}
         commissions={openedCommissions}
         siteOrigin={siteOrigin}
+        bodyRef={drawerBodyRef}
         // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
         // forward entry that reopens it.
         onClose={() => void setParams({ partner: null }, { history: "replace" })}
@@ -204,12 +366,25 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
         open={creating !== null}
         siteOrigin={siteOrigin}
         onClose={() => void setParams({ new: null }, { history: "replace" })}
-        onCreated={(partner) => void setParams({ view: "partners", partner: partner.id, new: null })}
+        onCreated={(partner) => {
+          if (view !== "partners") {
+            setLeaving([]);
+            setArrival((previous) => previous + 1);
+          }
+          void setParams({ view: "partners", partner: partner.id, new: null });
+        }}
       />
 
       {/*===== Confirms =====*/}
       {payTarget && (
-        <PayDialog key={payTarget.session} open={payOpen} onOpenChange={setPayOpen} commission={payTarget.commission} />
+        <PayDialog
+          key={payTarget.session}
+          open={payOpen}
+          onOpenChange={(open) => (open ? setPayOpen(true) : closePayDialog())}
+          commission={payTarget.commission}
+          onConfirmed={keepLeavingLine}
+          returnFocus={() => (openId !== null ? drawerBodyRef.current : listRef.current)}
+        />
       )}
       {opened && (
         <DeactivateDialog
@@ -217,6 +392,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
           open={deactivateOpen}
           onOpenChange={setDeactivateOpen}
           partner={opened}
+          returnFocus={() => drawerBodyRef.current}
         />
       )}
     </div>
@@ -229,16 +405,14 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const notFound = isRouteErrorResponse(error) && error.status === 404;
 
   return (
-    <section aria-labelledby="admin-partners-error-title">
-      <h1 id="admin-partners-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این صفحه پیدا نشد" : "همکاران باز نشد"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/admin" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به مدیریت
+    <div>
+      <AdminPageHeader
+        title={notFound ? "این صفحه پیدا نشد" : "همکاران باز نشد"}
+        summary="یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."
+      />
+      <Link to="/admin" className={buttonVariants({ variant: "outline", size: "default" })}>
+        برگرد به نمای کلی
       </Link>
-    </section>
+    </div>
   );
 }

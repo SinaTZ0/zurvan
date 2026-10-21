@@ -67,12 +67,6 @@ export function listPaid(commissions: readonly AdminCommission[]): AdminCommissi
   );
 }
 
-/*===== Names =====*/
-/** «بهرام کاظمی» → «بهرام», for the toast that says whom the SMS went to. */
-export function firstNameOf(name: string): string {
-  return name.trim().split(/\s+/)[0] ?? name;
-}
-
 /*===== Sheba =====*/
 /** `IR` + 24 digits as groups of four (`IR12`, `3456`, …), so a long number reads and copies without slips. */
 export function shebaGroups(sheba: string): string[] {

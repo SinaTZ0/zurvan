@@ -1,3 +1,5 @@
+import { useRef } from "react";
+
 import { FormAlert } from "~/components/form-alert";
 import {
   AlertDialog,
@@ -14,7 +16,7 @@ import { useAdminAction } from "~/hooks/use-admin-action";
 import { formatToman } from "~/lib/course-format";
 import { client } from "~/orpc/client";
 import type { AdminCommission } from "~/orpc/commission/contract";
-import { firstNameOf } from "~/routes/admin_partners/partner-views";
+import { DIALOG_FOOTER, DIALOG_PLATE, DIALOG_TITLE } from "~/routes/admin_partners/dialog-plate";
 
 /*===== Pay Dialog =====*/
 /**
@@ -22,53 +24,72 @@ import { firstNameOf } from "~/routes/admin_partners/partner-views";
  * and sends the partner an SMS, which can't be taken back, so he is asked once per commission (no bulk button: each
  * SMS must name a payment that really happened).
  *
- * Controlled, so the page keeps one dialog for every «پرداخت شد»; the page remounts it (a new `key`) for each opening,
- * which also clears a failure left from the last one. It can't be dismissed while the write is in flight, and
- * `ALREADY_PAID` (another tab got there first) goes through the hook's conflict path: it toasts the API's message,
- * refreshes the list and closes this.
+ * Controlled, so the page keeps one dialog for every «پرداخت شد» (slips and drawer); the page remounts it (a new `key`)
+ * for each opening, which also clears a failure left from the last one. It can't be dismissed while the write is in
+ * flight, and `ALREADY_PAID` (another tab got there first) goes through the hook's conflict path: it toasts the API's
+ * message, refreshes the list and closes this.
+ *
+ * `onConfirmed` runs the moment the API has accepted the payment, before the list reloads, so the page can keep the
+ * line for its stamp (a conflict or a failure never calls it). After a success the button that opened this is gone, so
+ * focus goes to `returnFocus()` instead.
  */
 export function PayDialog({
   open,
   onOpenChange,
   commission,
+  onConfirmed,
+  returnFocus,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   commission: AdminCommission;
+  onConfirmed: (commission: AdminCommission) => void;
+  /** Where focus lands after a success: the open drawer, or the pay sheet. */
+  returnFocus: () => HTMLElement | null;
 }) {
   const partnerName = commission.partner.name;
+  const succeeded = useRef(false);
 
   /*------ Write ------*/
   const action = useAdminAction({
-    mutationFn: (id: string) => client.commission.admin.markPaid({ id }),
-    success: `پرداخت شد؛ به ${firstNameOf(partnerName)} پیامک رفت`,
+    mutationFn: async (id: string) => {
+      const result = await client.commission.admin.markPaid({ id });
+      succeeded.current = true;
+      onConfirmed(commission);
+      return result;
+    },
+    success: `پرداخت شد؛ به ${partnerName} پیامک رفت`,
     toastFailure: false,
     onSuccess: () => onOpenChange(false),
     onConflict: () => onOpenChange(false),
   });
 
   return (
-    <AlertDialog
-      open={open}
-      onOpenChange={(next) => {
-        if (!action.isPending) onOpenChange(next);
-      }}
-    >
-      <AlertDialogContent>
+    <AlertDialog open={open} onOpenChange={(next) => !action.isPending && onOpenChange(next)}>
+      <AlertDialogContent
+        className={DIALOG_PLATE}
+        finalFocus={() => {
+          if (!succeeded.current) return true;
+          returnFocus()?.focus({ preventScroll: true });
+          return false;
+        }}
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle>پرداخت شد؟</AlertDialogTitle>
+          <AlertDialogTitle className={DIALOG_TITLE}>پرداخت شد؟</AlertDialogTitle>
           <AlertDialogDescription>
-            {formatToman(commission.amount)} به {partnerName} پرداخت شده؟ برگشتی ندارد و به او پیامک می‌رود.
+            <span className="whitespace-nowrap">{formatToman(commission.amount)}</span> پورسانت{" "}
+            <bdi>{commission.customer.name}</bdi> رو به <bdi>{partnerName}</bdi> دادی؟ به همکار پیامک می‌ره و این کار
+            برنمی‌گرده.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <FormAlert message={action.isPending ? undefined : (action.failure?.message ?? undefined)} />
 
-        <AlertDialogFooter>
+        <AlertDialogFooter className={DIALOG_FOOTER}>
           <AlertDialogCancel disabled={action.isPending}>نه، برگرد</AlertDialogCancel>
           <AlertDialogAction variant="solid" disabled={action.isPending} onClick={() => action.run(commission.id)}>
             {action.isPending && <Spinner aria-hidden />}
-            بله، پرداخت شد
+            {action.isPending ? "داره ثبت می‌شه…" : "بله، پرداخت شد"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

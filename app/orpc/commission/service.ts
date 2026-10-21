@@ -93,7 +93,7 @@ export async function markPaid({ db, id }: { db: DatabaseOrTransaction; id: stri
   if (!existing) return { kind: "not-found" };
 
   if (!(await markCommissionPaid({ db, id }))) {
-    return { kind: "already-paid", errors: ["این پورسانت قبلاً پرداخت‌شده ثبت شده است."] };
+    return { kind: "already-paid", errors: ["این پورسانت قبلاً پرداخت شده."] };
   }
 
   const [partnerUser] = await db
