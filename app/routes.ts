@@ -20,6 +20,8 @@ export default [
     // Checks a certificate: what its QR code opens.
     route("certificate/:number", "routes/certificate/certificate.tsx"),
     route("join/partner", "routes/join_partner/join-partner.tsx"),
+    // Every address nothing else answers: a 404 inside the shell, the same page `/rules` shows until it's published.
+    route("*", "routes/not_found/not-found.tsx"),
   ]),
 
   /*===== Account (customers and partners) =====*/

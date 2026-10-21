@@ -1,6 +1,10 @@
-import { data } from "react-router";
+import { data, isRouteErrorResponse, useLocation } from "react-router";
 
+import { Link } from "~/components/link";
+import { NotFoundPage } from "~/components/not-found-page";
+import { buttonVariants } from "~/components/ui/button";
 import { SITE_RULES } from "~/lib/site-rules";
+import { RulesArticle } from "~/routes/rules/components/rules-article";
 
 import type { Route } from "./+types/rules";
 
@@ -12,10 +16,14 @@ export function loader() {
 }
 
 /*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [
-  { title: `${SITE_RULES?.title ?? "قوانین"} | زروان` },
-  { name: "description", content: "قوانین استفاده از سایت و خرید دوره." },
-];
+// While nothing is published the page is the Not Found page, and its tab says so (it must not hint that rules exist).
+export const meta: Route.MetaFunction = () =>
+  SITE_RULES
+    ? [
+        { title: `${SITE_RULES.title} | زروان` },
+        { name: "description", content: "قوانین استفاده از سایت و خرید دوره." },
+      ]
+    : [{ title: "پیدا نشد | زروان" }, { name: "robots", content: "noindex" }];
 
 /*===== Page =====*/
 /** The site rules, exactly as published in the registry: a heading per section, its paragraphs, and the version's date. */
@@ -24,25 +32,31 @@ export default function RulesPage() {
   const rules = SITE_RULES;
   if (!rules) return null;
 
-  return (
-    <article aria-labelledby="rules-title" className="site-container max-w-3xl py-section-sm">
-      <h1 id="rules-title" className="font-display text-h1 font-black text-balance">
-        {rules.title}
-      </h1>
-      <p className="mt-3 text-sm text-muted-foreground">از تاریخ {rules.effectiveFrom}</p>
+  return <RulesArticle rules={rules} />;
+}
 
-      <div className="mt-10 flex flex-col gap-10">
-        {rules.sections.map((section) => (
-          <section key={section.heading} className="flex flex-col gap-3">
-            <h2 className="text-h3 font-bold text-balance">{section.heading}</h2>
-            {section.paragraphs.map((paragraph) => (
-              <p key={paragraph} className="leading-relaxed text-pretty text-muted-foreground">
-                {paragraph}
-              </p>
-            ))}
-          </section>
-        ))}
+/*===== Error Boundary =====*/
+// Renders inside the public layout, so the header and footer stay. The 404 (nothing published yet) is the site's Not
+// Found page; anything else is a real failure, with a retry that is a full page load, as on the catalogue.
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const { pathname, search } = useLocation();
+  if (isRouteErrorResponse(error) && error.status === 404) return <NotFoundPage />;
+
+  return (
+    <section aria-labelledby="rules-error-title" className="site-container py-section-md">
+      <div className="max-w-xl">
+        <h1 id="rules-error-title" className="font-display text-h1 font-black text-balance">
+          قوانین باز نشد
+        </h1>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Link to={`${pathname}${search}`} reloadDocument className={buttonVariants({ variant: "solid", size: "lg" })}>
+            دوباره امتحان کن
+          </Link>
+          <Link to="/help" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            راهنما
+          </Link>
+        </div>
       </div>
-    </article>
+    </section>
   );
 }
