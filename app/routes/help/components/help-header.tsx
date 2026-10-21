@@ -66,11 +66,22 @@ export function HelpHeader() {
             points down at his head. */}
         <ChalkBubble
           tail="right"
-          className="absolute right-[calc(42%-36px)] bottom-[calc(0.9rem+7.5rem+0.5rem)] lg:bottom-[calc(1.2rem+14rem+1.6rem)]"
+          className="hp-pop absolute right-[calc(42%-36px)] bottom-[calc(0.9rem+7.5rem+0.5rem)] lg:bottom-[calc(1.2rem+14rem+1.6rem)]"
         >
           سؤال داری؟ از اینجا شروع کن!
         </ChalkBubble>
       </div>
+
+      {/* The page's one load moment: the thinking dog's bubble pops from its tail (bottom right, 36px in). Off for
+          reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .hp-pop {
+            transform-origin: calc(100% - 36px) 100%;
+            animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) .5s both;
+          }
+        }
+      `}</style>
     </section>
   );
 }

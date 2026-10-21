@@ -38,6 +38,23 @@ export default function HelpPage() {
         ))}
       </div>
 
+      {/* When the road (or another page) leads to a group or one of its questions, that group's dog hops once, as its
+          disc fills gold. Pure CSS like the disc: the animation starts whenever a group becomes the `:target`, so each
+          jump replays it. The hop adds to his own translate and mirror (separate properties). Off for reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .group\\/faq:target .help-dog, .group\\/faq:has(:target) .help-dog {
+            animation: help-hop .7s cubic-bezier(.3,.7,.4,1) .25s both, lively-breathe 2.6s ease-in-out .95s infinite;
+          }
+        }
+        @keyframes help-hop {
+          0%, 100% { transform: none; }
+          30% { transform: translateY(-14%) scale(.97, 1.04); }
+          55% { transform: scale(1.04, .95); }
+          75% { transform: translateY(-4%); }
+        }
+      `}</style>
+
       {/*===== The Ask =====*/}
       <div className="site-container pb-section-sm">
         <HelpAsk />

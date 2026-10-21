@@ -112,7 +112,7 @@ export function GroupArt({ groupId }: { groupId: string }) {
       <MascotCut
         name={stage.pose}
         className={cn(
-          "lively-breathe absolute bottom-[0.7rem] left-1/2 -translate-x-1/2 lg:bottom-[1rem]",
+          "help-dog lively-breathe absolute bottom-[0.7rem] left-1/2 -translate-x-1/2 lg:bottom-[1rem]",
           stage.dog,
           stage.flip && "-scale-x-100",
         )}
