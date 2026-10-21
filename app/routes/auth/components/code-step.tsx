@@ -46,6 +46,7 @@ export function CodeStep({
     setError,
     clearErrors,
     resetField,
+    setValue,
     setFocus,
     formState: { errors, isSubmitting },
   } = useForm<CodeValues>({ resolver: zodResolver(codeSchema), defaultValues: { code: "" } });
@@ -146,11 +147,23 @@ export function CodeStep({
           <FieldError errors={[errors.code]} className="answer-in" />
         </Field>
 
-        {/* Showcase mode sends no SMS, so the page says the code out loud. */}
+        {/* Showcase mode sends no SMS, so the page says the code out loud. Clicking it fills the wells and signs in,
+            as typing the last digit would. */}
         {showcase && (
           <p className="rounded-2xl border border-dashed border-primary/35 bg-sunken paper-grain px-3 py-2.5 text-center text-sm text-muted-foreground">
             نسخه‌ی نمایشی: کد ورود همیشه{" "}
-            <span className="font-bold text-primary">{toPersianDigits(SHOWCASE_SIGN_IN_CODE)}</span> هست.
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => {
+                setValue("code", SHOWCASE_SIGN_IN_CODE);
+                void onSubmit();
+              }}
+              className="rounded-sm font-bold text-primary underline decoration-dashed underline-offset-4 hover:decoration-solid focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50"
+            >
+              {toPersianDigits(SHOWCASE_SIGN_IN_CODE)}
+            </button>{" "}
+            هست؛ بزن روش تا پر بشه.
           </p>
         )}
 

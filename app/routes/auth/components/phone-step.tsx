@@ -71,8 +71,12 @@ export function PhoneStep({
         <Field data-invalid={!!errors.phoneNumber}>
           <FieldLabel htmlFor="sign-in-phone">شماره موبایل</FieldLabel>
           <InputGroup>
-            <InputGroupAddon>
-              <SmartphoneIcon strokeWidth={1.7} aria-hidden />
+            {/* A gold chip, not a bare grey glyph: the number sits at the far (LTR) end, so a lone thin icon read as a
+                stray mark. It lights up with the field. */}
+            <InputGroupAddon className="pe-1">
+              <span className="flex size-9 items-center justify-center rounded-xl border border-primary/25 bg-primary/10 text-primary/80 transition-colors group-focus-within/input-group:border-primary/50 group-focus-within/input-group:bg-primary/15 group-focus-within/input-group:text-primary">
+                <SmartphoneIcon className="size-[1.15rem]" strokeWidth={2} aria-hidden />
+              </span>
             </InputGroupAddon>
             <InputGroupInput
               id="sign-in-phone"
