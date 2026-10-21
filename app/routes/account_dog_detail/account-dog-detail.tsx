@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { ORPCError } from "@orpc/client";
 import { data, isRouteErrorResponse } from "react-router";
 
@@ -138,3 +139,6 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <DogDetailError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/dogs/$dogId")({});

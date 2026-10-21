@@ -1,69 +1,73 @@
-import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
+import { index, layout, rootRoute, route } from "@tanstack/virtual-file-routes";
 
-export default [
+/*===== Route Tree =====*/
+// Declared in code over the flat slices in `app/routes/` (file paths are relative to that folder). TanStack Start's
+// plugin turns this into `app/routeTree.gen.ts`.
+export const routes = rootRoute("../root.tsx", [
   /*===== Storefront =====*/
-  layout("routes/layout_public/layout-public.tsx", [
-    index("routes/home/home.tsx"),
-    route("courses", "routes/course_catalogue/course-catalogue.tsx"),
+  // A pathless layout: its id is `/_public`, which is how its pages' `createFileRoute` paths start.
+  layout("public", "layout_public/layout-public.tsx", [
+    index("home/home.tsx"),
+    route("/courses", "course_catalogue/course-catalogue.tsx"),
     // The purchase page that starts from the dog (customers only).
-    route("buy", "routes/buy/buy.tsx"),
-    route("courses/:slug", "routes/course_detail/course-detail.tsx"),
-    route("assessment", "routes/assessment/assessment.tsx"),
-    route("help", "routes/help/help.tsx"),
-    route("about", "routes/about/about.tsx"),
-    route("contact", "routes/contact/contact.tsx"),
-    route("privacy", "routes/privacy/privacy.tsx"),
+    route("/buy", "buy/buy.tsx"),
+    route("/courses/$slug", "course_detail/course-detail.tsx"),
+    route("/assessment", "assessment/assessment.tsx"),
+    route("/help", "help/help.tsx"),
+    route("/about", "about/about.tsx"),
+    route("/contact", "contact/contact.tsx"),
+    route("/privacy", "privacy/privacy.tsx"),
     // A 404 until the owner approves the rules' wording (`app/lib/site-rules.ts`).
-    route("rules", "routes/rules/rules.tsx"),
+    route("/rules", "rules/rules.tsx"),
     // A dog's record: the lookup, and what its QR code opens (private unless its owner says otherwise).
-    route("logbook/:fileNumber?", "routes/logbook/logbook.tsx"),
+    route("/logbook/{-$fileNumber}", "logbook/logbook.tsx"),
     // Checks a certificate: what its QR code opens.
-    route("certificate/:number", "routes/certificate/certificate.tsx"),
-    route("join/partner", "routes/join_partner/join-partner.tsx"),
+    route("/certificate/$number", "certificate/certificate.tsx"),
+    route("/join/partner", "join_partner/join-partner.tsx"),
     // Every address nothing else answers: a 404 inside the shell, the same page `/rules` shows until it's published.
-    route("*", "routes/not_found/not-found.tsx"),
+    route("$", "not_found/not-found.tsx"),
   ]),
 
   /*===== Account (customers and partners) =====*/
-  route("account", "routes/layout_account/layout-account.tsx", [
-    index("routes/account_home/account-home.tsx"),
-    route("cart", "routes/account_cart/account-cart.tsx"),
-    route("purchases", "routes/account_purchases/account-purchases.tsx"),
-    route("profile", "routes/account_profile/account-profile.tsx"),
-    route("dogs/:dogId", "routes/account_dog_detail/account-dog-detail.tsx"),
-    // One form module for adding and editing, so each route needs its own id.
-    route("dogs/new", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-new" }),
-    route("dogs/:dogId/edit", "routes/account_dog_form/account-dog-form.tsx", { id: "account-dog-edit" }),
-    // The partner's pages (F7), under the same shell; their loaders guard to partners only.
-    route("partner", "routes/account_partner/account-partner.tsx"),
-    route("partner/leads", "routes/account_partner_leads/account-partner-leads.tsx"),
+  route("/account", "layout_account/layout-account.tsx", [
+    index("account_home/account-home.tsx"),
+    route("/cart", "account_cart/account-cart.tsx"),
+    route("/purchases", "account_purchases/account-purchases.tsx"),
+    route("/profile", "account_profile/account-profile.tsx"),
+    route("/dogs/$dogId", "account_dog_detail/account-dog-detail.tsx"),
+    // One form for adding and editing; each route is a thin file over it.
+    route("/dogs/new", "account_dog_form/account-dog-new.tsx"),
+    route("/dogs/$dogId/edit", "account_dog_form/account-dog-edit.tsx"),
+    // The partner's pages (F7), under the same shell; their guards let partners only.
+    route("/partner", "account_partner/account-partner.tsx"),
+    route("/partner/leads", "account_partner_leads/account-partner-leads.tsx"),
   ]),
 
   /*===== Admin =====*/
-  route("admin", "routes/layout_admin/layout-admin.tsx", [
+  route("/admin", "layout_admin/layout-admin.tsx", [
     // The Admin Dashboard (F11).
-    index("routes/admin_index/admin-index.tsx"),
-    route("evaluations", "routes/admin_evaluations/admin-evaluations.tsx"),
-    route("enrollments", "routes/admin_enrollments/admin-enrollments.tsx"),
-    route("payments", "routes/admin_payments/admin-payments.tsx"),
-    route("dogs", "routes/admin_dogs/admin-dogs.tsx"),
-    route("dogs/:dogId", "routes/admin_dog_detail/admin-dog-detail.tsx"),
-    route("partners", "routes/admin_partners/admin-partners.tsx"),
-    route("users", "routes/admin_users/admin-users.tsx"),
-    route("courses", "routes/admin_courses/admin-courses.tsx"),
-    // One form module for adding and editing, so each route needs its own id.
-    route("courses/new", "routes/admin_course_form/admin-course-form.tsx", { id: "admin-course-new" }),
-    route("courses/:slug/edit", "routes/admin_course_form/admin-course-form.tsx", { id: "admin-course-edit" }),
-    route("settings", "routes/admin_settings/admin-settings.tsx"),
-    route("sms", "routes/admin_sms/admin-sms.tsx"),
+    index("admin_index/admin-index.tsx"),
+    route("/evaluations", "admin_evaluations/admin-evaluations.tsx"),
+    route("/enrollments", "admin_enrollments/admin-enrollments.tsx"),
+    route("/payments", "admin_payments/admin-payments.tsx"),
+    route("/dogs", "admin_dogs/admin-dogs.tsx"),
+    route("/dogs/$dogId", "admin_dog_detail/admin-dog-detail.tsx"),
+    route("/partners", "admin_partners/admin-partners.tsx"),
+    route("/users", "admin_users/admin-users.tsx"),
+    route("/courses", "admin_courses/admin-courses.tsx"),
+    // One form for adding and editing; each route is a thin file over it.
+    route("/courses/new", "admin_course_form/admin-course-new.tsx"),
+    route("/courses/$slug/edit", "admin_course_form/admin-course-edit.tsx"),
+    route("/settings", "admin_settings/admin-settings.tsx"),
+    route("/sms", "admin_sms/admin-sms.tsx"),
   ]),
 
-  route("auth", "routes/auth/auth.tsx"),
+  route("/auth", "auth/auth.tsx"),
 
-  /*===== Resource Routes =====*/
-  route("api/auth/*", "routes/api_auth/api-auth.ts"),
-  route("rpc/*", "routes/rpc/rpc.ts"),
-  route("api/evaluation-videos", "routes/api_evaluation_videos/api-evaluation-videos.ts"),
-  route("api/evaluation-videos/:id", "routes/api_evaluation_video/api-evaluation-video.ts"),
-  route("payment/callback", "routes/payment_callback/payment-callback.ts"),
-] satisfies RouteConfig;
+  /*===== Server Routes =====*/
+  route("/api/auth/$", "api_auth/api-auth.ts"),
+  route("/rpc/$", "rpc/rpc.ts"),
+  route("/api/evaluation-videos", "api_evaluation_videos/api-evaluation-videos.ts"),
+  route("/api/evaluation-videos/$id", "api_evaluation_video/api-evaluation-video.ts"),
+  route("/payment/callback", "payment_callback/payment-callback.ts"),
+]);

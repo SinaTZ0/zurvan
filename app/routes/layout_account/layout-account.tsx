@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { Outlet, useMatches } from "react-router";
 
 import { CartSync } from "~/components/cart-sync";
@@ -60,3 +61,6 @@ export default function AccountLayout({ loaderData }: Route.ComponentProps) {
     </div>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account")({});

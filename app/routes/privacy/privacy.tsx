@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useLocation } from "react-router";
 
 import { Link } from "~/components/link";
@@ -114,3 +115,6 @@ export function ErrorBoundary() {
     </section>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/privacy")({});

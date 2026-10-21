@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { ORPCError } from "@orpc/client";
 import { useRef } from "react";
 import { data, isRouteErrorResponse } from "react-router";
@@ -130,3 +131,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </section>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/courses/$slug")({});

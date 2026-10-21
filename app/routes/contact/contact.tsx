@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { AreaBand } from "~/routes/contact/components/area-band";
@@ -32,3 +33,6 @@ export default function ContactPage() {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/contact")({});

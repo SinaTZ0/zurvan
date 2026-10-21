@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { redirect } from "react-router";
 
@@ -113,3 +114,6 @@ export default function AuthPage({ loaderData }: Route.ComponentProps) {
     </main>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/auth")({});

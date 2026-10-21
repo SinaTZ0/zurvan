@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { familyMascotPose } from "~/lib/course-mascot";
 import { familiesWithCourses } from "~/lib/course-families";
@@ -53,3 +54,6 @@ export default function AboutPage({ loaderData }: Route.ComponentProps) {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/about")({});

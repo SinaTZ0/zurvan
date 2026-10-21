@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { isRouteErrorResponse } from "react-router";
 
 import { requireSession } from "~/lib/session-guard.server";
@@ -92,3 +93,6 @@ export default function AccountPurchasesPage({ loaderData }: Route.ComponentProp
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <PurchasesError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/purchases")({});

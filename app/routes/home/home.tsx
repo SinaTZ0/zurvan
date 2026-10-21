@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { GroundStrip } from "~/components/ground-strip";
 import { CENTER_SERVICE_AREA } from "~/lib/contact";
 import { formatNumberFa } from "~/lib/digits";
@@ -46,3 +47,6 @@ export default function HomePage() {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/")({});

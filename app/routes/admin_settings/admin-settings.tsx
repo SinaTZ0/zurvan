@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { LockIcon } from "lucide-react";
 import { isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
 
@@ -114,3 +115,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/admin/settings")({});

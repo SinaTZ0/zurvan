@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { redirect } from "react-router";
 
 import { normalizeFileNumber } from "~/lib/dog-file";
@@ -74,3 +75,6 @@ export default function LogbookPage({ loaderData }: Route.ComponentProps) {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/logbook/{-$fileNumber}")({});

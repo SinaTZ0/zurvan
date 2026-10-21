@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ReceiptTextIcon } from "lucide-react";
 import { useQueryStates } from "nuqs";
@@ -214,3 +215,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/admin/payments")({});

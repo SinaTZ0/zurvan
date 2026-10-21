@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { Outlet } from "react-router";
 
 import { requireSession, sessionContext } from "~/lib/session-guard.server";
@@ -66,3 +67,6 @@ export default function AdminLayout({ loaderData }: Route.ComponentProps) {
     </div>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/admin")({});

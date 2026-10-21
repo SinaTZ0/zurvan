@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { ORPCError } from "@orpc/client";
 import { data } from "react-router";
 
@@ -57,3 +58,6 @@ export default function AccountProfilePage({ loaderData }: Route.ComponentProps)
 export function ErrorBoundary() {
   return <ProfileError />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/profile")({});

@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { isRouteErrorResponse, useNavigate } from "react-router";
@@ -199,3 +200,6 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <CartPageError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/cart")({});

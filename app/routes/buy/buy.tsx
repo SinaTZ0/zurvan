@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { isRouteErrorResponse, useNavigation } from "react-router";
 
@@ -149,3 +150,6 @@ export default function BuyPage({ loaderData }: Route.ComponentProps) {
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <BuyError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/buy")({});

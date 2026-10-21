@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { ORPCError } from "@orpc/client";
 import { cn } from "cn";
 import { useQueryStates } from "nuqs";
@@ -148,3 +149,6 @@ export default function AccountPartnerLeadsPage({ loaderData }: Route.ComponentP
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <LeadsError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/partner/leads")({});

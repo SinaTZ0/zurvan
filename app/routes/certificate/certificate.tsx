@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useParams } from "react-router";
 
 import { createServerClient } from "~/orpc/server-client.server";
@@ -47,3 +48,6 @@ export default function CertificatePage({ loaderData }: Route.ComponentProps) {
     </>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/certificate/$number")({});

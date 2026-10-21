@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { useQueryStates } from "nuqs";
 import { useState } from "react";
@@ -167,3 +168,6 @@ export function ErrorBoundary() {
     </section>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/courses")({});

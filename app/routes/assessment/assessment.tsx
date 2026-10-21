@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { isRouteErrorResponse, useRevalidator } from "react-router";
 
@@ -200,3 +201,6 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   return <AssessmentError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/assessment")({});

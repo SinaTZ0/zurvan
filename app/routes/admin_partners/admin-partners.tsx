@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CheckCheckIcon, HandshakeIcon, PlusIcon, WalletIcon } from "lucide-react";
 import { useQueryStates } from "nuqs";
@@ -419,3 +420,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/admin/partners")({});

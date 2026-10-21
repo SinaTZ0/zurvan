@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { data, isRouteErrorResponse, useLocation } from "react-router";
 
 import { Link } from "~/components/link";
@@ -45,3 +46,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </section>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/_public/$")({});

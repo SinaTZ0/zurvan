@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { isRouteErrorResponse } from "react-router";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
@@ -143,3 +144,6 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </section>
   );
 }
+
+// Placeholder until B5 converts this page.
+export const Route = createFileRoute("/account/")({});
