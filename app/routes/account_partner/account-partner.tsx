@@ -28,7 +28,7 @@ export const meta: Route.MetaFunction = () => [{ title: "همکاری من | آ�
  * API answers NOT_FOUND, and that becomes a 404 the error boundary explains, not an empty page.
  */
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { user } = context.get(sessionContext);
+  const user = context.get(sessionContext);
   const client = createServerClient(request);
 
   const [profile, commissions, leads] = await Promise.all([
@@ -56,8 +56,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const paidAmount = sorted.filter((c) => c.paidAt !== null).reduce((sum, c) => sum + c.amount, 0);
 
   return {
-    // The guard only lets named accounts through, so `firstName` is set.
-    firstName: user.firstName ?? "",
+    firstName: user.firstName,
     isActive: profile.isActive,
     shebaNumber: profile.shebaNumber,
     commissionPercent: profile.commissionPercent,

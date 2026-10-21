@@ -16,11 +16,10 @@ export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: [
 
 /*===== Loader =====*/
 export function loader({ context }: Route.LoaderArgs) {
-  const { user } = context.get(sessionContext);
-  // The guard only lets named accounts through, so `firstName` is set.
+  const user = context.get(sessionContext);
   return {
-    firstName: user.firstName ?? "",
-    phoneNumber: user.phoneNumber ?? null,
+    firstName: user.firstName,
+    phoneNumber: user.phoneNumber,
     role: user.role === "partner" ? "partner" : "customer",
   } as const;
 }

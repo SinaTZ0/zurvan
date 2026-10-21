@@ -106,6 +106,10 @@ Add a procedure that returns the session state a guard needs (signed in, has a n
 blocked account's sessions on the server. Make `requireSession` call it. In Phase B the same call moves into
 `beforeLoad`, and the redirect logic is the only thing that changes.
 
+**Done (2026-10-22).** `requireSession` asks `session.get` (from A1) and puts its `active` user (`SessionUser`: id,
+role, first and last name, phone) in `sessionContext`, which no longer holds a Better-Auth session. The `.data` URL
+normalization stays until B4.
+
 ### A3. Referral cookie without `createCookie`
 
 `app/lib/referral.server.ts` uses React Router's `createCookie`, and `home`/`auth` set it with

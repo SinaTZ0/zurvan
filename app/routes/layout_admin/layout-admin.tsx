@@ -21,15 +21,14 @@ export const meta: Route.MetaFunction = () => [{ name: "robots", content: "noind
 
 /*===== Loader =====*/
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { user } = context.get(sessionContext);
+  const user = context.get(sessionContext);
   // The counts on the rail: the three kinds of work that wait for him (F11, "Waiting for him"), read from the Overview's
   // one call. Reloaded with every revalidation, so a count drops (and its badge pops) as soon as he answers.
   const { waiting, money } = await createServerClient(request).dashboard.admin.overview();
 
   return {
-    // The guard only lets named accounts through, so `firstName` is set.
-    firstName: user.firstName ?? "",
-    phoneNumber: user.phoneNumber ?? null,
+    firstName: user.firstName,
+    phoneNumber: user.phoneNumber,
     counts: {
       evaluationRequests: waiting.evaluationRequests,
       paidNotEnrolled: waiting.paidNotEnrolled.count,

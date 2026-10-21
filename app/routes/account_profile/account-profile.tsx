@@ -16,7 +16,7 @@ export const meta: Route.MetaFunction = () => [{ title: "تنظیمات حساب
 
 /*===== Loader =====*/
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { user } = context.get(sessionContext);
+  const user = context.get(sessionContext);
   const isPartner = user.role === "partner";
   const client = createServerClient(request);
 
@@ -33,10 +33,9 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   ]);
 
   return {
-    // The guard only lets named accounts through, so `firstName` is set.
-    firstName: user.firstName ?? "",
-    lastName: user.lastName ?? "",
-    phoneNumber: user.phoneNumber ?? null,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    phoneNumber: user.phoneNumber,
     isPartner,
     shebaNumber: profile?.shebaNumber ?? null,
     hasPassword,
