@@ -120,21 +120,10 @@
   }
 
   /* The booking stamp (My Assessments): the tag-stamp's press, larger and turning to its tilt as it lands. The end
-     rotation is the stamp's resting tilt, so the keyframe and the class agree */
+     rotation is the stamp's resting tilt, so the keyframe and the class agree. Its keyframe is outside the theme
+     (below): the Admin's stamps call it by name from their own styles, and Tailwind only emits a theme keyframe
+     whose animate-* utility some file uses */
   --animate-slip-stamp: slip-stamp 0.32s var(--ease-silk) both;
-  @keyframes slip-stamp {
-    from {
-      transform: scale(1.35) rotate(-20deg);
-      opacity: 0;
-    }
-    60% {
-      opacity: 1;
-    }
-    to {
-      transform: scale(1) rotate(-9deg);
-      opacity: 1;
-    }
-  }
 
   /* A session punched on the session card: the hole is pressed in, lands a touch large and settles */
   --animate-punch: punch 0.18s var(--ease-silk) both;
@@ -204,6 +193,21 @@
     to {
       transform: translateY(-6px) rotate(1.5deg);
     }
+  }
+}
+
+/* The booking stamp's keyframe (see --animate-slip-stamp), always emitted. */
+@keyframes slip-stamp {
+  from {
+    transform: scale(1.35) rotate(-20deg);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: scale(1) rotate(-9deg);
+    opacity: 1;
   }
 }
 
