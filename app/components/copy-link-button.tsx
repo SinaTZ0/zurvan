@@ -29,7 +29,7 @@ export function CopyLinkButton({ link }: { link: string }) {
       setCopied(true);
       toast.add({ title: "لینک کپی شد.", type: "success" });
     } catch {
-      toast.add({ title: "کپی نشد؛ لینک را دستی انتخاب کن.", type: "error" });
+      toast.add({ title: "کپی نشد؛ لینک رو دستی انتخاب کن.", type: "error" });
     }
   }
 
