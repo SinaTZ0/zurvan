@@ -58,7 +58,8 @@ The owner decided all of these on 2026-10-22.
 4. **Production server (decided).** The documented Node path is Nitro (`nitro/vite`, `node .output/server/index.mjs`),
    and Nitro v3 is still beta. The alternative is Start's own build output served by `srvx` (static client files + the
    server's `fetch` export); the docs only spell that out for Rsbuild. **Decision:** try Nitro in the B0 spike, fall
-   back to `srvx` if the build or Docker image misbehaves. Result: see B0.
+   back to `srvx` if the build or Docker image misbehaves. **Result (B0): Nitro.** Its `node-server` build ran in
+   Docker behind Caddy without problems, so srvx wasn't needed (see B0 for what it takes).
 5. **Two refinements of Phase A (decided).**
    - **One `session.get` procedure** serves both A1 (the viewer on public pages) and A2 (page guards). It returns
      anonymous / unnamed / active and revokes a blocked account's sessions wherever it's read, so a blocked user is
@@ -140,35 +141,112 @@ No component reads another route's loader data or `+types` any more.
 
 ### B0. Spike: prove the risky parts first
 
-Scaffold Start next to the existing code with one public page, one guarded page, `/rpc/*` and `/api/auth/*`, then
-answer these before converting anything else:
+Done on 2026-10-22 in the `tanstack-start-spike` worktree (commit `b830c7c`, `@tanstack/react-start` 1.169.3,
+`@tanstack/react-router` 1.170.45, `nitro` 3.0.260903-beta, Vite 8.3). The spike converts the root, the router, a
+minimal public shell with the real home, privacy, rules, course detail and 404 pages, the guarded account layout and
+home, and the `/rpc/$` and `/api/auth/$` server routes; `spike/` there has its Dockerfile, Caddyfile and the
+Playwright scripts behind these answers. Everything was checked on a production build unless it says dev.
 
-- [ ] `tanstackStart({ srcDirectory: "app", router: { virtualRouteConfig: "./app/routes.ts" } })` builds with our
-      flat slices (the `router` key is in the Start plugin schema; the docs only show it for the plain router plugin).
-- [ ] Production build runs in Docker (decision 4) behind Caddy.
-- [ ] `notFound()` during SSR returns HTTP 404 (the e2e smoke test checks `/rules` → 404; unconfirmed in the docs).
-- [ ] Import protection with our `*.server.ts` files, and the `.server` type-only imports if any remain.
-- [ ] Lenis + hash links: Start scrolls to hashes itself (`defaultHashScrollIntoView`); make sure it doesn't fight
-      Lenis.
-- [ ] View transitions with `defaultViewTransition` / per-link `viewTransition`, and back/forward behavior compared
-      with today's ([`view-transitions.md`](../view-transitions.md)).
-- [ ] Preloaded data is used on click: one request per page, none at hydration.
+- [x] **Virtual routes with our flat slices work.** The B1 config,
+      `tanstackStart({ srcDirectory: "app", router: { virtualRouteConfig: "./app/routes.ts" } })`, builds and runs.
+      Paths in the config are relative to `app/routes/`, and the root can stay at `app/root.tsx` with
+      `rootRoute("../root.tsx", [...])`. A pathless `layout("public", "layout_public/…", [...])` gets the id
+      `/_public`, so its pages are `createFileRoute("/_public/courses/$slug")`; the generator writes the id into each
+      file. The tree is generated at `app/routeTree.gen.ts`, which also declares the `Register` types, so `tsc` needs
+      it: commit it and keep it out of oxlint and Prettier. The spike's files typecheck with today's `tsconfig.json`.
+- [x] **Production build in Docker behind Caddy: Nitro works** (decision 4).
+  - **Image.** `vite build` writes a self-contained `.output/`: the server bundle, with the one native dependency
+    (sharp) traced into `.output/server/node_modules`. The runtime stage just copies `.output` and runs
+    `node .output/server/index.mjs`, with no `npm ci --omit=dev`. The image is 205 MB.
+  - **Behind Caddy.** Pages, the 404s, the guard's redirect, `/rpc`, sign-in and the referral cookie all worked.
+  - **Headers.** Assets are `public, max-age=31536000, immutable`. HTML is compressed by Caddy (zstd), and Caddy's
+    1-day rule still applies to `/photo` and the favicons.
+  - **Compression.** Nitro doesn't compress responses itself (`react-router-serve` did).
+    `nitro({ compressPublicAssets: true })` pre-compresses the assets (br/gzip served). HTML is uncompressed only
+    where no Caddy sits in front (`compose.yaml`).
+  - **Local test setup.** Docker Desktop's host network isn't WSL's localhost, so the spike used a bridge network
+    with published ports.
+- [x] **`notFound()` during SSR returns HTTP 404**, in dev and production: `/rules`, an unknown address (the `$` splat)
+      and `/courses/<unknown slug>` answer 404 and render their `notFoundComponent` inside the public shell. Redirects
+      thrown from `beforeLoad` are **307** (React Router sent 302); the e2e test only checks the URL.
+- [x] **Import protection works with our `*.server.ts` files.**
+  - **Build.** A route that imports `~/env.server` at runtime fails the production build ("Import denied in client
+    environment … `**/*.server.*`").
+  - **Dev.** The import is mocked, a warning goes to the terminal, and using the value throws a clear error in the
+    browser console.
+  - **Type-only imports pass and leak nothing**, both `import type { X }` and inline `import { type X }`, even with
+    `verbatimModuleSyntax: true`, which the repo already has on.
+  - **Client bundle.** Contains no server code: no drizzle, no Better-Auth adapter, no `@orpc/server`, no router. The
+    isomorphic oRPC client's server branch is stripped.
+- [x] **Lenis + hash links behave as today**, measured side by side with the React Router build:
+  - **Same-page links glide.** A same-page link (`/privacy`'s contents) glides with Lenis when the wrapper passes
+    `resetScroll: false` and `hashScrollIntoView: false`; it stops where it stops today.
+  - **Cross-page links land on the section.** A cross-page `/privacy#who-sees` lands on the section like today
+    (Start's own `scrollIntoView`, which respects the section's `scroll-mt`).
+  - **Back restores the scroll position** (`scrollRestoration: true`), Lenis included.
+- [x] **View transitions: one router option needed.** With only the per-link `viewTransition`, link clicks fade but
+      Back/Forward don't (React Router replays the fade there).
+      `defaultViewTransition: { types: ({ pathChanged }) => (pathChanged ? [] : false) }` restores today's behavior:
+      link, Back and Forward fade when the pathname changes; hash-only and query-only steps don't. Two differences:
+  - `navigate()` calls now fade on a pathname change too, where React Router needed an opt-in.
+  - A browser without view transition types fades every navigation that doesn't set its own `viewTransition`. Our
+    links always set it.
+- [x] **Preloaded data is used on click.** On `/courses`:
+  - **Hydration:** no data request (the SSR Query cache is handed over).
+  - **Viewport preload:** each visible course link ran that course's loader, one `course.get` per link (`course.list`
+    and `session.get` came from the cache).
+  - **Click:** a course renders with **zero** requests.
+  - **Back:** zero requests.
+
+**Also found**
+
+- **Per-request isolation holds.** The server-side oRPC client is shared, with
+  `context: () => ({ headers: new Headers(getRequestHeaders()) })`. Thirty concurrent SSR requests from three
+  different sessions each rendered their own visitor.
+- **Better Auth needs no `tanstackStartCookies()`.** Sign-in goes through the `/api/auth/$` handler, which returns
+  its own `Set-Cookie`. The plugin is only for `auth.api.*` calls made inside server functions.
+- **The referral cookie** is set by a request middleware in `app/start.ts` with `setCookie`. Its value is
+  URL-encoded there (`…%3D%3D`); `readReferralCode` reads both forms.
+- **CSRF.** A custom `app/start.ts` drops Start's automatic CSRF check, so it registers
+  `createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" })` itself.
+- **Route `headers`** set the SSR response's headers (checked with `Cache-Control: no-store`).
+- **CSS: use a side-effect `import "./app.css"` in the root.** `import appCss from "./app.css?url"` with a `<link>`
+  breaks the Nitro build: the server build hashes the file differently from the client build, so the page links a CSS
+  file that doesn't exist (404). With the side-effect import, Start adds the `<link>` itself.
+- **Use `@vitejs/plugin-react-swc` (4.3), not `@vitejs/plugin-react`.** `@vitejs/plugin-react` 6 doesn't install:
+  its optional peer `@rolldown/plugin-babel` conflicts with shadcn's Babel 7 (ERESOLVE), and `--legacy-peer-deps`
+  leaves a lockfile `npm ci` rejects. Start's docs allow the SWC plugin, and it worked.
+- **`.env` sets `NODE_ENV=development`**, and a local `vite build` then ships React's dev JSX runtime (`jsxDEV`) to
+  the browser. The Docker build is unaffected because `.env` isn't copied.
+- **Preloads skip `beforeLoad`'s cache.** The docs say a preload runs `beforeLoad` again every time. The guard reads
+  `session.get` through `ensureQueryData`, so a preload costs no request, but the guard's answer is then only as fresh
+  as that query.
+- **Storybook filter.** Start adds Vite plugins named `tanstack*`, `nitro:*` and `fullstack:*`; Storybook must drop
+  those and keep `@tailwindcss/vite:*` and `vite:react-swc*`. Not run in the spike.
+- **`Link` string paths need translating.** TanStack's `Link` doesn't parse a hash or query out of `to`, and has no
+  `className` function. The spike's wrappers split React-Router-style strings (`"/help#x"`, `"#buy-card"`) and compute
+  `isActive`; B7 decides whether call sites move to typed `to` + `hash` + `search` instead.
 
 ### B1. App shell
 
 - Packages: add `@tanstack/react-start`, `@tanstack/react-router`, `@tanstack/react-router-ssr-query`,
-  `@tanstack/virtual-file-routes`, `@vitejs/plugin-react` (after `tanstackStart()` in `plugins`), and `nitro` if
-  chosen. Remove `react-router`, `@react-router/{dev,node,serve}`, `isbot`.
+  `@tanstack/virtual-file-routes`, `@vitejs/plugin-react-swc` (after `tanstackStart()` in `plugins`; B0: not
+  `@vitejs/plugin-react`), and `nitro` (`nitro({ compressPublicAssets: true })`). Remove `react-router`,
+  `@react-router/{dev,node,serve}`, `isbot`.
 - `app/router.tsx`: `getRouter()` creates the `QueryClient` per call, `createRouter({ routeTree, context: { queryClient },
-defaultPreload: "viewport", defaultPreloadStaleTime: 0, scrollRestoration: true })`, and
+defaultPreload: "viewport", defaultPreloadStaleTime: 0, scrollRestoration: true, defaultViewTransition })` (the
+  `types` function from B0), and
   `setupRouterSsrQueryIntegration({ router, queryClient })`. The integration provides `QueryClientProvider`; drop
   ours from the root.
 - `app/routes.ts`: rewrite with `@tanstack/virtual-file-routes` (`rootRoute`, `layout`, `route`, `index`) and the same
   files. Paths become `$slug`, `$dogId`, `$number`, `$id`; `logbook/{-$fileNumber}`; the 404 is a `$` splat.
+  The root stays at `app/root.tsx` (`rootRoute("../root.tsx", …)`); commit the generated `app/routeTree.gen.ts`.
 - `__root` (from `app/root.tsx`): the `<html lang="fa" dir="rtl" className="dark">` shell with `<HeadContent />` and
   `<Scripts />`; providers Jotai → Direction → Tooltip → SmoothScroll + Toaster. `createRootRouteWithContext<{
-queryClient: QueryClient }>()`. Root `errorComponent` / `notFoundComponent` render `RootErrorPage`.
-- Server-function CSRF: if we add `app/start.ts` for global middleware, register `createCsrfMiddleware` ourselves.
+queryClient: QueryClient }>()`. Root `errorComponent` / `notFoundComponent` render `RootErrorPage`. The
+  stylesheet is a side-effect `import "./app.css"` (B0: `?url` breaks the build).
+- `app/start.ts`: the referral cookie's request middleware (A3's root middleware) and `createCsrfMiddleware` for
+  server functions, which a custom `start.ts` must register itself.
 
 ### B2. Server routes
 
@@ -176,8 +254,8 @@ Each becomes `createFileRoute(...)({ server: { handlers } })`:
 
 - `rpc/$` → `ANY`: `rpcHandler.handle(request, { prefix: "/rpc", context: { headers: request.headers } })`, 404 when
   unmatched.
-- `api/auth/$` → `GET`/`POST`: Better Auth's `handler(request)`. Add `tanstackStartCookies()` (from
-  `better-auth/tanstack-start`) as the last Better Auth plugin.
+- `api/auth/$` → `GET`/`POST`: Better Auth's `handler(request)`. B0: `tanstackStartCookies()` isn't needed, since
+  nothing calls `auth.api.*` from a server function.
 - `api/evaluation-videos` → `POST` upload; `api/evaluation-videos/$id` → `GET` (Range/206/416), `HEAD`, `DELETE`.
   They already return plain `Response`s; keep their `Cache-Control`.
 - `payment/callback` → `GET` that redirects (a `Response` with `Location`, or `redirect()`).
@@ -189,7 +267,7 @@ Replace `app/orpc/client.ts` + `app/orpc/server-client.server.ts` with the
 
 ```ts
 const getORPCClient = createIsomorphicFn()
-  .server(() => createRouterClient(router, { context: async () => ({ headers: getRequestHeaders() }) }))
+  .server(() => createRouterClient(router, { context: () => ({ headers: new Headers(getRequestHeaders()) }) }))
   .client((): RouterClient<typeof router> => createORPCClient(new RPCLink({ url: "/rpc" })));
 ```
 
@@ -202,7 +280,10 @@ above), never module state. Keep `orpc = createTanstackQueryUtils(client)` for `
 `requireSession({ roles })` (10 route middlewares) becomes a `beforeLoad` on `layout_account`, `layout_admin` and the
 8 guarded pages. It calls the A2 session procedure, then `throw redirect({ to: "/auth", search: { redirectTo } })`,
 or redirects to the role's home. The `.data` URL normalization in `signInRedirect` goes away (`location.href` is the
-real page). `sessionContext` becomes the object `beforeLoad` returns, which children read from `context`.
+real page). `sessionContext` becomes the object `beforeLoad` returns, which children read from `context`. B0: read
+`session.get` with `ensureQueryData` (preloads re-run `beforeLoad` every time, and the query cache keeps them free),
+and clear or invalidate that query on sign-in, sign-out and a blocked answer so the guard never trusts a stale
+session. Redirects are 307 now.
 
 ### B5. Pages
 
@@ -237,7 +318,10 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
 
 - `Link`/`NavLink` wrappers keep their rules on TanStack's `Link`: `preload` = `"viewport"` (storefront, account),
   `"intent"` (Admin), `false` for same-pathname and `reloadDocument` links; `viewTransition` only when the pathname
-  changes; same-page hash links don't reset scroll (`resetScroll: false`) so Lenis can glide.
+  changes; same-page hash links set `resetScroll: false` and `hashScrollIntoView: false` so Lenis can glide (B0).
+- Decide how call sites pass hashes and queries: TanStack's `Link` doesn't parse them out of `to`. Either keep the
+  spike's wrapper that splits React-Router-style strings, or move the 125 call sites to typed `to` + `hash` + `search`.
+  `NavLink` needs its own `isActive` (no `className` function on TanStack's `Link`).
 - Update `.oxlintrc.json`'s restricted import to `@tanstack/react-router`'s `Link`.
 - Delete `app/hooks/use-default-prefetch.ts`'s React Router note; the "data isn't reused" caveat no longer applies.
 
@@ -245,12 +329,19 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
 
 - `package.json` scripts: `dev: vite dev`, `build: vite build`, `start` per decision 4, `typecheck: tsc` (the route
   tree is generated by the plugin).
-- `tsconfig.json`: drop `.react-router/types` from `include` and `rootDirs`; keep `~/*`. Don't enable
-  `verbatimModuleSyntax` (the docs warn it can leak server bundles into the client).
-- `.gitignore` / `.oxlintrc.json` ignores: `.react-router/`, `build/` → the generated route tree and `.output/`.
-- Dockerfile: copy the new output, new `CMD`. `compose.yaml` comment about `react-router-serve` serving assets.
-- Playwright `webServer` command. Storybook: filter Start's Vite plugins in `.storybook/main.ts`; replace the
-  `createRoutesStub` decorator in `app/routes/rules/rules.stories.tsx` with a memory-history router.
+- `tsconfig.json`: drop `.react-router/types` from `include` and `rootDirs`; keep `~/*`. Turn `verbatimModuleSyntax`
+  off, as the docs advise (it's on today; B0 saw no leak with it, and nothing depends on it).
+- `.env` / `.env.example`: drop `NODE_ENV=development` (`env.server.ts` already defaults to it), or a local build
+  ships React's dev runtime (B0).
+- `.gitignore` / `.oxlintrc.json` ignores: `.react-router/`, `build/` → `.output/`, `.nitro/`, `.tanstack/`, and
+  the generated `app/routeTree.gen.ts` (committed, but not linted or formatted).
+- Dockerfile: the build stage as today; the runtime stage copies only `.output` and runs
+  `node .output/server/index.mjs`, so the production-dependencies stage goes (B0's `spike/Dockerfile`).
+  `compose.yaml`: its comment says `react-router-serve` serves compressed assets; now the assets are pre-compressed
+  and HTML is compressed only behind Caddy.
+- Playwright `webServer` command. Storybook: in `.storybook/main.ts`, drop plugins named `tanstack*`, `nitro:*` and
+  `fullstack:*`; replace the `createRoutesStub` decorator in `app/routes/rules/rules.stories.tsx` with a
+  memory-history router.
 
 ### B9. Docs and agent instructions
 
