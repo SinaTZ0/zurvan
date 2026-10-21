@@ -1,10 +1,15 @@
-import { DogThumb } from "~/components/dog-thumb";
+import { cn } from "cn";
+import { InfoIcon } from "lucide-react";
+
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { Link } from "~/components/link";
 import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Payment } from "~/orpc/checkout/contract";
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from "~/orpc/enrollment/constants";
+import type { Media } from "~/orpc/media/contract";
+
+import { TapedPrint } from "./taped-print";
 
 /*===== Enrollment Status Guard =====*/
 // The contract types an enrollment's status as a plain string; the badge only knows the three real ones.
@@ -16,7 +21,7 @@ function isEnrollmentStatus(status: string): status is EnrollmentStatus {
 /**
  * What a paid item turned into. A failed or pending payment bought nothing yet, so it says nothing. A paid item with no
  * enrollment is the one case that needs the trainer (F5): the money arrived but the course was not registered, so the
- * page says so plainly instead of leaving the customer to guess. No refund UI.
+ * page says so plainly on a small gold-outlined notice (it is the one line that needs him, not an alarm). No refund UI.
  */
 function EnrollmentLine({
   paymentStatus,
@@ -32,28 +37,48 @@ function EnrollmentLine({
   }
 
   return (
-    <p className="mt-2 max-w-md text-sm text-pretty text-muted-foreground">
-      پرداخت شد، اما دوره‌ای برایش ثبت نشد. {HEAD_TRAINER.firstName} موضوع را می‌بیند و با شما تماس می‌گیرد.
+    <p className="mt-2.5 flex max-w-lg items-start gap-2 rounded-2xl border border-primary/45 bg-primary/[0.06] px-3 py-2 text-sm text-pretty">
+      <InfoIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+      <span>پرداخت شد، اما دوره‌ای براش ثبت نشد. {HEAD_TRAINER.firstName} موضوع رو می‌بینه و باهات تماس می‌گیره.</span>
     </p>
   );
 }
 
 /*===== Payment Line =====*/
 /**
- * One bought course inside a slip. It wears the dog's face (a payment item carries only the dog's id and name, so the
- * thumb is the letter disc), and the dog's name leads to its page, where the enrollment lives.
+ * One bought course on a slip: the dog's photo as a small taped print (a payment item carries only the dog's id and
+ * name; the page looks the photo up in the customer's dogs, and a dog no longer listed gets its engraved initial), the
+ * dog's name in gold leading to its page, where the enrollment lives, the course, what it turned into, and its price at
+ * the end (under the words on phones, where the row is too narrow for a third column).
  */
 export function PaymentLine({
   item,
   paymentStatus,
+  photo,
+  index,
 }: {
   item: Payment["items"][number];
   paymentStatus: Payment["status"];
+  photo: Media | null;
+  /** The line's place on the slip: the prints' tilt alternates. */
+  index: number;
 }) {
+  const muted = paymentStatus === "failed";
+
   return (
-    <li className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1 py-4 first:pt-0 last:pb-0 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-4">
+    <li
+      className={cn(
+        "grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 gap-y-1.5 py-5 first:pt-0 last:pb-0 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-x-5",
+        index > 0 && "border-t border-dashed border-foreground/15",
+      )}
+    >
       {/*------ Dog ------*/}
-      <DogThumb name={item.dog.name} photo={null} className="row-span-2 size-12 sm:row-span-1" />
+      <TapedPrint
+        name={item.dog.name}
+        photo={photo}
+        tilt={index % 2 ? "rotate-2" : "-rotate-3"}
+        className={cn("row-span-2 mt-1 sm:row-span-1", muted && "opacity-60 grayscale-[50%]")}
+      />
 
       {/*------ Words ------*/}
       <div className="min-w-0">
@@ -63,13 +88,19 @@ export function PaymentLine({
         >
           <bdi>{item.dog.name}</bdi>
         </Link>
-        <h3 className="font-sans text-base font-bold text-pretty">{item.course.title}</h3>
+        <h4 className={cn("font-sans text-base font-bold text-pretty sm:text-lg", muted && "text-muted-foreground")}>
+          {item.course.title}
+        </h4>
         <EnrollmentLine paymentStatus={paymentStatus} enrollment={item.enrollment} />
       </div>
 
       {/*------ Price ------*/}
-      {/* Under the words on phones (the row is too narrow for a third column), at the end on wider screens. */}
-      <p className="col-start-2 font-bold text-foreground sm:col-start-3 sm:row-start-1 sm:text-end">
+      <p
+        className={cn(
+          "col-start-2 font-bold whitespace-nowrap tabular-nums sm:col-start-3 sm:row-start-1 sm:pt-6 sm:text-end",
+          muted ? "text-muted-foreground" : "text-foreground",
+        )}
+      >
         {formatToman(item.price)}
       </p>
     </li>

@@ -1,14 +1,23 @@
 import { isRouteErrorResponse } from "react-router";
 
-import { ChalkDoodle } from "~/components/chalk-doodle";
-import { DogEmptyState } from "~/components/dog-empty-state";
-import { Link } from "~/components/link";
-import { buttonVariants } from "~/components/ui/button";
 import { requireSession } from "~/lib/session-guard.server";
+import type { Media } from "~/orpc/media/contract";
 import { createServerClient } from "~/orpc/server-client.server";
+import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
 
 import type { Route } from "./+types/account-purchases";
-import { PaymentSlip } from "./components/payment-slip";
+import { COLUMN } from "./column";
+import { NextCourseBand } from "./components/next-course-band";
+import { NoPurchases } from "./components/no-purchases";
+import { PageMotion } from "./components/page-motion";
+import { PurchasesError } from "./components/purchases-error";
+import { PurchasesHero } from "./components/purchases-hero";
+import { SlipsSection } from "./components/slips-section";
+
+/*===== Handle =====*/
+// The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
+// padding when a page's handle sets this.
+export const handle: AccountLayoutHandle = { flushFooter: true };
 
 /*===== Guard =====*/
 // The account layout lets partners in too, but payments are a customer's (docs/app-spec.md, F5).
@@ -20,71 +29,66 @@ export const meta: Route.MetaFunction = () => [{ title: "خریدها | آموز
 /*===== Loader =====*/
 export async function loader({ request }: Route.LoaderArgs) {
   const client = createServerClient(request);
-  const [payments, refunds] = await Promise.all([client.checkout.payments(), client.refund.listMine()]);
+  // The dogs are read only for their photos: a payment item carries just the dog's id and name.
+  const [payments, refunds, dogs] = await Promise.all([
+    client.checkout.payments(),
+    client.refund.listMine(),
+    client.dog.list(),
+  ]);
 
+  /*------ Order ------*/
   // The API already returns newest first; sorting again keeps the page right if that ever changes.
-  return {
-    // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
-    payments: [...payments].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
-    refunds,
+  // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
+  const sorted = [...payments].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+  /*------ Photos ------*/
+  const photos: Record<string, Media | null> = Object.fromEntries(dogs.map((dog) => [dog.id, dog.photo]));
+
+  /*------ Tally ------*/
+  // The hero's three numbers, from the paid payments only: a failed or pending one bought nothing.
+  const paidItems = sorted.filter((payment) => payment.status === "paid").flatMap((payment) => payment.items);
+  const tally = {
+    payments: sorted.filter((payment) => payment.status === "paid").length,
+    courses: paidItems.length,
+    training: paidItems.filter((item) => item.enrollment?.status === "active").length,
   };
+
+  return { payments: sorted, refunds, photos, tally };
 }
 
 /*===== Purchases =====*/
 /**
- * F5's record of what was paid: one slip per payment, with the dog and course on each line and what the payment turned
- * into, and what was given back. The app only records; there is nothing to pay or edit here.
+ * F5's record of what was paid, «خریدها»: the center's dog keeps the receipts in his book. The hero with the tally, then
+ * one paper slip per payment (the dog and course on each line, what each turned into, what was given back), and the
+ * closing brick band towards the next course. The app only records; there is nothing to pay or edit here.
  */
 export default function AccountPurchasesPage({ loaderData }: Route.ComponentProps) {
-  const { payments, refunds } = loaderData;
+  const { payments, refunds, photos, tally } = loaderData;
 
   return (
-    <div className="site-container py-8 lg:py-14">
-      {/*===== Header =====*/}
-      <header className="mb-8 flex items-center gap-4 lg:mb-10">
-        <h1 className="font-display text-h1 font-black text-balance">خریدها</h1>
-        <ChalkDoodle name="heart" className="w-9 rotate-12 lg:w-11" />
-      </header>
+    <>
+      <PageMotion />
+
+      {/*===== Hero =====*/}
+      <PurchasesHero tally={tally} />
 
       {/*===== Slips =====*/}
-      {payments.length === 0 ? (
-        <DogEmptyState
-          bubble="هنوز چیزی نخریدم"
-          title="هنوز خریدی نداری"
-          action={{ label: "دوره‌ها را ببین", to: "/courses" }}
-        >
-          بعد از اولین پرداخت، اینجا می‌بینی چه پرداختی کردی و برای کدوم سگ.
-        </DogEmptyState>
-      ) : (
-        <div className="flex flex-col gap-6 lg:gap-8">
-          {payments.map((payment) => (
-            <PaymentSlip
-              key={payment.id}
-              payment={payment}
-              refunds={refunds.filter((entry) => entry.paymentId === payment.id)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      <div className={COLUMN}>
+        {payments.length === 0 ? (
+          <NoPurchases />
+        ) : (
+          <SlipsSection payments={payments} refunds={refunds} photos={photos} />
+        )}
+      </div>
+
+      {/*===== Next Course =====*/}
+      <NextCourseBand />
+    </>
   );
 }
 
 /*===== Error Boundary =====*/
+// Inside the account shell, so a failed list still has the header, the footer and a way on.
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
-  return (
-    <section aria-labelledby="account-purchases-error-title" className="site-container py-16">
-      <h1 id="account-purchases-error-title" className="text-2xl font-extrabold">
-        {notFound ? "این صفحه پیدا نشد" : "خریدهایت باز نشدند"}
-      </h1>
-      <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        مشکلی پیش آمد. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن.
-      </p>
-      <Link to="/account" className={buttonVariants({ size: "lg", className: "mt-6" })}>
-        برگرد به سگ‌های من
-      </Link>
-    </section>
-  );
+  return <PurchasesError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

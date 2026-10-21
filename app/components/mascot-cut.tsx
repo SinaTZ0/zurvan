@@ -166,7 +166,8 @@ export type MascotCutName = keyof typeof MASCOT_CUTS;
 
 // The scenery steps back so the dog stays the brightest thing on the page (`scenery-dim`, app.css). The dog cut-outs
 // are never dimmed; the key and the flag stay bright too, as the steps' two gold accents (the unlock and the finish),
-// and so do the seal and its disc (a certificate's gold mark).
+// and so do the seal and its disc (a certificate's gold mark) and the chalkboard (its slate can carry real chalk text;
+// a page dims it with `scenery-dim` when it is only scenery).
 const DIMMED = new Set<MascotCutName>([
   "plants",
   "ground",
@@ -202,6 +203,11 @@ const DIMMED = new Set<MascotCutName>([
   "tripod",
   "clock",
   "safe",
+  "register",
+  "shop-cart",
+  "stall",
+  "archive",
+  "suitcase",
 ]);
 
 /**
