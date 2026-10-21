@@ -118,6 +118,27 @@ export const MASCOT_CUTS = {
   bowls: { width: 498, height: 272 },
   "toy-box": { width: 484, height: 422 },
   podium: { width: 516, height: 295 },
+  // Poses for the forms (the Dog Form, the Evaluation Request, Profile Settings), cut from
+  // image-reference/generated/batch5/poses-8.png: a blank name card in his mouth, standing on a bathroom scale looking at
+  // the dial, a paw on a small blank desk calendar, an old box camera held up to his eye, lying with a paw on a piggy
+  // bank, pressing a rubber stamp on a blank sheet, a paw on a big gold padlock, trotting with an envelope in his mouth.
+  badge: { width: 301, height: 357 },
+  scale: { width: 334, height: 305 },
+  calendar: { width: 348, height: 359 },
+  camera: { width: 293, height: 361 },
+  piggy: { width: 341, height: 280 },
+  stamp: { width: 338, height: 368 },
+  padlock: { width: 305, height: 358 },
+  envelope: { width: 363, height: 333 },
+  // Scenery from image-reference/generated/batch5/scenery-6.png: a hall stand with leashes, a collar and a harness, an
+  // open wooden first-aid and grooming box, a writing desk with blank sheets and a quill, an old camera on a tripod, a
+  // grandfather clock, a small iron safe with gold coins.
+  "hall-stand": { width: 458, height: 469 },
+  "first-aid": { width: 466, height: 415 },
+  desk: { width: 468, height: 470 },
+  tripod: { width: 438, height: 507 },
+  clock: { width: 409, height: 522 },
+  safe: { width: 457, height: 402 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;
@@ -154,6 +175,12 @@ const DIMMED = new Set<MascotCutName>([
   "bowls",
   "toy-box",
   "podium",
+  "hall-stand",
+  "first-aid",
+  "desk",
+  "tripod",
+  "clock",
+  "safe",
 ]);
 
 /**
