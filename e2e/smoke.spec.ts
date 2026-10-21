@@ -65,11 +65,11 @@ test.describe("a new customer", () => {
     await expect(page).toHaveURL(/\/account/);
 
     await page.goto("/account/cart");
-    await expect(page.getByRole("main")).toContainText("سبد خالیه");
+    await expect(page.getByRole("main")).toContainText("سبدت خالیه");
 
     // No dog yet: the purchase page asks for one first and sends the customer back here afterwards.
     await page.goto("/buy");
-    await expect(page.getByRole("main")).toContainText("اول سگت را معرفی کن");
+    await expect(page.getByRole("main")).toContainText("اول سگت رو معرفی کن");
     await expect(page.getByRole("link", { name: "معرفی سگ" })).toHaveAttribute(
       "href",
       "/account/dogs/new?redirectTo=%2Fbuy",
