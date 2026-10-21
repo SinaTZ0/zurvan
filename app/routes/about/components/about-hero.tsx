@@ -45,7 +45,7 @@ export function AboutHero() {
             <MascotCut name="wave" eager className="lively-wiggle relative block w-full" />
             <ChalkBubble
               tail="right"
-              className="lively-float absolute right-[58%] bottom-[84%] w-max max-w-[13rem] text-pretty md:max-w-[16rem]"
+              className="ab-pop absolute right-[58%] bottom-[84%] w-max max-w-[13rem] text-pretty md:max-w-[16rem]"
             >
               سلام! اینم طلاست، مربی من.
             </ChalkBubble>
@@ -89,7 +89,7 @@ export function AboutHero() {
 
           {/*------ The print ------*/}
           {/* The real photo, never altered: a mount, two strips of tape across the top corners and a slight tilt. */}
-          <figure className="relative order-1 mx-auto w-full max-w-[22rem] -rotate-2 lg:order-2 lg:col-span-5 lg:self-start">
+          <figure className="ab-print relative order-1 mx-auto w-full max-w-[22rem] -rotate-2 lg:order-2 lg:col-span-5 lg:self-start">
             <div className="rounded-sm bg-foreground p-2.5 shadow-[0_18px_40px_-16px_rgb(0_0_0/0.9)] md:p-3">
               <img
                 src={photo.src}
@@ -108,6 +108,30 @@ export function AboutHero() {
           </figure>
         </div>
       </div>
+
+      {/* The page's one load moment: the print drops onto the wall from its tape and swings to rest, then the dog's
+          bubble pops from its tail (bottom right, 2.25rem in) and settles into the shared float, second in the list so
+          it takes over once it starts. The keyframes add to the print's own tilt (Tailwind's separate `rotate`). Off
+          for reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .ab-print {
+            transform-origin: 50% 0;
+            animation: ab-print .9s cubic-bezier(.3,.7,.4,1) .1s both;
+          }
+          .ab-pop {
+            transform-origin: calc(100% - 2.25rem) 100%;
+            animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) .75s both, lively-float 3.4s ease-in-out 1.15s infinite alternate;
+          }
+        }
+        @keyframes ab-print {
+          0% { opacity: 0; transform: translateY(-2.5rem) rotate(-5deg); }
+          45% { opacity: 1; transform: translateY(.25rem) rotate(2.5deg); }
+          65% { transform: rotate(-1.5deg); }
+          82% { transform: rotate(.6deg); }
+          100% { transform: none; }
+        }
+      `}</style>
     </section>
   );
 }

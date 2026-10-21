@@ -74,7 +74,7 @@ function Stage({
   return (
     <li
       className={cn(
-        "grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-x-4 p-3 lg:flex lg:min-h-[23rem] lg:flex-col lg:items-stretch lg:p-8",
+        "lively-reveal grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-x-4 p-3 lg:flex lg:min-h-[23rem] lg:flex-col lg:items-stretch lg:p-8",
         className,
       )}
     >

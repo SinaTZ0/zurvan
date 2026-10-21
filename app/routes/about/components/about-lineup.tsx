@@ -60,7 +60,7 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
                 to={`/courses?family=${family}`}
                 className={cn(
                   FOCUS,
-                  "group flex h-full flex-col items-center rounded-3xl max-lg:border max-lg:border-border max-lg:bg-card max-lg:paper-grain",
+                  "ab-lift lively-lift group flex h-full flex-col items-center rounded-3xl max-lg:border max-lg:border-border max-lg:bg-card max-lg:paper-grain",
                 )}
               >
                 <span aria-hidden className="relative flex h-36 w-full items-end justify-center lg:h-40">
@@ -68,7 +68,10 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
                   <GroundStrip className="absolute inset-x-0 bottom-0 h-9 md:h-9 lg:hidden" />
                   <MascotCut
                     name={pose}
-                    className={cn("relative mb-3 h-28 w-auto lg:mb-2 lg:h-36", IDLE[index % IDLE.length])}
+                    className={cn(
+                      "lively-lift-pic relative mb-3 h-28 w-auto lg:mb-2 lg:h-36",
+                      IDLE[index % IDLE.length],
+                    )}
                   />
                 </span>
                 <span className="px-2 pt-2 pb-3 text-center font-bold lg:pt-5 lg:pb-0">{label}</span>
@@ -97,6 +100,14 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
           </li>
         </ul>
       </div>
+
+      {/* The shared lift answers hover only; a keyboard focus lifts the dog the same way. Off for reduced motion. */}
+      <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .ab-lift:focus-visible { transform: translateY(-6px) rotate(-.6deg); }
+          .ab-lift:focus-visible .lively-lift-pic { animation: lively-jelly .7s ease-in-out; }
+        }
+      `}</style>
     </section>
   );
 }
