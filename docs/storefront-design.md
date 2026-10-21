@@ -81,7 +81,7 @@ The header, footer and phone tab bar live in `app/routes/layout_public/` and wra
 
 ## Contact
 
-`/contact` (`app/routes/contact/`) is static and calm, built only from what the owner printed on the business card: name, role, 13 years, the international credential, the service area, the phone and the Telegram, Instagram and YouTube profiles. It adds no claim about where or how training is held; it is four cards, each one link. A second phone number and a WhatsApp link wait for the owner and are never guessed.
+`/contact` (`app/routes/contact/`) is the quickest way to reach the head trainer, built only from the business card: the phone and the Telegram, Instagram and YouTube profiles, and no claim about where or how training is held. The number is the hero, big ivory digits on a plate with the gold «زنگ بزن», and the dog on the phone sits on top of it («الو؟ زروانم! شماره همینه.»). The page's one brick wall hangs the three profiles as signs on cords, each one link in a new tab, and the letter dog trots to the mailbox on its coping («پیام بدی، خودم می‌رسونمش!»). The last band runs into the footer (`flushFooter`): the service area, «تمام نقاط تهران», on the Tehran skyline with the leash dog («من کل تهرانو می‌گردم!»), and the thinking dog beside the line to the FAQ. A second phone number and a WhatsApp link wait for the owner and are never guessed. The smoke test reads the phone number here.
 
 ## Signed-in Pages
 
