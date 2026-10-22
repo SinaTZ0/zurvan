@@ -13,6 +13,8 @@ import { SmoothScroll } from "~/components/smooth-scroll";
 import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { textDirection } from "~/lib/i18n";
+import { getLocale } from "~/paraglide/runtime";
 
 // A side-effect import: Start links it in the head. (`?url` gave the server and client builds different hashes.)
 import "./app.css";
@@ -38,10 +40,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 /*===== Document =====*/
 function RootDocument({ children }: { children: React.ReactNode }) {
+  // The language comes from the address (`/en/...` is English); it is fixed for the document, since changing it
+  // reloads the page (`app/router.tsx`).
+  const locale = getLocale();
+  const dir = textDirection(locale);
+
   return (
     // The site has one theme, black and flat gold. `dark` turns on the `dark:` variants the UI components are written with;
     // `color-scheme` (set in app.css) makes native controls and scrollbars dark too.
-    <html lang="fa" dir="rtl" className="dark">
+    <html lang={locale} dir={dir} className="dark">
       <head>
         <HeadContent />
       </head>
@@ -51,9 +58,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* Without a Provider, Jotai uses a module-level default store that the server would
             share across requests, so each render tree gets its own store instead. */}
         {/* Base UI reads direction from context, not the `dir` attribute, so popups, sliders, and
-            menus need the provider to position and navigate correctly in RTL. */}
+            menus need the provider to position and navigate correctly in RTL (and LTR on the English pages). */}
         <JotaiProvider>
-          <DirectionProvider direction="rtl">
+          <DirectionProvider direction={dir}>
             <TooltipProvider>
               <SmoothScroll>{children}</SmoothScroll>
               <Toaster />

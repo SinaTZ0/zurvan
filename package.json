@@ -7,8 +7,11 @@
     "dev": "vite dev",
     "start": "node .output/server/index.mjs",
     "start:local": "NODE_ENV=development node .output/server/index.mjs",
-    "typecheck": "tsc",
-    "lint": "oxlint",
+    "postinstall": "test ! -d project.inlang || npm run i18n:compile",
+    "i18n:compile": "paraglide-js compile --project ./project.inlang --silent",
+    "i18n:check": "node scripts/i18n-check.mjs",
+    "typecheck": "npm run i18n:compile && tsc",
+    "lint": "oxlint && node scripts/i18n-check.mjs",
     "lint:fix": "oxlint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -29,6 +32,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
     "@base-ui/react": "^1.8.0",
+    "@fontsource-variable/gabarito": "^5.3.0",
     "@fontsource-variable/vazirmatn": "^5.3.0",
     "@fontsource/big-shoulders-stencil": "^5.3.0",
     "@hookform/resolvers": "^5.9.1",
@@ -72,6 +76,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@inlang/paraglide-js": "^2.29.1",
+    "@inlang/plugin-message-format": "^4.5.5",
     "@playwright/test": "^1.64.1",
     "@storybook/addon-a11y": "^10.6.3",
     "@storybook/react-vite": "^10.6.3",

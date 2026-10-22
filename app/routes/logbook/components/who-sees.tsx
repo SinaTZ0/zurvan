@@ -4,6 +4,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/logbook/column";
 
 /*===== Plates =====*/
@@ -11,23 +12,18 @@ import { COLUMN } from "~/routes/logbook/column";
 // facts are app-spec F14 and the loader's: the owner is sent from the QR code to their dog's page, the head trainer
 // (the Admin) reads every dog's file and writes in the diary after a session, everyone else sees only that the record
 // is private (no dog's name, nothing else, whether or not the number exists).
-const PLATES = [
-  {
-    icon: PawPrintIcon,
-    title: "صاحب سگ",
-    line: "وارد حسابت شو؛ با اسکن QR مستقیم می‌ری صفحه‌ی سگت، با دفترچه و گواهی‌هاش.",
-  },
-  {
-    icon: NotebookPenIcon,
-    title: `${HEAD_TRAINER.firstName}، مربی`,
-    line: "پرونده‌ی همه‌ی سگ‌ها رو داره؛ بعد هر جلسه توش می‌نویسه.",
-  },
-  {
-    icon: EyeOffIcon,
-    title: "بقیه",
-    line: "فقط می‌بینن که پرونده خصوصیه؛ نه اسم سگ، نه چیز دیگه.",
-  },
-] as const;
+// A function, not a constant: the words follow the page's language when it renders.
+function plates() {
+  return [
+    { icon: PawPrintIcon, title: m.logbook_who_owner_title(), line: m.logbook_who_owner_line() },
+    {
+      icon: NotebookPenIcon,
+      title: m.logbook_who_trainer_title({ name: HEAD_TRAINER.firstName }),
+      line: m.logbook_who_trainer_line(),
+    },
+    { icon: EyeOffIcon, title: m.logbook_who_others_title(), line: m.logbook_who_others_line() },
+  ];
+}
 
 /*===== Who Sees =====*/
 /**
@@ -61,11 +57,11 @@ export function WhoSees() {
 
       <div className={COLUMN}>
         <h2 id="logbook-who-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          پرونده‌ی هر سگ پیش کیه؟
+          {m.logbook_who_title()}
         </h2>
 
         <ul className="mt-8 grid gap-5 lg:grid-cols-3 lg:gap-6">
-          {PLATES.map(({ icon: Icon, title, line }, index) => (
+          {plates().map(({ icon: Icon, title, line }, index) => (
             <li
               key={title}
               className={`lively-reveal lb-plate-${index + 1} flex items-start gap-4 rounded-3xl border border-border/50 bg-jet paper-grain p-6 shadow-[0_18px_36px_-18px_rgb(0_0_0/0.9)] lg:flex-col lg:gap-5`}

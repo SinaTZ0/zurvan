@@ -3,14 +3,18 @@ import { Info, LifeBuoy, LogIn, LogOut, Phone, ScrollText, Settings, Store, User
 import { cn } from "cn";
 
 import { BrandEmblem } from "~/components/brand-emblem";
+import { InPersianNote } from "~/components/in-persian-note";
 import { Link } from "~/components/link";
 import { SOCIAL_ICONS } from "~/components/social-icons";
 import { Sheet, SheetClose, SheetContent, SheetTitle } from "~/components/ui/sheet";
 import { useSignOut } from "~/hooks/use-sign-out";
 import { PROFILE_PATH } from "~/lib/account-links";
-import { CENTER_DESCRIPTOR, CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
+import { isPersianOnlyPath } from "~/lib/i18n";
+import { LanguageSwitch } from "~/components/language-switch";
 import { MORE_LINKS } from "~/routes/layout_public/nav-items";
 import type { Viewer } from "~/routes/layout_public/viewer";
+import { m } from "~/paraglide/messages";
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
@@ -60,12 +64,12 @@ export function MoreSheet({
           <div className="flex items-center gap-2.5">
             <BrandEmblem className="size-11" />
             <div>
-              <SheetTitle className="font-display text-2xl font-black text-foreground">زروان</SheetTitle>
-              <p className="mt-0.5 text-xs text-foreground/65">{CENTER_DESCRIPTOR}</p>
+              <SheetTitle className="font-display text-2xl font-black text-foreground">{CENTER.name}</SheetTitle>
+              <p className="mt-0.5 text-xs text-foreground/65">{CENTER.descriptor}</p>
             </div>
           </div>
           <SheetClose
-            aria-label="بستن"
+            aria-label={m.layout_public_more_close()}
             className={cn("grid size-10 place-items-center rounded-full bg-foreground/8 text-foreground", FOCUS)}
           >
             <X aria-hidden className="size-5" />
@@ -73,7 +77,7 @@ export function MoreSheet({
         </div>
 
         {/*------ Pages ------*/}
-        <nav aria-label="صفحه‌های دیگر">
+        <nav aria-label={m.layout_public_more_other_pages()}>
           <ul className="mt-4">
             {MORE_LINKS.map(({ label, to }) => {
               const Icon = ICONS[to] ?? Info;
@@ -86,6 +90,10 @@ export function MoreSheet({
                 </li>
               );
             })}
+            {/* The other language, in its own script: a visitor who can't read this sheet still finds it here. */}
+            <li>
+              <LanguageSwitch icon className={ROW} />
+            </li>
           </ul>
         </nav>
 
@@ -97,7 +105,9 @@ export function MoreSheet({
                 <li>
                   <Link to={accountPath} onClick={close} className={ROW}>
                     <UserRound aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
-                    {viewer.role === "customer" ? "حساب من" : "پنل من"}
+                    {viewer.role === "customer" ? m.layout_public_more_my_account() : m.layout_public_more_my_panel()}
+                    {/* Only the Admin's panel is still Persian; the customer's and the partner's pages have English. */}
+                    {isPersianOnlyPath(accountPath) && <InPersianNote />}
                   </Link>
                 </li>
               )}
@@ -106,7 +116,7 @@ export function MoreSheet({
                 <li>
                   <Link to={PROFILE_PATH} onClick={close} className={ROW}>
                     <Settings aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
-                    تنظیمات حساب
+                    {m.shared_account_settings()}
                   </Link>
                 </li>
               )}
@@ -121,7 +131,7 @@ export function MoreSheet({
                   className={ROW}
                 >
                   <LogOut aria-hidden className="size-5 text-primary rtl:-scale-x-100" strokeWidth={1.8} />
-                  خروج
+                  {m.shared_sign_out()}
                 </button>
               </li>
             </>
@@ -129,7 +139,7 @@ export function MoreSheet({
             <li>
               <Link to="/auth" onClick={close} className={ROW}>
                 <LogIn aria-hidden className="size-5 text-primary" strokeWidth={1.8} />
-                ورود یا ثبت‌نام
+                {m.layout_public_sign_in_or_up()}
               </Link>
             </li>
           )}
@@ -145,7 +155,7 @@ export function MoreSheet({
             )}
           >
             <Phone aria-hidden className="size-4 text-primary" />
-            تماس با{" "}
+            {m.layout_public_more_call()}{" "}
             <span dir="ltr" className="tabular-nums">
               {CENTER_PHONE.display}
             </span>

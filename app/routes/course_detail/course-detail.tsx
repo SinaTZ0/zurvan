@@ -6,9 +6,11 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { orNotFound } from "~/lib/not-found";
+import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
 import type { Course } from "~/orpc/course/contract";
 import type { SessionState } from "~/orpc/session/contract";
+import { m } from "~/paraglide/messages";
 import { BuyCard } from "~/routes/course_detail/components/buy-card";
 import { ClosingBand } from "~/routes/course_detail/components/closing-band";
 import { CourseHero } from "~/routes/course_detail/components/course-hero";
@@ -35,11 +37,14 @@ export const Route = createFileRoute("/_public/courses/$slug")({
     }
     return { title: course.title, summary: course.summary };
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [{ title: `${loaderData.title} | آموزش K9` }, { name: "description", content: loaderData.summary }]
-      : [{ title: "دوره پیدا نشد | آموزش K9" }],
-  }),
+  head: ({ loaderData, params }) =>
+    loaderData
+      ? pageHead({
+          path: `/courses/${params.slug}`,
+          title: m.course_detail_meta_title({ title: loaderData.title }),
+          description: loaderData.summary,
+        })
+      : { meta: [{ title: m.course_detail_meta_not_found() }] },
   // The closing band, a brick wall, runs straight into the footer.
   staticData: { flushFooter: true },
   component: CourseDetailPage,
@@ -116,19 +121,17 @@ function CourseError({ missing }: { missing: boolean }) {
     <section aria-labelledby="course-error-title" className={`${COLUMN} py-section-md`}>
       <div className="max-w-xl">
         <h1 id="course-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          {missing ? "این دوره پیدا نشد" : "صفحه‌ی این دوره باز نشد"}
+          {missing ? m.course_detail_error_missing_title() : m.course_detail_error_broken_title()}
         </h1>
         <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          {missing
-            ? "شاید نشانی‌اش عوض شده باشد. همه‌ی دوره‌ها را ببین، یا با ارزیابی رایگان شروع کن تا دوره‌ی مناسب سگت را با هم پیدا کنیم."
-            : "مشکلی پیش آمد و اطلاعات دوره نرسید. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
+          {missing ? m.course_detail_error_missing_text() : m.course_detail_error_broken_text()}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Link to="/courses" className={buttonVariants({ variant: "solid", size: "lg" })}>
-            همه‌ی دوره‌ها را ببین
+            {m.course_detail_error_all_courses()}
           </Link>
           <Link to="/assessment" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            ارزیابی رایگان رزرو کن
+            {m.course_detail_error_evaluation()}
           </Link>
         </div>
       </div>

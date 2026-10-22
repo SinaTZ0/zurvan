@@ -1,15 +1,19 @@
 import { ChevronDownIcon } from "lucide-react";
 import { useId, useState } from "react";
 
-/*===== Constants =====*/
+import { m } from "~/paraglide/messages";
+
+/*===== Rules =====*/
 // What a partner asks about: who wins a shared number, who wins a link, what he sees of a customer, and where his
-// commission shows (F7, F12).
-const RULES = [
-  "اگه چند همکار یه شماره رو بنویسن، اولین ثبت می‌مونه.",
-  "اگه مشتری با لینک یه همکار بیاد، لینک مقدمه.",
-  "بعد از ثبت‌نام، اسم مشتری رو می‌بینی؛ قیمت و سگش رو نه.",
-  "برای هر خریدار، پورسانتت و این‌که واریز شده یا نه رو همین‌جا می‌بینی.",
-];
+// commission shows (F7, F12). Read while rendering, so they follow the page's language.
+function rules(): string[] {
+  return [
+    m.account_partner_leads_how_rule_shared(),
+    m.account_partner_leads_how_rule_link(),
+    m.account_partner_leads_how_rule_name(),
+    m.account_partner_leads_how_rule_commission(),
+  ];
+}
 
 /*===== How It Counts =====*/
 /**
@@ -31,7 +35,7 @@ export function HowItCounts() {
         onClick={() => setOpen((current) => !current)}
         className="group flex min-h-12 w-full items-center justify-between gap-3 rounded-3xl px-5 text-start text-sm font-bold text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:text-foreground"
       >
-        چطور حساب می‌شه؟
+        {m.account_partner_leads_how_trigger()}
         <ChevronDownIcon
           aria-hidden
           className="size-4 shrink-0 transition-transform duration-300 group-aria-expanded:rotate-180 motion-reduce:transition-none"
@@ -42,7 +46,7 @@ export function HowItCounts() {
       <div id={panelId} className="pl-fold" data-open={open} inert={!open}>
         <div className="min-h-0 overflow-hidden">
           <ul className="flex flex-col gap-3 px-5 pt-1 pb-5 text-sm text-pretty text-muted-foreground">
-            {RULES.map((rule, index) => (
+            {rules().map((rule, index) => (
               <li
                 key={rule}
                 className="pl-fold-line flex items-start gap-2.5"

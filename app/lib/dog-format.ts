@@ -1,7 +1,9 @@
-import { formatNumberFa } from "~/lib/digits";
 import { todayIso } from "~/lib/jalali";
+import { formatNumber } from "~/lib/locale-format";
 import { DOG_SEX_LABELS } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
+import { m } from "~/paraglide/messages";
+import { getLocale, type Locale } from "~/paraglide/runtime";
 
 /*===== Dog Facts =====*/
 // Every page words a dog's facts the same way: «نر، حدوداً ۳ ساله، ۳۲٫۵ کیلو». Age is always calculated from the
@@ -19,22 +21,36 @@ export function ageInMonths({ birthDate, today = todayIso() }: { birthDate: stri
 }
 
 /**
- * «۸ ماهه», «۱ سال و ۴ ماهه», «۳ ساله». Months are kept up to two years, where they still matter for training; an
- * approximate age is rounded to what the owner said and starts with «حدوداً».
+ * «۸ ماهه», «۱ سال و ۴ ماهه», «۳ ساله» («8 months old» on the English pages). Months are kept up to two years, where
+ * they still matter for training; an approximate age is rounded to what the owner said and starts with «حدوداً».
+ * `locale` is the page's by default; a procedure passes its request's.
  */
-export function describeDogAge(dog: AgeFacts, today?: string): string {
+export function describeDogAge(dog: AgeFacts, today?: string, locale: Locale = getLocale()): string {
   const months = ageInMonths({ birthDate: dog.birthDate, today });
-  const prefix = dog.birthDateApproximate ? "حدوداً " : "";
+  const options = { locale };
+  const approximate = (age: string) =>
+    dog.birthDateApproximate ? m.shared_dog_age_approximate({ age }, options) : age;
 
-  if (months < 1) return "کمتر از یک ماه";
-  if (months < 12) return `${prefix}${formatNumberFa(months)} ماهه`;
+  if (months < 1) return m.shared_dog_age_under_month({}, options);
+  if (months < 12) {
+    const count = formatNumber(months, locale);
+    return approximate(
+      months === 1 ? m.shared_dog_age_month_one({ count }, options) : m.shared_dog_age_months({ count }, options),
+    );
+  }
 
   const years = Math.floor(months / 12);
   const rest = months % 12;
   if (years < 2 && rest > 0 && !dog.birthDateApproximate) {
-    return `${formatNumberFa(years)} سال و ${formatNumberFa(rest)} ماهه`;
+    return m.shared_dog_age_year_and_months(
+      { years: formatNumber(years, locale), months: formatNumber(rest, locale) },
+      options,
+    );
   }
-  return `${prefix}${formatNumberFa(years)} ساله`;
+  const count = formatNumber(years, locale);
+  return approximate(
+    years === 1 ? m.shared_dog_age_year_one({ count }, options) : m.shared_dog_age_years({ count }, options),
+  );
 }
 
 /**
@@ -64,13 +80,16 @@ export function ageFromBirthDate({ birthDate, today }: { birthDate: string; toda
 }
 
 /*===== Weight =====*/
-/** «۳۲٫۵ کیلو». */
+/** «۳۲٫۵ کیلو», or «32.5 kg» on the English pages. */
 export function describeWeight(weightKg: number): string {
-  return `${formatNumberFa(weightKg)} کیلو`;
+  return m.shared_dog_weight({ weight: formatNumber(weightKg) });
 }
 
 /*===== Facts Line =====*/
-/** «نر، حدوداً ۳ ساله، ۳۲٫۵ کیلو»: the short line under a dog's name. */
+/** «نر، حدوداً ۳ ساله، ۳۲٫۵ کیلو» («Male, about 3 years old, 32.5 kg»): the short line under a dog's name. */
 export function describeDog(dog: Pick<Dog, "sex" | "birthDate" | "birthDateApproximate" | "weightKg">): string {
-  return [DOG_SEX_LABELS[dog.sex], describeDogAge(dog), describeWeight(dog.weightKg)].join("، ");
+  const age = describeDogAge(dog);
+  // English capitalizes the age where it starts a line («About 3 years old»), but not inside this one.
+  const ageInLine = getLocale() === "en" ? age.charAt(0).toLowerCase() + age.slice(1) : age;
+  return [DOG_SEX_LABELS[dog.sex], ageInLine, describeWeight(dog.weightKg)].join(m.shared_dog_facts_joiner());
 }

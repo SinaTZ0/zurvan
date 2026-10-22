@@ -1,11 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
+import { CENTER } from "~/lib/contact";
 import { familyMascotPose } from "~/lib/course-mascot";
 import { familiesWithCourses } from "~/lib/course-families";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { pageHead } from "~/lib/seo";
+import { m } from "~/paraglide/messages";
 import { orpc } from "~/orpc/client";
 import { AboutClosing } from "~/routes/about/components/about-closing";
 import { AboutFacts } from "~/routes/about/components/about-facts";
@@ -20,15 +22,17 @@ export const Route = createFileRoute("/_public/about")({
   loader: async ({ context: { queryClient } }) => {
     await queryClient.ensureQueryData(orpc.course.list.queryOptions()).catch(() => undefined);
   },
-  head: () => ({
-    meta: [
-      { title: `درباره‌ی ${HEAD_TRAINER.name} | زروان` },
-      {
-        name: "description",
-        content: `${HEAD_TRAINER.name}، ${HEAD_TRAINER.role}، با ${formatNumberFa(HEAD_TRAINER.years)} سال سابقه‌ی حرفه‌ای در ${CENTER_SERVICE_AREA}.`,
-      },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      path: "/about",
+      title: m.about_meta_title({ name: HEAD_TRAINER.name }),
+      description: m.about_meta_description({
+        name: HEAD_TRAINER.name,
+        role: HEAD_TRAINER.role,
+        years: formatNumber(HEAD_TRAINER.years),
+        area: CENTER.serviceArea,
+      }),
+    }),
   component: AboutPage,
 });
 

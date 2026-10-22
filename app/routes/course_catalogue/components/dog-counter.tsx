@@ -1,45 +1,66 @@
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
+
+/*===== Query in a Sentence =====*/
+// The query is the visitor's own text, shown as typed in `bdi`, so a Latin search like «CGC» doesn't reorder the
+// Persian around it (nor a Persian one the English). A message can't hold markup, so it is written with a mark where
+// the query goes, and the mark is swapped here for the isolated text.
+const QUERY_MARK = "\u0001";
+
+function WithQuery({ text, query }: { text: (mark: string) => string; query: string }) {
+  const [before = "", after = ""] = text(QUERY_MARK).split(QUERY_MARK);
+  return (
+    <>
+      {before}
+      <bdi>{query}</bdi>
+      {after}
+    </>
+  );
+}
 
 /*===== Counter Line =====*/
-/**
- * What the dog says about the list on screen. The query is shown as typed, in `bdi`, so a Latin search like «CGC» doesn't
- * reorder the Persian around it.
- */
+/** What the dog says about the list on screen. */
 function CounterLine({ total, query, familyLabel }: { total: number; query: string; familyLabel: string | null }) {
   /*------ Nothing Found ------*/
   if (total === 0) {
     return query ? (
-      <>
-        «<bdi>{query}</bdi>» رو بلد نیستم! اسم دیگه‌ای امتحان کن.
-      </>
+      <WithQuery text={(mark) => m.course_catalogue_counter_none_query({ query: mark })} query={query} />
     ) : (
-      <>چیزی پیدا نکردم! اسم دیگه‌ای امتحان کن.</>
+      <>{m.course_catalogue_counter_none()}</>
     );
   }
 
-  const count = total === 1 ? "یه" : formatNumberFa(total);
+  const count = formatNumber(total);
 
   /*------ A Search ------*/
   if (query) {
     return (
-      <>
-        برای «<bdi>{query}</bdi>» {count} دوره پیدا کردم.
-      </>
+      <WithQuery
+        text={(mark) =>
+          total === 1
+            ? m.course_catalogue_counter_query_one({ query: mark })
+            : m.course_catalogue_counter_query_other({ query: mark, count })
+        }
+        query={query}
+      />
     );
   }
 
   /*------ One Family ------*/
-  if (familyLabel)
+  if (familyLabel) {
     return (
       <>
-        {count} دوره‌ی «{familyLabel}» دارم.
+        {total === 1
+          ? m.course_catalogue_counter_family_one({ family: familyLabel })
+          : m.course_catalogue_counter_family_other({ family: familyLabel, count })}
       </>
     );
+  }
 
   /*------ Everything ------*/
-  return <>{formatNumberFa(total)} تا دوره دارم! یکی رو انتخاب کن.</>;
+  return <>{m.course_catalogue_counter_all({ count })}</>;
 }
 
 /*===== Dog Counter =====*/
@@ -51,7 +72,7 @@ function CounterLine({ total, query, familyLabel }: { total: number; query: stri
  * top edge (the shelf follows the header with nothing between) and the dog is sunk by the paws' length: his chin rests
  * on the wall's coping and his paws hang over its face. Higher, the gap between his chin and the coping shows as a box.
  * The bushes are raised by as much, so they stand on the coping. Phones put the bubble beside the dog; from `md` it sits
- * above him. The tail is physical: he is at the end side (the left in RTL).
+ * above him. The tail is on the end side, where he is (the left in RTL, the right in LTR).
  */
 export function DogCounter({
   total,
@@ -71,8 +92,8 @@ export function DogCounter({
       <output aria-live="polite" className="mb-10 block min-w-0 md:mb-0">
         {/* It pops from its tail once he is up; after that only the words change, fading in (a new key each time). */}
         <ChalkBubble
-          tail="left"
-          className="answer-pop max-w-[15rem] [--answer-delay:0.85s] [--pop-origin:1.75rem_100%] md:max-w-[19rem] lg:max-w-[21rem]"
+          tail="end"
+          className="answer-pop max-w-[15rem] [--answer-delay:0.85s] [--pop-origin:1.75rem_100%] md:max-w-[19rem] lg:max-w-[21rem] ltr:[--pop-origin:calc(100%-1.75rem)_100%]"
         >
           <span key={`${total}|${query}|${familyLabel}`} className="answer-in block [overflow-wrap:anywhere]">
             <CounterLine total={total} query={query} familyLabel={familyLabel} />

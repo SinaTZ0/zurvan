@@ -18,6 +18,7 @@ import { isDogId } from "~/orpc/dog/validation";
 import { isUuid } from "~/lib/uuid";
 import { isRecordPublic, type PublicRecordRules } from "~/orpc/logbook/public";
 import { findDogOwner } from "~/orpc/logbook/repository";
+import type { Locale } from "~/paraglide/runtime";
 
 /*===== Types =====*/
 type NotFoundResult = { kind: "not-found" };
@@ -161,11 +162,14 @@ export async function verifyCertificate({
   db,
   number,
   rules,
+  locale = "fa",
 }: {
   db: DatabaseOrTransaction;
   number: string;
   /** The public-record wording in force; the registry's by default. */
   rules?: PublicRecordRules;
+  /** The language of the course's name (the check is a public page, with an English one). */
+  locale?: Locale;
 }): Promise<CertificateVerification> {
   const normalized = normalizeCertificateNumber(number);
   if (!normalized) return { kind: "unknown" };
@@ -189,7 +193,10 @@ export async function verifyCertificate({
     kind: "valid",
     number: found.certificate.number,
     issuedAt: found.certificate.issuedAt,
-    course: { title: found.course.title, latinName: found.course.latinName },
+    course: {
+      title: locale === "en" && found.course.titleEn ? found.course.titleEn : found.course.title,
+      latinName: found.course.latinName,
+    },
     dogName: isPublic ? found.dog.name : null,
   };
 }

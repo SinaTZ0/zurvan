@@ -8,6 +8,7 @@ This is a TanStack Start v1 application (TanStack Router, TanStack Query, oRPC; 
 
 - The brand is **K9 Training** in Latin script and **آموزش K9** in Persian text. Use these in user-facing text and docs. The old logo set "K9" in the stencil face (`font-stencil`); the wordmark is now «زروان» (see the next bullet).
 - On 2026-10-18 the owner asked for the header and footer to show **زروان** with the descriptor «مجموعه تربیتی و رفتارشناسی سگ زروان»; the gold emblem and its size stay. `BrandLogo` and the footer do that. Page titles, SMS texts, the auth page and other copy still say آموزش K9 until the owner decides whether to rename them everywhere.
+- On 2026-10-22 the owner chose **Zurvann** (double "n") as the wordmark and page-title name of the English site (`/en`, public pages only; see [docs/i18n/english-version-plan.md](docs/i18n/english-version-plan.md)). The Persian site is unchanged.
 - The brand was previously Zurvann / زروان. Internal identifiers still use `zurvan` (the npm package, the Docker Compose project and database name, the theme storage key, the GitHub repo) and `zurvann` (the media bucket). Leave them as they are; renaming the database, Compose project or bucket would lose existing data.
 
 ## Product Scope

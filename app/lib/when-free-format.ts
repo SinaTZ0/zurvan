@@ -6,6 +6,7 @@ import {
   type EvaluationPeriod,
   type EvaluationWeekday,
 } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== When The Customer Is Free =====*/
 // The weekdays and parts of the day a customer says they are usually free, as an evaluation request and a payment keep
@@ -26,12 +27,16 @@ export function normalizeWhenFree({ days, periods }: WhenFree): {
   };
 }
 
-/** «شنبه، دوشنبه · صبح، عصر و شب», or null when they said nothing. Either list alone reads as itself. */
+/**
+ * «شنبه، دوشنبه · صبح، عصر و شب» («Saturday, Monday · Morning, Evening and night»), or null when they said nothing.
+ * Either list alone reads as itself.
+ */
 export function describeWhenFree(whenFree: WhenFree): string | null {
   const { days, periods } = normalizeWhenFree(whenFree);
+  const joiner = m.shared_when_free_joiner();
   const parts = [
-    days.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join("، "),
-    periods.map((period) => EVALUATION_PERIOD_LABELS[period]).join("، "),
+    days.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join(joiner),
+    periods.map((period) => EVALUATION_PERIOD_LABELS[period]).join(joiner),
   ].filter((part) => part !== "");
   return parts.length === 0 ? null : parts.join(" · ");
 }

@@ -1,9 +1,11 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { pageHead } from "~/lib/seo";
 import { orNotFound } from "~/lib/not-found";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import type { PartnerCommission } from "~/orpc/commission/contract";
 import type { PartnerPerson } from "~/orpc/partner/contract";
 import { COLUMN } from "~/routes/account_partner/column";
@@ -32,7 +34,12 @@ export const Route = createFileRoute("/account/partner")({
       queryClient.ensureQueryData(orpc.partner.leads.list.queryOptions()),
     ]);
   },
-  head: () => ({ meta: [{ title: "همکاری من | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/partner",
+      title: m.account_partner_meta_title(),
+      description: m.account_partner_meta_description(),
+    }),
   component: AccountPartnerPage,
   // Inside the account shell, so the header stays on screen.
   notFoundComponent: () => <PartnerError notFound />,

@@ -2,11 +2,11 @@ import { randomUUID } from "node:crypto";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
 import { env } from "~/env.server";
-import { formatNumberFa } from "~/lib/digits";
 import { findAdminPhoneNumber, notify } from "~/lib/notify.server";
 import { issuesToErrorData } from "~/lib/schema-issues";
 import { deleteObjects, putObject, videoKey } from "~/lib/storage.server";
 import type { UserRole } from "~/lib/user-constants";
+import { formatNumber } from "~/lib/locale-format";
 import { isUuid } from "~/lib/uuid";
 import { findDogByOwnerForUpdate, lockDogById } from "~/orpc/dog/repository";
 import { isDogId } from "~/orpc/dog/validation";
@@ -40,6 +40,7 @@ import {
 import { rejectEvaluationSchema, requestEvaluationSchema } from "~/orpc/evaluation/validation";
 import { detectVideoFormat, parseVideoFormat, VIDEO_SNIFF_BYTES } from "~/orpc/evaluation/video";
 import { attachMedia, deleteMedia, isMediaId } from "~/orpc/media/service";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 type InvalidResult = { kind: "invalid"; errors: string[]; fields: Record<string, string> };
@@ -140,7 +141,7 @@ export async function requestEvaluation({
         : ({ kind: "invalid" } as const);
     if (outcome.kind !== "ok") {
       await discard();
-      return { kind: "invalid", errors: [], fields: { photoMediaIds: "عکس‌ها را دوباره بارگذاری کن." } };
+      return { kind: "invalid", errors: [], fields: { photoMediaIds: m.server_evaluation_photos_reupload() } };
     }
     claimed.push(mediaId);
   }
@@ -157,8 +158,8 @@ export async function requestEvaluation({
           kind: "not-requestable",
           errors: [
             open.status === "evaluated"
-              ? `${dog.name} قبلاً ارزیابی شده است.`
-              : `برای ${dog.name} یک درخواست ارزیابی در انتظار پاسخ است.`,
+              ? m.server_evaluation_already_evaluated({ dog: dog.name })
+              : m.server_evaluation_already_requested({ dog: dog.name }),
           ],
         } as const;
       }
@@ -169,7 +170,7 @@ export async function requestEvaluation({
         return {
           kind: "invalid",
           errors: [],
-          fields: { videoIds: "ویدیوها را دوباره بارگذاری کن." },
+          fields: { videoIds: m.server_evaluation_videos_reupload() },
         } as const;
       }
 
@@ -243,7 +244,7 @@ export async function withdrawEvaluation({
   if (!withdrawn) {
     const [existing] = await findEvaluations({ db, id, customerId });
     return existing
-      ? { kind: "not-withdrawable", errors: ["این درخواست دیگر در انتظار پاسخ نیست."] }
+      ? { kind: "not-withdrawable", errors: [m.server_evaluation_not_withdrawable()] }
       : { kind: "not-found" };
   }
 
@@ -399,11 +400,16 @@ export async function markDogEvaluated({ db, dogId }: { db: Database; dogId: str
 // Stored as uploaded under `evaluation-video/{id}/original.{mp4|mov}` and never served by nginx: only the app streams
 // them, to the people who may see them (docs/media.md, "Videos").
 
-const VIDEO_MESSAGES = {
-  empty: "این فایل خالی است. ویدیوی دیگری را امتحان کن.",
-  tooBig: `حجم ویدیو باید کمتر از ${formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / 1024 / 1024)} مگابایت باشد.`,
-  unsupported: "فرمت ویدیو پشتیبانی نمی‌شود. ویدیو را با فرمت MP4 یا MOV بفرست.",
-  tooMany: "ویدیوهای فرستاده‌نشده زیاد شده. اول درخواستت را بفرست یا چند ویدیو را حذف کن.",
+/**
+ * The upload's refusals, as the `file` field error. Functions, so each is worded in the uploader's language when it
+ * happens; the upload route sets that language (`app/routes/api_evaluation_videos/`).
+ */
+export const VIDEO_MESSAGES = {
+  empty: () => m.server_evaluation_video_empty(),
+  tooBig: () =>
+    m.server_evaluation_video_too_big({ megabytes: formatNumber(EVALUATION_VIDEO_MAX_BYTES / 1024 / 1024) }),
+  unsupported: () => m.server_evaluation_video_unsupported(),
+  tooMany: () => m.server_evaluation_video_too_many(),
 };
 
 const FILE_NAME_MAX_LENGTH = 120;
@@ -417,8 +423,8 @@ type UploadVideoResult =
  *
  * Nothing attaches the video to an evaluation yet; {@link requestEvaluation} does when the form is sent.
  *
- * @returns `forbidden` unless the uploader is a customer; `invalid` with a Persian message when the file is empty, too
- * big, not an MP4 or MOV, or the customer has too many unsent videos.
+ * @returns `forbidden` unless the uploader is a customer; `invalid` with a message in the request's language when the
+ * file is empty, too big, not an MP4 or MOV, or the customer has too many unsent videos.
  * @throws When the bucket or the database fails. The object already written is deleted first.
  */
 export async function uploadEvaluationVideo({
@@ -431,13 +437,13 @@ export async function uploadEvaluationVideo({
   file: File;
 }): Promise<UploadVideoResult> {
   if (user.role !== "customer") return { kind: "forbidden" };
-  if (file.size === 0) return { kind: "invalid", message: VIDEO_MESSAGES.empty };
-  if (file.size > EVALUATION_VIDEO_MAX_BYTES) return { kind: "invalid", message: VIDEO_MESSAGES.tooBig };
+  if (file.size === 0) return { kind: "invalid", message: VIDEO_MESSAGES.empty() };
+  if (file.size > EVALUATION_VIDEO_MAX_BYTES) return { kind: "invalid", message: VIDEO_MESSAGES.tooBig() };
 
   const format = detectVideoFormat(new Uint8Array(await file.slice(0, VIDEO_SNIFF_BYTES).arrayBuffer()));
-  if (!format) return { kind: "invalid", message: VIDEO_MESSAGES.unsupported };
+  if (!format) return { kind: "invalid", message: VIDEO_MESSAGES.unsupported() };
   if ((await countUnsentVideos({ db, uploadedBy: user.id })) >= EVALUATION_VIDEO_MAX_UNSENT) {
-    return { kind: "invalid", message: VIDEO_MESSAGES.tooMany };
+    return { kind: "invalid", message: VIDEO_MESSAGES.tooMany() };
   }
 
   const videoId = randomUUID();

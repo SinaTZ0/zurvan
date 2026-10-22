@@ -2,6 +2,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
+import { m } from "~/paraglide/messages";
 
 /*===== Nobody Yet =====*/
 /**
@@ -53,16 +54,16 @@ export function NobodyYet() {
             tail="right"
             className="pl-empty-pop absolute right-[calc(0.5rem+var(--dog-w)*0.42-2.25rem)] bottom-[calc(var(--dog-w)*0.47+0.5rem)] max-w-[13rem] text-pretty sm:max-w-[16rem]"
           >
-            شماره‌ی اولین مشتریت رو بنویس تا دنبالش کنیم!
+            {m.account_partner_leads_nobody_bubble()}
           </ChalkBubble>
         </div>
       </div>
 
       {/*===== Words =====*/}
       <div className="pt-6 text-center">
-        <h3 className="text-xl font-extrabold text-balance">هنوز کسی نیست</h3>
+        <h3 className="text-xl font-extrabold text-balance">{m.account_partner_leads_nobody_title()}</h3>
         <p className="mx-auto mt-2 max-w-md text-pretty text-muted-foreground">
-          شماره رو توی فرم بنویس؛ هر کی اومد، اینجا راهش رو می‌بینی.
+          {m.account_partner_leads_nobody_body()}
         </p>
       </div>
     </div>

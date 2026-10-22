@@ -1,0 +1,20 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "about_meta_title": "درباره‌ی {name} | زروان",
+  "about_meta_description": "{name}، {role}، با {years} سال سابقه‌ی حرفه‌ای در {area}.",
+  "about_hero_bubble": "سلام! اینم طلاست، مربی من.",
+  "about_hero_intro": "{name} با {years} سال سابقه و تجربه‌ی حرفه‌ای توی آموزش سگ‌ها کار می‌کنه؛ از آموزش‌های پایه و عمومی تا دوره‌های تخصصی، نگهبانی، ورزشی و سطوح مسابقاتی.",
+  "about_hero_evaluation": "ارزیابی رایگان بگیر",
+  "about_hero_courses": "دوره‌ها رو ببین",
+  "about_facts_title": "{trainer} در یک نگاه",
+  "about_facts_since": "از سال {year}",
+  "about_facts_experience": "{years} سال سابقه و تجربه‌ی حرفه‌ای",
+  "about_facts_area": "فعال در {area}",
+  "about_lineup_title": "پیش طلا اینا رو یاد می‌گیرم",
+  "about_lineup_all": "همه‌ی دوره‌ها",
+  "about_closing_bubble": "من اولش فقط یه توله‌ی شیطون بودم!",
+  "about_closing_question": "سؤالی داری؟",
+  "about_closing_call": "زنگ بزن یا پیام بده.",
+  "about_closing_evaluation": "ارزیابی رایگان بگیر",
+  "about_closing_contact": "تماس با {trainer}"
+}

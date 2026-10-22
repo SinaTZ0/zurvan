@@ -2,7 +2,9 @@ import { DOG_SEXES, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { DogSex, VaccinationStatus } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
 import type { DogRecord, PassedCourseRecord } from "~/orpc/dog/repository";
+import { courseTitle } from "~/orpc/course/mapper";
 import { toPublicMedia } from "~/orpc/media/mapper";
+import type { Locale } from "~/paraglide/runtime";
 
 /*===== Public Dog =====*/
 /**
@@ -12,7 +14,16 @@ import { toPublicMedia } from "~/orpc/media/mapper";
  * @throws When `sex` isn't a known value. There is no honest fallback for it, and the service only ever writes valid
  * values, so this means corrupted data that should surface instead of being shown as a wrong sex.
  */
-export function toPublicDog({ record, passed }: { record: DogRecord; passed: PassedCourseRecord[] }): Dog {
+export function toPublicDog({
+  record,
+  passed,
+  locale,
+}: {
+  record: DogRecord;
+  passed: PassedCourseRecord[];
+  /** The language of the passed courses' titles. The Admin's views pass "fa". */
+  locale: Locale;
+}): Dog {
   if (!isDogSex(record.sex)) throw new Error(`Dog ${record.id} has an unknown sex: ${record.sex}`);
 
   return {
@@ -33,7 +44,7 @@ export function toPublicDog({ record, passed }: { record: DogRecord; passed: Pas
     isEvaluated: record.isEvaluated,
     passedCourses: passed
       .filter((entry) => entry.dogId === record.id)
-      .map(({ slug, title, source }) => ({ slug, title, source })),
+      .map((entry) => ({ slug: entry.slug, title: courseTitle({ locale, course: entry }), source: entry.source })),
     photo: record.photo ? toPublicMedia(record.photo) : null,
     createdAt: record.createdAt,
   };

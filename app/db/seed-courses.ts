@@ -19,6 +19,11 @@ type SeedCourse = {
   boardingPriceToman?: number;
   /** Slugs of the courses this one requires. */
   requires?: string[];
+  /**
+   * The English text for `/en` (docs/i18n/english-version-plan.md, step 9), in the glossary's terms
+   * (docs/i18n/english-glossary.md). `latinName` is the owner's own and serves both languages.
+   */
+  en: { title: string; summary: string; highlights: string[]; commands: string[]; coverAlt: string };
 };
 
 // The owner's course cards (docs/zurvan-courses.md), in catalogue order.
@@ -51,6 +56,35 @@ export const SEED_COURSES: SeedCourse[] = [
       "گاز نگرفتن",
       "اسباب‌بازی، اگر سگ انگیزه‌اش را دارد",
     ],
+    en: {
+      title: "House Dog",
+      summary:
+        "The rules of life at home: its place and toilet training, manners with guests and at the door, staying alone and staying calm. All of it in your own home.",
+      highlights: [
+        "Greets guests politely, without jumping on them",
+        "Door rules: doesn't rush the door or slip out",
+        "No biting, and calm when excited",
+      ],
+      commands: [
+        "Name, luring and markers",
+        "Sit, stand, down",
+        "Place and crate",
+        "Toilet training",
+        "Respect for guests",
+        "Door rules: not rushing the door and not going out through it",
+        "A great heel",
+        "No begging for food",
+        "First rules: rank, boundaries, limits and patience",
+        "Staying in place",
+        "Staying alone",
+        "Quiet",
+        "Leash pressure",
+        "Impulse control",
+        "No biting",
+        "Toy play, if the dog is motivated by toys",
+      ],
+      coverAlt: "A calm golden retriever lying on the rug at home, beside the front door",
+    },
     cover: {
       src: "/photo/home/course-house-manner.webp",
       alt: "گلدن رتریور آرام روی فرش خانه، کنار در ورودی دراز کشیده است",
@@ -90,6 +124,32 @@ export const SEED_COURSES: SeedCourse[] = [
       "هم‌قدم: دور کامل، به چپ، به راست، بیا",
       "نگاه به سرپرست به‌جای وسایل و صداها",
     ],
+    en: {
+      title: "Social Dog",
+      summary:
+        "The dog learns to stay calm around people, other dogs and noises: from the hair dryer and the vacuum cleaner to the vet's hands and strangers.",
+      highlights: [
+        "Not afraid of the vacuum cleaner, the hair dryer or loud noises",
+        "Calm under the vet's and the groomer's hands",
+        "Heels on a loose leash past a crowd",
+      ],
+      commands: [
+        "Name, luring and markers",
+        "Desensitization: body, collar, nail clippers, hair dryer, vacuum cleaner, doorbell and loud noises",
+        "Socialization with people and animals",
+        "Sit, stand, down",
+        "Staying calm when a stranger approaches the handler",
+        "Being touched, petted and brushed by a stranger, like a vet or a groomer",
+        "Stay at a distance, on the leash",
+        "Being left with a stranger and staying calm",
+        "Heel on a loose leash",
+        "Heel past a crowd",
+        "Heel and greet a stranger who has a dog",
+        "Heel: about turn, left turn, right turn, come",
+        "Looking at the handler instead of at things and noises",
+      ],
+      coverAlt: "A Labrador on a loose leash, walking calmly along a busy city pavement",
+    },
     cover: {
       src: "/photo/home/course-cgc.webp",
       alt: "لابرادور با قلاده‌ی شل، آرام در پیاده‌روی شلوغ شهر قدم می‌زند",
@@ -127,6 +187,30 @@ export const SEED_COURSES: SeedCourse[] = [
       "هم‌قدم با قلاده‌ی شل، به چپ، به راست و دور کامل",
       "بیا، بشین، بایست، خواب، همه در بیرون",
     ],
+    en: {
+      title: "For Six-Month-Olds",
+      summary:
+        "Six months is the age when a dog tests the limits. This course meets the dog there, outside the home, and shapes how it behaves with strangers and other dogs.",
+      highlights: [
+        "Stays calm when a stranger or another dog comes close",
+        "Can be left with a stranger without anxiety",
+        "Come, sit, stand and down, all of it outside",
+      ],
+      commands: [
+        "Desensitization to touch and brushing, by us and by strangers",
+        "Desensitization to nail clippers, the hair dryer and the vacuum cleaner",
+        "Having the collar held, by us and by strangers",
+        "The doorbell, things falling and loud noises",
+        "Socialization with people and animals",
+        "A stranger approaching the handler, with the dog in a corner or at the handler's side",
+        "A stranger with a dog approaching the handler",
+        "Being left with a stranger",
+        "Stay at a distance in a down or a sit, when the handler is out of sight",
+        "Heel on a loose leash, left turn, right turn and about turn",
+        "Come, sit, stand, down, all of it outside",
+      ],
+      coverAlt: "A six-month-old German shepherd puppy sitting alert on the grass in a park",
+    },
     cover: {
       src: "/photo/home/course-bmc.webp",
       alt: "توله ژرمن‌شپرد شش‌ماهه روی چمن پارک نشسته و گوش‌به‌زنگ است",
@@ -161,6 +245,28 @@ export const SEED_COURSES: SeedCourse[] = [
       "لیش پرشر",
       "دستشویی",
     ],
+    en: {
+      title: "Elementary Obedience",
+      summary:
+        "The groundwork of obedience: sit, stand, down, heel and come, plus getting used to the leash and the rules of the house.",
+      highlights: ["Gets used to the leash and walks without pulling", "Heel, stay and come", "Take it and leave it"],
+      commands: [
+        "Rules: rank, boundaries, limits and patience",
+        "Name, luring and markers",
+        "Getting used to the leash",
+        "Desensitization: body, noises, objects, hair dryer, vacuum cleaner and the door",
+        "Sit, stand, down",
+        "Left paw and right paw, high five",
+        "Place and crate",
+        "Heel, stay, come",
+        "Socialization",
+        "Take it and leave it",
+        "Staying alone",
+        "Leash pressure",
+        "Toilet training",
+      ],
+      coverAlt: "A dog sitting and looking up at the trainer's raised hand",
+    },
     cover: {
       src: "/photo/home/course-elementary.webp",
       alt: "سگ نشسته و به دست بالاگرفته‌ی مربی نگاه می‌کند",
@@ -190,6 +296,27 @@ export const SEED_COURSES: SeedCourse[] = [
       "با غریبه جایی نرفتن",
       "پریدن از موانع کوتاه",
     ],
+    en: {
+      title: "Advanced Obedience",
+      summary:
+        "Commands outside, and held for a long time. The dog comes back at the first call and goes nowhere with a stranger.",
+      highlights: [
+        "Comes when called, and stays",
+        "Takes no food from strangers",
+        "Sit, down and stand for a long time",
+      ],
+      commands: [
+        "Advanced heel",
+        "Sit, down and stand for a long time",
+        "Come, stay",
+        "Taking no food from strangers",
+        "Socialization",
+        "Turn around, spin",
+        "Going nowhere with a stranger",
+        "Jumping low obstacles",
+      ],
+      coverAlt: "A Malinois off the leash, heeling close at the trainer's leg",
+    },
     cover: {
       src: "/photo/home/course-advanced.webp",
       alt: "مالینوا بدون قلاده، چسبیده به پای مربی هم‌قدم راه می‌رود",
@@ -218,6 +345,23 @@ export const SEED_COURSES: SeedCourse[] = [
       "هم‌قدم با قلاده",
       "تنها ماندن",
     ],
+    en: {
+      title: "Companion Dog 1",
+      summary:
+        "The first step on the companion dog road: first rules, eye contact, toilet training and heeling on the leash.",
+      highlights: ["Eye contact", "Sit, stand, down and stay", "Staying alone"],
+      commands: [
+        "First rules: patience, boundaries, limits and rank",
+        "Name, luring and markers",
+        "Eye contact",
+        "Getting used to the leash",
+        "Toilet training",
+        "Sit, stand, down, stay",
+        "Heel on the leash",
+        "Staying alone",
+      ],
+      coverAlt: "A border collie on a leash, head up, looking its owner in the eye",
+    },
     cover: {
       src: "/photo/home/course-companion-1.webp",
       alt: "بوردر کالی با قلاده، سر بالا و چشم در چشم صاحبش",
@@ -247,6 +391,26 @@ export const SEED_COURSES: SeedCourse[] = [
       "بیا",
       "یک حرکت نمایشی به انتخاب تو",
     ],
+    en: {
+      title: "Companion Dog 2",
+      summary: "Heeling outside, place and crate, desensitization and socialization, and a trick of your choice.",
+      highlights: [
+        "Heel outside",
+        "Not afraid of nail clippers, the hair dryer or the vacuum cleaner",
+        "A trick of your choice",
+      ],
+      commands: [
+        "Having the collar held",
+        "Heel outside",
+        "Place and crate",
+        "Desensitization: nail clippers, hair dryer, vacuum cleaner, being touched, noises and objects",
+        "Socialization",
+        "Left paw and right paw",
+        "Come",
+        "A trick of your choice",
+      ],
+      coverAlt: "A Doberman lying calmly inside an open crate at home",
+    },
     cover: {
       src: "/photo/home/course-companion-2.webp",
       alt: "دوبرمن آرام داخل باکس باز در خانه دراز کشیده است",
@@ -277,6 +441,22 @@ export const SEED_COURSES: SeedCourse[] = [
       "یک حرکت نمایشی به انتخاب تو",
       "اسباب‌بازی، اگر سگ انگیزه‌اش را دارد",
     ],
+    en: {
+      title: "Companion Dog 3",
+      summary: "Guest and door rules, and sharper commands outside, held for up to two minutes.",
+      highlights: ["Guest and door rules", "Sit, stand and down outside for up to two minutes", "Take it and leave it"],
+      commands: [
+        "Take it and leave it",
+        "Guest rules",
+        "Leash pressure",
+        "Sit, stand and down outside for up to two minutes",
+        "Door rules",
+        "A sharper heel",
+        "A trick of your choice",
+        "Toy play, if the dog is motivated by toys",
+      ],
+      coverAlt: "A poodle staying calm on the doormat by the open door while a guest stands at the threshold",
+    },
     cover: {
       src: "/photo/home/course-companion-3.webp",
       alt: "پودل روی پادری کنار در باز آرام مانده، مهمان دم در ایستاده",
@@ -305,6 +485,25 @@ export const SEED_COURSES: SeedCourse[] = [
       "پریدن از موانع",
       "بازی در بیرون، اگر سگ انگیزه‌ی اسباب‌بازی دارد",
     ],
+    en: {
+      title: "Companion Dog 4",
+      summary: "The last step: commands in any situation outside, and a dog who doesn't listen to strangers.",
+      highlights: [
+        "Comes when called, outside",
+        "Goes nowhere with a stranger and ignores their commands",
+        "Jumping obstacles",
+      ],
+      commands: [
+        "Come, outside",
+        "Taking no food from strangers",
+        "Going nowhere with a stranger",
+        "Ignoring a stranger's commands",
+        "Sit, stand and down in any situation outside",
+        "Jumping obstacles",
+        "Play outside, if the dog is motivated by toys",
+      ],
+      coverAlt: "A Rottweiler lying down in a busy city square, ignoring the people walking past",
+    },
     cover: {
       src: "/photo/home/course-companion-4.webp",
       alt: "روتوایلر در میدان شلوغ شهر خوابیده و به رهگذرها اعتنا نمی‌کند",
@@ -326,6 +525,13 @@ export const SEED_COURSES: SeedCourse[] = [
     highlights: [],
     // The card lists only the branches; ages, sessions and places come after the assessment.
     commands: ["نگهبان محل", "بادی‌گارد", "سگ سرویس", "سگ آلارم", "ردیاب"],
+    en: {
+      title: "Working Dogs",
+      summary: "For dogs that do real work: guarding, protection, service and tracking.",
+      highlights: [],
+      commands: ["Property guard", "Bodyguard", "Service dog", "Alert dog", "Tracker"],
+      coverAlt: "A German shepherd in a tracking harness, nose to the ground, following a trail through the woods",
+    },
     cover: {
       src: "/photo/home/course-working-dogs.webp",
       alt: "ژرمن‌شپرد با هارنس ردیابی، پوزه روی زمین، ردی را در جنگل دنبال می‌کند",
@@ -341,6 +547,13 @@ export const SEED_COURSES: SeedCourse[] = [
     summary: "برای سگ‌هایی که برای مسابقه و ورزش‌های سگی آماده می‌شوند.",
     highlights: [],
     commands: ["BH", "IGP 1", "IGP 2", "IGP 3", "FH", "WUSV"],
+    en: {
+      title: "Sport Dogs",
+      summary: "For dogs getting ready for competitions and dog sports.",
+      highlights: [],
+      commands: ["BH", "IGP 1", "IGP 2", "IGP 3", "FH", "WUSV"],
+      coverAlt: "A border collie in mid-air over an agility jump",
+    },
     cover: {
       src: "/photo/home/course-sport.webp",
       alt: "بوردر کالی در هوا از روی مانع اجیلیتی می‌پرد",

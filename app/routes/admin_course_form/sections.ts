@@ -1,10 +1,10 @@
 import type { CourseFormInput } from "~/routes/admin_course_form/schema";
 
 /*===== Form Plates =====*/
-// The six plates of the form, in page order. Each has an anchor (the contents list beside the card jumps to it) and
+// The seven plates of the form, in page order. Each has an anchor (the contents list beside the card jumps to it) and
 // the fields it holds, so the list can mark the plate that has a message without asking each plate.
 
-export type CourseFormSectionId = "intro" | "cover" | "ages" | "price" | "prerequisites" | "text";
+export type CourseFormSectionId = "intro" | "cover" | "ages" | "price" | "prerequisites" | "text" | "english";
 
 export const COURSE_FORM_SECTIONS: readonly {
   id: CourseFormSectionId;
@@ -17,6 +17,11 @@ export const COURSE_FORM_SECTIONS: readonly {
   { id: "price", title: "قیمت", fields: ["price", "boardingPrice"] },
   { id: "prerequisites", title: "پیش‌نیازها", fields: ["prerequisites"] },
   { id: "text", title: "متن صفحه‌ی دوره", fields: ["highlights", "commands"] },
+  {
+    id: "english",
+    title: "متن انگلیسی",
+    fields: ["titleEn", "summaryEn", "coverAltEn", "highlightsEn", "commandsEn"],
+  },
 ];
 
 /** The plate's anchor in the page (`#course-plate-intro`). */

@@ -3,6 +3,7 @@ import { BookOpen, PawPrint, ReceiptText, ShoppingBag, Store, UsersRound, type L
 import { ACCOUNT_LINKS } from "~/lib/account-links";
 import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
 import type { StaticRoutePath } from "~/lib/route-path";
+import { m } from "~/paraglide/messages";
 
 /*===== Account Navigation =====*/
 // The account area's sections, shared by the desktop nav and the phone tab bar. Only built pages are listed; add each
@@ -23,8 +24,6 @@ export type DeskNavItem = {
   end?: boolean;
   /** A count shown beside the label, e.g. the cart's items. Nothing shows for 0. */
   badge?: number;
-  /** What a screen reader says after the count. */
-  badgeLabel?: string;
 };
 
 /** The link at the end of the header and the last tab: back out of the desk into the store. */
@@ -33,6 +32,8 @@ export type DeskExitLink = { label: string; to: DeskPath; icon: LucideIcon };
 // The customer's pages (Dashboard, Cart, Purchases) come from the shared list, so the storefront's person menu and
 // this shell always name and order them the same; the icons are the shell's own. The Cart's count is added at render
 // time by `useAccountNavItems`: it comes from the browser-only cart, so it can't be part of this static list.
+// Labels are getters over the messages, read while rendering in the page's language: a spread (`...link`) or a plain
+// value would freeze the language the module was first loaded in.
 const ACCOUNT_ICONS: Record<string, LucideIcon> = {
   "/account": PawPrint,
   [CART_PATH]: ShoppingBag,
@@ -40,17 +41,45 @@ const ACCOUNT_ICONS: Record<string, LucideIcon> = {
 };
 
 export const ACCOUNT_NAV_ITEMS: readonly DeskNavItem[] = ACCOUNT_LINKS.map((link) => ({
-  ...link,
+  get label() {
+    return link.label;
+  },
+  to: link.to,
+  ...("end" in link ? { end: link.end } : {}),
   icon: ACCOUNT_ICONS[link.to] ?? PawPrint,
 }));
 
 /** The partner's pages (F7): the dashboard and the leads. */
 export const PARTNER_NAV_ITEMS: readonly DeskNavItem[] = [
-  { label: "همکاری من", to: "/account/partner", end: true, icon: Store },
-  { label: "شماره‌ها و مشتری‌ها", short: "مشتری‌ها", to: "/account/partner/leads", icon: UsersRound },
+  {
+    get label() {
+      return m.layout_account_nav_partner_home();
+    },
+    to: "/account/partner",
+    end: true,
+    icon: Store,
+  },
+  {
+    get label() {
+      return m.layout_account_nav_partner_leads();
+    },
+    get short() {
+      return m.layout_account_nav_partner_leads_short();
+    },
+    to: "/account/partner/leads",
+    icon: UsersRound,
+  },
 ];
 
-export const ACCOUNT_EXIT_LINK: DeskExitLink = { label: "دوره‌ها", to: "/courses", icon: BookOpen };
+export const ACCOUNT_EXIT_LINK: DeskExitLink = {
+  get label() {
+    return m.layout_account_nav_exit();
+  },
+  to: "/courses",
+  icon: BookOpen,
+};
 
 /** The room's name, the chip after the wordmark. */
-export const ROOM_LABEL = { customer: "حساب من", partner: "همکار" } as const;
+export function roomLabel(role: "customer" | "partner"): string {
+  return role === "partner" ? m.layout_account_room_partner() : m.layout_account_room_customer();
+}

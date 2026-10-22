@@ -2,6 +2,7 @@ import { cn } from "cn";
 
 import { formatFileSize } from "~/lib/file-format";
 import type { EvaluationVideo } from "~/orpc/evaluation/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Video Player =====*/
 /**
@@ -33,7 +34,7 @@ export function VideoPlayer({ video, className }: { video: EvaluationVideo; clas
         <span className="flex shrink-0 items-center gap-3 text-muted-foreground">
           <span>{formatFileSize(video.sizeBytes)}</span>
           <a href={video.url} download={video.fileName} className="font-medium text-primary hover:underline">
-            دانلود
+            {m.shared_video_download()}
           </a>
         </span>
       </figcaption>

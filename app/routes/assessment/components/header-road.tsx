@@ -2,11 +2,20 @@ import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Stops =====*/
 // The road a dog walks to its courses, as the help page tells it: introduced, the request, the head trainer's call,
-// the courses open. Short labels, so all four fit one row on a phone.
-const STOPS = ["معرفی سگ", "درخواست", `زنگ ${HEAD_TRAINER.firstName}`, "دوره‌ها باز می‌شن"] as const;
+// the courses open. Short labels, so all four fit one row on a phone. A function: the labels are messages and must be
+// read while rendering.
+function stops(): readonly string[] {
+  return [
+    m.assessment_road_intro(),
+    m.assessment_road_request(),
+    m.assessment_road_call({ trainer: HEAD_TRAINER.firstName }),
+    m.assessment_road_courses(),
+  ];
+}
 
 /** Where the customer is on the road: 0 introduce a dog, 1 the request, 2 the call, 3 the courses. */
 export type RoadStep = 0 | 1 | 2 | 3;
@@ -22,9 +31,11 @@ export type RoadStep = 0 | 1 | 2 | 3;
  * newly walked segment draws itself and the discs that changed turn, keyed by their look so they replay.
  */
 export function HeaderRoad({ step, walkedFrom }: { step: RoadStep; walkedFrom: RoadStep | null }) {
+  const labels = stops();
+
   return (
-    <ol aria-label="مسیر ارزیابی" className="grid max-w-xl grid-cols-4">
-      {STOPS.map((label, index) => {
+    <ol aria-label={m.assessment_road_label()} className="grid max-w-xl grid-cols-4">
+      {labels.map((label, index) => {
         const tone = index < step ? "done" : index === step ? "current" : "ahead";
         const walked = index < step;
         // Changed since the page opened: the segment and discs between the old step and the new one.
@@ -38,7 +49,7 @@ export function HeaderRoad({ step, walkedFrom }: { step: RoadStep; walkedFrom: R
           >
             {/*------ Segment ------*/}
             {/* A plain dashed chalk line: at this size the chalk-filtered pattern breaks up into scribbles. */}
-            {index < STOPS.length - 1 && (
+            {index < labels.length - 1 && (
               <span
                 key={`seg-${walked}`}
                 aria-hidden

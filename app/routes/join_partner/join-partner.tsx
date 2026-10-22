@@ -3,7 +3,9 @@ import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
+import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/join_partner/column";
 import { CommissionCard } from "~/routes/join_partner/components/commission-card";
 import { HowToStart } from "~/routes/join_partner/components/how-to-start";
@@ -16,15 +18,12 @@ import { WaysIn } from "~/routes/join_partner/components/ways-in";
 // it is read from the settings rather than fixed in the code.
 export const Route = createFileRoute("/_public/join/partner")({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.setting.commissionPercent.queryOptions()),
-  head: () => ({
-    meta: [
-      { title: "همکاری با آموزش K9" },
-      {
-        name: "description",
-        content: "کلینیک، آرایشگاه سگ یا پت‌شاپ داری؟ مشتری‌هات رو معرفی کن و از اولین خریدشون کمیسیون بگیر.",
-      },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      path: "/join/partner",
+      title: m.join_partner_meta_title(),
+      description: m.join_partner_meta_description(),
+    }),
   component: JoinPartnerPage,
   errorComponent: PartnerError,
 });
@@ -65,17 +64,15 @@ function PartnerError() {
     <section aria-labelledby="partner-error-title" className="site-container py-section-md">
       <div className="max-w-xl">
         <h1 id="partner-error-title" className="font-display text-h1 font-black text-balance">
-          صفحه‌ی همکاری باز نشد
+          {m.join_partner_error_title()}
         </h1>
-        <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          مشکلی پیش آمد. دوباره امتحان کن، یا همین حالا با مرکز تماس بگیر.
-        </p>
+        <p className="mt-4 text-lead text-pretty text-muted-foreground">{m.join_partner_error_line()}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={href} className={buttonVariants({ variant: "outline", size: "lg" })}>
-            دوباره امتحان کن
+            {m.join_partner_error_retry()}
           </a>
           <a href={`tel:${CENTER_PHONE.tel}`} className={buttonVariants({ variant: "solid", size: "lg" })}>
-            زنگ بزن: <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
+            {m.join_partner_call()} <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
           </a>
         </div>
       </div>

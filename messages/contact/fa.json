@@ -1,0 +1,18 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "contact_meta_title": "تماس با ما | زروان",
+  "contact_meta_description": "تلفن، تلگرام، اینستاگرام و یوتیوب {trainer}؛ فعال در {area}.",
+  "contact_hero_title": "با {trainer} حرف بزن",
+  "contact_hero_lead": "تلفن یا پیام، هر کدوم برات راحت‌تره.",
+  "contact_hero_bubble": "الو؟ زروانم! شماره همینه.",
+  "contact_hero_phone_label": "شماره‌ی تماس",
+  "contact_hero_call": "زنگ بزن",
+  "contact_wall_title": "پیام بده",
+  "contact_wall_bubble": "پیام بدی، خودم می‌رسونمش!",
+  "contact_sign_new_tab": "(در پنجره‌ی تازه باز می‌شود)",
+  "contact_area_title": "محدوده‌ی فعالیت: {area}",
+  "contact_area_bubble": "من کل تهرانو می‌گردم!",
+  "contact_help_before": "جواب خیلی از سؤال‌ها توی ",
+  "contact_help_link": "سؤال‌های پرتکرار",
+  "contact_help_after": " هست."
+}

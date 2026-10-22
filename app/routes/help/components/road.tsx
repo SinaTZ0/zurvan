@@ -3,25 +3,31 @@ import { CircleCheckBig, ClipboardList, LockOpen, Phone, ShoppingBasket } from "
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { ChalkDefs, SketchedEdge, TrailSegment, WindingTrail } from "~/routes/help/components/chalk-trail";
 
 /*===== Stops =====*/
 // The real path from a new dog to the next course (app-spec F3 to F6). It is a sequence, so it is numbered, and each stop
 // is the start of the FAQ group with the same number (`faq-data.tsx`).
-const STOPS = [
-  { id: "evaluation", title: "ارزیابی رایگان", line: `${HEAD_TRAINER.firstName} سگت رو می‌بینه.`, icon: ClipboardList },
-  { id: "courses", title: "دوره‌ها باز می‌شن", line: "اونایی که پیش‌نیازشون رو گذرونده.", icon: LockOpen },
-  { id: "paying", title: "انتخاب و خرید", line: "دوره‌ات رو از سبد برمی‌داری.", icon: ShoppingBasket },
-  {
-    id: "training",
-    title: "تماس و تمرین",
-    line: `${HEAD_TRAINER.firstName} زنگ می‌زنه و هماهنگ می‌کنید.`,
-    icon: Phone,
-  },
-  { id: "done", title: "تموم شد", line: "دوره‌ی بعدی باز می‌شه.", icon: CircleCheckBig },
-];
+const STOP_ICONS = [ClipboardList, LockOpen, ShoppingBasket, Phone, CircleCheckBig];
+
+/** The stops in the page's language (a function: the messages and the trainer's name follow the locale). */
+function getStops() {
+  const trainer = HEAD_TRAINER.firstName;
+  return [
+    {
+      id: "evaluation",
+      title: m.help_road_stop_evaluation_title(),
+      line: m.help_road_stop_evaluation_line({ trainer }),
+    },
+    { id: "courses", title: m.help_road_stop_courses_title(), line: m.help_road_stop_courses_line() },
+    { id: "paying", title: m.help_road_stop_paying_title(), line: m.help_road_stop_paying_line() },
+    { id: "training", title: m.help_road_stop_training_title(), line: m.help_road_stop_training_line({ trainer }) },
+    { id: "done", title: m.help_road_stop_done_title(), line: m.help_road_stop_done_line() },
+  ].map((stop, index) => ({ ...stop, icon: STOP_ICONS[index] }));
+}
 
 /*===== Stop Ring =====*/
 /**
@@ -29,7 +35,7 @@ const STOPS = [
  * hides the trail passing under it, with the stop's icon in gold and its number on the ring. It fills gold when its
  * link is hovered or focused, as the numbered disc did before.
  */
-function StopRing({ index, icon: Icon }: { index: number; icon: (typeof STOPS)[number]["icon"] }) {
+function StopRing({ index, icon: Icon }: { index: number; icon: (typeof STOP_ICONS)[number] }) {
   return (
     <span className="relative grid size-16 shrink-0 place-items-center rounded-full bg-sunken transition-colors group-hover/stop:bg-primary group-focus-visible/stop:bg-primary">
       <svg aria-hidden viewBox="0 0 64 64" fill="none" className="absolute inset-0 text-foreground/70">
@@ -50,7 +56,7 @@ function StopRing({ index, icon: Icon }: { index: number; icon: (typeof STOPS)[n
         aria-hidden
         className="absolute -start-1.5 -top-1.5 grid size-7 place-items-center rounded-full border border-foreground/40 bg-background text-xs font-bold text-foreground"
       >
-        {formatNumberFa(index + 1)}
+        {formatNumber(index + 1)}
       </span>
     </span>
   );
@@ -77,11 +83,10 @@ function StopRing({ index, icon: Icon }: { index: number; icon: (typeof STOPS)[n
  * direction.
  */
 export function Road() {
+  const stops = getStops();
+
   return (
-    <section
-      aria-label="مراحل از ارزیابی تا تموم شدن دوره"
-      className="site-container pt-48 pb-section-sm md:pt-44 lg:pt-52"
-    >
+    <section aria-label={m.help_road_label()} className="site-container pt-48 pb-section-sm md:pt-44 lg:pt-52">
       <ChalkDefs />
 
       <div className="relative rounded-[2rem] bg-sunken paper-grain px-5 pt-10 pb-10 [--pad:1.25rem] md:px-6 md:pt-12 md:pb-10 md:[--pad:1.5rem] lg:px-10 lg:[--pad:2.5rem]">
@@ -91,7 +96,7 @@ export function Road() {
         {/* Its straw tufts overlap the edge, so it stands on it. Its arrow points the way the road goes (to the end). */}
         <MascotCut
           name="signpost"
-          className="absolute right-4 bottom-[calc(100%-0.9rem)] w-20 md:right-6 md:w-28 lg:right-[4%] lg:w-32"
+          className="absolute right-4 bottom-[calc(100%-0.9rem)] w-20 md:right-6 md:w-28 lg:right-[4%] lg:w-32 ltr:md:right-auto ltr:md:left-6 ltr:md:-scale-x-100 ltr:lg:right-auto ltr:lg:left-[4%]"
         />
 
         {/*------ Night sky over the board, between the dog's bubble and the signpost ------*/}
@@ -103,7 +108,7 @@ export function Road() {
             behind him, a bush on each side. */}
         <div
           aria-hidden
-          className="absolute bottom-[calc(100%-0.4rem)] left-3 z-10 w-24 md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.3)] md:w-32 md:-translate-x-1/2 lg:w-40"
+          className="absolute bottom-[calc(100%-0.4rem)] left-3 z-10 w-24 md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.3)] md:w-32 md:-translate-x-1/2 lg:w-40 ltr:md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.7)]"
         >
           <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_45%_50%_at_50%_55%,rgb(255_194_26/0.08),transparent)]" />
           <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[88%] w-[46%] translate-y-[3%]" />
@@ -117,16 +122,16 @@ export function Road() {
             above both, its tail down at him. */}
         <ChalkBubble
           tail="left"
-          className="absolute bottom-[calc(100%+6.5rem)] left-3 z-10 w-[17rem] max-w-[calc(100%-1.5rem)] text-pretty md:bottom-[calc(100%+8.5rem)] md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.3-1.75rem-8px)] md:w-72 lg:bottom-[calc(100%+10.25rem)]"
+          className="absolute bottom-[calc(100%+6.5rem)] left-3 z-10 w-[17rem] max-w-[calc(100%-1.5rem)] text-pretty md:bottom-[calc(100%+8.5rem)] md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.3-1.75rem-8px)] md:w-72 lg:bottom-[calc(100%+10.25rem)] ltr:md:left-[calc(var(--pad)+(100%-2*var(--pad))*0.7-1.75rem-8px)]"
         >
-          بعد از ثبت درخواستت، {HEAD_TRAINER.firstName} باهات تماس می‌گیره.
+          {m.help_road_bubble({ trainer: HEAD_TRAINER.firstName })}
         </ChalkBubble>
 
         {/*------ The stops ------*/}
         <ol className="relative grid gap-y-8 md:grid-cols-5">
           <WindingTrail />
-          {STOPS.map((stop, index) => {
-            const isLast = index === STOPS.length - 1;
+          {stops.map((stop, index) => {
+            const isLast = index === stops.length - 1;
 
             return (
               <li key={stop.id} className={`relative md:px-2 ${index % 2 === 1 ? "md:mt-10" : ""}`}>
@@ -139,13 +144,13 @@ export function Road() {
                 {index === 1 && (
                   <MascotCut
                     name="key"
-                    className="absolute top-3 left-[calc(50%-6.25rem)] z-[2] hidden w-16 -rotate-12 md:block"
+                    className="absolute top-3 left-[calc(50%-6.25rem)] z-[2] hidden w-16 -rotate-12 md:block ltr:md:right-[calc(50%-6.25rem)] ltr:md:left-auto ltr:md:rotate-12"
                   />
                 )}
                 {isLast && (
                   <MascotCut
                     name="flag"
-                    className="lively-sway-2 absolute -top-4 left-[calc(50%-7.25rem)] hidden w-24 md:block"
+                    className="lively-sway-2 absolute -top-4 left-[calc(50%-7.25rem)] hidden w-24 md:block ltr:md:right-[calc(50%-7.25rem)] ltr:md:left-auto"
                   />
                 )}
 

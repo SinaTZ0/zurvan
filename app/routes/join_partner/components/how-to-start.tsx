@@ -3,35 +3,39 @@ import { cn } from "cn";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { ChalkDefs, PathLine, SketchedEdge } from "~/routes/join_partner/components/chalk-trail";
 
 /*===== Start Steps =====*/
 // Joining is a phone call, not a form: the Admin creates the partner account from the number the caller gives (app-spec
 // F1). It is a real sequence, so it is numbered, with gold discs as on the home page's evaluation steps. Each step has
 // the dog that fits it: he phones, brings the key, and celebrates at the finish flag. `idle` is his own loop.
-const STEPS: { title: string; detail: string; pose: MascotCutName; idle: string }[] = [
-  {
-    title: "زنگ بزن",
-    detail: "اسم محلت، نوعش (کلینیک، آرایشگاه سگ، پت‌شاپ) و شماره‌ی موبایلی که باهاش وارد می‌شی رو بگو.",
-    pose: "phone",
-    idle: "lively-wiggle",
-  },
-  {
-    title: "حساب همکارت ساخته می‌شه",
-    detail: `فقط ${HEAD_TRAINER.firstName} حساب همکار می‌سازه، با همون شماره‌ی موبایلت.`,
-    pose: "key-carry",
-    idle: "lively-breathe",
-  },
-  {
-    title: "وارد می‌شی",
-    detail: "لینک، QR و مشتری‌هات رو می‌بینی و شماره‌ی شبات رو برای کمیسیون می‌نویسی.",
-    pose: "celebrate",
-    idle: "lively-hop",
-  },
-];
+// A function, not a constant: the words follow the page's language when it renders.
+function steps(): { title: string; detail: string; pose: MascotCutName; idle: string }[] {
+  return [
+    {
+      title: m.join_partner_step_call_title(),
+      detail: m.join_partner_step_call_detail(),
+      pose: "phone",
+      idle: "lively-wiggle",
+    },
+    {
+      title: m.join_partner_step_account_title(),
+      detail: m.join_partner_step_account_detail({ name: HEAD_TRAINER.firstName }),
+      pose: "key-carry",
+      idle: "lively-breathe",
+    },
+    {
+      title: m.join_partner_step_in_title(),
+      detail: m.join_partner_step_in_detail(),
+      pose: "celebrate",
+      idle: "lively-hop",
+    },
+  ];
+}
 
 /*===== How To Start =====*/
 /**
@@ -47,6 +51,8 @@ const STEPS: { title: string; detail: string; pose: MascotCutName; idle: string 
  * number written out in the classes below (Tailwind needs them whole).
  */
 export function HowToStart() {
+  const STEPS = steps();
+
   return (
     <section aria-labelledby="start-title" className="relative flex flex-col pt-44 lg:pt-48">
       <ChalkDefs />
@@ -61,11 +67,11 @@ export function HowToStart() {
         {/* Its straw tufts overlap the edge, so it stands on it. Its arrow points the way the path goes. */}
         <MascotCut
           name="signpost"
-          className="absolute right-5 bottom-[calc(100%-0.9rem)] w-24 md:right-8 lg:right-10 lg:w-28"
+          className="absolute start-5 bottom-[calc(100%-0.9rem)] w-24 md:start-8 lg:start-10 lg:w-28 ltr:-scale-x-100"
         />
 
         <h2 id="start-title" className={`${DISPLAY_HEADING} relative text-h2 text-balance`}>
-          چطوری شروع می‌شه؟
+          {m.join_partner_start_title()}
         </h2>
 
         {/*------ The steps ------*/}
@@ -129,7 +135,12 @@ export function HowToStart() {
 
                 {/*------ The disc ------*/}
                 <div className="relative z-10 col-start-1 row-start-2 grid size-14 place-items-center self-start lg:mt-1">
-                  <svg aria-hidden viewBox="0 0 64 64" fill="none" className="absolute -inset-1.5 size-[calc(100%+0.75rem)] text-foreground/60">
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    className="absolute -inset-1.5 size-[calc(100%+0.75rem)] text-foreground/60"
+                  >
                     <path
                       d="M33 3C49 3 61 16 61 32S48 61 32 61 3 47 3 32 16 3 29 4.5"
                       stroke="currentColor"
@@ -142,7 +153,7 @@ export function HowToStart() {
                     aria-hidden
                     className="relative grid size-12 place-items-center rounded-full bg-primary font-display text-xl font-black text-primary-foreground"
                   >
-                    {formatNumberFa(index + 1)}
+                    {formatNumber(index + 1)}
                   </span>
                 </div>
 
@@ -162,12 +173,12 @@ export function HowToStart() {
                     {/* Phones: planted under the last disc; its pole is 18px in from its right edge. */}
                     <MascotCut
                       name="flag"
-                      className="lively-sway-2 absolute start-[calc(1.75rem-18px)] bottom-0 w-16 lg:hidden"
+                      className="lively-sway-2 absolute start-[calc(1.75rem-18px)] bottom-0 w-16 lg:hidden ltr:-scale-x-100"
                     />
                     {/* Wide: planted at the path's end, 4.5rem past the last disc's centre; the pole is 72% across. */}
                     <MascotCut
                       name="flag"
-                      className="lively-sway-2 absolute top-[calc(10rem+0.25rem+1.75rem+0.3rem)] left-[calc(50%-4.5rem-46px)] hidden w-16 -translate-y-full lg:block"
+                      className="lively-sway-2 absolute top-[calc(10rem+0.25rem+1.75rem+0.3rem)] left-[calc(50%-4.5rem-46px)] hidden w-16 -translate-y-full lg:block ltr:left-[calc(50%+4.5rem-18px)] ltr:-scale-x-100"
                     />
                   </>
                 )}
@@ -201,6 +212,12 @@ export function HowToStart() {
             li:nth-child(3) > .jp-step-dog { animation-range: entry 22% entry 92%; }
             li:nth-child(4) > .jp-step-dog { animation-range: entry 34% entry 100%; }
           }
+        }
+        /* English reads left to right, so the path opens from the left. */
+        :lang(en) .jp-draw-across { animation-name: jp-draw-across-ltr; }
+        @keyframes jp-draw-across-ltr {
+          from { clip-path: inset(0 100% 0 0); }
+          to { clip-path: inset(0); }
         }
         @keyframes jp-draw-across {
           from { clip-path: inset(0 0 0 100%); }

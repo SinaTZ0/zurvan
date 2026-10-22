@@ -2,10 +2,11 @@ import { cn } from "cn";
 
 import { MascotCut } from "~/components/mascot-cut";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatJalaliDate } from "~/lib/jalali";
+import { formatDate } from "~/lib/locale-format";
 import type { LogbookEntry } from "~/orpc/logbook/contract";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
+import { m } from "~/paraglide/messages";
 
 /*===== Logbook Section =====*/
 /**
@@ -24,7 +25,7 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
   return (
     <section aria-labelledby="logbook-title">
       {/* «لاگ‌بوک» is the owner's word for the dog's file (2026-10-19): it is named first so it can be found by it. */}
-      <SectionHead id="logbook-title" title="لاگ‌بوک؛ دفترچه‌ی تمرین">
+      <SectionHead id="logbook-title" title={m.account_dog_detail_logbook_title()}>
         {/* On phones the lectern needs the room the corner's margin would take. */}
         <div className={cn("relative", empty && "me-8 sm:me-0")}>
           {empty && (
@@ -65,9 +66,9 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
               aria-hidden
               className="absolute start-[0.55rem] top-3 size-4 rounded-full border-2 border-dashed border-primary/50 bg-sunken"
             />
-            <p className="font-bold">هنوز جلسه‌ای ثبت نشده</p>
+            <p className="font-bold">{m.account_dog_detail_logbook_empty_title()}</p>
             <p className="mt-1 max-w-md text-sm text-pretty text-muted-foreground">
-              بعد از هر جلسه، {HEAD_TRAINER.firstName} همین‌جا می‌نویسه چی کار کردید و پیشرفت چطور بود.
+              {m.account_dog_detail_logbook_empty_text({ trainer: HEAD_TRAINER.firstName })}
             </p>
           </div>
         ) : (
@@ -82,13 +83,13 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
                 <div className="flex flex-col gap-3 rounded-3xl border border-border bg-card paper-grain p-5 shadow-[0_14px_30px_-18px_rgb(0_0_0/0.9)]">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <h3 className="font-display text-lg font-extrabold">
-                      <time dateTime={entry.occurredOn}>{formatJalaliDate(entry.occurredOn)}</time>
+                      <time dateTime={entry.occurredOn}>{formatDate(entry.occurredOn)}</time>
                     </h3>
                     {entry.course && <span className="text-sm text-muted-foreground">{entry.course.title}</span>}
                   </div>
                   <p className="text-pretty whitespace-pre-line">{entry.notes}</p>
                   {entry.exercises.length > 0 && (
-                    <ul aria-label="تمرین‌ها" className="flex flex-wrap gap-2">
+                    <ul aria-label={m.account_dog_detail_logbook_exercises()} className="flex flex-wrap gap-2">
                       {entry.exercises.map((exercise) => (
                         <li key={exercise} className="rounded-full border border-primary/40 px-3 py-1 text-sm">
                           {exercise}
@@ -98,7 +99,7 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
                   )}
                   {entry.progress && (
                     <p className="text-sm text-pretty text-muted-foreground">
-                      <span className="font-bold text-foreground">جمع‌بندی: </span>
+                      <span className="font-bold text-foreground">{m.account_dog_detail_logbook_summary()} </span>
                       {entry.progress}
                     </p>
                   )}

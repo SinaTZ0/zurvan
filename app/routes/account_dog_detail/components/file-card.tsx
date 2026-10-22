@@ -12,6 +12,7 @@ import { CopyLink } from "~/routes/account_dog_detail/components/copy-link";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
 import { PLATE } from "~/routes/account_dog_detail/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== File Card =====*/
 /**
@@ -50,7 +51,7 @@ export function FileCard({
         fileName: `${fileNumber}.png`,
       });
     } catch {
-      toast.add({ title: "دانلود نشد؛ دوباره امتحان کن.", type: "error" });
+      toast.add({ title: m.account_dog_detail_file_download_failed(), type: "error" });
     } finally {
       setIsSaving(false);
     }
@@ -58,13 +59,13 @@ export function FileCard({
 
   return (
     <section aria-labelledby="dog-file-title">
-      <SectionHead id="dog-file-title" title={`پرونده‌ی ${dogName}`}>
+      <SectionHead id="dog-file-title" title={m.account_dog_detail_file_title({ dogName })}>
         <EdgeDog name="tag" className="w-[4.5rem] sm:w-[5rem]">
           <ChalkBubble
             tail="left"
             className="lively-reveal-pop absolute bottom-[93%] left-[38%] max-w-[11rem] text-pretty"
           >
-            منم یه پلاک دارم!
+            {m.account_dog_detail_file_bubble()}
           </ChalkBubble>
         </EdgeDog>
       </SectionHead>
@@ -73,7 +74,7 @@ export function FileCard({
         <div className="grid grid-cols-[minmax(0,1fr)_8.5rem] items-start gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
           {/*------ Number and Note ------*/}
           <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">شماره‌ی پرونده</p>
+            <p className="text-sm text-muted-foreground">{m.account_dog_detail_file_number()}</p>
             {/* Latin letters and digits read left to right. */}
             <p
               dir="ltr"
@@ -100,7 +101,7 @@ export function FileCard({
           <CopyLink link={link} />
           <Button type="button" variant="outline" className="h-11 w-full" onClick={handleDownload} disabled={isSaving}>
             <DownloadIcon aria-hidden />
-            دانلود QR برای چاپ
+            {m.account_dog_detail_file_download()}
           </Button>
         </div>
       </div>

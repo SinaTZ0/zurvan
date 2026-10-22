@@ -32,6 +32,8 @@ export type PassedCourseRecord = {
   courseId: string;
   slug: string;
   title: string;
+  /** Null until the Admin writes it. */
+  titleEn: string | null;
   source: "enrollment" | "admin";
 };
 
@@ -201,12 +203,24 @@ export async function findPassedCourses({
   if (dogIds.length === 0) return [];
 
   const finished = await db
-    .selectDistinct({ dogId: enrollment.dogId, courseId: course.id, slug: course.slug, title: course.title })
+    .selectDistinct({
+      dogId: enrollment.dogId,
+      courseId: course.id,
+      slug: course.slug,
+      title: course.title,
+      titleEn: course.titleEn,
+    })
     .from(enrollment)
     .innerJoin(course, eq(enrollment.courseId, course.id))
     .where(and(inArray(enrollment.dogId, dogIds), eq(enrollment.status, "completed")));
   const marked = await db
-    .select({ dogId: dogPassedCourse.dogId, courseId: course.id, slug: course.slug, title: course.title })
+    .select({
+      dogId: dogPassedCourse.dogId,
+      courseId: course.id,
+      slug: course.slug,
+      title: course.title,
+      titleEn: course.titleEn,
+    })
     .from(dogPassedCourse)
     .innerJoin(course, eq(dogPassedCourse.courseId, course.id))
     .where(inArray(dogPassedCourse.dogId, dogIds));

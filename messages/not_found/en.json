@@ -1,0 +1,7 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "not_found_meta_title": "Zurvann | Page not found",
+  "not_found_error_title": "Something went wrong",
+  "not_found_error_retry": "Try again",
+  "not_found_error_home": "Home page"
+}

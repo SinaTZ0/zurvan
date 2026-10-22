@@ -1,7 +1,7 @@
 import { cn } from "cn";
 
-import { formatNumberFa } from "~/lib/digits";
-import { NEXT_STEPS } from "~/routes/assessment/guide";
+import { formatNumber } from "~/lib/locale-format";
+import { nextSteps } from "~/routes/assessment/guide";
 
 /*===== Next Road =====*/
 /**
@@ -11,10 +11,12 @@ import { NEXT_STEPS } from "~/routes/assessment/guide";
  * disc's centre to the next one's.
  */
 export function NextRoad() {
+  const steps = nextSteps();
+
   return (
     <ol className="grid gap-y-6 sm:grid-cols-3 sm:gap-y-0">
-      {NEXT_STEPS.map((step, index) => {
-        const last = index === NEXT_STEPS.length - 1;
+      {steps.map((step, index) => {
+        const last = index === steps.length - 1;
         const lit = index === 0;
         return (
           <li
@@ -47,7 +49,7 @@ export function NextRoad() {
               )}
             >
               {lit && <span className="as-halo absolute -inset-0.5 rounded-full border-2 border-primary/50" />}
-              {formatNumberFa(index + 1)}
+              {formatNumber(index + 1)}
             </span>
 
             {/*------ Words ------*/}

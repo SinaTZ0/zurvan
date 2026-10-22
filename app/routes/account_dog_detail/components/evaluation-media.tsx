@@ -4,8 +4,9 @@ import { useId, useState } from "react";
 
 import { MediaImage } from "~/components/media-image";
 import { VideoPlayer } from "~/components/video-player";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import type { Evaluation } from "~/orpc/evaluation/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Media =====*/
 /**
@@ -30,7 +31,7 @@ export function EvaluationMedia({ evaluation }: { evaluation: Evaluation }) {
         onClick={() => setOpen((value) => !value)}
         className="flex w-full items-center justify-between gap-3 rounded-lg py-1.5 text-start text-sm font-bold outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        عکس و فیلم‌هایی که فرستادی ({formatNumberFa(count)})
+        {m.account_dog_detail_media_toggle({ count: formatNumber(count) })}
         <ChevronDownIcon
           aria-hidden
           className={cn(
@@ -62,7 +63,11 @@ export function EvaluationMedia({ evaluation }: { evaluation: Evaluation }) {
                     <MediaImage
                       media={photo}
                       variant="thumb"
-                      alt={`عکس ${formatNumberFa(index + 1)} از ${formatNumberFa(evaluation.photos.length)} برای ارزیابی ${evaluation.dog.name}`}
+                      alt={m.account_dog_detail_media_photo_alt({
+                        index: formatNumber(index + 1),
+                        total: formatNumber(evaluation.photos.length),
+                        dogName: evaluation.dog.name,
+                      })}
                       className="aspect-4/3 w-full rounded-2xl border border-border"
                     />
                   </li>

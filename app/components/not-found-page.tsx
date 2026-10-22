@@ -4,6 +4,8 @@ import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
+import { formatDigits } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Dirt Specks =====*/
 // A few chalk dots that hop out of the hole once on load. `--dx` is how far a speck lands from the pit (physical, in
@@ -41,32 +43,30 @@ export function NotFoundPage() {
     >
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
-        {/* Persian digits, one box each so the zero can wobble by itself. */}
+        {/* The page's digits (Persian or Latin), one box each so the zero can wobble by itself. */}
         <p
           aria-hidden
           className="font-display text-[6rem] leading-[0.95] font-black tracking-tight text-primary select-none lg:text-[10.5rem]"
         >
-          <span className="nf-digit inline-block [--nf-delay:0s]">۴</span>
-          <span className="nf-zero inline-block [--nf-delay:.1s]">۰</span>
-          <span className="nf-digit inline-block [--nf-delay:.2s]">۴</span>
+          <span className="nf-digit inline-block [--nf-delay:0s]">{formatDigits("4")}</span>
+          <span className="nf-zero inline-block [--nf-delay:.1s]">{formatDigits("0")}</span>
+          <span className="nf-digit inline-block [--nf-delay:.2s]">{formatDigits("4")}</span>
         </p>
         <h1 id="not-found-title" className="mt-2 font-display text-h1 leading-[1.2] font-extrabold tracking-tight">
-          این صفحه اینجا نیست
+          {m.shared_not_found_title()}
         </h1>
-        <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">
-          شاید آدرسش عوض شده یا یه حرفش اشتباه تایپ شده.
-        </p>
+        <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">{m.shared_not_found_line()}</p>
 
         {/*------ Ways On ------*/}
         <div className="mt-8 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
           <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "col-span-2" })}>
-            برو صفحه‌ی اول
+            {m.shared_not_found_home()}
           </Link>
           <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            دوره‌ها
+            {m.shared_not_found_courses()}
           </Link>
           <Link to="/help" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            راهنما
+            {m.shared_not_found_help()}
           </Link>
         </div>
       </div>
@@ -134,7 +134,7 @@ export function NotFoundPage() {
           tail="left"
           className="nf-pop absolute bottom-[calc(0.9rem+5.1rem)] left-[calc(10%+5.4rem-36px)] max-w-[11rem] text-pretty lg:bottom-[calc(1.2rem+11.4rem)] lg:left-[calc(8%+12.3rem-36px)] lg:max-w-[17rem]"
         >
-          همه‌جا رو کندم؛ فقط یه استخون پیدا کردم!
+          {m.shared_not_found_bubble()}
         </ChalkBubble>
       </div>
 

@@ -3,6 +3,8 @@ import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { isEnglish } from "~/lib/i18n";
+import { m } from "~/paraglide/messages";
 
 /*===== Privacy Header =====*/
 /**
@@ -27,11 +29,27 @@ export function PrivacyHeader() {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-7">
         <h1 id="privacy-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          <span className="inline-block">از من و تو</span> <span className="inline-block">چی نگه می‌دارن؟</span>
+          <span className="inline-block">{m.privacy_header_title_one()}</span>{" "}
+          <span className="inline-block">{m.privacy_header_title_two()}</span>
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          اینجا ساده نوشتیم چی ذخیره می‌شه، کی می‌بینه و چی رو خودت می‌تونی عوض کنی.
+          {m.privacy_header_lead()}
         </p>
+        {/*------ Binding Version (English only) ------*/}
+        {/* The Persian text is the binding one (docs/i18n/english-glossary.md, "Legal"): said once, at the top, with a
+            plain link to it. A plain anchor, since the Persian page is a different language and needs a full load. */}
+        {isEnglish() && (
+          <p className="mt-4 max-w-md rounded-2xl border border-border bg-card paper-grain px-4 py-3 text-sm text-pretty text-muted-foreground">
+            {m.privacy_binding_note()}{" "}
+            <a
+              href="/privacy"
+              hrefLang="fa"
+              className="rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              {m.privacy_binding_link()}
+            </a>
+          </p>
+        )}
       </div>
 
       {/*===== Stage =====*/}
@@ -77,7 +95,7 @@ export function PrivacyHeader() {
           tail="left"
           className="pv-pop absolute bottom-[calc(0.9rem+8.25rem+0.5rem)] left-[calc(26%-36px)] max-w-[11.5rem] text-pretty lg:bottom-[calc(1.2rem+16rem+0.9rem)] lg:left-[calc(24%-36px)] lg:max-w-[14rem]"
         >
-          ببین چی رو نگه می‌دارن؛ همه‌ش اینجا نوشته.
+          {m.privacy_header_bubble()}
         </ChalkBubble>
       </div>
 

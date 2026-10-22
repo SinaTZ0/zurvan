@@ -3,9 +3,10 @@ import { cn } from "cn";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { describeAge, describeSessions } from "~/lib/course-format";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 import type { CourseLane, LaneCourse } from "~/routes/course_detail/lane";
 
 /*===== Lane Rail =====*/
@@ -27,11 +28,9 @@ export function LaneRail({ course, lane }: { course: Course; lane: CourseLane })
   return (
     <section aria-labelledby="lane-title">
       <h2 id="lane-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-        بعدش چی؟
+        {m.course_detail_lane_title()}
       </h2>
-      {hasRail && (
-        <p className="mt-3 text-pretty text-muted-foreground">دوره‌هام پشت سر هم باز می‌شن؛ هر کدوم بعد از قبلی.</p>
-      )}
+      {hasRail && <p className="mt-3 text-pretty text-muted-foreground">{m.course_detail_lane_text()}</p>}
 
       {/*------ Rail ------*/}
       {hasRail && (
@@ -148,7 +147,7 @@ function Marker({ number, isCurrent }: { number: number; isCurrent: boolean }) {
           filter="url(#cd-trail-chalk)"
         />
       </svg>
-      <span className="relative">{formatNumberFa(number)}</span>
+      <span className="relative">{formatNumber(number)}</span>
     </span>
   );
 }
@@ -170,7 +169,7 @@ function RailStop({
   isCurrent: boolean;
   last: boolean;
 }) {
-  const facts = `${describeAge(entry)}، ${describeSessions(entry)}`;
+  const facts = m.course_detail_lane_facts({ age: describeAge(entry), sessions: describeSessions(entry) });
 
   return (
     <li className={cn("relative grid grid-cols-[3rem_1fr] items-start gap-x-4", last && "pb-14")}>
@@ -201,7 +200,7 @@ function RailStop({
         <p aria-current="page" className="pt-1.5">
           <span className="font-extrabold text-primary">{entry.title}</span>
           <span className="ms-2 rounded-full border border-primary/40 px-2 py-0.5 text-xs font-bold text-primary">
-            همین دوره
+            {m.course_detail_lane_this_course()}
           </span>
           <span className="block text-sm text-muted-foreground">{facts}</span>
         </p>
@@ -220,6 +219,21 @@ function RailStop({
 }
 
 /*===== Notes =====*/
+// A message can't hold a link, so a sentence with a course name in it is written with a mark where the name goes, and
+// the mark is swapped here for the link (the words around it differ in order between the languages).
+const COURSE_MARK = "\u0001";
+
+function WithCourse({ text, slug, title }: { text: (mark: string) => string; slug: string; title: string }) {
+  const [before = "", after = ""] = text(COURSE_MARK).split(COURSE_MARK);
+  return (
+    <>
+      {before}
+      <CourseLink slug={slug}>{title}</CourseLink>
+      {after}
+    </>
+  );
+}
+
 /** Only the notes that apply to this course. */
 function buildNotes({ course, lane }: { course: Course; lane: CourseLane }): { term: string; body: React.ReactNode }[] {
   const notes: { term: string; body: React.ReactNode }[] = [];
@@ -227,11 +241,13 @@ function buildNotes({ course, lane }: { course: Course; lane: CourseLane }): { t
   /*------ Before ------*/
   for (const required of course.prerequisites) {
     notes.push({
-      term: "پیش از این دوره",
+      term: m.course_detail_lane_before_term(),
       body: (
-        <>
-          باید <CourseLink slug={required.slug}>{required.title}</CourseLink> را گذرانده باشم.
-        </>
+        <WithCourse
+          text={(mark) => m.course_detail_lane_before_body({ course: mark })}
+          slug={required.slug}
+          title={required.title}
+        />
       ),
     });
   }
@@ -239,33 +255,37 @@ function buildNotes({ course, lane }: { course: Course; lane: CourseLane }): { t
   /*------ Age Window ------*/
   if (course.maxAgeMonths !== null) {
     notes.push({
-      term: "سن",
-      body: `فقط ${describeAge(course)}. اگه بزرگ‌تر باشم، توی ارزیابی رایگان دوره‌ی مناسبم رو پیدا می‌کنیم.`,
+      term: m.course_detail_lane_age_term(),
+      body: m.course_detail_lane_age_body({ age: describeAge(course) }),
     });
   }
 
   /*------ After ------*/
   if (lane.next) {
+    const next = lane.next;
     notes.push({
-      term: "بعد از این دوره",
+      term: m.course_detail_lane_after_term(),
       body: (
-        <>
-          <CourseLink slug={lane.next.slug}>{lane.next.title}</CourseLink>، {describeAge(lane.next)}.
-        </>
+        <WithCourse
+          text={(mark) => m.course_detail_lane_after_body({ course: mark, age: describeAge(next) })}
+          slug={next.slug}
+          title={next.title}
+        />
       ),
     });
   }
 
   /*------ Equal Path ------*/
   if (lane.equalPath) {
+    const { first, count } = lane.equalPath;
     notes.push({
-      term: "مسیر دیگر",
+      term: m.course_detail_lane_other_term(),
       body: (
-        <>
-          از <CourseLink slug={lane.equalPath.first.slug}>{lane.equalPath.first.title}</CourseLink> هم می‌شه رفت؛ در{" "}
-          {formatNumberFa(lane.equalPath.count)} دوره به همین نتیجه می‌رسه. یکی رو انتخاب کن، یا توی ارزیابی رایگان با
-          هم انتخابش می‌کنیم.
-        </>
+        <WithCourse
+          text={(mark) => m.course_detail_lane_other_body({ course: mark, count: formatNumber(count) })}
+          slug={first.slug}
+          title={first.title}
+        />
       ),
     });
   }

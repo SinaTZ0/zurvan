@@ -7,6 +7,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/contact/column";
 
 /*===== Contact Hero =====*/
@@ -29,10 +30,10 @@ export function ContactHero() {
         {/* Bottom-aligned with the plate (the plate column also holds the dog's headroom), so neither column ends empty. */}
         <div className="lg:col-span-6 lg:self-end">
           <h1 id="contact-title" className={`${DISPLAY_HEADING} text-h1 text-balance lg:text-[3.4rem]`}>
-            با {HEAD_TRAINER.firstName} حرف بزن
+            {m.contact_hero_title({ trainer: HEAD_TRAINER.firstName })}
           </h1>
           <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-            تلفن یا پیام، هر کدوم برات راحت‌تره.
+            {m.contact_hero_lead()}
           </p>
         </div>
 
@@ -42,7 +43,7 @@ export function ContactHero() {
           <div className="relative">
             {/*------ The Dog on the Plate ------*/}
             <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-full">
-              <div className="relative ms-[4%] w-36 translate-y-[2%] sm:ms-[8%] lg:ms-[6%] lg:w-48">
+              <div className="relative ms-[4%] max-lg:ltr:ms-auto max-lg:ltr:me-[4%] w-36 translate-y-[2%] sm:ms-[8%] lg:ms-[6%] lg:w-48">
                 {/* The pool of light he stands in. */}
                 <div className="absolute -inset-x-[70%] bottom-0 h-[130%] bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.08),transparent)]" />
                 <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[84%] w-[58%]" />
@@ -52,14 +53,14 @@ export function ContactHero() {
                   tail="right"
                   className="ct-pop absolute right-[78%] bottom-[58%] w-max max-w-[10.5rem] text-pretty lg:right-[84%] lg:max-w-[14rem]"
                 >
-                  الو؟ زروانم! شماره همینه.
+                  {m.contact_hero_bubble()}
                 </ChalkBubble>
               </div>
             </div>
 
             {/*------ The Plate ------*/}
             <div className="relative rounded-3xl border border-border bg-card paper-grain px-6 py-7 shadow-[0_24px_50px_-24px_rgb(0_0_0/0.9)] md:px-9 md:py-9">
-              <p className="text-sm font-bold text-muted-foreground">شماره‌ی تماس</p>
+              <p className="text-sm font-bold text-muted-foreground">{m.contact_hero_phone_label()}</p>
               {/* The number is the hero: LTR inside the RTL page, ivory, as large as a phone's width allows. */}
               <p className="mt-2 font-display text-[2.5rem] leading-tight font-black tracking-wide text-foreground tabular-nums sm:text-5xl lg:text-[3.5rem]">
                 <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
@@ -69,7 +70,7 @@ export function ContactHero() {
                 className={buttonVariants({ variant: "solid", size: "lg", className: "mt-6 w-full sm:w-auto sm:px-10" })}
               >
                 <PhoneIcon aria-hidden strokeWidth={2} />
-                زنگ بزن
+                {m.contact_hero_call()}
               </a>
             </div>
           </div>

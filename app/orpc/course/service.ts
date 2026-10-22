@@ -39,15 +39,18 @@ import { getMediaVariantSize, getMediaVariantSpec } from "~/orpc/media/constants
 import { isMediaKind } from "~/orpc/media/mapper";
 import { findMediaById } from "~/orpc/media/repository";
 import { attachMedia, isMediaId } from "~/orpc/media/service";
+import type { Locale } from "~/paraglide/runtime";
 
 /*===== List =====*/
-/** Returns every approved course in catalogue order. */
-export async function listCourses({ db }: { db: Database }): Promise<Course[]> {
+/** Returns every approved course in catalogue order, its text in `locale` (Persian where English is missing). */
+export async function listCourses({ db, locale = "fa" }: { db: Database; locale?: Locale }): Promise<Course[]> {
   const records = await findApprovedCourses({ db });
   const prerequisites = await findPrerequisitesByCourseIds({ db, courseIds: records.map((record) => record.id) });
   const byCourseId = groupByCourseId(prerequisites);
 
-  return records.map((record) => toPublicCourse({ record, prerequisites: byCourseId.get(record.id) ?? [] }));
+  return records.map((record) =>
+    toPublicCourse({ record, prerequisites: byCourseId.get(record.id) ?? [], locale }),
+  );
 }
 
 /*===== Get =====*/
@@ -58,12 +61,20 @@ type GetCourseResult = { kind: "success"; course: Course } | { kind: "not-found"
  *
  * @returns `not-found` when no approved course has the slug; drafts and archived courses are never public.
  */
-export async function getCourse({ db, slug }: { db: Database; slug: string }): Promise<GetCourseResult> {
+export async function getCourse({
+  db,
+  slug,
+  locale = "fa",
+}: {
+  db: Database;
+  slug: string;
+  locale?: Locale;
+}): Promise<GetCourseResult> {
   const record = await findApprovedCourseBySlug({ db, slug });
   if (!record) return { kind: "not-found" };
 
   const prerequisites = await findPrerequisitesByCourseIds({ db, courseIds: [record.id] });
-  return { kind: "success", course: toPublicCourse({ record, prerequisites }) };
+  return { kind: "success", course: toPublicCourse({ record, prerequisites, locale }) };
 }
 
 /*===== Helpers =====*/

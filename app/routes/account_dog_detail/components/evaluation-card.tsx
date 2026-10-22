@@ -3,12 +3,13 @@ import { cn } from "cn";
 import { EvaluationStatusBadge } from "~/components/evaluation-status-badge";
 import { WithdrawEvaluationButton } from "~/components/withdraw-evaluation-button";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatJalaliDate, formatJalaliTimestamp } from "~/lib/jalali";
+import { formatDate, formatTimestamp } from "~/lib/locale-format";
 import { EVALUATION_PERIOD_LABELS, EVALUATION_WEEKDAY_LABELS } from "~/orpc/evaluation/constants";
 import type { Evaluation } from "~/orpc/evaluation/contract";
 import { EvaluationMedia } from "~/routes/account_dog_detail/components/evaluation-media";
 import { useChanged } from "~/routes/account_dog_detail/components/use-changed";
 import { PLATE } from "~/routes/account_dog_detail/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Card =====*/
 /**
@@ -31,23 +32,23 @@ export function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
         className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-2", changed && "answer-in")}
       >
         <EvaluationStatusBadge status={evaluation.status} />
-        <p className="text-sm text-muted-foreground">{formatJalaliTimestamp(evaluation.createdAt)}</p>
+        <p className="text-sm text-muted-foreground">{formatTimestamp(evaluation.createdAt)}</p>
       </div>
 
       {/*------ What Was Asked ------*/}
       {evaluation.createdByAdmin ? (
-        <p className="text-pretty text-muted-foreground">{HEAD_TRAINER.firstName} خودش ثبت کرد</p>
+        <p className="text-pretty text-muted-foreground">{m.account_dog_detail_evaluation_by_admin({ trainer: HEAD_TRAINER.firstName })}</p>
       ) : (
         asked && (
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-            <Detail term="از چه روزی" detail={formatJalaliDate(evaluation.earliestDate!)} />
+            <Detail term={m.account_dog_detail_evaluation_earliest()} detail={formatDate(evaluation.earliestDate!)} />
             <Detail
-              term="روزهای آزاد"
-              detail={evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join("، ")}
+              term={m.account_dog_detail_evaluation_days()}
+              detail={evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join(m.shared_when_free_joiner())}
             />
             <Detail
-              term="ساعت‌های آزاد"
-              detail={evaluation.availablePeriods.map((period) => EVALUATION_PERIOD_LABELS[period]).join("، ")}
+              term={m.account_dog_detail_evaluation_periods()}
+              detail={evaluation.availablePeriods.map((period) => EVALUATION_PERIOD_LABELS[period]).join(m.shared_when_free_joiner())}
             />
           </dl>
         )
@@ -55,7 +56,7 @@ export function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
 
       {evaluation.status === "rejected" && evaluation.rejectionReason && (
         <p className="text-pretty text-muted-foreground">
-          <span className="font-bold text-foreground">دلیل: </span>
+          <span className="font-bold text-foreground">{m.account_dog_detail_reason()} </span>
           {evaluation.rejectionReason}
         </p>
       )}

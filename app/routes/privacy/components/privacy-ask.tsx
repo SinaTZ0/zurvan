@@ -4,6 +4,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Privacy Ask =====*/
 /**
@@ -43,7 +44,7 @@ export function PrivacyAsk() {
         tail="left"
         className="lively-reveal-pop absolute bottom-[calc(100%+7.4rem)] left-6 z-10 max-w-[calc(100%-1.5rem)] sm:left-10 lg:bottom-[calc(100%+11rem)] lg:left-[calc(3.5rem+56px-36px)]"
       >
-        منم اولش کلی سؤال داشتم!
+        {m.privacy_ask_bubble()}
       </ChalkBubble>
 
       {/* The chalk sky over the card's empty stretch, beside the dog's bubble. */}
@@ -52,21 +53,21 @@ export function PrivacyAsk() {
       {/*===== Words =====*/}
       <div className="max-w-xl">
         <h2 id="privacy-ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          سؤال دیگه‌ای داری؟
+          {m.privacy_ask_title()}
         </h2>
-        <p className="mt-3 text-pretty text-muted-foreground">جواب خیلی از سؤال‌ها توی «سؤال‌های پرتکرار» هست.</p>
+        <p className="mt-3 text-pretty text-muted-foreground">{m.privacy_ask_text()}</p>
       </div>
 
       {/*===== Actions =====*/}
       <div className="mt-8 flex flex-wrap gap-3 lg:mt-0 lg:shrink-0">
         <Link to="/help" className={buttonVariants({ variant: "solid", size: "lg", className: "w-full sm:w-auto" })}>
-          سؤال‌های پرتکرار
+          {m.privacy_ask_help()}
         </Link>
         <Link
           to="/contact"
           className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
         >
-          تماس با ما
+          {m.privacy_ask_contact()}
         </Link>
       </div>
     </section>

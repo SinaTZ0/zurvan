@@ -3,9 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { useMemo, useRef, useState } from "react";
 
+import { pageHead } from "~/lib/seo";
 import { orNotFound } from "~/lib/not-found";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_partner_leads/column";
 import { AddLeadForm } from "~/routes/account_partner_leads/components/add-lead-form";
 import { HowItCounts } from "~/routes/account_partner_leads/components/how-it-counts";
@@ -31,7 +33,12 @@ export const Route = createFileRoute("/account/partner/leads")({
       orNotFound(queryClient.ensureQueryData(orpc.partner.getMine.queryOptions())),
     ]);
   },
-  head: () => ({ meta: [{ title: "شماره‌ها و مشتری‌ها | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/partner/leads",
+      title: m.account_partner_leads_meta_title(),
+      description: m.account_partner_leads_meta_description(),
+    }),
   component: AccountPartnerLeadsPage,
   // Inside the account shell, so the header and the partner's tabs stay on screen.
   notFoundComponent: () => <LeadsError notFound />,

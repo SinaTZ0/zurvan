@@ -1,6 +1,7 @@
 import { PawPrint } from "lucide-react";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
+import { m } from "~/paraglide/messages";
 
 /*===== Timing =====*/
 // One lap: Fandogh chases his ball across the lane in the first RUN share of the cycle, then the lane rests empty
@@ -176,7 +177,7 @@ export function StoryRunner() {
 
           <div className="st-shout absolute bottom-[calc(100%+0.5rem)] left-[-1rem]">
             <ChalkBubble tail="left" className="text-sm whitespace-nowrap md:text-base">
-              وایسا توپ!
+              {m.home_runner_shout()}
             </ChalkBubble>
           </div>
         </div>

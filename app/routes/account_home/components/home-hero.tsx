@@ -7,8 +7,9 @@ import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_home/column";
 
 /*===== Types =====*/
@@ -37,14 +38,14 @@ export function HomeHero({ firstName, tally }: { firstName: string; tally: Tally
           {firstName && (
             <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
               <PawPrintIcon aria-hidden strokeWidth={2} className="size-4" />
-              سلام {firstName}!
+              {m.account_home_hero_greeting({ firstName })}
             </p>
           )}
           <h1 id="account-home-title" className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>
-            سگ‌های من
+            {m.account_home_hero_title()}
           </h1>
           <p className="mt-3 max-w-lg text-lead text-pretty text-muted-foreground">
-            {tally ? "حال و روز هر سگ رو توی کارت خودش ببین؛ کار بعدی‌ش هم همون‌جاست." : "هنوز سگی اینجا معرفی نکردی."}
+            {tally ? m.account_home_hero_lead() : m.account_home_hero_lead_empty()}
           </p>
 
           {/*------ Tally and the Way to a New Dog ------*/}
@@ -54,7 +55,7 @@ export function HomeHero({ firstName, tally }: { firstName: string; tally: Tally
               <TallyPlate tally={tally} />
               <Link to="/account/dogs/new" className={buttonVariants({ variant: "outline", size: "lg" })}>
                 <PlusIcon aria-hidden />
-                معرفی سگ تازه
+                {m.account_home_hero_new_dog()}
               </Link>
             </div>
           )}
@@ -101,24 +102,36 @@ export function HomeHero({ firstName, tally }: { firstName: string; tally: Tally
  */
 function TallyPlate({ tally }: { tally: Tally }) {
   const cells = [
-    { label: "سگ", value: tally.dogs },
-    { label: "دوره‌ی در حال آموزش", value: tally.training },
-    { label: "دوره‌ی گذرونده", value: tally.passed },
+    {
+      key: "dogs",
+      label: tally.dogs === 1 ? m.account_home_hero_dogs_one() : m.account_home_hero_dogs_other(),
+      value: tally.dogs,
+    },
+    {
+      key: "training",
+      label: tally.training === 1 ? m.account_home_hero_training_one() : m.account_home_hero_training_other(),
+      value: tally.training,
+    },
+    {
+      key: "passed",
+      label: tally.passed === 1 ? m.account_home_hero_passed_one() : m.account_home_hero_passed_other(),
+      value: tally.passed,
+    },
   ];
 
   return (
     <div className="w-full overflow-hidden rounded-3xl border border-border bg-card paper-grain shadow-sm sm:w-auto">
       <dl className="-ms-px grid grid-cols-3">
-        {cells.map(({ label, value }, index) => (
+        {cells.map(({ key, label, value }, index) => (
           <div
-            key={label}
+            key={key}
             className="flex flex-col-reverse items-center gap-1 border-s border-border px-3 py-4 sm:px-6"
           >
             <dt className="text-center text-xs leading-snug font-bold text-balance text-muted-foreground sm:text-sm">
               {label}
             </dt>
             <dd className={`ah-rise ah-rise-${index + 1} font-display text-4xl leading-none font-black text-primary`}>
-              {formatNumberFa(value)}
+              {formatNumber(value)}
             </dd>
           </div>
         ))}
@@ -191,7 +204,7 @@ function HeroStage({ firstName, short }: { firstName: string; short: boolean }) 
           tail="right"
           className="ah-pop absolute right-[0.95rem] bottom-[calc(var(--dog-h)+0.5rem)] max-w-[13rem] text-pretty lg:right-[2.3rem] lg:max-w-[16rem]"
         >
-          {firstName ? `سلام ${firstName}! خوش اومدی` : "سلام! خوش اومدی"}
+          {firstName ? m.account_home_hero_bubble_named({ firstName }) : m.account_home_hero_bubble()}
         </ChalkBubble>
       </div>
     </div>

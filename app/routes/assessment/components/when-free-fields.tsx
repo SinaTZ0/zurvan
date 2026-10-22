@@ -8,21 +8,21 @@ import {
 } from "react-hook-form";
 
 import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
-import { toPersianDigits, formatNumberFa } from "~/lib/digits";
-import { isoToJalali, JALALI_MONTHS, jalaliMonthLength, todayIso } from "~/lib/jalali";
+import { entryCalendar } from "~/lib/date-entry";
 import {
   EVALUATION_PERIOD_LABELS,
   EVALUATION_PERIODS,
   EVALUATION_WEEKDAY_LABELS,
   EVALUATION_WEEKDAYS,
 } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 import { PickChip } from "~/routes/assessment/components/pick-chip";
 import { RisingError } from "~/routes/assessment/components/rising-error";
 import type { EvaluationRequestInput, EvaluationRequestValues } from "~/routes/assessment/schema";
 
 /*===== When Free Fields =====*/
 /**
- * «کی وقت داری؟»: the earliest day as three selects (Jalali, Persian digits), then the weekdays and times of day the
+ * «کی وقت داری؟»: the earliest day as three selects (the page's calendar and digits), then the weekdays and times of day the
  * owner is usually free, as pills. The Admin calls to agree a real time; the app only records these (F3). One column on
  * the plate, labels above their inputs, nothing decorative between them.
  */
@@ -40,10 +40,11 @@ export function WhenFreeFields({
   const [day, month, year] = useWatch({ control, name: ["earliestDay", "earliestMonth", "earliestYear"] });
 
   /*------ Options ------*/
-  // Only this Jalali year and the next: an evaluation is asked for soon, never years ahead.
-  const thisYear = isoToJalali(todayIso()).year;
+  // Only this year and the next, in the page's calendar: an evaluation is asked for soon, never years ahead.
+  const calendar = entryCalendar();
+  const thisYear = calendar.today().year;
   const years = [thisYear, thisYear + 1];
-  const dayCount = jalaliMonthLength({ year: Number(year), month: Number(month) });
+  const dayCount = calendar.monthLength({ year: Number(year), month: Number(month) });
   const dateError = errors.earliestDay?.message;
 
   /*------ Keep the Day Real ------*/
@@ -53,7 +54,7 @@ export function WhenFreeFields({
   const monthRegistration = register("earliestMonth");
   const yearRegistration = register("earliestYear");
   function clampDay({ nextMonth, nextYear }: { nextMonth: number; nextYear: number }) {
-    const length = jalaliMonthLength({ year: nextYear, month: nextMonth });
+    const length = calendar.monthLength({ year: nextYear, month: nextMonth });
     if (Number(day) > length) setValue("earliestDay", String(length));
   }
 
@@ -65,17 +66,17 @@ export function WhenFreeFields({
         aria-invalid={!!dateError}
         aria-describedby={dateError ? "earliest-error" : undefined}
       >
-        <legend className="mb-2 text-sm font-bold">از چه روزی؟</legend>
+        <legend className="mb-2 text-sm font-bold">{m.assessment_when_earliest()}</legend>
         <div className="grid max-w-md grid-cols-[5rem_minmax(0,1fr)_6rem] gap-2">
-          <NativeSelect aria-label="روز" aria-invalid={!!dateError} className="w-full" {...dayRegistration}>
+          <NativeSelect aria-label={m.assessment_when_day()} aria-invalid={!!dateError} className="w-full" {...dayRegistration}>
             {Array.from({ length: dayCount }, (_, index) => (
               <NativeSelectOption key={index + 1} value={index + 1}>
-                {formatNumberFa(index + 1)}
+                {calendar.dayLabel(index + 1)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
           <NativeSelect
-            aria-label="ماه"
+            aria-label={m.assessment_when_month()}
             aria-invalid={!!dateError}
             className="w-full"
             {...monthRegistration}
@@ -84,14 +85,14 @@ export function WhenFreeFields({
               clampDay({ nextMonth: Number(event.target.value), nextYear: Number(year) });
             }}
           >
-            {JALALI_MONTHS.map((name, index) => (
+            {calendar.months.map((name, index) => (
               <NativeSelectOption key={name} value={index + 1}>
                 {name}
               </NativeSelectOption>
             ))}
           </NativeSelect>
           <NativeSelect
-            aria-label="سال"
+            aria-label={m.assessment_when_year()}
             aria-invalid={!!dateError}
             className="w-full"
             {...yearRegistration}
@@ -102,7 +103,7 @@ export function WhenFreeFields({
           >
             {years.map((option) => (
               <NativeSelectOption key={option} value={option}>
-                {toPersianDigits(String(option))}
+                {calendar.yearLabel(option)}
               </NativeSelectOption>
             ))}
           </NativeSelect>
@@ -114,7 +115,7 @@ export function WhenFreeFields({
       <ChipGroup
         control={control}
         name="availableDays"
-        legend="چه روزهایی معمولاً آزادی؟"
+        legend={m.assessment_when_days()}
         options={EVALUATION_WEEKDAYS.map((value) => ({ value, label: EVALUATION_WEEKDAY_LABELS[value] }))}
         error={errors.availableDays?.message}
       />
@@ -123,7 +124,7 @@ export function WhenFreeFields({
       <ChipGroup
         control={control}
         name="availablePeriods"
-        legend="چه ساعتی از روز؟"
+        legend={m.assessment_when_periods()}
         options={EVALUATION_PERIODS.map((value) => ({ value, label: EVALUATION_PERIOD_LABELS[value] }))}
         error={errors.availablePeriods?.message}
       />

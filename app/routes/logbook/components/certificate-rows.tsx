@@ -1,8 +1,9 @@
 import { AwardIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { PublicRecord } from "~/orpc/logbook/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Certificate Rows =====*/
 /**
@@ -14,7 +15,7 @@ export function CertificateRows({ certificates }: { certificates: PublicRecord["
   return (
     <section aria-labelledby="record-certificates-title" className="pt-section-sm">
       <h2 id="record-certificates-title" className="font-display text-h2 font-extrabold tracking-tight text-balance">
-        گواهی‌ها
+        {m.logbook_certs_title()}
       </h2>
       <ul className="mt-6 grid gap-4 md:grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]">
         {certificates.map((entry, index) => (
@@ -33,7 +34,7 @@ export function CertificateRows({ certificates }: { certificates: PublicRecord["
               <span className="min-w-0">
                 <span className="block font-extrabold text-pretty">{entry.courseTitle}</span>
                 <span className="mt-0.5 block text-sm text-muted-foreground">
-                  صادر شده {formatJalaliTimestamp(entry.issuedAt)}
+                  {m.logbook_certs_issued({ date: formatTimestamp(entry.issuedAt) })}
                 </span>
                 <span
                   dir="ltr"

@@ -3,8 +3,9 @@ import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
+import { CENTER } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/contact/column";
 
 /*===== Help Line =====*/
@@ -14,14 +15,14 @@ function HelpLine({ className }: { className?: string }) {
     <p
       className={`rounded-2xl border border-border bg-jet paper-grain px-5 py-4 text-pretty text-foreground/90 shadow-[0_18px_36px_-18px_rgb(0_0_0/0.9)] ${className ?? ""}`}
     >
-      جواب خیلی از سؤال‌ها توی{" "}
+      {m.contact_help_before()}
       <Link
         to="/help"
         className="rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        سؤال‌های پرتکرار
-      </Link>{" "}
-      هست.
+        {m.contact_help_link()}
+      </Link>
+      {m.contact_help_after()}
     </p>
   );
 }
@@ -43,7 +44,7 @@ export function AreaBand() {
 
       <div className={`${COLUMN} relative`}>
         <h2 id="area-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          محدوده‌ی فعالیت: {CENTER_SERVICE_AREA}
+          {m.contact_area_title({ area: CENTER.serviceArea })}
         </h2>
       </div>
 
@@ -67,7 +68,7 @@ export function AreaBand() {
               from lg he stands left of the tower and the bubble opens behind him. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute bottom-4 left-5 w-28 lg:start-[14%] lg:bottom-5 lg:left-auto lg:w-40"
+            className="pointer-events-none absolute bottom-4 left-5 w-28 lg:start-[14%] lg:ltr:start-[27%] lg:bottom-5 lg:left-auto lg:w-40"
           >
             <div className="absolute -inset-x-[60%] bottom-0 h-[120%] bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.08),transparent)]" />
             <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[80%] hidden w-[56%] lg:block" />
@@ -76,20 +77,20 @@ export function AreaBand() {
               tail="left"
               className="absolute bottom-[72%] left-[86%] w-max max-w-[8.5rem] text-pretty lg:hidden"
             >
-              من کل تهرانو می‌گردم!
+              {m.contact_area_bubble()}
             </ChalkBubble>
             <ChalkBubble
               tail="right"
               className="absolute right-[88%] bottom-[70%] hidden w-max max-w-[14rem] text-pretty lg:block"
             >
-              من کل تهرانو می‌گردم!
+              {m.contact_area_bubble()}
             </ChalkBubble>
           </div>
 
           {/*------ Help Line and the Think Dog (wide screens) ------*/}
           {/* The dog stands at the sign's start corner, looking toward it. */}
           <div className="absolute end-0 bottom-5 hidden w-[26%] min-w-[17rem] lg:block">
-            <HelpLine className="ms-auto me-0 mb-3 w-[calc(100%-4.5rem)] min-w-0" />
+            <HelpLine className="ms-auto me-0 mb-3 w-[calc(100%-4.5rem)] min-w-0 ltr:ps-10" />
             <div aria-hidden className="pointer-events-none absolute start-0 bottom-0 w-[4.75rem]">
               <MascotCut name="plants" className="lively-sway-2 absolute bottom-0 left-[60%] w-[80%]" />
               <MascotCut name="think" className="lively-tilt relative block w-full" />

@@ -2,10 +2,7 @@ import { z } from "zod";
 
 import { formatNumberFa, toLatinDigits } from "~/lib/digits";
 import { isNormalizedPhoneNumber, normalizePhoneNumber } from "~/lib/phone";
-
-/*===== Messages =====*/
-export const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع بشه و ۲۴ رقم بعدش داشته باشه.";
-export const SHEBA_CHECKSUM_MESSAGE = "این شماره‌ی شبا درست نیست؛ دوباره نگاهش کن.";
+import { m } from "~/paraglide/messages";
 
 /*===== Normalization =====*/
 // Spaces (any kind), dashes and the zero-width non-joiner Persian keyboards add. Banks print Sheba numbers in groups.
@@ -45,29 +42,30 @@ export const shebaNumberSchema = z
   .pipe(
     z
       .string()
-      .regex(SHEBA_PATTERN, { error: SHEBA_FORMAT_MESSAGE, abort: true })
-      .refine(hasValidShebaChecksum, SHEBA_CHECKSUM_MESSAGE),
+      .regex(SHEBA_PATTERN, { error: () => m.server_partner_sheba_format(), abort: true })
+      .refine(hasValidShebaChecksum, { error: () => m.server_partner_sheba_checksum() }),
   );
 
-/** The partner profile as the service accepts it. Messages are user-facing because they surface as field errors. */
+/**
+ * The partner profile as the service accepts it. Messages are user-facing because they surface as field errors, and
+ * are functions so each failure is worded in its own request's language (the partner pages have English ones).
+ */
 export const partnerProfileInputSchema = z.object({ shebaNumber: shebaNumberSchema });
 
 /*===== Phone =====*/
-export const PHONE_NUMBER_MESSAGE = "شماره‌ی موبایل درست نیست؛ مثل ۰۹۱۲۳۴۵۶۷۸۹ بنویس.";
-
 /** What a partner typed, normalized to `09xxxxxxxxx` (Persian digits, spaces and `+98` are fine). */
 export const phoneNumberSchema = z
   .string()
   .transform((value) => normalizePhoneNumber(value) ?? value)
-  .refine(isNormalizedPhoneNumber, PHONE_NUMBER_MESSAGE);
+  .refine(isNormalizedPhoneNumber, { error: () => m.server_partner_phone_invalid() });
 
 /** A phone lead as the service accepts it. */
 export const addLeadInputSchema = z.object({ phoneNumber: phoneNumberSchema });
 
 /*===== New Partner =====*/
+// The Admin's form, so its own messages stay Persian (the Admin has no English pages).
 export const PARTNER_NAME_MAX_LENGTH = 40;
-export const PARTNER_CODE_FORMAT_MESSAGE =
-  "کد فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ۳ تا ۳۲ نویسه باشه.";
+export const PARTNER_CODE_FORMAT_MESSAGE = "کد فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ۳ تا ۳۲ نویسه باشه.";
 
 const nameSchema = (label: string) =>
   z

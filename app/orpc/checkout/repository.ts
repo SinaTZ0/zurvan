@@ -12,7 +12,8 @@ export type PaymentItemRecord = typeof paymentItem.$inferSelect;
 /** A payment item with its course, its dog and the enrollment it created, if it did. */
 export type PaymentItemRow = {
   item: PaymentItemRecord;
-  course: { slug: string; title: string };
+  /** `titleEn` is null until the Admin writes it. */
+  course: { slug: string; title: string; titleEn: string | null };
   dog: { id: string; name: string };
   enrollment: { id: string; status: string } | null;
 };
@@ -87,7 +88,7 @@ export async function findPaymentsWithItems({
   const items = await db
     .select({
       item: paymentItem,
-      course: { slug: course.slug, title: course.title },
+      course: { slug: course.slug, title: course.title, titleEn: course.titleEn },
       dog: { id: dog.id, name: dog.name },
       enrollment: { id: enrollment.id, status: enrollment.status },
     })

@@ -1,8 +1,9 @@
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Commission Card =====*/
 /**
@@ -19,7 +20,7 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
  * @param commissionPercent The commission percent in force (the Admin's setting).
  */
 export function CommissionCard({ commissionPercent }: { commissionPercent: number }) {
-  const percent = `${formatNumberFa(commissionPercent)}٪`;
+  const percent = m.join_partner_percent({ value: formatNumber(commissionPercent) });
 
   return (
     <section aria-labelledby="commission-title" className="relative flex flex-col pt-44 lg:pt-48">
@@ -40,7 +41,7 @@ export function CommissionCard({ commissionPercent }: { commissionPercent: numbe
 
         {/*------ Heading and the Percent ------*/}
         <h2 id="commission-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          کمیسیون چطوریه؟
+          {m.join_partner_commission_title()}
         </h2>
         {/* The number is a decoration of rule one (which says it in words), so it is hidden from assistive tech. */}
         <p aria-hidden className="mt-1 font-display text-7xl leading-none font-black text-primary lg:text-8xl">
@@ -49,13 +50,10 @@ export function CommissionCard({ commissionPercent }: { commissionPercent: numbe
 
         {/*------ The Rules ------*/}
         <ul className="mt-6 flex flex-1 flex-col">
-          <CommissionItem>{percent} از مجموع دوره‌هایی که مشتری توی اولین خریدش می‌خره.</CommissionItem>
-          <CommissionItem>فقط اولین خرید؛ از خریدهای بعدی همون مشتری چیزی نمی‌رسه.</CommissionItem>
-          <CommissionItem>
-            {HEAD_TRAINER.firstName} کمیسیون رو بیرون از سایت با واریز بانکی به شبات می‌ده و توی سایت «پرداخت شد»
-            می‌زنه. تو هر کمیسیون رو پرداخت‌شده یا پرداخت‌نشده می‌بینی.
-          </CommissionItem>
-          <CommissionItem>اگه بعدش آموزش لغو بشه، کمیسیون برای تو می‌مونه.</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_total({ percent })}</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_first()}</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_paid({ name: HEAD_TRAINER.firstName })}</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_cancel()}</CommissionItem>
         </ul>
       </div>
     </section>

@@ -25,8 +25,8 @@ export function CourseDog({ course }: { course: Course }) {
       {/* It pops from its tail a moment after the page opens, once; he idles in place (the frisbee catcher floats,
           the others breathe). */}
       <ChalkBubble
-        tail="left"
-        className="answer-pop mb-[5.25rem] max-w-[13rem] [--answer-delay:0.4s] [--pop-origin:1.75rem_100%] lg:mb-[5.75rem] lg:max-w-[15rem]"
+        tail="end"
+        className="answer-pop mb-[5.25rem] max-w-[13rem] [--answer-delay:0.4s] [--pop-origin:1.75rem_100%] ltr:[--pop-origin:calc(100%-1.75rem)_100%] lg:mb-[5.75rem] lg:max-w-[15rem]"
       >
         {courseMascotLine(pose)}
       </ChalkBubble>
@@ -37,8 +37,8 @@ export function CourseDog({ course }: { course: Course }) {
           rounded corner. */}
       <div className="relative shrink-0">
         <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_55%,rgb(255_194_26/0.08),transparent)]" />
-        <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[62%] w-[52%]" />
-        <MascotCut name="plants" className="lively-sway-2 absolute right-[78%] bottom-0 w-[34%] -scale-x-100" />
+        <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[62%] w-[52%] ltr:left-auto ltr:right-[62%] ltr:-scale-x-100" />
+        <MascotCut name="plants" className="lively-sway-2 absolute right-[78%] bottom-0 w-[34%] -scale-x-100 ltr:right-auto ltr:left-[78%] ltr:scale-x-100" />
         <MascotCut
           name={pose}
           eager

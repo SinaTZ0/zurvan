@@ -3,6 +3,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Your Hands Section =====*/
 /**
@@ -23,21 +24,19 @@ export function YourHands() {
       {/*===== Words =====*/}
       <div className="p-6 sm:p-8 lg:col-span-7 lg:p-10">
         <h2 id="yours-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          چی رو خودت عوض می‌کنی
+          {m.privacy_section_yours()}
         </h2>
         <div className="mt-6 max-w-prose space-y-4 text-pretty text-muted-foreground">
           <p>
-            اسمت و اطلاعات سگ‌هات رو خودت توی حسابت عوض می‌کنی. بعد از ارزیابی، تاریخ تولد و نژاد سگ قفل می‌شه و فقط{" "}
-            {HEAD_TRAINER.firstName} می‌تونه عوض‌شون کنه. سگ‌ها و پرداخت‌ها از حساب پاک نمی‌شن، چون ارزیابی‌ها و دوره‌ها
-            بهشون وصلن.
+            {m.privacy_yours_p1({ trainer: HEAD_TRAINER.firstName })}
           </p>
           <p>
-            اگه چیزی هست که خودت نمی‌تونی درست کنی،{" "}
+            {m.privacy_yours_p2_before()}
             <a
               href={`tel:${CENTER_PHONE.tel}`}
               className="rounded-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-              با مرکز تماس بگیر
+              {m.privacy_yours_p2_link()}
             </a>
             .{" "}
             <bdi dir="ltr" className="font-bold text-foreground">

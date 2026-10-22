@@ -4,11 +4,12 @@ import { LockKeyholeIcon } from "lucide-react";
 import { MascotCut } from "~/components/mascot-cut";
 import { describeDogAge, describeWeight } from "~/lib/dog-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatJalaliDate } from "~/lib/jalali";
+import { formatDate } from "~/lib/locale-format";
 import { DOG_SEX_LABELS, VACCINATION_STATUS_LABELS } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
 import { PLATE } from "~/routes/account_dog_detail/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Profile =====*/
 /**
@@ -21,43 +22,44 @@ import { PLATE } from "~/routes/account_dog_detail/plate";
  */
 export function DogProfile({ dog }: { dog: Dog }) {
   const rows: { label: string; value: React.ReactNode; locked?: boolean }[] = [
-    { label: "نژاد", value: dog.breed ?? "ثبت نشده", locked: dog.isEvaluated },
-    { label: "جنس", value: DOG_SEX_LABELS[dog.sex] },
+    { label: m.account_dog_detail_profile_breed(), value: dog.breed ?? m.account_dog_detail_profile_not_set(), locked: dog.isEvaluated },
+    { label: m.account_dog_detail_profile_sex(), value: DOG_SEX_LABELS[dog.sex] },
     {
-      label: "تاریخ تولد",
+      label: m.account_dog_detail_profile_birth(),
       value: (
         <>
-          {formatJalaliDate(dog.birthDate)}
-          {dog.birthDateApproximate && " (تقریبی)"}
+          {dog.birthDateApproximate
+            ? m.account_dog_detail_date_approximate({ date: formatDate(dog.birthDate) })
+            : formatDate(dog.birthDate)}
           <span className="block text-sm font-normal text-muted-foreground">{describeDogAge(dog)}</span>
         </>
       ),
       locked: dog.isEvaluated,
     },
-    { label: "وزن", value: describeWeight(dog.weightKg) },
-    { label: "عقیم‌شده", value: dog.isNeutered ? "بله" : "نه" },
-    { label: "واکسن", value: VACCINATION_STATUS_LABELS[dog.vaccinationStatus] },
+    { label: m.account_dog_detail_profile_weight(), value: describeWeight(dog.weightKg) },
+    { label: m.account_dog_detail_profile_neutered(), value: dog.isNeutered ? m.account_dog_detail_yes() : m.account_dog_detail_no() },
+    { label: m.account_dog_detail_profile_vaccines(), value: VACCINATION_STATUS_LABELS[dog.vaccinationStatus] },
     {
-      label: "میکروچیپ",
+      label: m.account_dog_detail_profile_microchip(),
       // Digits stay Latin and left to right, as they are printed on the chip.
       value: dog.microchipNumber ? (
         <span dir="ltr" className="tabular-nums">
           {dog.microchipNumber}
         </span>
       ) : (
-        <span className="font-normal text-muted-foreground">ثبت نشده</span>
+        <span className="font-normal text-muted-foreground">{m.account_dog_detail_profile_not_set()}</span>
       ),
     },
   ];
 
   const notes = [
-    { label: "رفتار", text: dog.behaviorNotes?.trim() },
-    { label: "سلامت", text: dog.medicalNotes?.trim() },
+    { label: m.account_dog_detail_profile_behavior(), text: dog.behaviorNotes?.trim() },
+    { label: m.account_dog_detail_profile_health(), text: dog.medicalNotes?.trim() },
   ].filter((note): note is { label: string; text: string } => Boolean(note.text));
 
   return (
     <section aria-labelledby="profile-title">
-      <SectionHead id="profile-title" title="مشخصات">
+      <SectionHead id="profile-title" title={m.account_dog_detail_profile_title()}>
         <MascotCut name="bowls" className="w-32 translate-y-[4%] sm:w-36" />
       </SectionHead>
 
@@ -78,7 +80,7 @@ export function DogProfile({ dog }: { dog: Dog }) {
         {dog.isEvaluated && (
           <p className="flex items-start gap-2 border-t border-foreground/15 py-3 text-sm text-pretty text-muted-foreground">
             <LockKeyholeIcon aria-hidden className="mt-0.5 size-3.5 shrink-0 text-primary/70" />
-            بعد از ارزیابی فقط {HEAD_TRAINER.firstName} می‌تونه نژاد و تاریخ تولد رو عوض کنه.
+            {m.account_dog_detail_profile_lock_note({ trainer: HEAD_TRAINER.firstName })}
           </p>
         )}
 

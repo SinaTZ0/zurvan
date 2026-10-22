@@ -1,36 +1,37 @@
 import { ACCOUNT_BLOCKED_CODE, SIGN_IN_PAUSED_CODE } from "~/lib/user-constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 type AuthErrorLike = { code?: string | undefined; status: number };
 
 /*===== Mapping =====*/
 /**
- * Translates a Better-Auth client error from the sign-in steps into a Persian message that says what to do next.
+ * Translates a Better-Auth client error from the sign-in steps into a message in the page's language that says what to do next.
  * Unknown errors become a general message, so the person always sees something actionable.
  */
 export function describeAuthError(error: AuthErrorLike): string {
   switch (error.code) {
     case "INVALID_OTP":
-      return "کد درست نیست. دوباره نگاهش کن و بنویس.";
+      return m.auth_error_invalid_otp();
     case "OTP_EXPIRED":
     case "OTP_NOT_FOUND":
-      return "این کد دیگه معتبر نیست. کد تازه بگیر.";
+      return m.auth_error_otp_expired();
     case "TOO_MANY_ATTEMPTS":
-      return "چند بار کد اشتباه وارد شد. کد تازه بگیر.";
+      return m.auth_error_too_many_attempts();
     case "INVALID_PHONE_NUMBER":
-      return "شماره موبایل درست نیست. مثال درست: ۰۹۱۲۳۴۵۶۷۸۹";
+      return m.auth_phone_invalid();
     case "RESEND_TOO_SOON":
-      return "کد قبلی تازه فرستاده شده. یک دقیقه صبر کن و دوباره بخواه.";
+      return m.auth_error_resend_too_soon();
     case "TOO_MANY_CODES":
-      return "برای این شماره در یک ساعت گذشته کد زیادی فرستاده شده. کمی بعد دوباره امتحان کن.";
+      return m.auth_error_too_many_codes();
     case ACCOUNT_BLOCKED_CODE:
-      return "این حساب مسدود شده. برای پیگیری با آموزش K9 تماس بگیر.";
+      return m.auth_error_blocked();
     case SIGN_IN_PAUSED_CODE:
-      return "چند بار رمز اشتباه وارد شد. چند دقیقه صبر کن، یا با کد پیامکی وارد شو.";
+      return m.auth_error_sign_in_paused();
   }
-  if (error.status === 429) return "تعداد درخواست‌ها زیاد بود. کمی صبر کن و دوباره امتحان کن.";
+  if (error.status === 429) return m.auth_error_too_many_requests();
   // Only the password sign-in answers 401, and it says the same for a wrong password, an unknown number and a number that
   // never set one. The hint covers the last without telling anyone which of the three it was.
-  if (error.status === 401) return "شماره یا رمز عبور درست نیست. اگه رمز نذاشتی، با کد پیامکی وارد شو.";
-  return "درخواست انجام نشد. اینترنتتو چک کن و دوباره امتحان کن.";
+  if (error.status === 401) return m.auth_error_wrong_credentials();
+  return m.auth_error_general();
 }

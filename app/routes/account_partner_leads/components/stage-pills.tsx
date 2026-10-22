@@ -1,8 +1,9 @@
 import { cn } from "cn";
 
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { LEAD_STAGE_FILTERS, type LeadStageFilter } from "~/routes/account_partner_leads/search-params";
-import { STAGE_FILTER_LABELS } from "~/routes/account_partner_leads/stages";
+import { stageFilterLabel } from "~/routes/account_partner_leads/stages";
 
 /*===== Stage Pills =====*/
 /**
@@ -24,7 +25,7 @@ export function StagePills({
 }) {
   return (
     <fieldset className="-mx-5 flex min-w-0 snap-x snap-mandatory scroll-px-5 [scrollbar-width:none] gap-2 overflow-x-auto border-0 px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
-      <legend className="sr-only">مرحله</legend>
+      <legend className="sr-only">{m.account_partner_leads_filter_legend()}</legend>
       {LEAD_STAGE_FILTERS.map((stage) => {
         const selected = stage === value;
         return (
@@ -41,7 +42,7 @@ export function StagePills({
                 : "border-foreground/15 bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground",
             )}
           >
-            {STAGE_FILTER_LABELS[stage]}
+            {stageFilterLabel(stage)}
             <span
               // Re-keyed when picked, so the count pops with the gold.
               key={selected ? "on" : "off"}
@@ -50,7 +51,7 @@ export function StagePills({
                 selected ? "answer-pop text-primary-foreground/80" : "text-foreground/60",
               )}
             >
-              {formatNumberFa(counts[stage])}
+              {formatNumber(counts[stage])}
             </span>
           </button>
         );

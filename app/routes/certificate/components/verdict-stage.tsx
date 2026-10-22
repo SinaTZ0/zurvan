@@ -2,6 +2,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
+import { m } from "~/paraglide/messages";
 
 /*===== Verdict Stage =====*/
 /**
@@ -55,7 +56,10 @@ export function VerdictStage({ kind }: { kind: "valid" | "revoked" | "unknown" }
 function ValidScene() {
   return (
     <>
-      <div aria-hidden className="absolute right-[4%] bottom-[0.9rem] w-[42%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[66%]">
+      <div
+        aria-hidden
+        className="absolute right-[4%] bottom-[0.9rem] w-[42%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[66%]"
+      >
         <MascotCut name="easel" eager className="block w-full" />
       </div>
       <MascotCut
@@ -67,7 +71,7 @@ function ValidScene() {
         tail="right"
         className="cv-pop absolute right-[calc(62%-36px)] bottom-[calc(0.9rem+6.6rem+0.5rem)] max-w-[10rem] text-pretty lg:right-[calc(73%-36px)] lg:bottom-[calc(1.2rem+19rem+0.9rem)] lg:max-w-[13rem]"
       >
-        با ذره‌بین نگاش کردم؛ همه‌چی درسته!
+        {m.certificate_stage_valid_bubble()}
       </ChalkBubble>
     </>
   );
@@ -77,7 +81,10 @@ function ValidScene() {
 function RevokedScene() {
   return (
     <>
-      <div aria-hidden className="absolute right-[4%] bottom-[0.9rem] w-[42%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[66%]">
+      <div
+        aria-hidden
+        className="absolute right-[4%] bottom-[0.9rem] w-[42%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[66%]"
+      >
         {/* Greyed, as a thing that no longer counts. */}
         <div className="grayscale-[0.7]">
           <MascotCut name="easel" eager className="block w-full" />
@@ -90,7 +97,7 @@ function RevokedScene() {
         tail="right"
         className="cv-pop absolute right-[calc(62%-36px)] bottom-[calc(0.9rem+6.2rem+0.5rem)] max-w-[10rem] text-pretty lg:right-[calc(73%-36px)] lg:bottom-[calc(1.2rem+17rem+0.9rem)] lg:max-w-[13rem]"
       >
-        ببخشید، این یکی دیگه اعتبار نداره.
+        {m.certificate_stage_revoked_bubble()}
       </ChalkBubble>
     </>
   );
@@ -102,7 +109,10 @@ function RevokedScene() {
 function UnknownScene() {
   return (
     <>
-      <div aria-hidden className="absolute right-[0%] bottom-[0.9rem] w-[60%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[68%]">
+      <div
+        aria-hidden
+        className="absolute right-[0%] bottom-[0.9rem] w-[60%] translate-y-[3%] lg:bottom-[1.2rem] lg:w-[68%]"
+      >
         <MascotCut name="hole" eager className="block w-full" />
       </div>
       <div className="cv-walk absolute bottom-[0.9rem] left-[1%] w-[44%] lg:bottom-[1.2rem] lg:left-[2%] lg:w-[52%]">
@@ -114,7 +124,7 @@ function UnknownScene() {
         tail="right"
         className="cv-pop absolute right-[calc(62%-36px)] bottom-[calc(0.9rem+7rem+0.5rem)] max-w-[10rem] text-pretty lg:right-[calc(54%-36px)] lg:bottom-[calc(1.2rem+10rem+0.6rem)] lg:max-w-[13rem]"
       >
-        همه‌جا رو بو کشیدم، پیداش نکردم.
+        {m.certificate_stage_unknown_bubble()}
       </ChalkBubble>
     </>
   );

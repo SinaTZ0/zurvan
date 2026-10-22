@@ -8,6 +8,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Certificate Ask =====*/
 /**
@@ -44,7 +45,7 @@ export function CertificateAsk() {
         tail="left"
         className="lively-reveal-pop absolute bottom-[calc(100%+7rem)] left-6 z-10 max-w-[calc(100%-1.5rem)] sm:left-10 lg:bottom-[calc(100%+10rem)] lg:left-[calc(3.5rem+56px-36px)]"
       >
-        سؤالی داشتی، زنگ بزن!
+        {m.certificate_ask_bubble()}
       </ChalkBubble>
 
       {/* The chalk sky over the card's empty stretch, beside the dog's bubble. */}
@@ -52,10 +53,10 @@ export function CertificateAsk() {
 
       {/*===== Words =====*/}
       <h2 id="certificate-ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-        سؤالی درباره‌ی این گواهی داری؟
+        {m.certificate_ask_title()}
       </h2>
       <p className="mt-3 max-w-xl text-pretty text-muted-foreground">
-        {HEAD_TRAINER.name} گواهی‌ها رو صادر می‌کنه؛ مستقیم بهش زنگ بزن.
+        {m.certificate_ask_line({ name: HEAD_TRAINER.name })}
       </p>
 
       {/*===== Actions =====*/}
@@ -65,7 +66,7 @@ export function CertificateAsk() {
           className={buttonVariants({ variant: "solid", size: "lg", className: "w-full sm:w-auto" })}
         >
           <PhoneIcon aria-hidden data-icon="inline-start" />
-          <span>زنگ بزن</span>
+          <span>{m.certificate_ask_call()}</span>
           <bdi dir="ltr" className="tracking-wide">
             {CENTER_PHONE.display}
           </bdi>
@@ -74,7 +75,7 @@ export function CertificateAsk() {
           to="/contact"
           className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
         >
-          تماس با ما
+          {m.certificate_ask_contact()}
         </Link>
       </div>
     </section>

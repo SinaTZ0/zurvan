@@ -8,6 +8,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
 import { TAB_BAR_DOCK_ID } from "~/lib/tab-bar-dock";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 import { BuyButton } from "~/routes/course_detail/components/buy-card";
 import type { BuyCardState } from "~/routes/course_detail/components/use-buy-card";
 
@@ -76,12 +77,12 @@ export function PhoneActionBar({
           <p className="min-w-0 leading-snug">
             <span className="block truncate text-sm font-extrabold">{course.title}</span>
             <span className="block text-sm font-bold text-primary">
-              {course.price !== null ? formatToman(course.price) : "بعد از ارزیابی"}
+              {course.price !== null ? formatToman(course.price) : m.shared_course_after_evaluation()}
             </span>
           </p>
           {needsTheList ? (
             <Link to="." hash="buy-card" className={buttonVariants({ variant: "solid", className: "shrink-0" })}>
-              {buy.action.kind === "pick" ? "انتخاب سگ" : "دلیلش را ببین"}
+              {buy.action.kind === "pick" ? m.course_detail_bar_pick() : m.course_detail_bar_reason()}
             </Link>
           ) : (
             <BuyButton buy={buy} size="default" className="shrink-0" />

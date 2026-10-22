@@ -7,6 +7,7 @@ import { useHydrated } from "~/hooks/use-hydrated";
 import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import type { DogEligibility } from "~/orpc/checkout/contract";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /** Who is looking: nobody signed in, a customer with a name, or a partner/Admin (who can't buy). */
@@ -90,17 +91,21 @@ export function useBuyCard({
   const action: BuyAction = (() => {
     switch (mode) {
       case "evaluation":
-        return { kind: "link", label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment" }) };
+        return {
+          kind: "link",
+          label: m.course_detail_buy_action_evaluation(),
+          link: linkOptions({ to: "/assessment" }),
+        };
       case "visitor":
         return {
           kind: "link",
-          label: "ورود و افزودن به سبد",
+          label: m.course_detail_buy_action_visitor(),
           link: linkOptions({ to: "/auth", search: { redirectTo: `/courses/${course.slug}` } }),
         };
       case "no-dogs":
         return {
           kind: "link",
-          label: "معرفی سگ",
+          label: m.course_detail_buy_action_no_dogs(),
           link: linkOptions({ to: "/account/dogs/new", search: { redirectTo: `/courses/${course.slug}` } }),
         };
       case "dogs":
@@ -113,7 +118,10 @@ export function useBuyCard({
   return {
     mode,
     action,
-    quieter: mode === "visitor" ? { label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment" }) } : null,
+    quieter:
+      mode === "visitor"
+        ? { label: m.course_detail_buy_action_evaluation(), link: linkOptions({ to: "/assessment" }) }
+        : null,
     dogs: eligibility,
     pickedId: picked?.dog.id ?? null,
     verdict,

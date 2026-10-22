@@ -3,6 +3,7 @@ import { cn } from "cn";
 import { DogTag } from "~/components/dog-tag";
 import { MediaImage } from "~/components/media-image";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Photo =====*/
 /**
@@ -35,7 +36,7 @@ export function DogPhoto({
         <MediaImage
           media={photo}
           variant={variant}
-          alt={`عکس ${name}`}
+          alt={m.shared_dog_photo_alt({ name })}
           priority={priority}
           className="size-full object-cover"
         />
@@ -48,7 +49,7 @@ export function DogPhoto({
     <div
       // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a real <img> can't hold the tag's markup.
       role="img"
-      aria-label={`${name}، بدون عکس`}
+      aria-label={m.shared_dog_photo_none({ name })}
       className={cn("flex items-center justify-center overflow-hidden bg-sunken", className)}
     >
       <DogTag name={name} microchipNumber={microchipNumber} size="lg" />

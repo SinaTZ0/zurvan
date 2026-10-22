@@ -18,6 +18,7 @@ import { IntroSection } from "~/routes/admin_course_form/components/intro-sectio
 import { PrerequisitesSection } from "~/routes/admin_course_form/components/prerequisites-section";
 import { PriceSection } from "~/routes/admin_course_form/components/price-section";
 import { SaveBar } from "~/routes/admin_course_form/components/save-bar";
+import { EnglishSection } from "~/routes/admin_course_form/components/english-section";
 import { TextSection } from "~/routes/admin_course_form/components/text-section";
 import { buildPreviewCourse } from "~/routes/admin_course_form/components/preview-course";
 import {
@@ -184,6 +185,7 @@ export function CourseForm({ course, courses }: { course: AdminCourse | null; co
           <PriceSection isNew={isNew} />
           <PrerequisitesSection options={options} requiredBy={requiredBy} />
           <TextSection />
+          <EnglishSection />
         </fieldset>
 
         {/*===== Preview =====*/}

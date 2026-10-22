@@ -5,6 +5,7 @@ import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/logbook/column";
 import { RecordStage } from "~/routes/logbook/components/record-stage";
 
@@ -37,15 +38,11 @@ export function PrivateRecord({ signInRedirectTo }: { signInRedirectTo: string |
               <LockKeyholeIcon strokeWidth={2} className="size-6 md:size-7" />
             </span>
             <h1 id="logbook-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-              این پرونده خصوصیه
+              {m.logbook_private_title()}
             </h1>
           </div>
-          <p className="mt-5 max-w-xl text-lead text-pretty text-muted-foreground">
-            چیزی از پرونده‌ی یه سگ بدون اجازه‌ی صاحبش نشون داده نمی‌شه.
-          </p>
-          <p className="mt-3 max-w-md text-pretty text-muted-foreground">
-            اگه صاحب سگی، وارد شو تا پرونده‌ی خودت رو ببینی.
-          </p>
+          <p className="mt-5 max-w-xl text-lead text-pretty text-muted-foreground">{m.logbook_private_line()}</p>
+          <p className="mt-3 max-w-md text-pretty text-muted-foreground">{m.logbook_private_owner()}</p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {signInRedirectTo && (
@@ -54,7 +51,7 @@ export function PrivateRecord({ signInRedirectTo }: { signInRedirectTo: string |
                 search={{ redirectTo: signInRedirectTo }}
                 className={buttonVariants({ variant: "solid", size: "lg", className: "sm:px-10" })}
               >
-                ورود
+                {m.logbook_private_sign_in()}
               </Link>
             )}
             <Link
@@ -62,7 +59,7 @@ export function PrivateRecord({ signInRedirectTo }: { signInRedirectTo: string |
               params={{ fileNumber: undefined }}
               className={buttonVariants({ variant: "outline", size: "lg" })}
             >
-              یه شماره‌ی دیگه بنویس
+              {m.logbook_private_other()}
             </Link>
           </div>
         </div>
@@ -94,7 +91,7 @@ export function PrivateRecord({ signInRedirectTo }: { signInRedirectTo: string |
             tail="right"
             className="lb-pop absolute right-[calc(40%-2.25rem)] bottom-[calc(var(--ground)+var(--dog-h)+0.6rem)] max-w-[12rem] text-pretty lg:max-w-[15rem]"
           >
-            ببخشید! این پرونده رو فقط صاحبش می‌بینه.
+            {m.logbook_private_bubble()}
           </ChalkBubble>
         </RecordStage>
       </div>

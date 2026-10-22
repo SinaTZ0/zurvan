@@ -1,16 +1,13 @@
 import { cn } from "cn";
 
 import { Link } from "~/components/link";
+import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Button =====*/
-/** The site's main action, the free evaluation: a gold pill with near-black words. One per screen. */
-export function EvaluationButton({
-  children = "درخواست ارزیابی رایگان",
-  className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) {
+/**
+ * The site's main action, the free evaluation: a gold pill with near-black words. One per screen.
+ */
+export function EvaluationButton({ children, className }: { children?: React.ReactNode; className?: string }) {
   return (
     <Link
       to="/assessment"
@@ -19,7 +16,7 @@ export function EvaluationButton({
         className,
       )}
     >
-      {children}
+      {children ?? m.shared_evaluation_request()}
     </Link>
   );
 }

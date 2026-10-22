@@ -1,44 +1,47 @@
 import { z } from "zod";
 
-import { isoToJalali, isValidJalali, jalaliToIso, todayIso } from "~/lib/jalali";
+import { entryCalendar } from "~/lib/date-entry";
+import { todayIso } from "~/lib/jalali";
 import { EVALUATION_PERIODS, EVALUATION_WEEKDAYS } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Request Form =====*/
-// Written for the person filling it in: the earliest date is three selects (Jalali day, month, year) that become one
+// Written for the person filling it in: the earliest date is three selects (day, month, year in the page's calendar: Jalali or Gregorian) that become one
 // Gregorian ISO date, and the days and times are lists of chips. The server checks everything again
 // (`app/orpc/evaluation/validation.ts`); the two are kept separate on purpose (docs/frontend-guideline.md, "Forms").
 // Photos and videos are uploaded by the media field before the form is sent, so the form only holds their ids.
 
 export const evaluationRequestSchema = z
   .object({
-    dogId: z.string().min(1, "کدوم سگ؟ یکی رو انتخاب کن."),
+    dogId: z.string().min(1, { error: () => m.assessment_schema_dog() }),
     earliestDay: z.string(),
     earliestMonth: z.string(),
     earliestYear: z.string(),
-    availableDays: z.array(z.enum(EVALUATION_WEEKDAYS)).min(1, "دست‌کم یه روز رو انتخاب کن."),
-    availablePeriods: z.array(z.enum(EVALUATION_PERIODS)).min(1, "دست‌کم یه زمان از روز رو انتخاب کن."),
+    availableDays: z.array(z.enum(EVALUATION_WEEKDAYS)).min(1, { error: () => m.assessment_schema_days() }),
+    availablePeriods: z.array(z.enum(EVALUATION_PERIODS)).min(1, { error: () => m.assessment_schema_periods() }),
     photoMediaIds: z.array(z.string()),
     videoIds: z.array(z.string()),
   })
   .superRefine((values, context) => {
     /*------ Earliest Date ------*/
-    const jalali = earliestJalali(values);
-    if (!isValidJalali(jalali)) {
-      context.addIssue({ code: "custom", path: ["earliestDay"], message: "این تاریخ توی تقویم نیست." });
-    } else if (jalaliToIso(jalali) < todayIso()) {
-      context.addIssue({ code: "custom", path: ["earliestDay"], message: "تاریخ نباید گذشته باشه." });
+    const calendar = entryCalendar();
+    const parts = earliestParts(values);
+    if (!calendar.isValid(parts)) {
+      context.addIssue({ code: "custom", path: ["earliestDay"], message: m.assessment_schema_date_invalid() });
+    } else if (calendar.toIso(parts) < todayIso()) {
+      context.addIssue({ code: "custom", path: ["earliestDay"], message: m.assessment_schema_date_past() });
     }
   })
   .transform((values) => ({
     dogId: values.dogId,
-    earliestDate: jalaliToIso(earliestJalali(values)),
+    earliestDate: entryCalendar().toIso(earliestParts(values)),
     availableDays: values.availableDays,
     availablePeriods: values.availablePeriods,
     photoMediaIds: values.photoMediaIds,
     videoIds: values.videoIds,
   }));
 
-function earliestJalali(values: { earliestDay: string; earliestMonth: string; earliestYear: string }) {
+function earliestParts(values: { earliestDay: string; earliestMonth: string; earliestYear: string }) {
   return { year: Number(values.earliestYear), month: Number(values.earliestMonth), day: Number(values.earliestDay) };
 }
 
@@ -50,7 +53,7 @@ export type EvaluationRequestValues = z.output<typeof evaluationRequestSchema>;
 /*===== Defaults =====*/
 /** Starts on today in Tehran, so the common answer («هر وقت زودتر») needs no typing. */
 export function toFormDefaults({ dogId }: { dogId: string }): EvaluationRequestInput {
-  const today = isoToJalali(todayIso());
+  const today = entryCalendar().today();
   return {
     dogId,
     earliestDay: String(today.day),

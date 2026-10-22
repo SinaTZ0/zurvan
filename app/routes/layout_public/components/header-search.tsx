@@ -7,6 +7,8 @@ import { cn } from "cn";
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "~/components/ui/input-group";
 import { CATALOGUE_PATH, MAX_QUERY_LENGTH, TYPING_DELAY_MS } from "~/lib/catalogue-search-params";
+import { m } from "~/paraglide/messages";
+import { localizeHref } from "~/paraglide/runtime";
 
 const PANEL_ID = "header-search";
 const TOGGLE_ID = "header-search-toggle";
@@ -133,7 +135,7 @@ export function HeaderSearchToggle({ search, className }: { search: HeaderSearch
       type="button"
       aria-expanded={search.open}
       aria-controls={PANEL_ID}
-      aria-label={search.open ? "بستن جست‌وجو" : "جست‌وجوی دوره‌ها"}
+      aria-label={search.open ? m.layout_public_search_close() : m.layout_public_search_open()}
       onClick={search.toggle}
       className={cn(
         "grid size-11 shrink-0 place-items-center rounded-full border text-foreground transition-[background-color,border-color,scale] duration-200 hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground active:scale-90",
@@ -172,7 +174,8 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
       <div className="-mx-1 min-h-0 overflow-hidden px-1">
         <form
           method="get"
-          action={CATALOGUE_PATH}
+          // The address as typed in this language (`/en/courses` on the English pages); the router strips it again.
+          action={localizeHref(CATALOGUE_PATH)}
           onSubmit={search.submit}
           className={cn(
             "pt-3 pb-1 transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] motion-reduce:transition-none lg:ms-auto lg:max-w-xl",
@@ -180,7 +183,7 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
           )}
         >
           <label htmlFor={INPUT_ID} className="sr-only">
-            جست‌وجوی دوره
+            {m.layout_public_search_label()}
           </label>
           <InputGroup className="h-12 rounded-full">
             <InputGroupAddon>
@@ -195,7 +198,7 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
               maxLength={MAX_QUERY_LENGTH}
               autoComplete="off"
               enterKeyHint="search"
-              placeholder="مثلاً سگ همدم، CGC یا IGP"
+              placeholder={m.layout_public_search_placeholder()}
               onChange={(event) => search.change(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") search.close();
@@ -206,7 +209,7 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
             {search.value !== "" && (
               <InputGroupAddon align="inline-end" className="answer-pop">
                 <InputGroupButton
-                  aria-label="پاک کردن جست‌وجو"
+                  aria-label={m.layout_public_search_clear()}
                   size="icon-sm"
                   className="rounded-full"
                   onClick={() => {

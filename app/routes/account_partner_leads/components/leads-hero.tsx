@@ -5,8 +5,9 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_partner_leads/column";
 
 /*===== Types =====*/
@@ -34,13 +35,13 @@ export function LeadsHero({ tally }: { tally: Tally }) {
         <div className="order-2 lg:order-1 lg:col-span-7 lg:flex lg:flex-col lg:justify-center lg:py-4">
           <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
             <UsersRoundIcon aria-hidden strokeWidth={2} className="size-4" />
-            مشتری‌ها
+            {m.account_partner_leads_hero_chip()}
           </p>
           <h1 id="partner-leads-title" className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>
-            شماره‌ها و مشتری‌ها
+            {m.account_partner_leads_hero_title()}
           </h1>
           <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">
-            شماره‌ی کسی که قراره ثبت‌نام کنه رو بنویس؛ اگه با همین شماره بیاد، به اسم تو ثبت می‌شه.
+            {m.account_partner_leads_hero_lead()}
           </p>
           <TallyPlate tally={tally} />
         </div>
@@ -60,9 +61,9 @@ export function LeadsHero({ tally }: { tally: Tally }) {
  */
 function TallyPlate({ tally }: { tally: Tally }) {
   const cells = [
-    { label: "در راه", value: tally.lead },
-    { label: "ثبت‌نام‌شده", value: tally.registered },
-    { label: "خریدار", value: tally.bought },
+    { label: m.account_partner_leads_tally_lead(), value: tally.lead },
+    { label: m.account_partner_leads_tally_registered(), value: tally.registered },
+    { label: m.account_partner_leads_tally_bought(), value: tally.bought },
   ];
 
   return (
@@ -85,10 +86,10 @@ function TallyPlate({ tally }: { tally: Tally }) {
               {value === 0 ? (
                 <>
                   <span aria-hidden>—</span>
-                  <span className="sr-only">صفر</span>
+                  <span className="sr-only">{m.account_partner_leads_zero_sr()}</span>
                 </>
               ) : (
-                formatNumberFa(value)
+                formatNumber(value)
               )}
             </dd>
           </div>
@@ -153,7 +154,7 @@ function HeroStage() {
           tail="right"
           className="pl-pop absolute right-[calc(2.25rem+var(--dog-w)*0.38-2.25rem)] bottom-[calc(var(--dog-w)*1.1+0.7rem)] max-w-[12rem] text-pretty lg:right-[calc(3rem+var(--dog-w)*0.38-2.25rem)] lg:max-w-[15rem]"
         >
-          الو؟ شماره‌ی کیو داری؟
+          {m.account_partner_leads_hero_bubble()}
         </ChalkBubble>
       </div>
     </div>

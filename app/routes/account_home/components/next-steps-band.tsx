@@ -1,29 +1,24 @@
 import { MascotCut } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_home/column";
 
 /*===== Steps =====*/
-// What happens from here, in order, from the Help page's answers (`app/routes/help/faq-data.tsx`: «از کجا شروع کنم؟»,
-// «ارزیابی رایگان چیه؟», «کدوم دوره‌ها رو می‌تونم بخرم؟», «خرید چطوری کار می‌کنه؟») and app-spec F2–F6. It is a
-// sequence, so it is numbered. No timings, no promise of a result.
-const STEPS = [
-  { title: "معرفی سگ", line: "اسم، نژاد و سنش رو می‌نویسی؛ عکس هم اگه داری." },
-  {
-    title: "ارزیابی رایگان",
-    line: `برای هر سگ جدا درخواستش می‌دی. ${HEAD_TRAINER.firstName} زنگ می‌زنه و با ارزیابی معلوم می‌شه کدوم دوره‌ها بهش می‌خوره.`,
-  },
-  {
-    title: "خرید دوره",
-    line: "سگِ ارزیابی‌شده دوره‌هایی رو می‌تونه بخره که پیش‌نیازشون رو گذرونده؛ با قیمت ثابت، از توی سبد.",
-  },
-  {
-    title: "آموزش",
-    line: `${HEAD_TRAINER.firstName} برای هماهنگی زنگ می‌زنه. هر دوره که تموم بشه، دوره‌های بعدی باز می‌شن.`,
-  },
-] as const;
+// What happens from here, in order, from the Help page's answers and app-spec F2–F6. It is a sequence, so it is
+// numbered. No timings, no promise of a result. A function: the messages are read while rendering, in the page's language.
+function steps() {
+  const trainer = HEAD_TRAINER.firstName;
+
+  return [
+    { title: m.account_home_next_intro_title(), line: m.account_home_next_intro_line() },
+    { title: m.account_home_next_eval_title(), line: m.account_home_next_eval_line({ trainer }) },
+    { title: m.account_home_next_buy_title(), line: m.account_home_next_buy_line() },
+    { title: m.account_home_next_train_title(), line: m.account_home_next_train_line({ trainer }) },
+  ];
+}
 
 /*===== Next Steps Band =====*/
 /**
@@ -44,10 +39,10 @@ export function NextStepsBand() {
       <div className={`${COLUMN} flex items-end justify-between gap-6`}>
         <div className="max-w-xl pb-6 lg:pb-8">
           <h2 id="next-steps-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-            از اینجا به بعد چی می‌شه؟
+            {m.account_home_next_title()}
           </h2>
           <p className="mt-2 text-pretty text-muted-foreground">
-            هر سگ همین راه رو می‌ره؛ کارت هر سگ نشون می‌ده الان کجای راهه.
+            {m.account_home_next_lead()}
           </p>
         </div>
 
@@ -65,7 +60,7 @@ export function NextStepsBand() {
         className="relative border-t-2 border-t-foreground/60 surface-inverse py-section-sm"
       >
         <ol className={`${COLUMN} grid gap-5 md:grid-cols-2 lg:grid-cols-4 lg:gap-6`}>
-          {STEPS.map(({ title, line }, index) => (
+          {steps().map(({ title, line }, index) => (
             <li
               key={title}
               className={`lively-reveal ah-plate-${index + 1} flex items-start gap-4 rounded-3xl border border-border/50 bg-jet paper-grain p-6 shadow-[0_18px_36px_-18px_rgb(0_0_0/0.9)] lg:flex-col`}
@@ -74,7 +69,7 @@ export function NextStepsBand() {
                 aria-hidden
                 className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary font-display text-lg font-black text-primary-foreground"
               >
-                {formatNumberFa(index + 1)}
+                {formatNumber(index + 1)}
               </span>
               <div>
                 <h3 className="font-display text-xl font-black">{title}</h3>

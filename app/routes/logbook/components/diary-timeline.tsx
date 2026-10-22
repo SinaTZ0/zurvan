@@ -1,6 +1,7 @@
 import { MascotCut } from "~/components/mascot-cut";
-import { formatJalaliDate } from "~/lib/jalali";
+import { formatDate } from "~/lib/locale-format";
 import type { PublicRecord } from "~/orpc/logbook/contract";
+import { m } from "~/paraglide/messages";
 import { SectionHead } from "~/routes/logbook/components/section-head";
 
 /*===== Diary Timeline =====*/
@@ -16,7 +17,7 @@ import { SectionHead } from "~/routes/logbook/components/section-head";
 export function DiaryTimeline({ entries }: { entries: PublicRecord["entries"] }) {
   return (
     <section aria-labelledby="record-diary-title" className="pt-section-sm">
-      <SectionHead id="record-diary-title" title="از دفترچه‌ی تمرین">
+      <SectionHead id="record-diary-title" title={m.logbook_diary_title()}>
         <div className="relative w-28 translate-y-[3%] sm:w-48">
           <MascotCut
             name="plants"
@@ -57,13 +58,13 @@ export function DiaryTimeline({ entries }: { entries: PublicRecord["entries"] })
               <div className="flex flex-col gap-3 rounded-3xl border border-border bg-card paper-grain p-5 shadow-[0_14px_30px_-18px_rgb(0_0_0/0.9)]">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                   <h3 className="font-display text-lg font-extrabold">
-                    <time dateTime={entry.occurredOn}>{formatJalaliDate(entry.occurredOn)}</time>
+                    <time dateTime={entry.occurredOn}>{formatDate(entry.occurredOn)}</time>
                   </h3>
                   {entry.courseTitle && <span className="text-sm text-muted-foreground">{entry.courseTitle}</span>}
                 </div>
                 <p className="text-pretty whitespace-pre-line">{entry.notes}</p>
                 {entry.exercises.length > 0 && (
-                  <ul aria-label="تمرین‌ها" className="flex flex-wrap gap-2">
+                  <ul aria-label={m.logbook_diary_exercises()} className="flex flex-wrap gap-2">
                     {entry.exercises.map((exercise) => (
                       <li key={exercise} className="rounded-full border border-primary/40 px-3 py-1 text-sm">
                         {exercise}
@@ -73,7 +74,7 @@ export function DiaryTimeline({ entries }: { entries: PublicRecord["entries"] })
                 )}
                 {entry.progress && (
                   <p className="text-sm text-pretty text-muted-foreground">
-                    <span className="font-bold text-foreground">جمع‌بندی: </span>
+                    <span className="font-bold text-foreground">{m.logbook_diary_summary()}</span>
                     {entry.progress}
                   </p>
                 )}

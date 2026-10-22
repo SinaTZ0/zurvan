@@ -21,6 +21,8 @@ import {
 } from "~/orpc/dog/repository";
 import { dogInputSchema, isDogId } from "~/orpc/dog/validation";
 import { attachMedia, deleteMedia, isMediaId } from "~/orpc/media/service";
+import { m } from "~/paraglide/messages";
+import { getLocale, type Locale } from "~/paraglide/runtime";
 
 /*===== Types =====*/
 type Owned = { db: Database; ownerId: string };
@@ -28,11 +30,10 @@ type Owned = { db: Database; ownerId: string };
 type InvalidResult = { kind: "invalid"; errors: string[]; fields: Record<string, string> };
 type NotFoundResult = { kind: "not-found" };
 
-const PHOTO_INVALID: InvalidResult = {
-  kind: "invalid",
-  errors: [],
-  fields: { photoMediaId: "عکس را دوباره بارگذاری کن." },
-};
+/** A function, not a constant, so the sentence is in the language of the request that fails (not the first one). */
+function photoInvalid(): InvalidResult {
+  return { kind: "invalid", errors: [], fields: { photoMediaId: m.server_dog_photo_reupload() } };
+}
 
 /*===== Photo =====*/
 /**
@@ -66,20 +67,35 @@ function requestedPhoto(photoMediaId: string | null | undefined): string | null 
 
 /*===== Passed Courses =====*/
 /** Converts stored dogs into public ones, reading all their passed courses in one query. */
-async function toPublicDogs({ db, records }: { db: DatabaseOrTransaction; records: DogRecord[] }): Promise<Dog[]> {
+async function toPublicDogs({
+  db,
+  records,
+  locale = getLocale(),
+}: {
+  db: DatabaseOrTransaction;
+  records: DogRecord[];
+  /** The page's language by default; the Admin's views pass "fa". */
+  locale?: Locale;
+}): Promise<Dog[]> {
   const passed = await findPassedCourses({ db, dogIds: records.map((record) => record.id) });
-  return records.map((record) => toPublicDog({ record, passed }));
+  return records.map((record) => toPublicDog({ record, passed, locale }));
 }
 
-async function toPublicDogOf({ db, record }: { db: DatabaseOrTransaction; record: DogRecord }): Promise<Dog> {
-  const [dog] = await toPublicDogs({ db, records: [record] });
+async function toPublicDogOf({
+  db,
+  record,
+  locale,
+}: {
+  db: DatabaseOrTransaction;
+  record: DogRecord;
+  locale?: Locale;
+}): Promise<Dog> {
+  const [dog] = await toPublicDogs({ db, records: [record], locale });
   if (!dog) throw new Error(`toPublicDogOf: dog ${record.id} was lost`);
   return dog;
 }
 
 /*===== Locked Fields =====*/
-const LOCKED_MESSAGE = "بعد از ارزیابی فقط مدیر می‌تواند این را تغییر دهد.";
-
 /**
  * F2: once a dog is evaluated, the fields that decide eligibility (F4) are locked for the customer, or a customer could
  * change a birth date to get past an age range.
@@ -95,8 +111,8 @@ function lockedFieldChanges({
 }): Record<string, string> {
   if (!current.isEvaluated) return {};
   const fields: Record<string, string> = {};
-  if (details.birthDate !== current.birthDate) fields.birthDate = LOCKED_MESSAGE;
-  if (details.breed !== current.breed) fields.breed = LOCKED_MESSAGE;
+  if (details.birthDate !== current.birthDate) fields.birthDate = m.server_dog_field_locked();
+  if (details.breed !== current.breed) fields.breed = m.server_dog_field_locked();
   return fields;
 }
 
@@ -132,7 +148,7 @@ export async function createDog({ db, ownerId, input }: Owned & { input: unknown
   const { photoMediaId, ...details } = parsed.data;
   const photo = requestedPhoto(photoMediaId) ?? null;
 
-  if (photo && !(await attachDogPhoto({ db, ownerId, mediaId: photo }))) return PHOTO_INVALID;
+  if (photo && !(await attachDogPhoto({ db, ownerId, mediaId: photo }))) return photoInvalid();
 
   try {
     const record = await insertDog({ db, ownerId, values: { ...details, photoMediaId: photo } });
@@ -178,7 +194,7 @@ export async function updateDog({
   const changed = requested !== undefined && requested !== oldPhoto;
   const newPhoto = changed ? requested : null;
 
-  if (newPhoto && !(await attachDogPhoto({ db, ownerId, mediaId: newPhoto }))) return PHOTO_INVALID;
+  if (newPhoto && !(await attachDogPhoto({ db, ownerId, mediaId: newPhoto }))) return photoInvalid();
 
   /*------ Save ------*/
   let record;
@@ -214,13 +230,13 @@ type AdminDogResult = { kind: "success"; dog: AdminDog } | NotFoundResult;
 async function toAdminDog({ db, record }: { db: DatabaseOrTransaction; record: DogRecord }): Promise<AdminDogResult> {
   const owner = await findDogOwner({ db, dogId: record.id });
   if (!owner) return { kind: "not-found" };
-  return { kind: "success", dog: { ...(await toPublicDogOf({ db, record })), owner } };
+  return { kind: "success", dog: { ...(await toPublicDogOf({ db, record, locale: "fa" })), owner } };
 }
 
 /** Every dog with its owner, newest first. */
 export async function adminListDogs({ db }: { db: DatabaseOrTransaction }): Promise<AdminDog[]> {
   const rows = await findAllDogs({ db });
-  const dogs = await toPublicDogs({ db, records: rows.map((row) => row.record) });
+  const dogs = await toPublicDogs({ db, records: rows.map((row) => row.record), locale: "fa" });
   return dogs.flatMap((dog, index) => {
     const owner = rows[index]?.owner;
     return owner ? [{ ...dog, owner }] : [];

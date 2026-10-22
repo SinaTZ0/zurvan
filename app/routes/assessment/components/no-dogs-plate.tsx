@@ -5,6 +5,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import { NEW_DOG_LINK } from "~/routes/assessment/components/dog-picker";
 import { PLATE } from "~/routes/assessment/components/form-plate";
 import { TapedPrint } from "~/routes/assessment/components/taped-print";
@@ -19,20 +20,20 @@ export function NoDogsPlate() {
   return (
     <section aria-labelledby="no-dogs-title" className={cn(PLATE, "answer-in p-6 sm:p-8")}>
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
-        <TapedPrint name="؟" photo={null} size="md" tilt="-rotate-3" className="self-start sm:self-center" />
+        <TapedPrint name={m.assessment_no_dogs_tag()} photo={null} size="md" tilt="-rotate-3" className="self-start sm:self-center" />
         <div className="min-w-0">
           <h2 id="no-dogs-title" className={cn(DISPLAY_HEADING, "text-h2 text-balance")}>
-            اول سگت رو معرفی کن
+            {m.assessment_no_dogs_title()}
           </h2>
           <p className="mt-3 max-w-md text-pretty text-muted-foreground">
-            ارزیابی برای یه سگ مشخصه؛ اسم و نژادش رو بنویس تا {HEAD_TRAINER.firstName} بشناسدش. بعدش برمی‌گردی همین‌جا.
+            {m.assessment_no_dogs_description({ trainer: HEAD_TRAINER.firstName })}
           </p>
           <Link
             {...NEW_DOG_LINK}
             className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
           >
             <PlusIcon aria-hidden />
-            معرفی سگ
+            {m.assessment_no_dogs_button()}
           </Link>
         </div>
       </div>

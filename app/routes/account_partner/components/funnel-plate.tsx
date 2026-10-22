@@ -5,7 +5,8 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import type { PartnerFunnel } from "~/routes/account_partner/funnel";
 import { EdgeDog } from "~/routes/account_partner/components/edge-dog";
 import { PlateHead } from "~/routes/account_partner/components/plate-head";
@@ -44,7 +45,7 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
     <section ref={ref} aria-labelledby="partner-funnel-title">
       <PlateHead
         id="partner-funnel-title"
-        title="مشتری‌هایی که آوردی"
+        title={m.account_partner_funnel_title()}
         figureClassName="me-[3.75rem] sm:me-[5rem]"
         figure={
           <EdgeDog
@@ -58,7 +59,7 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
                 tail="left"
                 className="pd-say absolute bottom-[86%] left-[calc(62%-2.25rem)] max-w-none whitespace-nowrap"
               >
-                ببین کیا اومدن!
+                {m.account_partner_funnel_bubble()}
               </ChalkBubble>
             )}
           </EdgeDog>
@@ -70,15 +71,13 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
         <div className={PLATE}>
           {road}
           <div className="mt-7 flex flex-col gap-4 border-t border-dashed border-foreground/15 pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-pretty text-muted-foreground">
-              هنوز کسی نیومده؛ شماره‌ی مشتری‌هایی که می‌شناسی رو هم می‌تونی ثبت کنی.
-            </p>
+            <p className="text-pretty text-muted-foreground">{m.account_partner_funnel_empty()}</p>
             <Link
               to={LEADS_PATH}
               className={buttonVariants({ variant: "solid", className: "w-full shrink-0 sm:w-auto sm:px-6" })}
             >
               <PhoneIcon aria-hidden className="size-4" />
-              ثبت شماره
+              {m.account_partner_funnel_add_number()}
             </Link>
           </div>
         </div>
@@ -93,8 +92,11 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
         >
           {road}
           <span className="mt-6 flex items-center justify-center gap-1 border-t border-dashed border-foreground/15 pt-4 text-sm font-bold text-primary">
-            همه‌شون
-            <ChevronLeftIcon aria-hidden className="size-4 transition-transform group-hover:-translate-x-0.5" />
+            {m.account_partner_funnel_see_all()}
+            <ChevronLeftIcon
+              aria-hidden
+              className="size-4 transition-transform group-hover:-translate-x-0.5 ltr:-scale-x-100 ltr:group-hover:translate-x-0.5"
+            />
           </span>
         </Link>
       )}
@@ -111,15 +113,18 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
  */
 function FunnelRoad({ funnel }: { funnel: PartnerFunnel }) {
   const stops = [
-    { label: "شماره", value: funnel.numbers },
-    { label: "ثبت‌نام", value: funnel.registered },
-    { label: "خرید", value: funnel.bought },
+    { label: m.account_partner_funnel_stop_number(), value: funnel.numbers },
+    { label: m.account_partner_funnel_stop_signup(), value: funnel.registered },
+    { label: m.account_partner_funnel_stop_purchase(), value: funnel.bought },
   ];
 
   return (
     <>
       <FunnelChalk />
-      <ol aria-label="مسیر مشتری‌ها" className="pd-road relative grid grid-cols-3 pe-12 sm:pe-16">
+      <ol
+        aria-label={m.account_partner_funnel_road_label()}
+        className="pd-road relative grid grid-cols-3 pe-12 sm:pe-16"
+      >
         {stops.map((stop, index) => {
           const last = index === stops.length - 1;
           const next = stops[index + 1];
@@ -180,7 +185,7 @@ function StopDisc({ value }: { value: number }) {
   if (value > 0) {
     return (
       <span className="grid size-16 place-items-center rounded-full bg-primary font-display text-[1.75rem] leading-none font-black text-primary-foreground shadow-[0_8px_22px_-10px_rgb(255_194_26/0.6)] sm:size-20 sm:text-[2.1rem]">
-        {formatNumberFa(value)}
+        {formatNumber(value)}
       </span>
     );
   }
@@ -199,7 +204,7 @@ function StopDisc({ value }: { value: number }) {
       <span aria-hidden className="relative font-display text-2xl font-black text-muted-foreground/50">
         —
       </span>
-      <span className="sr-only">صفر</span>
+      <span className="sr-only">{m.account_partner_zero_sr()}</span>
     </span>
   );
 }

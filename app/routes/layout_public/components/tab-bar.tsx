@@ -11,6 +11,7 @@ import { TAB_BAR_DOCK_ID } from "~/lib/tab-bar-dock";
 import { MoreSheet } from "~/routes/layout_public/components/more-sheet";
 import { NAV_CTA } from "~/routes/layout_public/nav-items";
 import type { Viewer } from "~/routes/layout_public/viewer";
+import { m } from "~/paraglide/messages";
 
 /*===== Tab Bar =====*/
 // A floating bar held off the screen's edges, as on a phone app. The evaluation is the gold tile in the middle, the
@@ -44,25 +45,25 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
             read as one object. The strip sits outside the nav: it isn't part of the site's menu. */}
         <div id={TAB_BAR_DOCK_ID} />
 
-        <nav aria-label="منوی اصلی">
+        <nav aria-label={m.layout_public_main_menu()}>
           <ul className="flex h-[4.25rem] items-stretch rounded-[1.6rem] border border-foreground/15 bg-card/90 px-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)] backdrop-blur-md transition-[border-radius] group-has-[[data-dock-open]]/dock:rounded-t-none">
             <li className="flex flex-1">
               {pathname === "/" ? (
                 <button type="button" aria-current="page" onClick={toTop} className={TAB}>
                   <House aria-hidden className={ICON} strokeWidth={1.8} />
-                  خانه
+                  {m.layout_public_tab_home()}
                 </button>
               ) : (
                 <Link to="/" className={TAB}>
                   <House aria-hidden className={ICON} strokeWidth={1.8} />
-                  خانه
+                  {m.layout_public_tab_home()}
                 </Link>
               )}
             </li>
             <li className="flex flex-1">
               <NavLink to="/courses" className={TAB}>
                 <BookOpen aria-hidden className={ICON} strokeWidth={1.8} />
-                دوره‌ها
+                {m.layout_public_tab_courses()}
               </NavLink>
             </li>
 
@@ -76,20 +77,20 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
                 )}
               >
                 <ClipboardCheck aria-hidden className="size-[1.375rem]" strokeWidth={2} />
-                ارزیابی
+                {m.layout_public_tab_evaluation()}
               </NavLink>
             </li>
 
             <li className="flex flex-1">
               <NavLink to="/contact" className={TAB}>
                 <Phone aria-hidden className={ICON} strokeWidth={1.8} />
-                تماس
+                {m.layout_public_tab_contact()}
               </NavLink>
             </li>
             <li className="flex flex-1">
               <button type="button" aria-haspopup="dialog" onClick={() => setMore(true)} className={TAB}>
                 <Ellipsis aria-hidden className="size-[1.375rem]" strokeWidth={1.8} />
-                بیشتر
+                {m.layout_public_tab_more()}
               </button>
             </li>
           </ul>

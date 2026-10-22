@@ -4,23 +4,24 @@ import { CheckIcon, LockKeyholeIcon, MinusIcon } from "lucide-react";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { Link } from "~/components/link";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { Enrollment } from "~/orpc/enrollment/contract";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
 import { PLATE } from "~/routes/account_dog_detail/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== Date Line =====*/
 // Each status says the date that belongs to it; an ended enrollment's own date is always set, but falls back to the
 // purchase date rather than showing nothing.
 function describeDates(enrollment: Enrollment): string {
   if (enrollment.status === "completed" && enrollment.completedAt) {
-    return `تموم شد ${formatJalaliTimestamp(enrollment.completedAt)}`;
+    return m.account_dog_detail_date_completed({ date: formatTimestamp(enrollment.completedAt) });
   }
   if (enrollment.status === "cancelled" && enrollment.cancelledAt) {
-    return `لغو شد ${formatJalaliTimestamp(enrollment.cancelledAt)}`;
+    return m.account_dog_detail_date_cancelled({ date: formatTimestamp(enrollment.cancelledAt) });
   }
-  return `از ${formatJalaliTimestamp(enrollment.createdAt)}`;
+  return m.account_dog_detail_date_from({ date: formatTimestamp(enrollment.createdAt) });
 }
 
 /*===== Enrollments Section =====*/
@@ -35,13 +36,13 @@ function describeDates(enrollment: Enrollment): string {
 export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: Enrollment[]; isEvaluated: boolean }) {
   return (
     <section aria-labelledby="enrollments-title">
-      <SectionHead id="enrollments-title" title="دوره‌ها">
+      <SectionHead id="enrollments-title" title={m.account_dog_detail_enrollments_title()}>
         <EdgeDog name="clipboard" className="w-[5.25rem] sm:w-24">
           <ChalkBubble
             tail="left"
             className="lively-reveal-pop absolute bottom-[92%] left-[42%] max-w-[12rem] text-pretty"
           >
-            حواسم به دوره‌هاشه!
+            {m.account_dog_detail_enrollments_bubble()}
           </ChalkBubble>
         </EdgeDog>
       </SectionHead>
@@ -50,12 +51,12 @@ export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: 
         <div className={cn(PLATE, "flex items-start gap-4 p-5 sm:p-6")}>
           {isEvaluated ? (
             <div>
-              <p className="font-bold">هنوز دوره‌ای نخریده.</p>
+              <p className="font-bold">{m.account_dog_detail_enrollments_none()}</p>
               <Link
                 to="/courses"
                 className="mt-2 inline-block rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                دوره‌ها رو ببین
+                {m.account_dog_detail_enrollments_see_courses()}
               </Link>
             </div>
           ) : (
@@ -67,9 +68,9 @@ export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: 
                 <LockKeyholeIcon strokeWidth={1.8} className="size-5" />
               </span>
               <div>
-                <p className="font-bold">اول ارزیابی، بعد دوره‌ها.</p>
+                <p className="font-bold">{m.account_dog_detail_enrollments_locked_title()}</p>
                 <p className="mt-1 text-sm text-pretty text-muted-foreground">
-                  دوره‌ها بعد از ارزیابی رایگان برای این سگ باز می‌شن.
+                  {m.account_dog_detail_enrollments_locked_text()}
                 </p>
               </div>
             </>

@@ -2,6 +2,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Help Header =====*/
 /**
@@ -24,11 +25,10 @@ export function HelpHeader() {
       <div className="order-2 lg:order-1 lg:col-span-7">
         {/* Two unbreakable halves: on phones the line breaks after the comma, not inside the first clause. */}
         <h1 id="help-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          <span className="inline-block">هر چی می‌خوای بدونی،</span> <span className="inline-block">همین‌جاست</span>
+          <span className="inline-block">{m.help_header_title_a()}</span>{" "}
+          <span className="inline-block">{m.help_header_title_b()}</span>
         </h1>
-        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          از ارزیابی رایگان تا روزی که دوره تموم می‌شه. جوابتو پیدا نکردی؟ زنگ بزن.
-        </p>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.help_header_lead()}</p>
       </div>
 
       {/*===== Stage =====*/}
@@ -68,7 +68,7 @@ export function HelpHeader() {
           tail="right"
           className="hp-pop absolute right-[calc(42%-36px)] bottom-[calc(0.9rem+7.5rem+0.5rem)] lg:bottom-[calc(1.2rem+14rem+1.6rem)]"
         >
-          سؤال داری؟ از اینجا شروع کن!
+          {m.help_header_bubble()}
         </ChalkBubble>
       </div>
 

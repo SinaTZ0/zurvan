@@ -27,7 +27,9 @@ export const listMyCertificatesProcedure = base.certificate.listMine
 /*===== Public =====*/
 export const verifyCertificateProcedure = base.certificate.verify
   .use(provideDbMiddleware)
-  .handler(({ context, input }) => verifyCertificate({ db: context.db, number: input.number }));
+  .handler(({ context, input }) =>
+    verifyCertificate({ db: context.db, number: input.number, locale: context.locale }),
+  );
 
 /*===== Admin =====*/
 export const adminListCertificatesProcedure = base.certificate.admin.list

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "not_found_meta_title": "پیدا نشد | زروان",
+  "not_found_error_title": "یه مشکلی پیش اومد",
+  "not_found_error_retry": "دوباره امتحان کن",
+  "not_found_error_home": "صفحه‌ی اول"
+}

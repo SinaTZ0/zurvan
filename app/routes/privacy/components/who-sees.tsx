@@ -5,6 +5,7 @@ import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Viewer Cards =====*/
 // One card per person who can see the account's data: the visitor, the head trainer and a partner. Each lists what that
@@ -14,24 +15,24 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 // never a dog, an evaluation, the diary, a purchase or its price (app-spec F12). Reading the dogs' training for a
 // customer's own referrer is designed, not built: it needs the owner's consent and wording (docs/overnight/
 // 08-PARTNER-ACCESS-DESIGN.md).
-const SEES = ["شماره و اسمت", "سگ‌هات، ارزیابی‌ها، دفترچه‌ی تمرین، دوره‌ها و پرداخت‌هات"];
+const SEES = () => [m.privacy_sees_you_number(), m.privacy_sees_you_all()];
 
-const TRAINER_SEES = [
-  "همه‌ی چیزهایی که مشتری‌ها وارد می‌کنن: شماره و اسم، سگ‌ها، ارزیابی‌ها با عکس و فیلمشون",
-  "پرداخت‌ها و دوره‌ها",
-  "پیامک‌های فرستاده‌شده",
+const TRAINER_SEES = () => [
+  m.privacy_sees_trainer_all(),
+  m.privacy_sees_trainer_payments(),
+  m.privacy_sees_trainer_sms(),
 ];
 
-const PARTNER_SEES = [
-  "شماره‌هایی که خودش وارد کرده",
-  "این‌که کدوم مشتری‌هاش ثبت‌نام کرده و خرید کرده، با اسم و شماره‌شون",
-  "پورسانتی که بابت خرید اون مشتری‌ها به خودش می‌رسه و پرداخت شده یا نه",
+const PARTNER_SEES = () => [
+  m.privacy_sees_partner_numbers(),
+  m.privacy_sees_partner_customers(),
+  m.privacy_sees_partner_commission(),
 ];
 
-const PARTNER_DOES_NOT_SEE = [
-  "سگ‌هات، ارزیابی‌ها و دفترچه‌ی تمرین‌شون",
-  "این‌که دقیقاً چه دوره‌ای خریدی",
-  "مشتری‌های همکارهای دیگه",
+const PARTNER_DOES_NOT_SEE = () => [
+  m.privacy_not_partner_dogs(),
+  m.privacy_not_partner_course(),
+  m.privacy_not_partner_others(),
 ];
 
 /*===== Stages =====*/
@@ -110,7 +111,7 @@ function ViewerCard({
       <div className="flex flex-1 flex-col p-6">
         <h3 className="font-display text-h3 font-black text-balance">{title}</h3>
 
-        <p className="sr-only">می‌بینه:</p>
+        <p className="sr-only">{m.privacy_who_sees_sr()}</p>
         <ul className="mt-5 space-y-3">
           {sees.map((item) => (
             <li key={item} className="flex items-start gap-3">
@@ -122,7 +123,7 @@ function ViewerCard({
 
         {doesNotSee && (
           <>
-            <p className="mt-6 text-sm font-bold text-muted-foreground">نمی‌بینه</p>
+            <p className="mt-6 text-sm font-bold text-muted-foreground">{m.privacy_who_not_sees()}</p>
             <ul className="mt-3 space-y-3">
               {doesNotSee.map((item) => (
                 <li key={item} className="flex items-start gap-3 text-muted-foreground">
@@ -156,20 +157,22 @@ export function WhoSees() {
     >
       <div className="site-container">
         <h2 id="who-sees-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          کی چی رو می‌بینه
+          {m.privacy_section_who_sees()}
         </h2>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-3 lg:items-start">
-          <ViewerCard title="تو" sees={SEES} stage={STAGES.you} index={1} />
+          <ViewerCard title={m.privacy_who_title_you()} sees={SEES()} stage={STAGES.you} index={1} />
 
-          <ViewerCard title={`${HEAD_TRAINER.firstName}، مدیر سایت`} sees={TRAINER_SEES} stage={STAGES.trainer} index={2}>
-            <p className="mt-6 text-sm text-muted-foreground">توی سایت فقط {HEAD_TRAINER.firstName} حساب مدیریت داره.</p>
+          <ViewerCard title={m.privacy_who_title_trainer({ trainer: HEAD_TRAINER.firstName })} sees={TRAINER_SEES()} stage={STAGES.trainer} index={2}>
+            <p className="mt-6 text-sm text-muted-foreground">
+              {m.privacy_who_trainer_note({ trainer: HEAD_TRAINER.firstName })}
+            </p>
           </ViewerCard>
 
           <ViewerCard
-            title="همکار، فقط اگه تو رو اون آورده باشه"
-            sees={PARTNER_SEES}
-            doesNotSee={PARTNER_DOES_NOT_SEE}
+            title={m.privacy_who_title_partner()}
+            sees={PARTNER_SEES()}
+            doesNotSee={PARTNER_DOES_NOT_SEE()}
             stage={STAGES.partner}
             index={3}
           />

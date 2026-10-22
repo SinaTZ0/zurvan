@@ -71,7 +71,9 @@ export const adminUpdateEntryProcedure = base.logbook.admin.update
 /*===== Public Record =====*/
 export const recordProcedure = base.logbook.record
   .use(provideDbMiddleware)
-  .handler(({ context, input }) => getPublicRecord({ db: context.db, fileNumber: input.fileNumber }));
+  .handler(({ context, input }) =>
+    getPublicRecord({ db: context.db, fileNumber: input.fileNumber, locale: context.locale }),
+  );
 
 export const publicStatusProcedure = base.logbook.publicStatus
   .use(requireRoleMiddleware("customer"))

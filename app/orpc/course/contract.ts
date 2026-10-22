@@ -25,12 +25,30 @@ export const courseSchema = z.object({
   boardingPrice: z.number().int().nullable(),
   /** The courses a dog must have passed before buying this one (F4). */
   prerequisites: z.array(z.object({ slug: z.string(), title: z.string() })),
+  /**
+   * The title in the page's other language (Persian on `/en`, English on the Persian pages), or null when there is
+   * none. For search only: a visitor finds a course by either name.
+   */
+  otherTitle: z.string().nullable(),
 });
 
 export type Course = z.infer<typeof courseSchema>;
 
-/** A course as the Admin sees it: any status, its place in the catalogue and who uses it. */
+/** A course's English text as stored: each part null until the Admin writes it (the English pages then show Persian). */
+export const courseEnglishSchema = z.object({
+  title: z.string().nullable(),
+  summary: z.string().nullable(),
+  highlights: z.array(z.string()).nullable(),
+  commands: z.array(z.string()).nullable(),
+  coverAlt: z.string().nullable(),
+});
+
+/**
+ * A course as the Admin sees it: any status, its place in the catalogue and who uses it. The public fields are the
+ * Persian ones (the Admin is Persian); the English text comes as stored in `english`.
+ */
 export const adminCourseSchema = courseSchema.extend({
+  english: courseEnglishSchema,
   status: z.enum(COURSE_STATUSES),
   /** 1..n in catalogue order. */
   position: z.number().int(),
@@ -63,6 +81,13 @@ export const courseInputSchema = z.strictObject({
   price: z.number().int().nullable(),
   boardingPrice: z.number().int().nullable(),
   prerequisites: z.array(z.string()),
+  // The English text (`/en`), all optional: blank is "not written yet", and an older client that sends none keeps
+  // nothing (the update writes them as sent, so the form always sends all five).
+  titleEn: z.string().optional(),
+  summaryEn: z.string().optional(),
+  highlightsEn: z.array(z.string()).optional(),
+  commandsEn: z.array(z.string()).optional(),
+  coverAltEn: z.string().optional(),
 });
 
 export type CourseInput = z.infer<typeof courseInputSchema>;

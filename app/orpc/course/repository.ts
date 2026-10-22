@@ -8,7 +8,14 @@ import { course, coursePrerequisite, enrollment } from "~/db/schema";
 export type CourseRecord = typeof course.$inferSelect;
 
 /** One required course of `courseId`, with just what the storefront shows about it. */
-export type PrerequisiteRecord = { courseId: string; requiredCourseId: string; slug: string; title: string };
+export type PrerequisiteRecord = {
+  courseId: string;
+  requiredCourseId: string;
+  slug: string;
+  title: string;
+  /** Null until the Admin writes it: the English pages then name it in Persian. */
+  titleEn: string | null;
+};
 
 /** What the Admin form writes into a course row. The cover columns are left out when the cover stays. */
 export type CourseValues = Pick<
@@ -20,6 +27,11 @@ export type CourseValues = Pick<
   | "highlights"
   | "commands"
   | "coverAlt"
+  | "titleEn"
+  | "summaryEn"
+  | "highlightsEn"
+  | "commandsEn"
+  | "coverAltEn"
   | "minAgeMonths"
   | "maxAgeMonths"
   | "sessionCount"
@@ -127,6 +139,7 @@ export function findPrerequisitesByCourseIds({
       requiredCourseId: required.id,
       slug: required.slug,
       title: required.title,
+      titleEn: required.titleEn,
     })
     .from(coursePrerequisite)
     .innerJoin(required, eq(coursePrerequisite.requiredCourseId, required.id))

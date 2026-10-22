@@ -14,8 +14,10 @@ import {
 } from "~/lib/catalogue-search-params";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { FAMILY_TABS, familiesWithCourses, isShownFamily } from "~/lib/course-families";
+import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 import { CatalogueHeader } from "~/routes/course_catalogue/components/catalogue-header";
 import { EvaluationAsk } from "~/routes/course_catalogue/components/evaluation-ask";
 import { FamilyShelf } from "~/routes/course_catalogue/components/family-shelf";
@@ -31,15 +33,12 @@ import { matchesQuery } from "~/routes/course_catalogue/search";
 export const Route = createFileRoute("/_public/courses")({
   validateSearch: catalogueSearchSchema,
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.course.list.queryOptions()),
-  head: () => ({
-    meta: [
-      { title: "دوره‌ها | آموزش K9" },
-      {
-        name: "description",
-        content: "همه‌ی دوره‌های آموزش K9 را ببین و بگرد؛ هر دوره بعد از دوره‌ی قبلش باز می‌شود.",
-      },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      path: "/courses",
+      title: m.course_catalogue_meta_title(),
+      description: m.course_catalogue_meta_description(),
+    }),
   component: CourseCataloguePage,
   errorComponent: CatalogueError,
 });
@@ -178,17 +177,15 @@ function CatalogueError() {
     <section aria-labelledby="catalogue-error-title" className={`${CATALOGUE_COLUMN} py-section-md`}>
       <div className="max-w-xl">
         <h1 id="catalogue-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          فهرست دوره‌ها باز نشد
+          {m.course_catalogue_error_title()}
         </h1>
-        <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          مشکلی پیش آمد و دوره‌ها نرسیدند. دوباره امتحان کن یا چند دقیقه‌ی دیگر سر بزن.
-        </p>
+        <p className="mt-4 text-lead text-pretty text-muted-foreground">{m.course_catalogue_error_text()}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
-            دوباره امتحان کن
+            {m.course_catalogue_error_retry()}
           </a>
           <Link to="/assessment" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            ارزیابی رایگان بگیر
+            {m.course_catalogue_error_evaluation()}
           </Link>
         </div>
       </div>

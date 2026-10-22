@@ -9,6 +9,7 @@ import { describeAge, describePlace, describePrerequisites, describeSessions } f
 import { courseScene } from "~/lib/course-scenes";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import type { Course } from "~/orpc/course/contract";
 import { COLUMN } from "~/routes/course_detail/column";
 
@@ -50,18 +51,18 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
       >
         {/*===== Words =====*/}
         <div className="relative lg:flex lg:flex-col lg:pt-4">
-          <nav aria-label="مسیر صفحه">
+          <nav aria-label={m.course_detail_hero_breadcrumb()}>
             <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
               <li>
                 <Link
                   to="/courses"
                   className="rounded-sm transition-colors outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
-                  دوره‌ها
+                  {m.course_detail_hero_courses()}
                 </Link>
               </li>
               <li aria-hidden>
-                <ChevronLeftIcon strokeWidth={1.7} className="size-4" />
+                <ChevronLeftIcon strokeWidth={1.7} className="size-4 ltr:-scale-x-100" />
               </li>
               <li aria-current="page" className="text-foreground">
                 {course.title}
@@ -73,9 +74,12 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
           <h1 id="course-title" className={cn(DISPLAY_HEADING, "mt-5 text-h1 text-balance")}>
             {course.title}
           </h1>
-          <p className="mt-2 text-lg font-bold text-muted-foreground">
-            <bdi>{course.latinName}</bdi>
-          </p>
+          {/* On the English site the title is often the Latin name already; showing it twice reads as a bug. */}
+          {course.latinName.trim().toLowerCase() !== course.title.trim().toLowerCase() ? (
+            <p className="mt-2 text-lg font-bold text-muted-foreground">
+              <bdi>{course.latinName}</bdi>
+            </p>
+          ) : null}
           <p className="mt-4 max-w-xl text-lead text-pretty text-foreground/85">{course.summary}</p>
 
           {/*------ Trainer ------*/}
@@ -90,8 +94,8 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
               className="size-12 shrink-0 rounded-full object-cover ring-1 ring-foreground/25"
             />
             <span className="flex flex-col leading-snug">
-              <span className="font-bold">با {HEAD_TRAINER.name}</span>
-              <span className="text-sm text-muted-foreground">نوع کلاس و زمان جلسه‌ها را با هم هماهنگ می‌کنید.</span>
+              <span className="font-bold">{m.course_detail_hero_with({ name: HEAD_TRAINER.name })}</span>
+              <span className="text-sm text-muted-foreground">{m.course_detail_hero_arrange()}</span>
             </span>
           </p>
 
@@ -156,25 +160,29 @@ function Facts({ course }: { course: Course }) {
   return (
     <>
       {course.minAgeMonths === null ? (
-        <FactTile icon={ClockIcon} label="سن، جلسه‌ها و محل تمرین" wide>
-          بعد از ارزیابی سگت
+        <FactTile icon={ClockIcon} label={m.course_detail_facts_branches_label()} wide>
+          {m.course_detail_facts_branches_value()}
         </FactTile>
       ) : (
         <>
-          <FactTile icon={ClockIcon} label="تعداد جلسه‌ها" note="به سگ و نوع دوره بستگی داره.">
+          <FactTile
+            icon={ClockIcon}
+            label={m.course_detail_facts_sessions()}
+            note={m.course_detail_facts_sessions_note()}
+          >
             {describeSessions(course)}
           </FactTile>
-          <FactTile icon={CakeIcon} label="سن سگ">
+          <FactTile icon={CakeIcon} label={m.course_detail_facts_age()}>
             {describeAge(course)}
           </FactTile>
-          <FactTile icon={MapPinIcon} label="محل آموزش">
+          <FactTile icon={MapPinIcon} label={m.course_detail_facts_place()}>
             {describePlace(course)}
           </FactTile>
         </>
       )}
       {(prerequisites || course.minAgeMonths !== null) && (
-        <FactTile icon={KeyRoundIcon} label="پیش‌نیاز" wide={course.minAgeMonths === null}>
-          {prerequisites ?? "ندارد"}
+        <FactTile icon={KeyRoundIcon} label={m.course_detail_facts_prerequisite()} wide={course.minAgeMonths === null}>
+          {prerequisites ?? m.course_detail_facts_prerequisite_none()}
         </FactTile>
       )}
     </>

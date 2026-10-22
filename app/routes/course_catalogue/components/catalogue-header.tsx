@@ -1,6 +1,7 @@
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { CATALOGUE_COLUMN } from "~/routes/course_catalogue/layout";
 import { DogCounter } from "~/routes/course_catalogue/components/dog-counter";
 
@@ -27,14 +28,12 @@ export function CatalogueHeader({
       {/*------ Words ------*/}
       <div className="pb-6 md:col-span-7 md:pb-12">
         <h1 id="catalogue-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          همه‌ی چیزهایی که می‌تونم یاد بگیرم
+          {m.course_catalogue_header_title()}
         </h1>
-        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          هر دوره بعد از دوره‌ی قبلش باز می‌شه. از نوع‌ها انتخاب کن، یا با ذره‌بین بالای صفحه دنبال اسمش بگرد.
-        </p>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.course_catalogue_header_text()}</p>
         {/* For people who already know what they want: signed out they are sent to sign in and brought back. */}
         <Link to="/buy" className={buttonVariants({ size: "lg", className: "mt-7" })}>
-          خرید دوره
+          {m.course_catalogue_header_buy()}
         </Link>
       </div>
 

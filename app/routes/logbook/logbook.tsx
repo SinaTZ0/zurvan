@@ -2,7 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { normalizeFileNumber } from "~/lib/dog-file";
+import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import { LookupHero } from "~/routes/logbook/components/lookup-hero";
 import { PrivateRecord } from "~/routes/logbook/components/private-record";
 import { PublicRecord } from "~/routes/logbook/components/public-record";
@@ -36,7 +38,14 @@ export const Route = createFileRoute("/_public/logbook/{-$fileNumber}")({
     if (fileNumber) await queryClient.ensureQueryData(orpc.logbook.record.queryOptions({ input: { fileNumber } }));
   },
   // Never in a search engine: a dog's record is for the people the owner chose.
-  head: () => ({ meta: [{ title: "پرونده‌ی سگ | زروان" }, { name: "robots", content: "noindex" }] }),
+  head: ({ params }) => {
+    const head = pageHead({
+      path: params.fileNumber ? `/logbook/${params.fileNumber}` : "/logbook",
+      title: m.logbook_meta_title(),
+      description: m.logbook_meta_description(),
+    });
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   // What this page shows depends on who asks, so no cache (a browser's, a proxy's) may keep one person's answer for
   // another.
   headers: () => ({ "Cache-Control": "no-store" }),

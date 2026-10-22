@@ -5,6 +5,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { DogThumb } from "~/components/dog-thumb";
 import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import type { DogEligibility } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 import { BUY_PROBLEMS_ID } from "~/routes/course_detail/components/buy-problems";
 
 /*===== Dog Row List =====*/
@@ -33,7 +34,7 @@ export function DogRowList({
   return (
     <div role="radiogroup" aria-labelledby="dog-list-title">
       <p id="dog-list-title" className="text-base font-extrabold">
-        برای کدوم سگ؟
+        {m.course_detail_dogs_title()}
       </p>
 
       <ul className="mt-3 flex flex-col gap-2.5">
@@ -103,9 +104,9 @@ function VerdictMark({ can }: { can: boolean }) {
   return can ? (
     <span className="flex shrink-0 items-center gap-1 text-sm font-bold text-foreground">
       <CheckIcon aria-hidden className="size-4" strokeWidth={2.6} />
-      می‌تونه
+      {m.course_detail_dogs_can()}
     </span>
   ) : (
-    <span className="shrink-0 text-sm font-bold text-muted-foreground">هنوز نه</span>
+    <span className="shrink-0 text-sm font-bold text-muted-foreground">{m.course_detail_dogs_not_yet()}</span>
   );
 }

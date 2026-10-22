@@ -1,5 +1,9 @@
+import { m } from "~/paraglide/messages";
+
 /*===== Dog Constants =====*/
 // Browser-safe values shared by the API, the seed and the dog forms. Stored as plain text (see `app/db/schema.ts`).
+// Labels are getters over the messages (`messages/shared/`), read while rendering in the page's language; the Admin's
+// pages are Persian only, so they read Persian.
 
 /*===== Sex =====*/
 export const DOG_SEXES = ["male", "female"] as const;
@@ -7,8 +11,12 @@ export const DOG_SEXES = ["male", "female"] as const;
 export type DogSex = (typeof DOG_SEXES)[number];
 
 export const DOG_SEX_LABELS: Record<DogSex, string> = {
-  male: "نر",
-  female: "ماده",
+  get male() {
+    return m.shared_dog_sex_male();
+  },
+  get female() {
+    return m.shared_dog_sex_female();
+  },
 };
 
 /*===== Vaccination =====*/
@@ -17,9 +25,15 @@ export const VACCINATION_STATUSES = ["up_to_date", "partial", "unknown"] as cons
 export type VaccinationStatus = (typeof VACCINATION_STATUSES)[number];
 
 export const VACCINATION_STATUS_LABELS: Record<VaccinationStatus, string> = {
-  up_to_date: "کامل",
-  partial: "ناقص",
-  unknown: "نمی‌دانم",
+  get up_to_date() {
+    return m.shared_vaccination_up_to_date();
+  },
+  get partial() {
+    return m.shared_vaccination_partial();
+  },
+  get unknown() {
+    return m.shared_vaccination_unknown();
+  },
 };
 
 /*===== Limits =====*/

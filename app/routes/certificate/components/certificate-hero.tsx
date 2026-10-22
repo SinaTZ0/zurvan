@@ -8,6 +8,7 @@ import { VerdictStage } from "~/routes/certificate/components/verdict-stage";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { CertificateVerification } from "~/orpc/certificate/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Certificate Hero =====*/
 /**
@@ -37,7 +38,8 @@ export function CertificateHero({ verification }: { verification: CertificateVer
                 <BadgeCheckIcon strokeWidth={1.8} />
               </VerdictDisc>
               <h1 id="certificate-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-                این گواهی <span className="text-primary">معتبره</span>
+                {m.certificate_hero_valid_lead()}{" "}
+                <span className="text-primary">{m.certificate_hero_valid_word()}</span>
               </h1>
             </div>
             <ValidCard
@@ -56,7 +58,7 @@ export function CertificateHero({ verification }: { verification: CertificateVer
                 <BanIcon strokeWidth={1.8} />
               </VerdictDisc>
               <h1 id="certificate-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-                این گواهی باطل شده
+                {m.certificate_hero_revoked_title()}
               </h1>
             </div>
             <RevokedCard number={verification.number} revokedAt={verification.revokedAt} />
@@ -70,11 +72,11 @@ export function CertificateHero({ verification }: { verification: CertificateVer
                 <SearchXIcon strokeWidth={1.8} />
               </VerdictDisc>
               <h1 id="certificate-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-                گواهی‌ای با این شماره پیدا نشد
+                {m.certificate_hero_unknown_title()}
               </h1>
             </div>
             <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-              شماره رو دوباره از رو گواهی بخون. اگه باز پیدا نشد، با {HEAD_TRAINER.firstName} تماس بگیر.
+              {m.certificate_hero_unknown_line({ name: HEAD_TRAINER.firstName })}
             </p>
             <RetryForm />
           </>

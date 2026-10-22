@@ -2,12 +2,14 @@ import { ClipboardList, LockOpen, PawPrint, Phone } from "lucide-react";
 
 import { cn } from "cn";
 
-import { formatNumberFa } from "~/lib/digits";
-import { STEPS } from "~/routes/home/content";
+import { isEnglish } from "~/lib/i18n";
+import { formatNumber } from "~/lib/locale-format";
+import { steps } from "~/routes/home/content";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { ChalkTicks } from "~/components/chalk-ticks";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Chalk Defs =====*/
 // The steps drawn as a chalk trail on one board, in the same chalk as the running lane's ground under it.
@@ -56,7 +58,8 @@ function TrailSegment({ className }: { className?: string }) {
 // the last stop, up in the board's top padding clear of the titles: the dog got distracted. The viewBox is 1000
 // wide, stretched to the row (880-1072px from lg up, so barely distorted), and 120 tall at 1:1. The centres sit at
 // x 890/630/370/110 at every width within a few units, because the gaps are fixed and the columns share the rest.
-// Its ends are under the markers, which paint over it.
+// Its ends are under the markers, which paint over it. Drawn for the Persian order (step 1 on the right); the English
+// pages read left to right, so it is mirrored there.
 const WINDING_PATH =
   "M890 32C800 30 740 90 630 88S470 30 370 32C320 33 280 20 250 20A18 18 0 0 1 250 -16A18 18 0 0 1 250 20C215 20 170 88 110 88";
 
@@ -66,7 +69,7 @@ function WindingTrail() {
       aria-hidden
       viewBox="0 0 1000 120"
       preserveAspectRatio="none"
-      className="absolute inset-x-0 top-0 hidden h-[7.5rem] w-full overflow-visible text-foreground opacity-55 lg:block"
+      className="absolute inset-x-0 top-0 hidden h-[7.5rem] w-full overflow-visible text-foreground opacity-55 lg:block ltr:-scale-x-100"
     >
       <path
         d={WINDING_PATH}
@@ -119,7 +122,7 @@ function Marker({ index }: { index: number }) {
       </svg>
       <Icon aria-hidden className="size-7 text-primary" strokeWidth={1.6} />
       <span className="absolute -start-1.5 -top-1.5 grid size-7 place-items-center rounded-full border border-foreground/40 bg-background text-xs font-bold text-foreground">
-        {formatNumberFa(index + 1)}
+        {formatNumber(index + 1)}
       </span>
     </div>
   );
@@ -132,14 +135,17 @@ function Marker({ index }: { index: number }) {
  * bubble say the same thing). Stacked, the trail runs down the start side and he peeks in at the far corner.
  *
  * Wide geometry: the board's padding is 2.5rem and the columns' gap 2.5rem, so step 3's centre (third from the
- * right) sits 2.1875rem + 37.5% of the content width from the board's left edge; the dog is centred there.
+ * right) sits 2.1875rem + 37.5% of the content width from the board's left edge; the dog is centred there. The
+ * sides are logical, so on the English pages (left to right) the scene is mirrored and he still peeks over step 3.
  */
 export function StoryTrail() {
+  const items = steps();
+
   return (
     <section aria-labelledby="st-path-title" className="mx-auto max-w-6xl px-4 pt-14 pb-10 md:px-8 md:pb-16 lg:pt-20">
       <ChalkDefs />
       <h2 id="st-path-title" className={`${DISPLAY_HEADING} lively-reveal text-center text-3xl md:text-5xl`}>
-        از کجا شروع کنیم؟
+        {m.home_steps_title()}
       </h2>
 
       <div className="lively-reveal relative mx-auto mt-40 max-w-xl rounded-[2rem] bg-card px-6 pt-12 pb-10 sm:px-8 lg:mt-36 lg:max-w-none lg:px-10 lg:pt-14 lg:pb-10">
@@ -147,27 +153,40 @@ export function StoryTrail() {
 
         {/*------ Props on the edges: the signpost where the trail starts, a dropped bone on the bottom ------*/}
         {/* Their straw tufts and the bone overlap the edge, so they sit on it rather than float near it. */}
-        <MascotCut name="signpost" className="absolute right-5 bottom-[calc(100%-0.9rem)] w-24 lg:right-[5%] lg:w-32" />
-        <MascotCut name="bone" className="absolute -bottom-4 left-6 w-24 -rotate-6 lg:left-[5%] lg:w-28" />
+        <MascotCut
+          name="signpost"
+          className="absolute start-5 bottom-[calc(100%-0.9rem)] w-24 lg:start-[5%] lg:w-32 ltr:-scale-x-100"
+        />
+        <MascotCut name="bone" className="absolute end-6 -bottom-4 w-24 -rotate-6 lg:end-[5%] lg:w-28" />
 
         {/*------ The dog over the top edge; his cut sits 1.4rem inside, under the paws ------*/}
-        <div className="lively-tilt lively-pet absolute bottom-[calc(100%-1.4rem)] left-24 z-10 w-32 -translate-x-1/2 sm:w-36 lg:left-[calc(2.1875rem+(100%-5rem)*0.375)]">
+        <div className="lively-tilt lively-pet absolute end-24 bottom-[calc(100%-1.4rem)] z-10 w-32 -translate-x-1/2 sm:w-36 lg:end-[calc(2.1875rem+(100%-5rem)*0.375)] ltr:translate-x-1/2">
           <MascotCut name="peek" className="w-full" />
           <ChalkTicks className="lively-ticks absolute top-[12%] -right-7 w-6" />
           <ChalkTicks className="lively-ticks absolute top-[12%] -left-7 w-6 -scale-x-100 [animation-delay:-.7s]" />
         </div>
         <ChalkBubble
-          tail="left"
-          className="lively-float absolute bottom-[calc(100%+5rem)] left-[11.5rem] z-10 w-28 text-sm sm:left-[calc(6rem+6.75rem)] sm:w-32 lg:left-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)]"
+          tail="end"
+          className="lively-float absolute end-[11.5rem] bottom-[calc(100%+5rem)] z-10 w-28 text-sm sm:end-[calc(6rem+6.75rem)] sm:w-32 lg:end-[calc(2.1875rem+(100%-5rem)*0.375+6.75rem)] ltr:w-36 ltr:sm:w-36 ltr:lg:hidden"
         >
-          قفل‌ها دارن باز می‌شن!
+          {m.home_steps_bubble()}
         </ChalkBubble>
+        {/* Wide English pages: mirrored, the bubble would sit under the centred heading, so it stays on his right, as
+            on the Persian page, with its left edge 6.75rem right of his centre. */}
+        {isEnglish() && (
+          <ChalkBubble
+            tail="left"
+            className="lively-float absolute right-[calc(2.1875rem+(100%-5rem)*0.375-6.75rem)] bottom-[calc(100%+5rem)] z-10 hidden w-44 translate-x-full text-sm lg:block"
+          >
+            {m.home_steps_bubble()}
+          </ChalkBubble>
+        )}
 
         {/*------ The stops ------*/}
         <ol className="relative grid gap-y-8 lg:grid-cols-4 lg:gap-x-10">
           <WindingTrail />
-          {STEPS.map((step, index) => {
-            const last = index === STEPS.length - 1;
+          {items.map((step, index) => {
+            const last = index === items.length - 1;
             return (
               <li
                 key={step.title}
@@ -186,13 +205,13 @@ export function StoryTrail() {
                   {index === 2 && (
                     <MascotCut
                       name="key"
-                      className="absolute top-[45%] -left-12 z-[2] hidden w-16 -rotate-12 lg:block"
+                      className="absolute -end-12 top-[45%] z-[2] hidden w-16 -rotate-12 lg:block"
                     />
                   )}
                   {last && (
                     <MascotCut
                       name="flag"
-                      className="lively-sway-2 absolute bottom-5 -left-[4.5rem] -z-[1] hidden w-24 lg:block"
+                      className="lively-sway-2 absolute -end-[4.5rem] bottom-5 -z-[1] hidden w-24 lg:block"
                     />
                   )}
                   <div className="lively-lift">

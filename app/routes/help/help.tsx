@@ -2,21 +2,18 @@ import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { pageHead } from "~/lib/seo";
+import { m } from "~/paraglide/messages";
 import { FaqGroup } from "~/routes/help/components/faq-group";
 import { HelpAsk } from "~/routes/help/components/help-ask";
 import { HelpHeader } from "~/routes/help/components/help-header";
 import { Road } from "~/routes/help/components/road";
-import { FAQ_GROUPS, QUESTION_IDS } from "~/routes/help/faq-data";
+import { getFaqGroups, QUESTION_IDS } from "~/routes/help/faq-data";
 import { useHashOpen } from "~/routes/help/hooks/use-hash-open";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_public/help")({
-  head: () => ({
-    meta: [
-      { title: "سؤال‌های پرتکرار | آموزش K9" },
-      { name: "description", content: "همه‌ی چیزهایی که برای خرید دوره، ارزیابی رایگان و ورود لازم داری." },
-    ],
-  }),
+  head: () => pageHead({ path: "/help", title: m.help_meta_title(), description: m.help_meta_description() }),
   component: HelpPage,
   errorComponent: HelpError,
 });
@@ -37,7 +34,7 @@ function HelpPage() {
 
       {/*===== Questions =====*/}
       <div className="site-container pb-section-sm">
-        {FAQ_GROUPS.map((group) => (
+        {getFaqGroups().map((group) => (
           <FaqGroup key={group.id} group={group} openIds={openIds} onChange={changeGroup} />
         ))}
       </div>
@@ -76,17 +73,15 @@ function HelpError() {
     <section aria-labelledby="help-error-title" className="site-container py-section-md">
       <div className="max-w-xl">
         <h1 id="help-error-title" className="font-display text-h1 font-black text-balance">
-          راهنما باز نشد
+          {m.help_error_title()}
         </h1>
-        <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          مشکلی پیش آمد. دوباره امتحان کن یا چند دقیقه‌ی دیگه سر بزن.
-        </p>
+        <p className="mt-4 text-lead text-pretty text-muted-foreground">{m.help_error_text()}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
-            دوباره امتحان کن
+            {m.help_error_retry()}
           </a>
           <Link to="/assessment" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            ارزیابی رایگان بگیر
+            {m.help_link_evaluation()}
           </Link>
         </div>
       </div>

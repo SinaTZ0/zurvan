@@ -7,8 +7,9 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/join_partner/column";
 
 /*===== Partner Hero =====*/
@@ -36,11 +37,11 @@ export function PartnerHero({ commissionPercent }: { commissionPercent: number }
       <div className="order-2 lg:order-1 lg:col-span-6">
         {/* Two unbreakable halves: on phones the line breaks after the question, not inside it. */}
         <h1 id="partner-title" className={`${DISPLAY_HEADING} text-h1 text-balance lg:text-[3.2rem]`}>
-          <span className="inline-block">کلینیک، آرایشگاه سگ یا پت‌شاپ داری؟</span>{" "}
-          <span className="inline-block text-primary">با ما همراه شو.</span>
+          <span className="inline-block">{m.join_partner_hero_title_a()}</span>{" "}
+          <span className="inline-block text-primary">{m.join_partner_hero_title_b()}</span>
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          مشتری‌هات رو به آموزش K9 معرفی کن؛ از اولین خریدشون {formatNumberFa(commissionPercent)}٪ مال توئه.
+          {m.join_partner_hero_line({ percent: m.join_partner_percent({ value: formatNumber(commissionPercent) }) })}
         </p>
         <div className="mt-8">
           <a
@@ -49,7 +50,7 @@ export function PartnerHero({ commissionPercent }: { commissionPercent: number }
           >
             <PhoneIcon aria-hidden className="size-4" />
             <span>
-              زنگ بزن: <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
+              {m.join_partner_call()} <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
             </span>
           </a>
         </div>
@@ -100,7 +101,7 @@ export function PartnerHero({ commissionPercent }: { commissionPercent: number }
             tail="right"
             className="jp-pop absolute right-[calc(40%-36px)] bottom-[calc(100%+0.4rem)] w-max max-w-[13.5rem] text-pretty lg:max-w-[16rem]"
           >
-            یه سگ مثل من پیش تو میاد؟ بفرستش پیش {HEAD_TRAINER.firstName}.
+            {m.join_partner_hero_bubble({ name: HEAD_TRAINER.firstName })}
           </ChalkBubble>
         </div>
       </div>

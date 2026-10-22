@@ -7,18 +7,22 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { EvaluationButton } from "~/components/evaluation-button";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Typed Word =====*/
 // The headline types what the dog learns with the trainer, one skill at a time, each in its own colour. First person
 // singular on purpose: «یاد بگیریم بشینیم» put the owner on the floor too. The colours are set by hand rather than
-// taken from the palette: the palette's gold is the only accent, and the point is a change.
-const TYPED_WORDS = [
-  { text: "بشینم", color: "#FFC21A" },
-  { text: "بمونم", color: "#FFF4DC" },
-  { text: "صدام کنی، بیام", color: "#FFD98A" },
-  { text: "آروم باشم", color: "#B9DDB0" },
-  { text: "کنار پات راه برم", color: "#FFC21A" },
-] as const;
+// taken from the palette: the palette's gold is the only accent, and the point is a change. The words are messages,
+// read when the headline renders, in the page's language.
+function typedWords() {
+  return [
+    { text: m.home_hero_word_sit(), color: "#FFC21A" },
+    { text: m.home_hero_word_stay(), color: "#FFF4DC" },
+    { text: m.home_hero_word_come(), color: "#FFD98A" },
+    { text: m.home_hero_word_calm(), color: "#B9DDB0" },
+    { text: m.home_hero_word_heel(), color: "#FFC21A" },
+  ];
+}
 
 // Milliseconds per letter typed and erased, how long a whole word stays, and the beat before the next one starts.
 const TYPE_MS = 110;
@@ -32,12 +36,14 @@ const GAP_MS = 350;
  * the whole list once (the h1 carries it), so the typed letters are hidden from them.
  */
 function TypedWord() {
-  const [{ word, chars, erasing }, setState] = useState({
+  const words = typedWords();
+  const [{ word, chars, erasing }, setState] = useState(() => ({
     word: 0,
-    chars: TYPED_WORDS[0].text.length,
+    chars: typedWords()[0]?.text.length ?? 0,
     erasing: false,
-  });
-  const text = TYPED_WORDS[word].text;
+  }));
+  const current = words[word] ?? words[0];
+  const text = current?.text ?? "";
 
   /*------ One step per timeout ------*/
   useEffect(() => {
@@ -48,12 +54,12 @@ function TypedWord() {
     const timer = window.setTimeout(() => {
       if (!erasing) setState({ word, chars: full ? chars : chars + 1, erasing: full });
       else if (chars > 0) setState({ word, chars: chars - 1, erasing });
-      else setState({ word: (word + 1) % TYPED_WORDS.length, chars: 0, erasing: false });
+      else setState({ word: (word + 1) % words.length, chars: 0, erasing: false });
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [word, chars, erasing, text]);
+  }, [word, chars, erasing, text, words.length]);
 
-  const color = TYPED_WORDS[word].color;
+  const color = current?.color;
   // The caret holds still while letters move and blinks only while a whole word rests or the line is empty.
   const resting = (!erasing && chars === text.length) || chars === 0;
 
@@ -71,8 +77,9 @@ function TypedWord() {
 /**
  * The trainer's name in the headline with a gold chalk underline. «طلا» means "gold", so the name gets the gold as a
  * stroke under it rather than in the letters: the typed word below is already the headline's gold, and a gold name
- * on top of it would make the first screen a bullion shop. The stroke draws right to left (the reading direction) as
- * the end of the hero's one load moment, just after the bubble has popped; with reduced motion it's simply there.
+ * on top of it would make the first screen a bullion shop. The stroke draws in the reading direction (right to left,
+ * mirrored on the English pages) as the end of the hero's one load moment, just after the bubble has popped; with
+ * reduced motion it's simply there.
  */
 function TrainerName() {
   return (
@@ -82,7 +89,7 @@ function TrainerName() {
         aria-hidden
         viewBox="0 0 120 14"
         fill="none"
-        className="absolute top-[calc(100%-0.16em)] -right-[0.06em] w-[calc(100%+0.12em)] overflow-visible"
+        className="absolute top-[calc(100%-0.16em)] -right-[0.06em] w-[calc(100%+0.12em)] overflow-visible ltr:-scale-x-100"
       >
         <filter id="st-hero-chalk" x="-5%" y="-40%" width="110%" height="180%">
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={3} />
@@ -187,7 +194,8 @@ function BarkingDog() {
   return (
     <>
       {/* The wrapper wiggles while the image rises, so the two animations don't fight over one transform. */}
-      <div className="lively-wiggle lively-pet relative z-10" onPointerEnter={bark} onPointerDown={bark}>
+      {/* On the English pages the whole scene is mirrored: the dog turns to face the other way. */}
+      <div className="lively-wiggle lively-pet relative z-10 ltr:-scale-x-100" onPointerEnter={bark} onPointerDown={bark}>
         <MascotCut name="paws" eager className={cn("st-rise block w-full", frame && "invisible")} />
         {ready &&
           BARK_FRAMES.map((name) => (
@@ -201,9 +209,9 @@ function BarkingDog() {
       </div>
       {/* The bark is a sound, so its bubble is decoration: the page says nothing new while he barks. */}
       {frame && (
-        <div aria-hidden className="absolute top-[36%] right-[88%] z-20">
-          <ChalkBubble tail="right" className="st-bark px-3 py-1.5">
-            هاپ هاپ!
+        <div aria-hidden className="absolute top-[36%] right-[88%] z-20 ltr:right-auto ltr:left-[88%]">
+          <ChalkBubble tail="start" className="st-bark px-3 py-1.5">
+            {m.home_hero_bark()}
           </ChalkBubble>
         </div>
       )}
@@ -250,11 +258,14 @@ export function StoryHero() {
         .st-bark { animation: st-bark .18s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 85% 100%; }
         @keyframes st-bark { from { transform: scale(.3) rotate(-6deg); opacity: 0; } to { transform: rotate(-6deg); opacity: 1; } }
         @media (prefers-reduced-motion: no-preference) { .st-caret { animation: st-caret 1s steps(1) infinite; } }
+        /* The English pages mirror the scene, so the bubbles grow from their tails on the other side. */
+        [dir="ltr"] .st-pop, [dir="ltr"] .st-bark { transform-origin: 15% 100%; }
+        [dir="ltr"] .st-bark { rotate: 12deg; }
         @keyframes st-caret { 50% { opacity: 0; } }
       `}</style>
 
       {/* Foliage in the copy's bottom corner, as in the mockup; the card covers that corner on narrow screens. */}
-      <div aria-hidden className="absolute -right-6 bottom-0 hidden w-40 lg:block xl:w-48">
+      <div aria-hidden className="absolute -start-6 bottom-0 hidden w-40 lg:block xl:w-48">
         <MascotCut name="plants" eager className="lively-sway w-full" />
       </div>
 
@@ -276,46 +287,47 @@ export function StoryHero() {
             )}
           >
             {/* No «سلام» here: the bubble beside him already says it. */}
-            پیش <TrainerName />
+            {m.home_hero_title_with()} <TrainerName />
             <br />
-            یاد می‌گیرم
+            {m.home_hero_title_learn()}
             {/* The typed word gets its own line, so the line's length changes and nothing else moves. */}
             <br />
-            <span className="sr-only">: بشینم، بمونم، صدام کنی بیام، آروم باشم و کنار پات راه برم</span>
+            <span className="sr-only">{m.home_hero_title_words()}</span>
             <TypedWord />
           </h1>
           <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-foreground/80 lg:mx-0">
-            آموزش خصوصی سگ در تهران،
+            {m.home_hero_line_one()}
             <br />
-            در محل خودتون یا توی مرکز.
+            {m.home_hero_line_two()}
           </p>
           <EvaluationButton className="mt-7" />
         </div>
 
         {/*------ Mascot on the card edge ------*/}
         {/* Below lg the dog and his bubble are centred as one group: the bubble overhangs his left side by about
-            6.5rem (7rem from sm), so he moves right by half that. */}
-        <div className="relative mx-auto mb-20 w-[13.5rem] translate-x-[3.25rem] sm:w-72 sm:translate-x-14 lg:mr-0 lg:ml-auto lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)] lg:translate-x-0">
+            6.5rem (7rem from sm), so he moves right by half that. On the English pages the scene is a mirror image:
+            the dog faces the other way, the bubble and the wall swap sides, and he leans on the column's start. */}
+        <div className="relative mx-auto mb-20 w-[13.5rem] translate-x-[3.25rem] sm:w-72 sm:translate-x-14 lg:mr-0 lg:ml-auto lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)] lg:translate-x-0 ltr:-translate-x-[3.25rem] ltr:sm:-translate-x-14 ltr:lg:mr-auto ltr:lg:ml-0 ltr:lg:translate-x-0">
           {/* The card is a brick wall he looks over, with the page's grain on the bricks. */}
           <div
             aria-hidden
             style={{ backgroundImage: `var(--grain), ${BRICK}` }}
-            className="absolute top-[87%] -right-[45%] -bottom-20 -left-[100vw] z-0 rounded-tr-[3rem] border-t-2 border-foreground/70 bg-inverse lg:-bottom-[100svh]"
+            className="absolute top-[87%] -start-[45%] -bottom-20 -end-[100vw] z-0 rounded-ss-[3rem] border-t-2 border-foreground/70 bg-inverse lg:-bottom-[100svh]"
           />
           {/* On lg, the bushes are a share of the dog's width (their lg sizes at his 21rem), so they shrink with him. */}
           <MascotCut
             name="plants"
             eager
-            className="lively-sway absolute right-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-[67%]"
+            className="lively-sway absolute start-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-[67%]"
           />
           <MascotCut
             name="plants"
             eager
-            className="lively-sway-2 absolute bottom-[8%] left-[78%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
+            className="lively-sway-2 absolute end-[78%] bottom-[8%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
           />
           <BarkingDog />
-          <ChalkBubble tail="right" className="st-pop absolute top-[2%] right-[78%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
-            سلام، من زروانم! بیا تو، در بازه.
+          <ChalkBubble tail="start" className="st-pop absolute start-[78%] top-[2%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
+            {m.home_hero_bubble()}
           </ChalkBubble>
         </div>
       </div>

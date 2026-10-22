@@ -6,6 +6,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_dog_form/column";
 
 /*===== Dog Form Error =====*/
@@ -27,15 +28,13 @@ export function DogFormError({ notFound }: { notFound: boolean }) {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="dog-form-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          {notFound ? "این سگ پیدا نشد" : "فرم باز نشد"}
+          {notFound ? m.account_dog_form_error_notfound_title() : m.account_dog_form_error_failed_title()}
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          {notFound
-            ? "شاید از حسابت برداشته شده."
-            : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."}
+          {notFound ? m.account_dog_form_error_notfound_text() : m.account_dog_form_error_failed_text()}
         </p>
         <Link to="/account" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-8" })}>
-          سگ‌های من
+          {m.shared_account_dogs()}
         </Link>
       </div>
 

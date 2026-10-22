@@ -6,6 +6,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/join_partner/column";
 
 /*===== Partner Ask =====*/
@@ -23,14 +24,17 @@ export function PartnerAsk() {
         <NightSky className="inset-x-0 bottom-full h-36 md:h-44" />
 
         {/*------ The Dog and the Mailbox on the Card's Edge ------*/}
-        <div aria-hidden className="pointer-events-none absolute bottom-[calc(100%-0.2rem)] left-4 z-10 flex items-end sm:left-10 lg:left-14">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-[calc(100%-0.2rem)] left-4 z-10 flex items-end sm:left-10 lg:left-14"
+        >
           <div className="relative w-24 translate-y-[3%] lg:w-28">
             <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.09),transparent)]" />
             <MascotCut name="plants" className="lively-sway-2 absolute right-[84%] bottom-0 w-[50%] -scale-x-100" />
             <MascotCut name="wave" className="lively-wiggle lively-pet relative block w-full" />
             <div className="jp-ask-pop absolute bottom-[calc(100%-0.5rem)] left-[calc(55%-36px)] z-10">
               <ChalkBubble tail="left" className="lively-float w-max max-w-[11rem] text-pretty lg:max-w-[14rem]">
-                منتظر زنگتم!
+                {m.join_partner_ask_bubble()}
               </ChalkBubble>
             </div>
           </div>
@@ -45,9 +49,9 @@ export function PartnerAsk() {
         <div className="rounded-4xl border border-border bg-card paper-grain px-6 py-10 shadow-sm sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-12 lg:px-14 lg:py-12">
           <div className="max-w-xl">
             <h2 id="partner-ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-              با مرکز تماس بگیر
+              {m.join_partner_ask_title()}
             </h2>
-            <p className="mt-3 text-pretty text-muted-foreground">اسم محلت و شماره‌ی موبایلت رو آماده داشته باش.</p>
+            <p className="mt-3 text-pretty text-muted-foreground">{m.join_partner_ask_line()}</p>
           </div>
           <a
             href={`tel:${CENTER_PHONE.tel}`}
@@ -59,7 +63,7 @@ export function PartnerAsk() {
           >
             <PhoneIcon aria-hidden className="size-4" />
             <span>
-              زنگ بزن: <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
+              {m.join_partner_call()} <bdi dir="ltr">{CENTER_PHONE.display}</bdi>
             </span>
           </a>
         </div>

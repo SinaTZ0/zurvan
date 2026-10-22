@@ -2,10 +2,11 @@ import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { Qr } from "~/lib/qr";
 import type { Certificate } from "~/orpc/certificate/contract";
 import { CopyLink } from "~/routes/account_dog_detail/components/copy-link";
+import { m } from "~/paraglide/messages";
 
 /*===== Certificate Card =====*/
 /**
@@ -56,15 +57,15 @@ export function CertificateCard({ certificate, link, qr }: { certificate: Certif
             <h3 className="font-display text-lg font-extrabold text-pretty">{certificate.course.title}</h3>
             {revoked ? (
               <span className="rounded-full bg-destructive/15 px-3 py-0.5 text-xs font-bold text-destructive">
-                باطل شده
+                {m.account_dog_detail_certificate_revoked()}
               </span>
             ) : (
               <span className="rounded-full border border-success/40 bg-success/10 px-3 py-0.5 text-xs font-bold text-success">
-                معتبر
+                {m.account_dog_detail_certificate_valid()}
               </span>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">صادر شده {formatJalaliTimestamp(certificate.issuedAt)}</p>
+          <p className="text-sm text-muted-foreground">{m.account_dog_detail_certificate_issued({ date: formatTimestamp(certificate.issuedAt) })}</p>
           <p dir="ltr" className="w-fit text-start font-mono font-bold tracking-wider text-primary">
             {certificate.number}
           </p>

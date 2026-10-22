@@ -2,8 +2,9 @@ import { CheckIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
-import { formatJalaliTimestamp } from "~/lib/jalali";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatTimestamp } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Valid Card =====*/
 /**
@@ -34,7 +35,7 @@ export function ValidCard({
       {/*------ Seal ------*/}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-7 end-4 z-10 size-[5.25rem] rotate-[-9deg] sm:-top-8 sm:end-6 sm:size-28"
+        className="pointer-events-none absolute end-4 -top-7 z-10 size-[5.25rem] rotate-[-9deg] sm:end-6 sm:-top-8 sm:size-28"
       >
         <div className="cv-seal relative size-full">
           <MascotCut name="seal-disc" className="block size-full drop-shadow-[0_6px_10px_rgb(0_0_0/0.55)]" />
@@ -47,28 +48,28 @@ export function ValidCard({
 
       {/*------ Facts ------*/}
       <dl className="relative divide-y divide-dashed divide-primary/20">
-        <Fact label="دوره" className="pt-0 pe-20 sm:pe-28">
+        <Fact label={m.certificate_valid_course()} className="pe-20 pt-0 sm:pe-28">
           <dd className="font-display text-xl font-extrabold text-pretty sm:text-2xl">{course.title}</dd>
           <dd dir="ltr" className="mt-0.5 w-fit text-start text-sm text-muted-foreground">
             {course.latinName}
           </dd>
         </Fact>
         {dogName && (
-          <Fact label="سگ">
+          <Fact label={m.certificate_valid_dog()}>
             <dd className="font-bold text-pretty">{dogName}</dd>
           </Fact>
         )}
-        <Fact label="تاریخ صدور">
-          <dd className="font-bold">{formatJalaliTimestamp(issuedAt)}</dd>
+        <Fact label={m.certificate_valid_issued()}>
+          <dd className="font-bold">{formatTimestamp(issuedAt)}</dd>
         </Fact>
-        <Fact label="صادرکننده">
+        <Fact label={m.certificate_valid_issuer()}>
           <dd className="font-bold">
             <Link to="/about" className="underline decoration-primary/50 underline-offset-4 hover:decoration-primary">
               {HEAD_TRAINER.name}
             </Link>
           </dd>
         </Fact>
-        <Fact label="شماره‌ی گواهی" className="pb-0">
+        <Fact label={m.certificate_valid_number()} className="pb-0">
           <dd dir="ltr" className="text-start font-mono text-lg font-bold tracking-wider break-all text-primary">
             {number}
           </dd>
@@ -79,15 +80,7 @@ export function ValidCard({
 }
 
 /** One row: the label above its value on phones, beside it from `sm` up. */
-function Fact({
-  label,
-  className = "",
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function Fact({ label, className = "", children }: { label: string; className?: string; children: React.ReactNode }) {
   return (
     // The values are direct children of the row (a `dl` only allows `dt`/`dd` in its row wrappers), so each one is put in
     // the second column by hand: a second `dd` would otherwise wrap under the label.

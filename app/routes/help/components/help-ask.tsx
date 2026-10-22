@@ -6,6 +6,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE, CENTER_TELEGRAM } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Help Ask =====*/
 /**
@@ -40,7 +41,7 @@ export function HelpAsk() {
         tail="left"
         className="absolute bottom-[calc(100%+8rem)] left-3 z-10 max-w-[calc(100%-1.5rem)] sm:left-8 lg:bottom-[calc(100%+10.6rem)] lg:left-12"
       >
-        یا یه پیام بفرست، می‌رسونمش!
+        {m.help_ask_bubble()}
       </ChalkBubble>
 
       {/* The chalk sky over the card's empty stretch, beside the dog's bubble. */}
@@ -49,11 +50,9 @@ export function HelpAsk() {
       {/*===== Words =====*/}
       <div className="max-w-xl">
         <h2 id="ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          جواب سوالت رو پیدا نکردی؟
+          {m.help_ask_title()}
         </h2>
-        <p className="mt-3 text-pretty text-muted-foreground">
-          مستقیم با ما حرف بزن؛ تلفن یا تلگرام، هر کدوم برات راحت‌تره.
-        </p>
+        <p className="mt-3 text-pretty text-muted-foreground">{m.help_ask_text()}</p>
       </div>
 
       {/*===== Phone and Telegram =====*/}
@@ -72,7 +71,7 @@ export function HelpAsk() {
           className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}
         >
           <SendIcon aria-hidden />
-          <span>تلگرام</span>
+          <span>{m.help_ask_telegram()}</span>
         </a>
       </div>
     </section>

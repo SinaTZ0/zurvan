@@ -9,7 +9,11 @@ type Executor = { db: DatabaseOrTransaction };
 export type LogbookEntryRecord = typeof logbookEntry.$inferSelect;
 
 /** An entry with the course it belongs to, if any. */
-export type LogbookEntryRow = { entry: LogbookEntryRecord; course: { slug: string; title: string } | null };
+export type LogbookEntryRow = {
+  entry: LogbookEntryRecord;
+  /** `titleEn` is null until the Admin writes it. */
+  course: { slug: string; title: string; titleEn: string | null } | null;
+};
 
 /** What a session writes. Never `dogId`'s owner, the author's id or the times: those are the service's. */
 export type LogbookEntryValues = Pick<
@@ -59,9 +63,16 @@ export async function findDogForPublicRecord({ db, fileNumber }: Executor & { fi
 export function findCompletedCourses({
   db,
   dogId,
-}: Executor & { dogId: string }): Promise<{ title: string; latinName: string; completedAt: Date }[]> {
+}: Executor & { dogId: string }): Promise<
+  { title: string; titleEn: string | null; latinName: string; completedAt: Date }[]
+> {
   return db
-    .select({ title: course.title, latinName: course.latinName, completedAt: enrollment.completedAt })
+    .select({
+      title: course.title,
+      titleEn: course.titleEn,
+      latinName: course.latinName,
+      completedAt: enrollment.completedAt,
+    })
     .from(enrollment)
     .innerJoin(course, eq(enrollment.courseId, course.id))
     .where(and(eq(enrollment.dogId, dogId), eq(enrollment.status, "completed")))
@@ -94,7 +105,7 @@ export async function enrollmentBelongsToDog({
 /*===== Entries =====*/
 const entrySelection = {
   entry: logbookEntry,
-  course: { slug: course.slug, title: course.title },
+  course: { slug: course.slug, title: course.title, titleEn: course.titleEn },
 };
 
 /** A dog's diary, newest session first (`createdAt` then `id` break ties on the same day). */

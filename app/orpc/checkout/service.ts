@@ -41,6 +41,7 @@ import {
   findPrerequisitesByCourseIds,
   type CourseRecord,
 } from "~/orpc/course/repository";
+import { courseTitle, prerequisiteTitle } from "~/orpc/course/mapper";
 import {
   findDogsByOwner,
   findDogWithPhoto,
@@ -50,6 +51,8 @@ import {
 } from "~/orpc/dog/repository";
 import { isDogId } from "~/orpc/dog/validation";
 import { toPublicMedia } from "~/orpc/media/mapper";
+import { m } from "~/paraglide/messages";
+import { getLocale, type Locale } from "~/paraglide/runtime";
 
 /*===== Types =====*/
 type NotFoundResult = { kind: "not-found" };
@@ -67,10 +70,16 @@ async function judge({
   db,
   pairs,
   now,
+  locale = getLocale(),
 }: {
   db: DatabaseOrTransaction;
   pairs: { dog: DogRecord; course: CourseRecord }[];
   now: Date;
+  /**
+   * The language the reasons are worded in: the request's by default (inside `/rpc`, the page's; the Admin's pages are
+   * Persian).
+   */
+  locale?: Locale;
 }): Promise<Judged[]> {
   const dogIds = [...new Set(pairs.map((pair) => pair.dog.id))];
   const courseIds = [...new Set(pairs.map((pair) => pair.course.id))];
@@ -91,11 +100,16 @@ async function judge({
       course,
       prerequisites: prerequisites
         .filter((entry) => entry.courseId === course.id)
-        .map((entry) => ({ id: entry.requiredCourseId, slug: entry.slug, title: entry.title })),
+        .map((entry) => ({
+          id: entry.requiredCourseId,
+          slug: entry.slug,
+          title: prerequisiteTitle({ locale, prerequisite: entry }),
+        })),
       passedCourseIds: new Set(passed.filter((entry) => entry.dogId === dog.id).map((entry) => entry.courseId)),
       hasActiveEnrollment: active.has(`${dog.id}:${course.id}`),
       today,
       earlyAgeException: EARLY_AGE_EXCEPTION,
+      locale,
     }),
   }));
 }
@@ -109,17 +123,20 @@ export async function getDogEligibility({
   customerId,
   courseSlug,
   now = new Date(),
+  locale = getLocale(),
 }: {
   db: DatabaseOrTransaction;
   customerId: string;
   courseSlug: string;
   now?: Date;
+  /** The language of the reasons: Course Detail's, which is public and has an English page. */
+  locale?: Locale;
 }): Promise<DogEligibilityResult> {
   const course = await findApprovedCourseBySlug({ db, slug: courseSlug });
   if (!course) return { kind: "not-found" };
 
   const dogs = await findDogsByOwner({ db, ownerId: customerId });
-  const judged = await judge({ db, pairs: dogs.map((dog) => ({ dog, course })), now });
+  const judged = await judge({ db, pairs: dogs.map((dog) => ({ dog, course })), now, locale });
 
   return {
     kind: "success",
@@ -145,18 +162,21 @@ export async function getMyDogCourses({
   customerId,
   dogId,
   now = new Date(),
+  locale = getLocale(),
 }: {
   db: DatabaseOrTransaction;
   customerId: string;
   dogId: string;
   now?: Date;
+  /** The language of the reasons: `/buy`'s, which has an English page. */
+  locale?: Locale;
 }): Promise<{ kind: "success"; courses: MyDogCourse[] } | NotFoundResult> {
   if (!isDogId(dogId)) return { kind: "not-found" };
   const dog = (await findDogsByOwner({ db, ownerId: customerId })).find((candidate) => candidate.id === dogId);
   if (!dog) return { kind: "not-found" };
 
   const courses = await findApprovedCourses({ db });
-  const judged = await judge({ db, pairs: courses.map((course) => ({ dog, course })), now });
+  const judged = await judge({ db, pairs: courses.map((course) => ({ dog, course })), now, locale });
   return {
     kind: "success",
     courses: judged.map(({ course, problems }) => ({
@@ -210,11 +230,14 @@ async function reviewItems({
   customerId,
   items,
   now,
+  locale = getLocale(),
 }: {
   db: DatabaseOrTransaction;
   customerId: string;
   items: { courseSlug: string; dogId: string }[];
   now: Date;
+  /** The language of the reasons and the course names: the cart's page. */
+  locale?: Locale;
 }): Promise<ReviewedItem[]> {
   const [courses, dogs] = await Promise.all([
     findCoursesBySlugs({ db, slugs: [...new Set(items.map((item) => item.courseSlug))] }),
@@ -226,7 +249,7 @@ async function reviewItems({
     const dog = dogs.find((candidate) => candidate.id === item.dogId);
     return course && dog ? [{ item, course, dog }] : [];
   });
-  const judged = await judge({ db, pairs, now });
+  const judged = await judge({ db, pairs, now, locale });
 
   return items.map((item): ReviewedItem => {
     const index = pairs.findIndex((pair) => pair.item === item);
@@ -238,13 +261,13 @@ async function reviewItems({
         dog: null,
         price: null,
         eligible: false,
-        problems: [{ kind: "not-for-sale", message: "این مورد دیگر وجود ندارد.", courseSlug: null }],
+        problems: [{ kind: "not-for-sale", message: m.server_cart_item_gone({}, { locale }), courseSlug: null }],
       };
     }
     const { course, dog, problems } = verdict;
     return {
       ...item,
-      course: { slug: course.slug, title: course.title, latinName: course.latinName },
+      course: { slug: course.slug, title: courseTitle({ locale, course }), latinName: course.latinName },
       dog: toDogSummary(dog),
       price: course.price,
       eligible: problems.length === 0,
@@ -290,7 +313,7 @@ type PayResult =
  * looks at the cart again instead of paying a different total from the one they saw.
  *
  * @returns `redirect` with where to send the customer; `invalid` for an empty or oversized cart; `not-eligible` with a
- * Persian line for each item that fails; `rules-not-accepted` when site rules are published and this customer has not
+ * line for each item that fails, in the request's language; `rules-not-accepted` when site rules are published and this customer has not
  * accepted the version in force.
  */
 export async function payCart({
@@ -332,7 +355,13 @@ export async function payCart({
       kind: "not-eligible",
       errors: failing.flatMap((item) =>
         item.problems.map((problem) =>
-          item.course && item.dog ? `${item.course.title} برای ${item.dog.name}: ${problem.message}` : problem.message,
+          item.course && item.dog
+            ? m.server_checkout_item_problem({
+                course: item.course.title,
+                dog: item.dog.name,
+                problem: problem.message,
+              })
+            : problem.message,
         ),
       ),
     };
@@ -579,7 +608,13 @@ async function notifyPaid({
 }
 
 /*===== Payments =====*/
-function toPayment(row: { payment: PaymentRecord; items: PaymentItemRow[] }): Payment {
+function toPayment({
+  row,
+  locale,
+}: {
+  row: { payment: PaymentRecord; items: PaymentItemRow[] };
+  locale: Locale;
+}): Payment {
   const { payment } = row;
   if (payment.status !== "pending" && payment.status !== "paid" && payment.status !== "failed") {
     throw new Error(`Payment ${payment.id} has an unknown status: ${payment.status}`);
@@ -600,7 +635,7 @@ function toPayment(row: { payment: PaymentRecord; items: PaymentItemRow[] }): Pa
     failureReason: payment.failureReason,
     items: row.items.map((entry) => ({
       id: entry.item.id,
-      course: entry.course,
+      course: { slug: entry.course.slug, title: courseTitle({ locale, course: entry.course }) },
       dog: entry.dog,
       price: entry.item.price,
       enrollment: entry.enrollment,
@@ -618,7 +653,7 @@ export async function listMyPayments({
   db: DatabaseOrTransaction;
   customerId: string;
 }): Promise<Payment[]> {
-  return (await findPaymentsWithItems({ db, customerId })).map(toPayment);
+  return (await findPaymentsWithItems({ db, customerId })).map((row) => toPayment({ row, locale: getLocale() }));
 }
 
 /** Every payment, newest first; an item of a paid payment with no enrollment is flagged (F5). */
@@ -631,7 +666,8 @@ export async function adminListPayments({
 }): Promise<AdminPayment[]> {
   const rows = await findPaymentsWithItems({ db, status });
   return rows.map((row) => {
-    const payment = toPayment(row);
+    // The Admin is Persian: the stored title, whatever language the request carries.
+    const payment = toPayment({ row, locale: "fa" });
     const items = payment.items.map((item) => ({
       ...item,
       paidNotEnrolled: payment.status === "paid" && item.enrollment === null,

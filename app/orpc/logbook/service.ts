@@ -24,6 +24,7 @@ import {
   updateEntry,
 } from "~/orpc/logbook/repository";
 import { sessionFieldsSchema } from "~/orpc/logbook/validation";
+import type { Locale } from "~/paraglide/runtime";
 
 /*===== Types =====*/
 type NotFoundResult = { kind: "not-found" };
@@ -177,10 +178,16 @@ export async function getPublicRecord({
   db,
   fileNumber,
   rules = PUBLIC_RECORD_CONSENT,
+  locale = "fa",
 }: {
   db: DatabaseOrTransaction;
   fileNumber: string;
+  /** The language of the dog's age and the courses' names (the record is a public page, with an English one). */
+  locale?: Locale;
 } & RulesOption): Promise<RecordAnswer> {
+  /** A course's name in the record's language, Persian where the English isn't written. */
+  const titleOf = (course: { title: string; titleEn: string | null }) =>
+    locale === "en" && course.titleEn ? course.titleEn : course.title;
   const normalized = normalizeFileNumber(fileNumber);
   if (!normalized || !rules) return { kind: "private" };
 
@@ -201,14 +208,22 @@ export async function getPublicRecord({
       dog: {
         name: found.name,
         breed: found.breed,
-        ageText: describeDogAge({ birthDate: found.birthDate, birthDateApproximate: found.birthDateApproximate }),
+        ageText: describeDogAge(
+          { birthDate: found.birthDate, birthDateApproximate: found.birthDateApproximate },
+          undefined,
+          locale,
+        ),
       },
-      courses,
+      courses: courses.map((entry) => ({
+        title: titleOf(entry),
+        latinName: entry.latinName,
+        completedAt: entry.completedAt,
+      })),
       certificates: certificates
         .filter((row) => row.certificate.revokedAt === null)
         .map((row) => ({
           number: row.certificate.number,
-          courseTitle: row.course.title,
+          courseTitle: titleOf(row.course),
           issuedAt: row.certificate.issuedAt,
         })),
       entries: entries
@@ -218,7 +233,7 @@ export async function getPublicRecord({
           notes: row.entry.notes,
           exercises: row.entry.exercises,
           progress: row.entry.progress,
-          courseTitle: row.course?.title ?? null,
+          courseTitle: row.course ? titleOf(row.course) : null,
         })),
     },
   };

@@ -8,6 +8,7 @@ import { isCatalogueFamily } from "~/lib/catalogue-search-params";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { CourseMascotPose } from "~/lib/course-mascot";
 import type { CourseFamily } from "~/orpc/course/constants";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/about/column";
 
 /*===== Types =====*/
@@ -43,7 +44,7 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
   return (
     <section aria-labelledby="about-lineup-title" className={`${COLUMN} pt-section-md`}>
       <h2 id="about-lineup-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-        پیش طلا اینا رو یاد می‌گیرم
+        {m.about_lineup_title()}
       </h2>
 
       <div className="relative mt-8 lg:mt-14">
@@ -96,8 +97,8 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
                 <MascotCut name="signpost" className="relative mb-2 h-24 w-auto lg:h-32" />
               </span>
               <span className="flex items-center gap-1.5 px-2 pt-2 pb-3 font-bold text-primary lg:pt-5 lg:pb-0">
-                همه‌ی دوره‌ها
-                <ArrowLeft aria-hidden className="size-4" />
+                {m.about_lineup_all()}
+                <ArrowLeft aria-hidden className="size-4 ltr:-scale-x-100" />
               </span>
             </Link>
           </li>

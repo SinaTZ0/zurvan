@@ -1,7 +1,9 @@
-import { formatNumberFa } from "~/lib/digits";
 import { ageInMonths } from "~/lib/dog-format";
 import type { EarlyAgeException } from "~/lib/early-age-exception";
+import { formatNumber } from "~/lib/locale-format";
 import { normalizeForSearch } from "~/lib/search";
+import { m } from "~/paraglide/messages";
+import type { Locale } from "~/paraglide/runtime";
 
 /*===== Eligibility =====*/
 // docs/app-spec.md, F4: the one place that decides whether a dog may buy a course. The Course Detail page, the cart,
@@ -23,7 +25,7 @@ export type IneligibilityKind = (typeof INELIGIBILITY_KINDS)[number];
 
 export type Ineligibility = {
   kind: IneligibilityKind;
-  /** Persian, for the page as it is. */
+  /** In the caller's language (`locale`), for the page as it is. */
   message: string;
   /** For `prerequisite`: the course to finish first. */
   courseSlug: string | null;
@@ -87,6 +89,7 @@ export function checkEligibility({
   hasActiveEnrollment,
   today,
   earlyAgeException = null,
+  locale = "fa",
 }: {
   dog: { name: string; birthDate: string; breed?: string | null };
   isEvaluated: boolean;
@@ -99,9 +102,12 @@ export function checkEligibility({
   today: string;
   /** The early-age exception in force; `null` (the default, and the registry's value today) means every dog needs the evaluation. */
   earlyAgeException?: EarlyAgeException | null;
+  /** The language the messages are worded in: the request's (`context.locale`). Persian by default. */
+  locale?: Locale;
 }): Ineligibility[] {
+  const options = { locale };
   if (course.status !== "approved" || course.price === null || course.price <= 0) {
-    return [{ kind: "not-for-sale", message: "این دوره فعلاً فروخته نمی‌شه.", courseSlug: null }];
+    return [{ kind: "not-for-sale", message: m.server_eligibility_not_for_sale({}, options), courseSlug: null }];
   }
 
   const problems: Ineligibility[] = [];
@@ -110,7 +116,7 @@ export function checkEligibility({
   if (!isEvaluated && !qualifiesForEarlyAge({ dog, course, exception: earlyAgeException, today })) {
     problems.push({
       kind: "not-evaluated",
-      message: `${dog.name} هنوز ارزیابی نشده. اول باید ارزیابی رایگان انجام بشه.`,
+      message: m.server_eligibility_not_evaluated({ dog: dog.name }, options),
       courseSlug: null,
     });
   }
@@ -120,7 +126,7 @@ export function checkEligibility({
     if (passedCourseIds.has(required.id)) continue;
     problems.push({
       kind: "prerequisite",
-      message: `${dog.name} اول باید دوره‌ی ${required.title} رو تموم کنه.`,
+      message: m.server_eligibility_prerequisite({ dog: dog.name, course: required.title }, options),
       courseSlug: required.slug,
     });
   }
@@ -130,14 +136,14 @@ export function checkEligibility({
   if (course.minAgeMonths !== null && age < course.minAgeMonths) {
     problems.push({
       kind: "too-young",
-      message: `حداقل سن این دوره ${formatNumberFa(course.minAgeMonths)} ماهه.`,
+      message: m.server_eligibility_too_young({ months: formatNumber(course.minAgeMonths, locale) }, options),
       courseSlug: null,
     });
   }
   if (course.maxAgeMonths !== null && age > course.maxAgeMonths) {
     problems.push({
       kind: "too-old",
-      message: `حداکثر سن این دوره ${formatNumberFa(course.maxAgeMonths)} ماهه.`,
+      message: m.server_eligibility_too_old({ months: formatNumber(course.maxAgeMonths, locale) }, options),
       courseSlug: null,
     });
   }
@@ -146,7 +152,7 @@ export function checkEligibility({
   if (hasActiveEnrollment) {
     problems.push({
       kind: "active-enrollment",
-      message: `${dog.name} همین الان داره این دوره رو می‌گذرونه.`,
+      message: m.server_eligibility_active_enrollment({ dog: dog.name }, options),
       courseSlug: null,
     });
   }

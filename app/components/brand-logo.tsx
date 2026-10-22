@@ -1,6 +1,6 @@
 import { cn } from "cn";
 
-import { CENTER_DESCRIPTOR } from "~/lib/contact";
+import { CENTER } from "~/lib/contact";
 
 /*===== Brand Logo =====*/
 /**
@@ -26,14 +26,14 @@ export function BrandLogo({ className, descriptor = false }: { className?: strin
       />
       {descriptor ? (
         <span className="flex flex-col gap-1.5">
-          <span className="text-[1.3em] leading-none font-black text-gold-leaf">زروان</span>
+          <span className="text-[1.3em] leading-none font-black text-gold-leaf">{CENTER.name}</span>
           {/* A fixed small size (not `em`): at the wordmark's scale the line would be too small to read. */}
           <span className="hidden text-[0.6875rem] leading-none font-bold text-pretty text-muted-foreground min-[380px]:block lg:text-xs">
-            {CENTER_DESCRIPTOR}
+            {CENTER.descriptor}
           </span>
         </span>
       ) : (
-        <span className="text-[1.3em] leading-none font-black text-gold-leaf">زروان</span>
+        <span className="text-[1.3em] leading-none font-black text-gold-leaf">{CENTER.name}</span>
       )}
     </span>
   );

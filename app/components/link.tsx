@@ -1,6 +1,8 @@
 // The one place allowed to import TanStack Router's Link (see .oxlintrc.json).
 import { type LinkComponent, Link as RouterLink, useLocation, useRouter } from "@tanstack/react-router";
 
+import { crossesLanguage } from "~/lib/i18n";
+
 /*===== Link =====*/
 /**
  * TanStack Router's `Link`, fully typed (`to` is a route path, with `params`, `search` and `hash` as their own props),
@@ -14,6 +16,8 @@ import { type LinkComponent, Link as RouterLink, useLocation, useRouter } from "
  *   element, so the smooth scroller (`SmoothScroll`) can glide there.
  * - **The page transition** (a slide forward or back, or a fade) is the router's default (`defaultViewTransition` in
  *   `app/router.tsx`): only when the pathname changes. See docs/view-transitions.md.
+ * - **A change of language** (an English page linking to a page that only exists in Persian, like `/admin`) reloads the
+ *   document, so `<html lang dir>` and the faces follow (`crossesLanguage` in `~/lib/i18n`).
  */
 export const Link: LinkComponent<"a"> = (props) => {
   const router = useRouter();
@@ -23,12 +27,15 @@ export const Link: LinkComponent<"a"> = (props) => {
   const samePathname = target.pathname === currentPathname;
   const samePageHash = samePathname && target.hash !== "";
   const inAdmin = currentPathname === "/admin" || currentPathname.startsWith("/admin/");
+  const reloadDocument = Boolean(props.reloadDocument) || crossesLanguage(target.pathname);
 
   return (
     <RouterLink
-      preload={props.reloadDocument || samePathname ? false : inAdmin ? "intent" : "viewport"}
+      preload={reloadDocument || samePathname ? false : inAdmin ? "intent" : "viewport"}
       resetScroll={samePageHash ? false : undefined}
       hashScrollIntoView={samePageHash ? false : undefined}
+      // Before the spread for the types' sake; a call site's own `reloadDocument` is already folded in above.
+      reloadDocument={reloadDocument}
       {...props}
     />
   );

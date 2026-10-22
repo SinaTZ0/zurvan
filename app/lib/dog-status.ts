@@ -5,11 +5,12 @@ import type { Dog } from "~/orpc/dog/contract";
 import type { Enrollment } from "~/orpc/enrollment/contract";
 import type { Evaluation } from "~/orpc/evaluation/contract";
 import type { EvaluationStatus } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Status =====*/
 // Where a dog stands in the customer's eyes (docs/app-spec.md, F2/F3/F6), worked out once so the Dashboard's cards and
 // Dog Detail's header say the same thing: the words the dog speaks in its bubble, the one thing to do next, and which
-// evaluation (if any) is still waiting. Browser-safe.
+// evaluation (if any) is still waiting. Worded in the page's language when called (render time). Browser-safe.
 
 export type DogStatusKind = "unseen" | "rejected" | "waiting" | "evaluated" | "training";
 
@@ -43,7 +44,7 @@ export function getDogStatus({
   const own = evaluations.filter((evaluation) => evaluation.dog.id === dog.id);
   const waitingEvaluation = own.find((evaluation) => evaluation.status === "requested") ?? null;
   const trainer = HEAD_TRAINER.firstName;
-  const coursesAction = { label: "دوره‌ها رو ببین", link: linkOptions({ to: "/courses" }) };
+  const coursesAction = { label: m.shared_dog_status_see_courses(), link: linkOptions({ to: "/courses" }) };
   const evaluationAction = (label: string) => ({
     label,
     link: linkOptions({ to: "/assessment", search: { dog: dog.id } }),
@@ -55,7 +56,7 @@ export function getDogStatus({
     const training = enrollments.some((enrollment) => enrollment.dog.id === dog.id && enrollment.status === "active");
     return {
       kind: training ? "training" : "evaluated",
-      line: training ? `${trainer} برای هماهنگی زنگ می‌زنه` : "ارزیابی شدم! دوره‌هام باز شدن",
+      line: training ? m.shared_dog_status_training({ trainer }) : m.shared_dog_status_evaluated(),
       badge: "evaluated",
       action: coursesAction,
       waitingEvaluation: null,
@@ -67,7 +68,7 @@ export function getDogStatus({
   if (waitingEvaluation) {
     return {
       kind: "waiting",
-      line: `منتظر زنگ ${trainer} هستم`,
+      line: m.shared_dog_status_waiting({ trainer }),
       badge: "requested",
       action: null,
       waitingEvaluation,
@@ -80,9 +81,9 @@ export function getDogStatus({
   if (latest?.status === "rejected") {
     return {
       kind: "rejected",
-      line: `${trainer} جواب داد؛ دلیلش اینه:`,
+      line: m.shared_dog_status_rejected({ trainer }),
       badge: "rejected",
-      action: evaluationAction("ارزیابی دوباره"),
+      action: evaluationAction(m.shared_dog_status_evaluate_again()),
       waitingEvaluation: null,
       rejectionReason: latest.rejectionReason,
     };
@@ -90,9 +91,9 @@ export function getDogStatus({
 
   return {
     kind: "unseen",
-    line: `هنوز ${trainer} منو ندیده`,
+    line: m.shared_dog_status_unseen({ trainer }),
     badge: null,
-    action: evaluationAction("ارزیابی رایگان"),
+    action: evaluationAction(m.shared_dog_status_free_evaluation()),
     waitingEvaluation: null,
     rejectionReason: null,
   };

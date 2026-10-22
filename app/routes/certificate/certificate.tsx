@@ -1,7 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { pageHead } from "~/lib/seo";
+
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import { CertificateAsk } from "~/routes/certificate/components/certificate-ask";
 import { CertificateHero } from "~/routes/certificate/components/certificate-hero";
 
@@ -10,7 +13,15 @@ import { CertificateHero } from "~/routes/certificate/components/certificate-her
 export const Route = createFileRoute("/_public/certificate/$number")({
   loader: ({ context: { queryClient }, params }) =>
     queryClient.ensureQueryData(orpc.certificate.verify.queryOptions({ input: { number: params.number } })),
-  head: () => ({ meta: [{ title: "بررسی گواهی | زروان" }, { name: "robots", content: "noindex" }] }),
+  head: ({ params }) => {
+    const head = pageHead({
+      path: `/certificate/${params.number}`,
+      title: m.certificate_meta_title(),
+      description: m.certificate_meta_description(),
+    });
+    // Never in a search engine, in either language.
+    return { ...head, meta: [...head.meta, { name: "robots", content: "noindex" }] };
+  },
   // A certificate can be revoked, so a cached «valid» would be a lie: no cache keeps this answer.
   headers: () => ({ "Cache-Control": "no-store" }),
   component: CertificatePage,

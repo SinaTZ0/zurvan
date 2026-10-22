@@ -3,9 +3,10 @@ import { useId } from "react";
 
 import { FieldError } from "~/components/ui/field";
 import { describeDogAge } from "~/lib/dog-format";
-import { formatJalaliDate } from "~/lib/jalali";
+import { formatDate } from "~/lib/locale-format";
+import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Dog } from "~/orpc/dog/contract";
-import { LOCKED_FIELD_NOTE } from "~/routes/account_dog_form/schema";
+import { m } from "~/paraglide/messages";
 
 /*===== Locked Fields =====*/
 /**
@@ -32,19 +33,20 @@ export function LockedFields({
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         {/*------ Breed ------*/}
-        <Plate label="نژاد" noteId={noteId} error={breedError}>
+        <Plate label={m.account_dog_form_field_breed()} noteId={noteId} error={breedError}>
           {dog.breed ? (
             <span className="font-bold">{dog.breed}</span>
           ) : (
-            <span className="text-muted-foreground">ثبت نشده</span>
+            <span className="text-muted-foreground">{m.account_dog_form_locked_not_set()}</span>
           )}
         </Plate>
 
         {/*------ Birth Date ------*/}
-        <Plate label="تاریخ تولد" noteId={noteId} error={birthError}>
+        <Plate label={m.account_dog_form_field_birth_date()} noteId={noteId} error={birthError}>
           <span className="font-bold">
-            {formatJalaliDate(dog.birthDate)}
-            {dog.birthDateApproximate && " (تقریبی)"}
+            {dog.birthDateApproximate
+              ? m.account_dog_form_date_approximate({ date: formatDate(dog.birthDate) })
+              : formatDate(dog.birthDate)}
           </span>
           <span className="text-sm text-muted-foreground">{describeDogAge(dog)}</span>
         </Plate>
@@ -53,7 +55,7 @@ export function LockedFields({
       {/*------ Shared Note ------*/}
       <p id={noteId} className="flex items-start gap-2 text-sm text-pretty text-muted-foreground">
         <LockKeyholeIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-        {LOCKED_FIELD_NOTE}
+        {m.account_dog_form_locked_note({ trainer: HEAD_TRAINER.firstName })}
       </p>
     </div>
   );

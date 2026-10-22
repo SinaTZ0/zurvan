@@ -1,12 +1,12 @@
 import { cn } from "cn";
 
 import { formatToman } from "~/lib/course-format";
-import { toPersianDigits } from "~/lib/digits";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatDigits, formatTimestamp } from "~/lib/locale-format";
 import type { PartnerPerson } from "~/orpc/partner/contract";
+import { m } from "~/paraglide/messages";
 import { HighlightRing } from "~/routes/account_partner_leads/components/highlight-ring";
 import { LeadRoad } from "~/routes/account_partner_leads/components/lead-road";
-import { STAGE_STATUS } from "~/routes/account_partner_leads/stages";
+import { stageStatus } from "~/routes/account_partner_leads/stages";
 
 /*===== Constants =====*/
 /** The stagger between rows as a list arrives, and the most rows that wait for it (the rest come with the last). */
@@ -21,22 +21,24 @@ const STAGE_CHIP: Record<PartnerPerson["stage"], string> = {
 };
 
 /*===== Phone =====*/
-/** `09123456789` as «۰۹۱۲ ۳۴۵ ۶۷۸۹»; anything that is not in the stored shape is shown as it is, in Persian digits. */
+/** `09123456789` as «۰۹۱۲ ۳۴۵ ۶۷۸۹» ("0912 345 6789" in English); anything that is not in the stored shape is shown as it is, in the page's digits. */
 function formatPhone(phoneNumber: string): string {
   const grouped = /^09\d{9}$/.test(phoneNumber)
     ? `${phoneNumber.slice(0, 4)} ${phoneNumber.slice(4, 7)} ${phoneNumber.slice(7)}`
     : phoneNumber;
-  return toPersianDigits(grouped);
+  return formatDigits(grouped);
 }
 
 /*===== Commission =====*/
-/** What this partner is owed for a person who bought, and whether the Admin has paid it: «۹٬۵۰۰٬۰۰۰ تومان · منتظر پرداخت». */
+/** What this partner is owed for a person who bought, and whether the Admin has paid it: «۹٬۵۰۰٬۰۰۰ تومان · منتظر پرداخت» ("9,500,000 Toman · Awaiting payment"). */
 function describeCommission(commission: NonNullable<PartnerPerson["commission"]>): string {
   return `${formatToman(commission.amount)} · ${commissionState(commission)}`;
 }
 
 function commissionState(commission: NonNullable<PartnerPerson["commission"]>): string {
-  return commission.paidAt ? `پرداخت شد · ${formatJalaliTimestamp(commission.paidAt)}` : "منتظر پرداخت";
+  return commission.paidAt
+    ? m.account_partner_leads_row_paid_on({ date: formatTimestamp(commission.paidAt) })
+    : m.account_partner_leads_row_awaiting();
 }
 
 /*===== Lead Row =====*/
@@ -68,7 +70,7 @@ export function LeadRow({
   const delay = Math.min(index, MAX_STAGGERED) * ROW_STEP_S;
 
   // Who the sentence names: the customer's name and the number he typed, whichever exist.
-  const identity = [name, number].filter(Boolean).join("، ");
+  const identity = [name, number].filter(Boolean).join(m.account_partner_leads_row_identity_joiner());
 
   return (
     <li
@@ -79,8 +81,13 @@ export function LeadRow({
       style={{ "--answer-delay": `${delay}s` } as React.CSSProperties}
     >
       <p className="sr-only">
-        {identity}: {STAGE_STATUS[person.stage]}
-        {person.commission && `، پورسانت ${describeCommission(person.commission)}`}
+        {person.commission
+          ? m.account_partner_leads_row_sr_commission({
+              identity,
+              stage: stageStatus(person.stage),
+              commission: describeCommission(person.commission),
+            })
+          : m.account_partner_leads_row_sr({ identity, stage: stageStatus(person.stage) })}
       </p>
 
       <div
@@ -98,7 +105,9 @@ export function LeadRow({
           </span>
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="rounded-full border border-foreground/15 px-2 py-0.5 text-[0.6875rem] font-bold text-muted-foreground">
-              {person.source === "link" ? "از لینک" : "شماره"}
+              {person.source === "link"
+                ? m.account_partner_leads_row_from_link()
+                : m.account_partner_leads_row_number()}
             </span>
             {name && number && (
               <bdi dir="ltr" className="text-xs text-muted-foreground tabular-nums">
@@ -121,7 +130,7 @@ export function LeadRow({
               STAGE_CHIP[person.stage],
             )}
           >
-            {STAGE_STATUS[person.stage]}
+            {stageStatus(person.stage)}
           </span>
         </div>
 
@@ -130,7 +139,7 @@ export function LeadRow({
             purchase itself, F12). */}
         {person.commission && (
           <div className="col-span-2 row-start-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-dashed border-foreground/15 pt-3 text-sm xl:col-span-3 xl:row-start-2">
-            <span className="text-muted-foreground">پورسانت:</span>
+            <span className="text-muted-foreground">{m.account_partner_leads_row_commission()}</span>
             <span className="font-extrabold whitespace-nowrap text-primary tabular-nums">
               {formatToman(person.commission.amount)}
             </span>

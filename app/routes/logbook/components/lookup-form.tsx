@@ -6,6 +6,7 @@ import { Button } from "~/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { normalizeFileNumber } from "~/lib/dog-file";
+import { m } from "~/paraglide/messages";
 
 /*===== Lookup Form =====*/
 /**
@@ -57,7 +58,7 @@ export function LookupForm() {
       className="lb-rise relative mt-8 flex w-full max-w-[28rem] flex-col gap-5 rounded-4xl border border-border bg-card paper-grain p-6 shadow-[0_24px_50px_-24px_rgb(0_0_0/0.9)] md:p-8"
     >
       <Field data-invalid={invalid}>
-        <FieldLabel htmlFor="logbook-file-number">شماره‌ی پرونده</FieldLabel>
+        <FieldLabel htmlFor="logbook-file-number">{m.logbook_form_label()}</FieldLabel>
         <div ref={shakeRef}>
           <Input
             id="logbook-file-number"
@@ -76,7 +77,7 @@ export function LookupForm() {
             className="text-start font-mono text-lg tracking-wider"
           />
         </div>
-        <FieldDescription>با یا بدون «ZD-»، با حروف بزرگ یا کوچک.</FieldDescription>
+        <FieldDescription>{m.logbook_form_hint()}</FieldDescription>
 
         {/*------ Error line ------*/}
         {/* Always mounted: the grid row opens from 0fr and closes back, `inert` while closed so it can't be reached. */}
@@ -94,11 +95,11 @@ export function LookupForm() {
               >
                 <CircleAlertIcon aria-hidden strokeWidth={2} className="mt-0.5 size-4 shrink-0" />
                 <span className="text-pretty">
-                  شماره‌ی پرونده درست نیست؛ شکلش باید مثل{" "}
+                  {m.logbook_form_error_before()}{" "}
                   <bdi dir="ltr" className="whitespace-nowrap">
                     ZD-4F9A21C07B
-                  </bdi>{" "}
-                  باشه.
+                  </bdi>
+                  {m.logbook_form_error_after()}
                 </span>
               </p>
             )}
@@ -120,7 +121,7 @@ export function LookupForm() {
           <span
             className={`col-start-1 row-start-1 transition duration-200 motion-reduce:transition-none ${pending ? "scale-50 -rotate-90 opacity-0" : ""}`}
           >
-            باز کن
+            {m.logbook_form_submit()}
           </span>
           <Loader2Icon
             aria-hidden

@@ -1,6 +1,7 @@
 import { ArrowUpLeftIcon } from "lucide-react";
 
 import { SOCIAL_ICONS } from "~/components/social-icons";
+import { m } from "~/paraglide/messages";
 
 /*===== Profile Sign =====*/
 /**
@@ -48,9 +49,9 @@ export function ProfileSign({
         <ArrowUpLeftIcon
           aria-hidden
           strokeWidth={1.8}
-          className="size-5 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:-translate-x-0.5"
+          className="size-5 shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 ltr:-scale-x-100 ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
         />
-        <span className="sr-only">(در پنجره‌ی تازه باز می‌شود)</span>
+        <span className="sr-only">{m.contact_sign_new_tab()}</span>
       </a>
     </li>
   );

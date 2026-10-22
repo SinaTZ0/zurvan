@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/vazirmatn";
+/* The English pages' display face (`/en`, `:lang(en)` below): its files load only where it is used. */
+@import "@fontsource-variable/gabarito";
 /* Only the black Latin cut: the stencil face sets the dog tag's "K9" and the footer's outlined "ZURVAN", nothing else. */
 @import "@fontsource/big-shoulders-stencil/latin-900.css";
 @import "lenis/dist/lenis.css";
@@ -211,9 +213,21 @@
   }
 }
 
+/* The display face follows the page's language (docs/i18n/english-version-plan.md, decision 6): Estedad for Persian;
+   Gabarito, a heavy geometric sans with the same open, friendly shapes, for the English pages. The hand stays Marhey in
+   both: its own Latin is drawn in the same bouncy hand, so the dog keeps one voice. Body text stays Vazirmatn, whose
+   Latin is drawn to sit with it. */
+:root {
+  --display-face: "Estedad", "Vazirmatn Variable", sans-serif;
+}
+
+:root:lang(en) {
+  --display-face: "Gabarito Variable", "Estedad", "Vazirmatn Variable", sans-serif;
+}
+
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-display: "Estedad", "Vazirmatn Variable", sans-serif;
+  --font-display: var(--display-face);
   --font-hand: "Marhey", "Vazirmatn Variable", sans-serif;
   --font-sans: "Vazirmatn Variable", Tahoma, sans-serif;
   --font-stencil: "Big Shoulders Stencil", Impact, sans-serif;
@@ -490,7 +504,7 @@
 }
 
 /*------ Slide ------*/
-/* The site is right to left, so forward runs leftward: the next page comes in from the left and the old one leaves
+/* The Persian site is right to left, so forward runs leftward: the next page comes in from the left and the old one leaves
    to the right; back mirrors it. The shift is a nudge, not a full-width slide: the old page is gone before the new
    one arrives, so the strip the shift uncovers at the edge never shows. */
 :root {
@@ -499,6 +513,11 @@
   --page-leave: 220ms;
   --page-gap: 100ms;
   --page-enter: 380ms;
+}
+
+/* The English pages read left to right, so forward runs rightward: the same slide, mirrored. */
+:root[dir="ltr"] {
+  --page-shift: -1.75rem;
 }
 
 html:active-view-transition-type(forward)::view-transition-old(root) {

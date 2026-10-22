@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, useMatches } from "@tanstack/react-router";
 
 import { CartSync } from "~/components/cart-sync";
 import { requireSession } from "~/lib/session-guard";
-import { ACCOUNT_EXIT_LINK, ROOM_LABEL } from "~/routes/layout_account/account-nav";
+import { ACCOUNT_EXIT_LINK, roomLabel as getRoomLabel } from "~/routes/layout_account/account-nav";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
 import { AccountHeader } from "~/routes/layout_account/components/account-header";
 import { AccountTabBar } from "~/routes/layout_account/components/account-tab-bar";
@@ -32,7 +32,7 @@ function AccountLayout() {
   const role = user.role === "partner" ? "partner" : "customer";
   const navItems = useAccountNavItems(role);
   const flushFooter = useMatches({ select: (matches) => matches.some((match) => match.staticData.flushFooter) });
-  const roomLabel = ROOM_LABEL[role];
+  const roomLabel = getRoomLabel(role);
 
   return (
     <div className="flex min-h-svh flex-col overflow-x-clip">

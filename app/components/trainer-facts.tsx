@@ -1,6 +1,6 @@
 import { AwardIcon, CalendarHeartIcon, MapPinnedIcon } from "lucide-react";
 
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
+import { CENTER } from "~/lib/contact";
 import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 
@@ -13,7 +13,7 @@ export function TrainerFacts() {
   const facts = [
     { icon: CalendarHeartIcon, label: `${formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای` },
     { icon: AwardIcon, label: HEAD_TRAINER.credential },
-    { icon: MapPinnedIcon, label: `فعال در ${CENTER_SERVICE_AREA}` },
+    { icon: MapPinnedIcon, label: `فعال در ${CENTER.serviceArea}` },
   ];
 
   return (

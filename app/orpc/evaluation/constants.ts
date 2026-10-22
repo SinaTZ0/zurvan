@@ -1,6 +1,10 @@
+import { m } from "~/paraglide/messages";
+
 /*===== Evaluation Constants =====*/
 // Browser-safe values shared by the API, the seed and the evaluation screens. Stored as plain text (see
 // `app/db/schema.ts`). docs/app-spec.md, F3.
+// Labels are getters over the messages (`messages/shared/`), read while rendering in the page's language; the Admin's
+// pages are Persian only, so they read Persian.
 
 /*===== Status =====*/
 // requested → evaluated | rejected | withdrawn (by the customer, while it is still requested). All three are final.
@@ -9,10 +13,18 @@ export const EVALUATION_STATUSES = ["requested", "evaluated", "rejected", "withd
 export type EvaluationStatus = (typeof EVALUATION_STATUSES)[number];
 
 export const EVALUATION_STATUS_LABELS: Record<EvaluationStatus, string> = {
-  requested: "در انتظار ارزیابی",
-  evaluated: "ارزیابی شد",
-  rejected: "رد شد",
-  withdrawn: "پس گرفته شد",
+  get requested() {
+    return m.shared_evaluation_status_requested();
+  },
+  get evaluated() {
+    return m.shared_evaluation_status_evaluated();
+  },
+  get rejected() {
+    return m.shared_evaluation_status_rejected();
+  },
+  get withdrawn() {
+    return m.shared_evaluation_status_withdrawn();
+  },
 };
 
 /*===== When the Customer Is Free =====*/
@@ -30,13 +42,27 @@ export const EVALUATION_WEEKDAYS = [
 export type EvaluationWeekday = (typeof EVALUATION_WEEKDAYS)[number];
 
 export const EVALUATION_WEEKDAY_LABELS: Record<EvaluationWeekday, string> = {
-  saturday: "شنبه",
-  sunday: "یکشنبه",
-  monday: "دوشنبه",
-  tuesday: "سه‌شنبه",
-  wednesday: "چهارشنبه",
-  thursday: "پنجشنبه",
-  friday: "جمعه",
+  get saturday() {
+    return m.shared_weekday_saturday();
+  },
+  get sunday() {
+    return m.shared_weekday_sunday();
+  },
+  get monday() {
+    return m.shared_weekday_monday();
+  },
+  get tuesday() {
+    return m.shared_weekday_tuesday();
+  },
+  get wednesday() {
+    return m.shared_weekday_wednesday();
+  },
+  get thursday() {
+    return m.shared_weekday_thursday();
+  },
+  get friday() {
+    return m.shared_weekday_friday();
+  },
 };
 
 export const EVALUATION_PERIODS = ["morning", "afternoon", "evening"] as const;
@@ -44,9 +70,15 @@ export const EVALUATION_PERIODS = ["morning", "afternoon", "evening"] as const;
 export type EvaluationPeriod = (typeof EVALUATION_PERIODS)[number];
 
 export const EVALUATION_PERIOD_LABELS: Record<EvaluationPeriod, string> = {
-  morning: "صبح",
-  afternoon: "بعدازظهر",
-  evening: "عصر و شب",
+  get morning() {
+    return m.shared_period_morning();
+  },
+  get afternoon() {
+    return m.shared_period_afternoon();
+  },
+  get evening() {
+    return m.shared_period_evening();
+  },
 };
 
 /*===== Limits =====*/

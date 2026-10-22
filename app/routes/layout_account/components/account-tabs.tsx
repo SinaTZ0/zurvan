@@ -31,7 +31,7 @@ export function AccountTabs({
             >
               {item.label}
               {/* The underline would run under the badge; its own span keeps the line to the label. */}
-              <CountBadge count={item.badge} label={item.badgeLabel} className="ms-1.5 no-underline" />
+              <CountBadge count={item.badge} className="ms-1.5 no-underline" />
             </NavLink>
           </li>
         ))}

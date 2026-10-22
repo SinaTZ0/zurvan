@@ -22,6 +22,7 @@ import {
   type PartnerProfileRecord,
 } from "~/orpc/partner/repository";
 import { addLeadInputSchema, createPartnerInputSchema, partnerProfileInputSchema } from "~/orpc/partner/validation";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 type Own = { db: DatabaseOrTransaction; userId: string };
@@ -30,9 +31,8 @@ type NotFoundResult = { kind: "not-found" };
 type InvalidResult = { kind: "invalid"; errors: string[]; fields: Record<string, string> };
 
 /*===== Messages =====*/
-const LEAD_ALREADY_REGISTERED_MESSAGE = "این شماره قبلاً توی سایت ثبت‌نام کرده؛ دیگه نمی‌شه به اسم تو ثبت بشه.";
-const LEAD_REPEAT_MESSAGE = "این شماره رو قبلاً ثبت کردی.";
-const PARTNER_INACTIVE_MESSAGE = "همکاریت فعلاً متوقفه؛ شماره‌ی تازه ثبت نمی‌شه.";
+// The Admin's (a new partner), so Persian only. The partner's own refusals are `m.server_partner_…()`, called where they
+// happen so they are in that request's language.
 const PARTNER_PHONE_TAKEN_MESSAGE = "این شماره قبلاً در سایت ثبت‌نام کرده. هر شماره یک نقش دارد.";
 const PARTNER_CODE_TAKEN_MESSAGE = "این کد قبلاً گرفته شده.";
 
@@ -143,15 +143,15 @@ export async function addLead({ db, userId, input }: Own & { input: { phoneNumbe
   /*------ Who may add ------*/
   const profile = await findPartnerProfile({ db, userId });
   if (!profile) return { kind: "not-found" };
-  if (!profile.isActive) return { kind: "invalid", errors: [PARTNER_INACTIVE_MESSAGE], fields: {} };
+  if (!profile.isActive) return { kind: "invalid", errors: [m.server_partner_inactive()], fields: {} };
 
   if (await findUserIdByPhone({ db, phoneNumber })) {
-    return { kind: "invalid", errors: [], fields: { phoneNumber: LEAD_ALREADY_REGISTERED_MESSAGE } };
+    return { kind: "invalid", errors: [], fields: { phoneNumber: m.server_partner_lead_registered() } };
   }
 
   /*------ Store ------*/
   const leadId = await insertLeadOnce({ db, partnerId: userId, phoneNumber });
-  if (!leadId) return { kind: "invalid", errors: [], fields: { phoneNumber: LEAD_REPEAT_MESSAGE } };
+  if (!leadId) return { kind: "invalid", errors: [], fields: { phoneNumber: m.server_partner_lead_repeat() } };
 
   // Read back through the same stage logic as the list, so the form shows what the list will.
   const people = await loadPeople({ db, partnerId: userId });

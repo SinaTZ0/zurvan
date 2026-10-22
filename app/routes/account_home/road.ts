@@ -1,7 +1,8 @@
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { DogStatus } from "~/lib/dog-status";
 import type { Dog } from "~/orpc/dog/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /**
@@ -27,7 +28,7 @@ export type RoadStop = {
 /*===== Road =====*/
 /** The evaluation stop while it is the lit one. */
 function atEvaluation(fact: string, mark: RoadMark = "hollow"): RoadStop {
-  return { id: "evaluation", label: "ارزیابی", fact, tone: "current", mark };
+  return { id: "evaluation", label: m.account_home_road_evaluation(), fact, tone: "current", mark };
 }
 
 /**
@@ -52,23 +53,23 @@ export function buildRoad({
 
   /*------ Evaluation ------*/
   const evaluation: RoadStop = evaluated
-    ? { id: "evaluation", label: "ارزیابی", fact: "ارزیابی شد", tone: "done", mark: "check" }
+    ? { id: "evaluation", label: m.account_home_road_evaluation(), fact: m.account_home_road_evaluated(), tone: "done", mark: "check" }
     : status.kind === "waiting"
-      ? atEvaluation(`منتظر زنگ ${trainer}`)
+      ? atEvaluation(m.account_home_road_waiting({ trainer }))
       : status.kind === "rejected"
-        ? atEvaluation("جواب داده شد", "x")
-        : atEvaluation("رایگانه");
+        ? atEvaluation(m.account_home_road_answered(), "x")
+        : atEvaluation(m.account_home_road_free());
 
   /*------ Courses ------*/
   // A dog that has passed courses but has none running now hasn't "never bought": it just has no new one yet.
   const courses: RoadStop = !evaluated
-    ? { id: "courses", label: "دوره‌ها", fact: "بعد از ارزیابی", tone: "locked", mark: "lock" }
+    ? { id: "courses", label: m.account_home_road_courses(), fact: m.account_home_road_after_evaluation(), tone: "locked", mark: "lock" }
     : activeCount > 0
-      ? { id: "courses", label: "دوره‌ها", fact: null, tone: "current", mark: "dot" }
+      ? { id: "courses", label: m.account_home_road_courses(), fact: null, tone: "current", mark: "dot" }
       : {
           id: "courses",
-          label: "دوره‌ها",
-          fact: passed > 0 ? "دوره‌ی تازه‌ای نخریدی" : "هنوز نخریدی",
+          label: m.account_home_road_courses(),
+          fact: passed > 0 ? m.account_home_road_no_new_course() : m.account_home_road_nothing_bought(),
           tone: "current",
           mark: "hollow",
         };
@@ -78,16 +79,16 @@ export function buildRoad({
     stops: [
       {
         id: "intro",
-        label: "معرفی",
-        fact: formatJalaliTimestamp(dog.createdAt),
+        label: m.account_home_road_intro(),
+        fact: formatTimestamp(dog.createdAt),
         tone: "done",
         mark: "check",
       },
       evaluation,
       courses,
       passed > 0
-        ? { id: "passed", label: "گذرونده", fact: null, tone: "done", mark: "check" }
-        : { id: "passed", label: "گذرونده", fact: "هنوز هیچی", tone: "ahead", mark: "hollow" },
+        ? { id: "passed", label: m.account_home_road_passed(), fact: null, tone: "done", mark: "check" }
+        : { id: "passed", label: m.account_home_road_passed(), fact: m.account_home_road_none_yet(), tone: "ahead", mark: "hollow" },
     ],
   };
 }

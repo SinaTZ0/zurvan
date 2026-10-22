@@ -1,6 +1,7 @@
 import { Lock } from "lucide-react";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Photo Note =====*/
 /**
@@ -13,11 +14,9 @@ export function PhotoNote({ className }: { className?: string }) {
       <div className="flex items-start gap-3">
         <Lock aria-hidden strokeWidth={1.5} className="mt-1 size-6 shrink-0 text-primary" />
         <div>
-          <h3 className="font-extrabold">درباره‌ی عکس‌ها و فیلم‌ها</h3>
+          <h3 className="font-extrabold">{m.privacy_photo_title()}</h3>
           <p className="mt-2 text-pretty text-muted-foreground">
-            عکس‌ها (عکس سگ و عکس‌های درخواست ارزیابی) با یه نشانی طولانی و غیرقابل حدس ذخیره می‌شن؛ هر کسی که نشانی
-            دقیقش رو داشته باشه می‌تونه ببیندشون. فیلم‌های درخواست ارزیابی این‌طور نیستن: خصوصی‌ان و فقط خودت و{" "}
-            {HEAD_TRAINER.firstName} می‌بینینشون.
+            {m.privacy_photo_text({ trainer: HEAD_TRAINER.firstName })}
           </p>
         </div>
       </div>

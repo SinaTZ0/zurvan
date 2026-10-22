@@ -51,5 +51,7 @@ export function buildPreviewCourse({
       const title = titles.get(slug);
       return title ? [{ slug, title }] : [];
     }),
+    // The preview is the Persian card; the other title only feeds search.
+    otherTitle: null,
   };
 }

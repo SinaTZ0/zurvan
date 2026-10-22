@@ -14,6 +14,7 @@ import type { CartItem } from "~/orpc/checkout/contract";
 import { findCoursesBySlugs } from "~/orpc/course/repository";
 import { findDogsByOwner } from "~/orpc/dog/repository";
 import { isDogId } from "~/orpc/dog/validation";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
@@ -72,12 +73,12 @@ export async function addToCart({
   item,
 }: Executor & { userId: string; item: CartItem }): Promise<{ kind: "success"; cart: Cart } | InvalidResult> {
   const [resolved] = await resolveItems({ db, userId, items: [item], approvedOnly: true });
-  if (!resolved) return { kind: "invalid", errors: ["این مورد دیگر وجود ندارد."] };
+  if (!resolved) return { kind: "invalid", errors: [m.server_cart_item_gone()] };
 
   const already = await findCartPairKeys({ db, userId, courseIds: [resolved.courseId] });
   if (!already.has(`${resolved.dogId}:${resolved.courseId}`)) {
     if ((await countCartRows({ db, userId })) >= CART_MAX_ITEMS) {
-      return { kind: "invalid", errors: [`سبد خرید حداکثر ${CART_MAX_ITEMS} مورد دارد.`] };
+      return { kind: "invalid", errors: [m.server_cart_max_items({ max: String(CART_MAX_ITEMS) })] };
     }
     await insertCartRows({ db, userId, pairs: [resolved] });
   }

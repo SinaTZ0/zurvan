@@ -9,6 +9,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_partner/column";
 
 /*===== Partner Error =====*/
@@ -32,17 +33,15 @@ export function PartnerError({ notFound }: { notFound: boolean }) {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="partner-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          {notFound ? "حساب همکاریت کامل نیست" : "صفحه‌ی همکاری باز نشد"}
+          {notFound ? m.account_partner_error_incomplete_title() : m.account_partner_error_failed_title()}
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          {notFound
-            ? "با مرکز تماس بگیر تا حسابت رو کامل کنن."
-            : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا با مرکز تماس بگیر."}
+          {notFound ? m.account_partner_error_incomplete_body() : m.account_partner_error_failed_body()}
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           {!notFound && (
             <Link to="/account/partner" className={buttonVariants({ variant: "solid", size: "lg" })}>
-              دوباره امتحان کن
+              {m.account_partner_error_retry()}
             </Link>
           )}
           <a
@@ -69,7 +68,7 @@ export function PartnerError({ notFound }: { notFound: boolean }) {
             tail="right"
             className="absolute right-[calc(30%-2.25rem)] bottom-[calc(100%+0.3rem)] text-pretty"
           >
-            ببخشید!
+            {m.account_partner_error_bubble()}
           </ChalkBubble>
         </div>
       </div>

@@ -10,14 +10,15 @@ export type CertificateRecord = typeof certificate.$inferSelect;
 
 export type CertificateRow = {
   certificate: CertificateRecord;
-  course: { slug: string; title: string; latinName: string };
+  /** `titleEn` is null until the Admin writes it. */
+  course: { slug: string; title: string; titleEn: string | null; latinName: string };
   dog: { id: string; name: string };
 };
 
 /*===== Reads =====*/
 const selection = {
   certificate,
-  course: { slug: course.slug, title: course.title, latinName: course.latinName },
+  course: { slug: course.slug, title: course.title, titleEn: course.titleEn, latinName: course.latinName },
   dog: { id: dog.id, name: dog.name },
 };
 

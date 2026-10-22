@@ -4,25 +4,22 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { BRICK } from "~/lib/brick";
+import { isEnglish } from "~/lib/i18n";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/join_partner/column";
 
 /*===== Ways In =====*/
 // The three ways a customer reaches a partner, as app-spec F7 defines them. The Partner Dashboard and Leads pages
 // (`/account/partner`) show them once the Admin has created the account; these plates describe what the partner gets.
-const WAYS: { icon: LucideIcon; title: string; detail: string }[] = [
-  {
-    icon: Link2Icon,
-    title: "لینک مخصوص تو",
-    detail: "هر مشتری که با لینکت بیاد، به حساب تو ثبت می‌شه.",
-  },
-  { icon: QrCodeIcon, title: "QR برای پیشخوان", detail: "همون لینک به شکل QR، برای مغازه‌ی تو." },
-  {
-    icon: PhoneIncomingIcon,
-    title: "شماره‌ی مشتری",
-    detail: "شماره‌ی مشتری رو قبل از ثبت‌نامش توی داشبوردت وارد کن؛ اگه با اون شماره ثبت‌نام کنه، مال توئه.",
-  },
-];
+// A function, not a constant: the words follow the page's language when it renders.
+function ways(): { icon: LucideIcon; title: string; detail: string }[] {
+  return [
+    { icon: Link2Icon, title: m.join_partner_way_link_title(), detail: m.join_partner_way_link_detail() },
+    { icon: QrCodeIcon, title: m.join_partner_way_qr_title(), detail: m.join_partner_way_qr_detail() },
+    { icon: PhoneIncomingIcon, title: m.join_partner_way_number_title(), detail: m.join_partner_way_number_detail() },
+  ];
+}
 
 /*===== Ways In Wall =====*/
 /**
@@ -44,7 +41,7 @@ export function WaysIn() {
         {/*------ Heading ------*/}
         <div className="relative lg:col-span-6 lg:pb-12">
           <h2 id="ways-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-            سه راه برای معرفی مشتری
+            {m.join_partner_ways_title()}
           </h2>
         </div>
 
@@ -58,11 +55,11 @@ export function WaysIn() {
               <MascotCut name="present" className="lively-wiggle lively-pet relative block w-full" />
               {/* The wrapper pops in on scroll (`lively-reveal-pop`); the bubble inside floats. */}
               <div
-                dir="rtl"
+                dir={isEnglish() ? "ltr" : "rtl"}
                 className="lively-reveal-pop absolute bottom-[calc(100%+0.25rem)] left-[calc(50%-36px)] [transform-origin:2.25rem_100%]"
               >
                 <ChalkBubble tail="left" className="lively-float-2 w-max max-w-[11rem] text-pretty lg:max-w-[14rem]">
-                  من از همین پیشخون راه افتادم!
+                  {m.join_partner_ways_bubble()}
                 </ChalkBubble>
               </div>
             </div>
@@ -83,7 +80,7 @@ export function WaysIn() {
         <div className={COLUMN}>
           {/*------ The Plates ------*/}
           <ul className="grid gap-5 lg:grid-cols-3 lg:gap-6">
-            {WAYS.map(({ icon: Icon, title, detail }) => (
+            {ways().map(({ icon: Icon, title, detail }) => (
               <li
                 key={title}
                 className="jp-way flex items-start gap-4 rounded-3xl border border-border bg-jet paper-grain p-6 shadow-[0_20px_40px_-20px_rgb(0_0_0/0.9)] lg:flex-col lg:gap-5 lg:p-8"
@@ -101,7 +98,7 @@ export function WaysIn() {
 
           {/*------ The Note ------*/}
           <p className="jp-way mt-6 w-fit max-w-full rounded-full border border-border bg-jet paper-grain px-5 py-2.5 text-sm text-pretty text-foreground/85">
-            اگه چند همکار یه شماره رو وارد کنن، اولی می‌مونه.
+            {m.join_partner_ways_note()}
           </p>
         </div>
       </div>

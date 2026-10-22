@@ -18,7 +18,7 @@ import {
   setPartnerActive,
   updatePartnerProfile,
 } from "~/orpc/partner/service";
-import { SHEBA_CHECKSUM_MESSAGE, SHEBA_FORMAT_MESSAGE } from "~/orpc/partner/validation";
+import { m } from "~/paraglide/messages";
 
 /*===== Partner Sheba =====*/
 // Runs against the real database: the boundary is that the update only ever targets the caller's own `partner` row,
@@ -84,8 +84,8 @@ describe("partner sheba number", () => {
     const badFormat = await updatePartnerProfile({ db, userId: partnerA.id, input: { shebaNumber: "IR12 345" } });
     const badChecksum = await updatePartnerProfile({ db, userId: partnerA.id, input: { shebaNumber: wrongChecksum } });
 
-    expect(badFormat).toMatchObject({ kind: "invalid", fields: { shebaNumber: SHEBA_FORMAT_MESSAGE } });
-    expect(badChecksum).toMatchObject({ kind: "invalid", fields: { shebaNumber: SHEBA_CHECKSUM_MESSAGE } });
+    expect(badFormat).toMatchObject({ kind: "invalid", fields: { shebaNumber: m.server_partner_sheba_format() } });
+    expect(badChecksum).toMatchObject({ kind: "invalid", fields: { shebaNumber: m.server_partner_sheba_checksum() } });
     expect(await getPartnerProfile({ db, userId: partnerA.id })).toMatchObject({ profile: { shebaNumber: null } });
   });
 

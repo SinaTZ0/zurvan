@@ -4,76 +4,70 @@ import Snap from "lenis/snap";
 import { motion, useMotionTemplate, useMotionValueEvent, useScroll, useTransform } from "motion/react";
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { SERVICES } from "~/routes/home/content";
+import { formatNumber } from "~/lib/locale-format";
+import { services, type ServiceId } from "~/routes/home/content";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Content =====*/
 // What each service opens into. A draft from docs/zurvan-courses.md (the course cards and the owner's notes) for the
 // owner to check: no prices, session counts or promises the cards don't make.
-type ServiceTitle = (typeof SERVICES)[number]["title"];
 
 // `rise` is the pose's height against the standing ones, so every pose is drawn at one scale and the lying dog
 // doesn't swell to a standing dog's height.
 // `bubbleAt` places the wide-screen bubble by the head when the default (up and to the right) doesn't fit the pose.
-const TEACH: Record<
-  ServiceTitle,
-  { points: readonly string[]; pose: MascotCutName; rise: number; says: string; bubbleAt?: string }
-> = {
-  "آموزش پایه و پیشرفته": {
-    points: [
-      "نام، بشین، بایست، خواب، بمون، بیا و هم‌قدم.",
-      "سطح حرفه‌ای: ماندن‌های طولانی و گوش دادن به فرمان بیرون از خونه.",
-      "از دو ماهگی می‌شه شروع کرد.",
-    ],
-    pose: "teach-basic",
-    rise: 0.98,
-    says: "بشین؟ بلدم! بعدی چیه؟",
-  },
-  "رفتارشناسی و اصلاح رفتار": {
-    points: [
-      "پرخاشگری، گاز گرفتن، اضطراب جدایی، خطای دستشویی و آشغال‌خواری.",
-      "اول می‌فهمیم چرا این کار رو می‌کنه، بعد روی خودِ رفتار کار می‌کنیم.",
-    ],
-    pose: "teach-calm",
-    rise: 0.54,
-    // Lying flat, his head is low and far right: the bubble goes above it, not past the plate's edge.
-    bubbleAt: "bottom-[96%] left-[34%]",
-    says: "دیگه کفش‌ها رو نمی‌جوم. قول!",
-  },
-  "آموزش تخصصی": {
-    points: [
-      "نگهبان محل، بادی‌گارد، سگ سرویس و سگ آلارم.",
-      "ردیابی: زنده‌یاب و موادیاب.",
-      "برنامه‌ی هر سگ بعد از ارزیابی چیده می‌شه.",
-    ],
-    pose: "teach-work",
-    rise: 1,
-    says: "آماده‌ی کارم!",
-  },
-  "آمادگی برای مسابقات داخلی و بین‌المللی": {
-    points: ["آمادگی برای آزمون‌های BH، IGP ۱ تا ۳، FH و WUSV.", "تمرین منظم ردیابی، اطاعت و محافظت تا روز مسابقه."],
-    pose: "teach-medal",
-    rise: 0.98,
-    // The longest line: on one line it runs past the plate's edge, so it breaks after the question.
-    says: "صاف بشینم؟\nداور داره نگاه می‌کنه!",
-  },
-  "مشاوره‌ی تخصصی قبل و بعد از آموزش": {
-    points: [
-      "قبل از شروع: کدوم دوره و با چه هدفی.",
-      "بعد از آموزش: این‌که تمرین‌ها توی خونه چطور ادامه پیدا کنه.",
-      "قدم اولش همون ارزیابی رایگانه.",
-    ],
-    pose: "teach-advice",
-    rise: 0.99,
-    says: "سؤال داری؟ گوش می‌دم.",
-  },
+const SCENES: Record<ServiceId, { pose: MascotCutName; rise: number; bubbleAt?: string }> = {
+  basic: { pose: "teach-basic", rise: 0.98 },
+  // Lying flat, his head is low and far right: the bubble goes above it, not past the plate's edge.
+  behavior: { pose: "teach-calm", rise: 0.54, bubbleAt: "bottom-[96%] left-[34%]" },
+  specialist: { pose: "teach-work", rise: 1 },
+  competition: { pose: "teach-medal", rise: 0.98 },
+  advice: { pose: "teach-advice", rise: 0.99 },
 };
 
-const ITEMS = SERVICES.map((service) => ({ ...service, ...TEACH[service.title] }));
+/**
+ * The services with their points and the dog's line, worded in the page's language when the section renders. The
+ * competition line is the longest: on one line it runs past the plate's edge, so it breaks after the question.
+ */
+function teachItems() {
+  const words: Record<ServiceId, { points: string[]; says: string }> = {
+    basic: {
+      points: [
+        m.home_service_basic_point_one(),
+        m.home_service_basic_point_two(),
+        m.home_service_basic_point_three(),
+      ],
+      says: m.home_service_basic_says(),
+    },
+    behavior: {
+      points: [m.home_service_behavior_point_one(), m.home_service_behavior_point_two()],
+      says: m.home_service_behavior_says(),
+    },
+    specialist: {
+      points: [
+        m.home_service_specialist_point_one(),
+        m.home_service_specialist_point_two(),
+        m.home_service_specialist_point_three(),
+      ],
+      says: m.home_service_specialist_says(),
+    },
+    competition: {
+      points: [m.home_service_competition_point_one(), m.home_service_competition_point_two()],
+      says: m.home_service_competition_says(),
+    },
+    advice: {
+      points: [m.home_service_advice_point_one(), m.home_service_advice_point_two(), m.home_service_advice_point_three()],
+      says: m.home_service_advice_says(),
+    },
+  };
+  return services().map((service) => ({ ...service, ...SCENES[service.id], ...words[service.id] }));
+}
+
+/** The number of services, for the pinned stretch's height and steps (it doesn't change with the language). */
+const ITEM_COUNT = 5;
 
 // The garland across the top of the plate: pennants hung along a sagging string (Q 200 46), each turned to the string.
 // Every third is gold, the rest a tint of the ink.
@@ -148,8 +142,8 @@ function useStepSnap({ section, enabled }: { section: React.RefObject<HTMLElemen
       if (!element) return;
       for (const remove of removers) remove();
       const top = element.getBoundingClientRect().top + window.scrollY;
-      const step = (element.offsetHeight - window.innerHeight) / (ITEMS.length - 1);
-      removers = ITEMS.map((_, index) => snap.add(Math.round(top + index * step)));
+      const step = (element.offsetHeight - window.innerHeight) / (ITEM_COUNT - 1);
+      removers = Array.from({ length: ITEM_COUNT }, (_, index) => snap.add(Math.round(top + index * step)));
     }
 
     place();
@@ -167,7 +161,20 @@ function useStepSnap({ section, enabled }: { section: React.RefObject<HTMLElemen
 function StepCount({ shown, className }: { shown: number; className?: string }) {
   return (
     <p aria-hidden className={cn("shrink-0 font-display text-foreground/55 tabular-nums", className)}>
-      <span className="text-foreground">{formatNumberFa(shown + 1)}</span> از {formatNumberFa(ITEMS.length)}
+      {/* The current number brighter than the rest of the line: the message gives the order, a marker splits it. */}
+      {m
+        .home_teach_count({ current: "\u0000", count: formatNumber(ITEM_COUNT) })
+        .split("\u0000")
+        .map((part, index) =>
+          index === 0 ? (
+            <span key="before">{part}</span>
+          ) : (
+            <span key="after">
+              <span className="text-foreground">{formatNumber(shown + 1)}</span>
+              {part}
+            </span>
+          ),
+        )}
     </p>
   );
 }
@@ -203,12 +210,12 @@ function ServiceTitle({ title, open, stacked }: { title: string; open: boolean; 
         stacked && "max-lg:h-auto",
       )}
     >
-      {/* The page is RTL, so the start corner is the top right. */}
+      {/* The start corner: the top right on the Persian pages, the top left on the English ones. */}
       <h3
         ref={headingRef}
         style={{ fontSize: FLUID.service }}
         className={cn(
-          "origin-top-right font-display leading-[1.25] font-bold text-balance transition-[scale,color] duration-500 motion-reduce:transition-none",
+          "origin-top-right font-display leading-[1.25] font-bold text-balance transition-[scale,color] duration-500 motion-reduce:transition-none ltr:origin-top-left",
           open ? "text-foreground" : "scale-(--closed) text-foreground/45",
           stacked && "max-lg:scale-100 max-lg:text-foreground",
         )}
@@ -226,6 +233,7 @@ function ServiceTitle({ title, open, stacked }: { title: string; open: boolean; 
  * section with every service open.
  */
 export function StoryTeach() {
+  const items = teachItems();
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = usePrefersReducedMotion();
   const pinned = !reduced;
@@ -244,7 +252,7 @@ export function StoryTeach() {
   /*------ Steps: which service is open ------*/
   const { scrollYProgress: steps } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   useMotionValueEvent(steps, "change", (progress) => {
-    setActive(Math.min(ITEMS.length - 1, Math.max(0, Math.round(progress * (ITEMS.length - 1)))));
+    setActive(Math.min(ITEM_COUNT - 1, Math.max(0, Math.round(progress * (ITEM_COUNT - 1)))));
   });
 
   useStepSnap({ section: sectionRef, enabled: pinned });
@@ -255,7 +263,7 @@ export function StoryTeach() {
     <section
       ref={sectionRef}
       aria-labelledby="st-teach-title"
-      style={pinned ? { height: `calc(100svh + ${(ITEMS.length - 1) * STEP_SVH}svh)` } : undefined}
+      style={pinned ? { height: `calc(100svh + ${(ITEM_COUNT - 1) * STEP_SVH}svh)` } : undefined}
       className="relative"
     >
       <div className={cn(pinned && "sticky top-0 h-svh")}>
@@ -278,7 +286,7 @@ export function StoryTeach() {
             <header>
               <div className="flex items-baseline justify-between gap-4">
                 <h2 id="st-teach-title" style={{ fontSize: FLUID.title }} className={DISPLAY_HEADING}>
-                  چی می‌تونم یاد بگیرم؟
+                  {m.home_teach_title()}
                 </h2>
                 {/* On phones the plate is too short for a page number beside the bubble, so it sits here. */}
                 {pinned && <StepCount shown={shown} className="text-base md:text-lg lg:hidden" />}
@@ -287,7 +295,7 @@ export function StoryTeach() {
                 style={{ fontSize: FLUID.intro }}
                 className="mt-3 hidden max-w-[28em] leading-[1.75] text-foreground/70 md:block lg:[@media(max-height:46rem)]:hidden"
               >
-                {HEAD_TRAINER.firstName} با همه‌ی نژادها و توی هر سنی کار می‌کنه. این پنج تا کاریه که انجام می‌ده.
+                {m.home_teach_intro({ trainer: HEAD_TRAINER.firstName })}
               </p>
             </header>
 
@@ -365,7 +373,7 @@ export function StoryTeach() {
               )}
 
               {/*------ Poses ------*/}
-              {ITEMS.map((item, index) => {
+              {items.map((item, index) => {
                 const on = index === shown;
                 // Out first, then in: the old pose has faded before the new one appears, and the bubble follows it.
                 const bubble = {
@@ -374,7 +382,7 @@ export function StoryTeach() {
                   transition: { duration: 0.3, delay: on ? 0.45 : 0 },
                 } as const;
                 return (
-                  <Fragment key={item.title}>
+                  <Fragment key={item.id}>
                     {/* On phones the box stops short of the plate's top, which the bubble holds; a narrow plate has no
                         room for it beside his head. */}
                     <div className="absolute bottom-[6%] left-[2%] flex h-[calc(94%-5.5rem)] w-[min(20rem,90%)] items-end justify-center md:left-[6%] md:w-[60%] lg:inset-x-0 lg:bottom-[9%] lg:h-[60%] lg:max-h-[30rem] lg:w-auto">
@@ -430,11 +438,11 @@ export function StoryTeach() {
                 </div>
               )}
               <ul className={cn(pinned && "ps-5 max-lg:grid md:ps-7")}>
-                {ITEMS.map((item, index) => {
+                {items.map((item, index) => {
                   const open = !pinned || index === active;
                   return (
                     <li
-                      key={item.title}
+                      key={item.id}
                       style={{ paddingBlock: FLUID.gap }}
                       className={cn(
                         pinned &&

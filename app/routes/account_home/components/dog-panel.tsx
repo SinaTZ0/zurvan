@@ -15,6 +15,7 @@ import type { Enrollment } from "~/orpc/enrollment/contract";
 import { DogRoad } from "~/routes/account_home/components/dog-road";
 import { useChanged } from "~/routes/account_home/hooks/use-changed";
 import { buildRoad } from "~/routes/account_home/road";
+import { m } from "~/paraglide/messages";
 
 /*===== Tape =====*/
 // A strip of translucent tape with torn ends, in a paper tone (the About page's): the print's mount is ivory, so the
@@ -132,7 +133,7 @@ export function DogPanel({
                   <EvaluationStatusBadge status={status.badge} />
                 ) : (
                   <span className="inline-flex h-6 shrink-0 items-center rounded-full border border-transparent bg-muted px-2.5 text-xs font-bold whitespace-nowrap text-muted-foreground">
-                    ارزیابی نشده
+                    {m.account_home_panel_not_evaluated()}
                   </span>
                 )}
               </span>
@@ -149,7 +150,7 @@ export function DogPanel({
                   changed && "answer-in",
                 )}
               >
-                <span className="font-bold text-muted-foreground">دلیل: </span>
+                <span className="font-bold text-muted-foreground">{m.account_home_panel_reason()}</span>
                 {status.rejectionReason}
               </p>
             )}
@@ -179,12 +180,11 @@ export function DogPanel({
               {...detailLink}
               className="group/history inline-flex items-center gap-1.5 rounded-sm text-sm font-bold text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
             >
-              <span>
-                همه‌ی سابقه‌ی <bdi>{dog.name}</bdi>
-              </span>
+              {/* The name sits inside Unicode isolates so an English sentence keeps its order around a Persian name. */}
+              <span>{m.account_home_panel_history({ dogName: `\u2068${dog.name}\u2069` })}</span>
               <ArrowLeftIcon
                 aria-hidden
-                className="size-4 motion-safe:transition-transform motion-safe:group-hover/history:-translate-x-0.5"
+                className="size-4 motion-safe:transition-transform ltr:-scale-x-100 motion-safe:group-hover/history:rtl:-translate-x-0.5 motion-safe:group-hover/history:ltr:translate-x-0.5"
               />
             </Link>
           </div>

@@ -3,10 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
 import type { Dog } from "~/orpc/dog/contract";
 import type { Evaluation } from "~/orpc/evaluation/contract";
+import { m } from "~/paraglide/messages";
 import { dogsQuery, evaluationsQuery } from "~/routes/assessment/queries";
 import { COLUMN } from "~/routes/assessment/column";
 import { AssessmentError } from "~/routes/assessment/components/assessment-error";
@@ -20,7 +22,7 @@ import { PageHeader } from "~/routes/assessment/components/page-header";
 import { PageMotion } from "~/routes/assessment/components/page-motion";
 import { RequestForm } from "~/routes/assessment/components/request-form";
 import { RequestReceipt } from "~/routes/assessment/components/request-receipt";
-import { GUIDE, type GuideMood } from "~/routes/assessment/guide";
+import { guideFor, type GuideMood } from "~/routes/assessment/guide";
 
 /*===== Search =====*/
 // «معرفی سگ تازه» sends the owner back with the new dog's id (`?dog=`). A bad value is dropped rather than failing the
@@ -37,7 +39,12 @@ export const Route = createFileRoute("/_public/assessment")({
   loader: async ({ context: { queryClient } }) => {
     await Promise.all([queryClient.ensureQueryData(dogsQuery()), queryClient.ensureQueryData(evaluationsQuery())]);
   },
-  head: () => ({ meta: [{ title: "ارزیابی رایگان | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/assessment",
+      title: m.assessment_meta_title(),
+      description: m.assessment_meta_description(),
+    }),
   component: EvaluationRequestPage,
   notFoundComponent: () => <AssessmentError notFound />,
   errorComponent: () => <AssessmentError notFound={false} />,
@@ -167,7 +174,7 @@ function EvaluationRequestPage() {
 
       {/* The guide's words for screen readers, once per change (his bubbles are decoration). */}
       <p aria-live="polite" className="sr-only">
-        {GUIDE[mood].line}
+        {guideFor(mood).line}
       </p>
 
       <div
@@ -182,7 +189,7 @@ function EvaluationRequestPage() {
         {/* Phones: a compact band between the heading and the plates. Desktop: the sticky end column. */}
         <GuidePanel variant="phone" mood={phoneMood} className="mb-12 lg:hidden" />
         <aside
-          aria-label="راهنما"
+          aria-label={m.assessment_guide_label()}
           className="hidden lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block lg:self-start"
         >
           <GuidePanel variant="desk" mood={mood} nextSteps={!sent} />

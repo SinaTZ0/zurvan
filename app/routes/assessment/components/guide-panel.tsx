@@ -4,9 +4,10 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MASCOT_CUTS, MascotCut, type MascotCutName } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { GUIDE, NEXT_STEPS, type GuideMood, type Pose } from "~/routes/assessment/guide";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
+import { guideFor, nextSteps as nextStepsFor, type GuideMood, type Pose } from "~/routes/assessment/guide";
 import { useChanged } from "~/routes/assessment/hooks/use-changed";
 
 /*===== Geometry =====*/
@@ -102,16 +103,16 @@ export function GuidePanel({
       {nextSteps && (
         <section aria-labelledby="guide-next-title" className="border-t border-foreground/10 px-6 pt-6 pb-7 xl:px-8">
           <h2 id="guide-next-title" className={cn(DISPLAY_HEADING, "text-xl")}>
-            بعدش چی می‌شه؟
+            {m.assessment_next_title()}
           </h2>
           <ol className="mt-4 flex flex-col gap-3.5">
-            {NEXT_STEPS.map((step, index) => (
+            {nextStepsFor().map((step, index) => (
               <li key={step.label} className="flex gap-3">
                 <span
                   aria-hidden
                   className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground"
                 >
-                  {formatNumberFa(index + 1)}
+                  {formatNumber(index + 1)}
                 </span>
                 <p className="text-sm leading-relaxed text-pretty text-muted-foreground">{step.line}</p>
               </li>
@@ -129,7 +130,7 @@ export function GuidePanel({
  * the phone band's are rem, the group at its left end.
  */
 function Scene({ mood, phone, changed }: { mood: GuideMood; phone: boolean; changed: boolean }) {
-  const { pose, line } = GUIDE[mood];
+  const { pose, line } = guideFor(mood);
   const place = layout({ pose, phone, sceneWidth: phone ? null : 27 });
   // One unit: rem on the phone, the stage's own unit on the desktop.
   const u = (value: number) => (phone ? `${value}rem` : `calc(${value} * var(--u))`);
@@ -159,7 +160,7 @@ function Scene({ mood, phone, changed }: { mood: GuideMood; phone: boolean; chan
       <div
         className={cn(
           "absolute bottom-0 h-full",
-          phone ? "inset-x-0" : "start-1/2 w-[calc(27*var(--u))] translate-x-1/2",
+          phone ? "inset-x-0" : "start-1/2 w-[calc(27*var(--u))] translate-x-1/2 ltr:-translate-x-1/2",
         )}
         style={{ bottom: phone ? "0.95rem" : "calc(1.3 * var(--u))" }}
       >
@@ -214,7 +215,7 @@ function Scene({ mood, phone, changed }: { mood: GuideMood; phone: boolean; chan
         </div>
       ) : (
         <div
-          className="lively-float absolute start-1/2 translate-x-1/2"
+          className="lively-float absolute start-1/2 translate-x-1/2 ltr:-translate-x-1/2"
           style={{ bottom: `calc(${place.height + 1.3} * var(--u) + 0.6rem)`, width: "calc(27 * var(--u))" }}
         >
           <div

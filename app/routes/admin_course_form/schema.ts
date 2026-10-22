@@ -87,6 +87,14 @@ function priceField(label: string) {
   });
 }
 
+/** An optional English text: blank is "not written yet" (the English pages then show the Persian). */
+function optionalTextField({ label, max }: { label: string; max: number }) {
+  return z
+    .string()
+    .trim()
+    .max(max, `${label} حداکثر ${formatNumberFa(max)} حرف می‌تونه باشه.`);
+}
+
 const COVER_REQUIRED_MESSAGE = "یه عکس برای دوره بذار.";
 const SLUG_MESSAGE = `نشانی فقط حرف کوچیک انگلیسی، رقم و خط تیره می‌گیره و باید ${formatNumberFa(COURSE_SLUG_MIN_LENGTH)} تا ${formatNumberFa(COURSE_SLUG_MAX_LENGTH)} نویسه باشه.`;
 
@@ -157,6 +165,12 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
         .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`),
       highlights: linesField({ label: "نتیجه‌ها", maxLines: COURSE_HIGHLIGHTS_MAX_LINES }),
       commands: linesField({ label: "فرمان‌ها", maxLines: COURSE_COMMANDS_MAX_LINES }),
+      // The English text of the `/en` pages, all optional (docs/i18n/english-version-plan.md, step 9).
+      titleEn: optionalTextField({ label: "نام انگلیسی", max: COURSE_TITLE_MAX_LENGTH }),
+      summaryEn: optionalTextField({ label: "توضیح کوتاه انگلیسی", max: COURSE_SUMMARY_MAX_LENGTH }),
+      coverAltEn: optionalTextField({ label: "توضیح انگلیسی عکس", max: COURSE_COVER_ALT_MAX_LENGTH }),
+      highlightsEn: linesField({ label: "نتیجه‌های انگلیسی", maxLines: COURSE_HIGHLIGHTS_MAX_LINES }),
+      commandsEn: linesField({ label: "فرمان‌های انگلیسی", maxLines: COURSE_COMMANDS_MAX_LINES }),
     })
     .superRefine(
       (value, context) => {
@@ -207,6 +221,11 @@ export function toCourseInput({ values, slug }: { values: CourseFormValues; slug
     price: values.price === null ? null : values.price * RIAL_PER_TOMAN,
     boardingPrice: values.boardingPrice === null ? null : values.boardingPrice * RIAL_PER_TOMAN,
     prerequisites: values.prerequisites,
+    titleEn: values.titleEn,
+    summaryEn: values.summaryEn,
+    highlightsEn: values.highlightsEn,
+    commandsEn: values.commandsEn,
+    coverAltEn: values.coverAltEn,
   };
 }
 
@@ -234,6 +253,11 @@ export function toFormDefaults(course: AdminCourse | null): DefaultValues<Course
       prerequisites: [],
       highlights: "",
       commands: "",
+      titleEn: "",
+      summaryEn: "",
+      coverAltEn: "",
+      highlightsEn: "",
+      commandsEn: "",
     };
   }
 
@@ -257,6 +281,11 @@ export function toFormDefaults(course: AdminCourse | null): DefaultValues<Course
     prerequisites: course.prerequisites.map((required) => required.slug),
     highlights: course.highlights.join("\n"),
     commands: course.commands.join("\n"),
+    titleEn: course.english.title ?? "",
+    summaryEn: course.english.summary ?? "",
+    coverAltEn: course.english.coverAlt ?? "",
+    highlightsEn: (course.english.highlights ?? []).join("\n"),
+    commandsEn: (course.english.commands ?? []).join("\n"),
   };
 }
 
@@ -293,4 +322,9 @@ export const FORM_FIELD_NAMES = new Set<string>([
   "prerequisites",
   "highlights",
   "commands",
+  "titleEn",
+  "summaryEn",
+  "coverAltEn",
+  "highlightsEn",
+  "commandsEn",
 ]);

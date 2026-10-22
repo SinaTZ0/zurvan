@@ -13,6 +13,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { useSignOut } from "~/hooks/use-sign-out";
 import type { StaticRoutePath } from "~/lib/route-path";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /** One link in the person menu. */
@@ -46,7 +47,7 @@ export function PersonMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={`حساب ${firstName}`}
+        aria-label={m.shared_person_menu_label({ name: firstName })}
         className="flex h-11 items-center gap-2 rounded-full border border-border bg-card ps-1 pe-3 text-sm font-bold transition-colors outline-none hover:border-primary/40 focus-visible:ring-3 focus-visible:ring-ring/50 aria-expanded:border-primary/40"
       >
         {/* The person's initial, set like the dog tags' engraving so the two read as one family. */}
@@ -95,7 +96,7 @@ export function PersonMenu({
           onClick={() => signOut.mutate()}
         >
           <LogOutIcon aria-hidden strokeWidth={1.7} className="rtl:-scale-x-100" />
-          خروج
+          {m.shared_sign_out()}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

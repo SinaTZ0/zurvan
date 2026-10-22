@@ -7,6 +7,7 @@ import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import { COLUMN } from "~/routes/account_home/column";
 import { DogPanel } from "~/routes/account_home/components/dog-panel";
@@ -14,6 +15,7 @@ import { RoadChalk } from "~/routes/account_home/components/dog-road";
 import { HomeHero } from "~/routes/account_home/components/home-hero";
 import { NextStepsBand } from "~/routes/account_home/components/next-steps-band";
 import { NoDogs } from "~/routes/account_home/components/no-dogs";
+import { m } from "~/paraglide/messages";
 import { buildCards, dogsQuery, enrollmentsQuery, evaluationsQuery } from "~/routes/account_home/queries";
 
 /*===== Route =====*/
@@ -28,7 +30,12 @@ export const Route = createFileRoute("/account/")({
       queryClient.ensureQueryData(enrollmentsQuery()),
     ]);
   },
-  head: () => ({ meta: [{ title: "سگ‌های من | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account",
+      title: m.account_home_meta_title(),
+      description: m.account_home_meta_description(),
+    }),
   // The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
   // padding for it.
   staticData: { flushFooter: true },
@@ -85,13 +92,13 @@ function HomeError({ notFound }: { notFound: boolean }) {
         {/*------ Words ------*/}
         <div className="max-w-xl md:pb-8">
           <h1 id="account-home-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-            {notFound ? "این صفحه پیدا نشد" : "سگ‌هات باز نشدن"}
+            {notFound ? m.account_home_error_not_found() : m.account_home_error_failed()}
           </h1>
           <p className="mt-4 text-lead text-pretty text-muted-foreground">
-            یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.
+            {m.account_home_error_description()}
           </p>
           <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7" })}>
-            برگرد به صفحه‌ی اصلی
+            {m.account_home_error_home()}
           </Link>
         </div>
 
@@ -106,7 +113,7 @@ function HomeError({ notFound }: { notFound: boolean }) {
             <MascotCut name="sorry" className="lively-breathe relative block w-full" />
           </div>
           <ChalkBubble tail="right" className="absolute top-0 right-[calc(50%-0.5rem)] text-pretty">
-            ببخشید!
+            {m.account_home_error_sorry()}
           </ChalkBubble>
         </div>
       </div>

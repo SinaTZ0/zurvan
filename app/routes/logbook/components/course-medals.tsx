@@ -1,8 +1,9 @@
 import { CheckIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { PublicRecord } from "~/orpc/logbook/contract";
+import { m } from "~/paraglide/messages";
 import { SectionHead } from "~/routes/logbook/components/section-head";
 
 /*===== Course Medals =====*/
@@ -18,7 +19,7 @@ import { SectionHead } from "~/routes/logbook/components/section-head";
 export function CourseMedals({ courses }: { courses: PublicRecord["courses"] }) {
   return (
     <section aria-labelledby="record-courses-title">
-      <SectionHead id="record-courses-title" title="دوره‌های تموم‌شده">
+      <SectionHead id="record-courses-title" title={m.logbook_courses_title()}>
         <div className="relative w-24 translate-y-[3%] sm:w-28">
           <MascotCut name="plants" className="lively-sway-2 absolute right-[82%] bottom-0 w-[46%] -scale-x-100" />
           <MascotCut name="diploma" className="lively-breathe relative block w-full" />
@@ -28,7 +29,7 @@ export function CourseMedals({ courses }: { courses: PublicRecord["courses"] }) 
       <div className="rounded-4xl border border-border/60 bg-sunken paper-grain p-4 sm:p-6">
         {courses.length === 0 ? (
           <p className="rounded-3xl border-2 border-dashed border-foreground/15 px-6 py-8 text-center text-muted-foreground">
-            هنوز دوره‌ای تموم نکرده.
+            {m.logbook_courses_empty()}
           </p>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
@@ -49,7 +50,7 @@ export function CourseMedals({ courses }: { courses: PublicRecord["courses"] }) 
                     {entry.latinName}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    تموم شد {formatJalaliTimestamp(entry.completedAt)}
+                    {m.logbook_courses_finished({ date: formatTimestamp(entry.completedAt) })}
                   </p>
                 </div>
               </li>

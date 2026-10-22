@@ -2,6 +2,7 @@ import { cn } from "cn";
 
 import { MediaImage } from "~/components/media-image";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Thumb =====*/
 /**
@@ -18,7 +19,7 @@ export function DogThumb({ name, photo, className }: { name: string; photo: Medi
       )}
     >
       {photo ? (
-        <MediaImage media={photo} variant="thumb" alt={`عکس ${name}`} className="size-full" />
+        <MediaImage media={photo} variant="thumb" alt={m.shared_dog_photo_alt({ name })} className="size-full" />
       ) : (
         <span aria-hidden>{[...name][0]}</span>
       )}

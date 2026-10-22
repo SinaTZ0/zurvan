@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { formatNumberFa, toLatinDigits } from "~/lib/digits";
+import { toLatinDigits } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import {
   DOG_BREED_MAX_LENGTH,
   DOG_MAX_AGE_YEARS,
@@ -12,6 +13,12 @@ import {
   DOG_WEIGHT_MIN_KG,
   VACCINATION_STATUSES,
 } from "~/orpc/dog/constants";
+import { m } from "~/paraglide/messages";
+
+/*===== Messages =====*/
+// Every message is a function, read when a value fails: the schema is built once at import, and a sentence built then
+// would keep the language of whichever request loaded the module first (docs/i18n/english-version-plan.md, "Phase 4
+// Notes"). Inside `/rpc` the request's language is the page's.
 
 /*===== Dates =====*/
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -38,11 +45,11 @@ function yearsAgo({ today, years }: { today: string; years: number }): string {
 
 /*===== Fields =====*/
 /** Optional free text: surrounding space goes, and empty means "not given", so it is stored as null. */
-function optionalText({ max, message }: { max: number; message: string }) {
+function optionalText({ max, message }: { max: number; message: () => string }) {
   return z
     .string()
     .trim()
-    .max(max, message)
+    .max(max, { error: message })
     .nullish()
     .transform((value) => value || null);
 }
@@ -50,19 +57,20 @@ function optionalText({ max, message }: { max: number; message: string }) {
 const birthDateSchema = z
   .string()
   .transform((value) => toLatinDigits(value).trim())
-  .refine(isRealDate, "تاریخ تولد را درست وارد کنید.")
-  .refine((value) => value <= todayInTehran(), "تاریخ تولد نمی‌تواند در آینده باشد.")
-  .refine(
-    (value) => value >= yearsAgo({ today: todayInTehran(), years: DOG_MAX_AGE_YEARS }),
-    `سن سگ حداکثر ${formatNumberFa(DOG_MAX_AGE_YEARS)} سال است.`,
-  );
+  .refine(isRealDate, { error: () => m.server_dog_birth_date_invalid() })
+  .refine((value) => value <= todayInTehran(), { error: () => m.server_dog_birth_date_future() })
+  .refine((value) => value >= yearsAgo({ today: todayInTehran(), years: DOG_MAX_AGE_YEARS }), {
+    error: () => m.server_dog_too_old({ years: formatNumber(DOG_MAX_AGE_YEARS) }),
+  });
 
 const weightSchema = z
-  .number({ error: "وزن را وارد کنید." })
-  .min(DOG_WEIGHT_MIN_KG, `وزن حداقل ${formatNumberFa(DOG_WEIGHT_MIN_KG)} کیلوگرم است.`)
-  .max(DOG_WEIGHT_MAX_KG, `وزن حداکثر ${formatNumberFa(DOG_WEIGHT_MAX_KG)} کیلوگرم است.`)
+  .number({ error: () => m.server_dog_weight_required() })
+  .min(DOG_WEIGHT_MIN_KG, { error: () => m.server_dog_weight_min({ kg: formatNumber(DOG_WEIGHT_MIN_KG) }) })
+  .max(DOG_WEIGHT_MAX_KG, { error: () => m.server_dog_weight_max({ kg: formatNumber(DOG_WEIGHT_MAX_KG) }) })
   // The column keeps one decimal; compare in tenths so 32.5 passes despite floating-point noise.
-  .refine((value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9, "وزن را با حداکثر یک رقم اعشار وارد کنید.");
+  .refine((value) => Math.abs(value * 10 - Math.round(value * 10)) < 1e-9, {
+    error: () => m.server_dog_weight_decimal(),
+  });
 
 // Chip numbers are copied from a vet's paperwork, often with spaces and Persian digits.
 const microchipSchema = z
@@ -72,8 +80,10 @@ const microchipSchema = z
   .pipe(
     z
       .string()
-      .regex(/^\d*$/, "شماره میکروچیپ فقط از رقم تشکیل می‌شود.")
-      .max(DOG_MICROCHIP_MAX_LENGTH, `شماره میکروچیپ حداکثر ${formatNumberFa(DOG_MICROCHIP_MAX_LENGTH)} رقم است.`),
+      .regex(/^\d*$/, { error: () => m.server_dog_microchip_digits() })
+      .max(DOG_MICROCHIP_MAX_LENGTH, {
+        error: () => m.server_dog_microchip_max({ max: formatNumber(DOG_MICROCHIP_MAX_LENGTH) }),
+      }),
   )
   .transform((value) => value || null);
 
@@ -83,29 +93,29 @@ export const dogInputSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "نام سگ را وارد کنید.")
-    .max(DOG_NAME_MAX_LENGTH, `نام سگ حداکثر ${formatNumberFa(DOG_NAME_MAX_LENGTH)} حرف است.`),
+    .min(1, { error: () => m.server_dog_name_required() })
+    .max(DOG_NAME_MAX_LENGTH, { error: () => m.server_dog_name_max({ max: formatNumber(DOG_NAME_MAX_LENGTH) }) }),
   breed: optionalText({
     max: DOG_BREED_MAX_LENGTH,
-    message: `نژاد حداکثر ${formatNumberFa(DOG_BREED_MAX_LENGTH)} حرف است.`,
+    message: () => m.server_dog_breed_max({ max: formatNumber(DOG_BREED_MAX_LENGTH) }),
   }),
-  sex: z.enum(DOG_SEXES, { error: "جنسیت سگ را انتخاب کنید." }),
+  sex: z.enum(DOG_SEXES, { error: () => m.server_dog_sex_required() }),
   birthDate: birthDateSchema,
   birthDateApproximate: z.boolean().optional().default(false),
   weightKg: weightSchema,
-  isNeutered: z.boolean({ error: "وضعیت عقیم‌سازی را مشخص کنید." }),
+  isNeutered: z.boolean({ error: () => m.server_dog_neutered_required() }),
   microchipNumber: microchipSchema,
   vaccinationStatus: z
-    .enum(VACCINATION_STATUSES, { error: "وضعیت واکسن را انتخاب کنید." })
+    .enum(VACCINATION_STATUSES, { error: () => m.server_dog_vaccination_required() })
     .optional()
     .default("unknown"),
   behaviorNotes: optionalText({
     max: DOG_NOTES_MAX_LENGTH,
-    message: `یادداشت رفتاری حداکثر ${formatNumberFa(DOG_NOTES_MAX_LENGTH)} حرف است.`,
+    message: () => m.server_dog_behavior_notes_max({ max: formatNumber(DOG_NOTES_MAX_LENGTH) }),
   }),
   medicalNotes: optionalText({
     max: DOG_NOTES_MAX_LENGTH,
-    message: `یادداشت پزشکی حداکثر ${formatNumberFa(DOG_NOTES_MAX_LENGTH)} حرف است.`,
+    message: () => m.server_dog_medical_notes_max({ max: formatNumber(DOG_NOTES_MAX_LENGTH) }),
   }),
   // Passed through: whether the media exists, is a dog photo and is the owner's is I/O, so the service decides.
   photoMediaId: z.string().nullish(),

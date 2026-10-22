@@ -4,8 +4,9 @@ import { useAtomValue } from "jotai";
 import { cartCountAtom } from "~/atoms/cart";
 import { Link } from "~/components/link";
 import { useHydrated } from "~/hooks/use-hydrated";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { CART_PATH } from "~/orpc/checkout/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Cart Link =====*/
 /**
@@ -20,7 +21,7 @@ export function CartLink() {
   return (
     <Link
       to={CART_PATH}
-      aria-label={shown ? `سبد، ${formatNumberFa(shown)} مورد` : "سبد"}
+      aria-label={shown ? m.layout_public_cart_count({ count: formatNumber(shown) }) : m.layout_public_cart()}
       className="relative grid size-11 shrink-0 place-items-center rounded-full text-foreground transition-colors outline-none hover:bg-accent focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       <ShoppingBagIcon aria-hidden strokeWidth={1.7} className="size-5" />
@@ -29,7 +30,7 @@ export function CartLink() {
           aria-hidden
           className="absolute end-1 top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-bold text-primary-foreground tabular-nums"
         >
-          {formatNumberFa(shown)}
+          {formatNumber(shown)}
         </span>
       )}
     </Link>

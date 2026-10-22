@@ -1,0 +1,20 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "about_meta_title": "Zurvann | About {name}",
+  "about_meta_description": "{name}: {role}. {years} years of professional experience, working all over Tehran.",
+  "about_hero_bubble": "Hi! This is Tala, my trainer.",
+  "about_hero_intro": "{name} has worked in dog training for {years} years, from basic and general training to specialist courses, guarding, sport and competition levels.",
+  "about_hero_evaluation": "Get a free evaluation",
+  "about_hero_courses": "See the courses",
+  "about_facts_title": "{trainer} at a glance",
+  "about_facts_since": "Since {year}",
+  "about_facts_experience": "{years} years of professional experience",
+  "about_facts_area": "Working all over Tehran",
+  "about_lineup_title": "With Tala, I learn all this",
+  "about_lineup_all": "All courses",
+  "about_closing_bubble": "I started out as just a naughty puppy!",
+  "about_closing_question": "Got a question?",
+  "about_closing_call": "Call or send a message.",
+  "about_closing_evaluation": "Get a free evaluation",
+  "about_closing_contact": "Contact {trainer}"
+}

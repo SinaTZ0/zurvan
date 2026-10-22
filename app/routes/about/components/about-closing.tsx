@@ -6,6 +6,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/about/column";
 
 /*===== Closing =====*/
@@ -29,9 +30,9 @@ export function AboutClosing() {
             <MascotCut name="sit" className="lively-breathe relative block w-full" />
             <ChalkBubble
               tail="left"
-              className="lively-float-2 absolute bottom-[78%] left-[70%] w-max max-w-[12.5rem] text-pretty md:max-w-[16rem]"
+              className="lively-float-2 absolute bottom-[78%] left-[70%] w-max max-w-[12.5rem] text-pretty max-md:ltr:max-w-[9rem] md:max-w-[16rem]"
             >
-              من اولش فقط یه توله‌ی شیطون بودم!
+              {m.about_closing_bubble()}
             </ChalkBubble>
           </div>
         </div>
@@ -43,13 +44,13 @@ export function AboutClosing() {
         {/*------ The card ------*/}
         <div className="rounded-4xl border border-border bg-card paper-grain px-6 py-9 shadow-sm sm:px-10 md:flex md:items-center md:justify-between md:gap-10 md:px-14 md:py-12">
           <h2 id="about-closing-title" className={`${DISPLAY_HEADING} text-h2 md:text-h1`}>
-            <span className="block">سؤالی داری؟</span>
-            <span className="block">زنگ بزن یا پیام بده.</span>
+            <span className="block">{m.about_closing_question()}</span>
+            <span className="block">{m.about_closing_call()}</span>
           </h2>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row md:mt-0 md:shrink-0">
-            <EvaluationButton className="h-12">ارزیابی رایگان بگیر</EvaluationButton>
+            <EvaluationButton className="h-12">{m.about_closing_evaluation()}</EvaluationButton>
             <Link to="/contact" className={buttonVariants({ variant: "outline", className: "h-12 px-7 text-base" })}>
-              تماس با {HEAD_TRAINER.firstName}
+              {m.about_closing_contact({ trainer: HEAD_TRAINER.firstName })}
             </Link>
           </div>
         </div>

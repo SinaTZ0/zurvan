@@ -3,8 +3,10 @@ import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
+import { localizeOutputUrl } from "~/lib/i18n";
 import { pageTransitionTypes } from "~/lib/page-transition";
 import { refreshSession } from "~/lib/session-guard";
+import { deLocalizeUrl, getLocaleForUrl } from "~/paraglide/runtime";
 import { routeTree } from "~/routeTree.gen";
 
 /*===== Route Static Data =====*/
@@ -68,7 +70,26 @@ export function getRouter() {
     // changes stay instant. Browsers without view transition types fade every navigation that doesn't set its own.
     // See docs/view-transitions.md.
     defaultViewTransition: { types: pageTransitionTypes },
+    // The English site lives under `/en` (docs/i18n/english-version-plan.md). The routes know only the Persian
+    // addresses: `/en` is stripped on the way in and added on the way out (to links, `navigate()` and the address bar)
+    // for the current language, so `routes.ts`, the slices and every `Link` stay as they are. `location.pathname` is
+    // the internal path; `location.publicHref` is the address shown.
+    rewrite: {
+      input: ({ url }) => deLocalizeUrl(url),
+      output: ({ url }) => localizeOutputUrl(url),
+    },
   });
+
+  /*------ Language Changes Reload ------*/
+  // A page's language is fixed for the document (`<html lang dir>`, the faces, the cached answers). Links that change
+  // it already reload (`~/components/link`); this catches a `navigate()` or `redirect()` that would land on a page in the
+  // other language in place, and loads it afresh instead.
+  if (typeof window !== "undefined") {
+    router.subscribe("onResolved", ({ toLocation }) => {
+      const locale = getLocaleForUrl(new URL(toLocation.publicHref, window.location.origin));
+      if (locale !== document.documentElement.lang) window.location.reload();
+    });
+  }
 
   // Also provides the `QueryClientProvider`, and streams the queries a server render filled to the browser.
   setupRouterSsrQueryIntegration({ router, queryClient });

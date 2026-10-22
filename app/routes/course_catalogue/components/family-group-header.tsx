@@ -97,9 +97,11 @@ export function FamilyGroupHeader({
         <ChalkBubble
           tail="left"
           className={cn(
-            "lively-reveal-pop absolute inset-x-0 bottom-full mx-auto mb-2 hidden max-w-[calc(100%-2rem)] text-center text-pretty md:text-base lg:max-w-[15rem]",
+            // English: the family's line is longer, so the bubble sits a little lower, or (on a wide stage) off to
+            // the end side, to stay clear of it.
+            "lively-reveal-pop absolute inset-x-0 bottom-full mx-auto mb-2 hidden max-w-[calc(100%-2rem)] text-center text-pretty md:text-base lg:max-w-[15rem] ltr:-mb-2",
             stage.bubble,
-            bigDog && "lg:mb-[4.5rem]",
+            bigDog && "lg:mb-[4.5rem] ltr:lg:ms-[46%] ltr:lg:me-0 ltr:lg:mb-[4.5rem]",
           )}
         >
           {courseMascotLine(pose)}
@@ -109,7 +111,7 @@ export function FamilyGroupHeader({
           className={cn(
             // He idles in place: the frisbee catcher floats, the others breathe.
             pose === "course-sport" ? "lively-float" : "lively-breathe",
-            "absolute start-1/2 bottom-[0.9rem] h-[4.75rem] w-auto translate-x-1/2 sm:bottom-[1.2rem] sm:h-28",
+            "absolute start-1/2 bottom-[0.9rem] h-[4.75rem] w-auto translate-x-1/2 sm:bottom-[1.2rem] sm:h-28 ltr:-translate-x-1/2",
             stage.dog,
             bigDog && "lg:bottom-[2rem] lg:h-64",
           )}

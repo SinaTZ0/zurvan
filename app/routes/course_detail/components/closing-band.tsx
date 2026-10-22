@@ -2,21 +2,27 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { COLUMN } from "~/routes/course_detail/column";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Steps =====*/
 // How buying works, in order (app-spec F5, F6): the course is bought from the cart (upfront, as before), the trainer
 // calls, training starts. It is a sequence, so it is numbered. The words follow the owner's notes (2026-10-19): the first
 // step doesn't lead with the payment, and the last doesn't promise «private» or «home or outside» (the kind of class is
 // arranged on the call; where a course is held is written on its own page).
-const STEPS = [
-  { title: "دوره را برمی‌داری", detail: "دوره‌ای که انتخاب کردی را از سبد می‌خری." },
-  { title: `${HEAD_TRAINER.firstName} زنگ می‌زند`, detail: "نوع کلاس، زمان و جای جلسه‌ها را با هم هماهنگ می‌کنید." },
-  { title: "تمرین شروع می‌شود", detail: "جای تمرین هر دوره در صفحه‌ی همان دوره نوشته شده است." },
-] as const;
+// A function, not a constant: the words are read while rendering, in the page's language.
+const steps = () =>
+  [
+    { title: m.course_detail_closing_step_pick_title(), detail: m.course_detail_closing_step_pick_detail() },
+    {
+      title: m.course_detail_closing_step_call_title({ trainer: HEAD_TRAINER.firstName }),
+      detail: m.course_detail_closing_step_call_detail(),
+    },
+    { title: m.course_detail_closing_step_train_title(), detail: m.course_detail_closing_step_train_detail() },
+  ] as const;
 
 /*===== Closing Band =====*/
 /**
@@ -46,10 +52,10 @@ export function ClosingBand() {
           <MascotCut name="plants" className="lively-sway-2 absolute right-[80%] bottom-0 w-[52%] -scale-x-100" />
           <MascotCut name="sit" className="lively-breathe relative block w-full" />
           <ChalkBubble
-            tail="right"
-            className="lively-reveal-pop absolute right-[86%] bottom-[66%] w-max max-w-[11rem] text-pretty md:max-w-[14rem]"
+            tail="start"
+            className="lively-reveal-pop absolute right-[86%] bottom-[66%] ltr:right-auto ltr:left-[86%] w-max max-w-[11rem] text-pretty md:max-w-[14rem]"
           >
-            منم اولش همین‌جوری شروع کردم!
+            {m.course_detail_closing_bubble()}
           </ChalkBubble>
         </div>
       </div>
@@ -58,30 +64,29 @@ export function ClosingBand() {
         {/*------ Words ------*/}
         <div>
           <h2 id="closing-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-            قبل از دوره، {HEAD_TRAINER.firstName} سگت را می‌بیند
+            {m.course_detail_closing_title({ trainer: HEAD_TRAINER.firstName })}
           </h2>
           <p className="mt-3 max-w-[34rem] text-pretty text-muted-foreground">
-            دوره‌ها بعد از ارزیابی باز می‌شوند. ارزیابی رایگان است و تعهدی ندارد؛ {HEAD_TRAINER.firstName} سگت را از
-            نزدیک می‌بیند و می‌گوید از کجا شروع کنید.
+            {m.course_detail_closing_text({ trainer: HEAD_TRAINER.firstName })}
           </p>
           <Link
             to="/help"
             hash="what-is-evaluation"
             className="mt-5 inline-block rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            ارزیابی چطوریه؟
+            {m.course_detail_closing_link()}
           </Link>
         </div>
 
         {/*------ Steps ------*/}
         <ol className="divide-y divide-border rounded-3xl border border-border bg-jet paper-grain px-5 shadow-sm sm:px-6">
-          {STEPS.map(({ title, detail }, index) => (
+          {steps().map(({ title, detail }, index) => (
             <li key={title} className="flex items-start gap-4 py-4">
               <span
                 aria-hidden
                 className="flex size-8 shrink-0 items-center justify-center rounded-full border border-foreground/40 text-sm font-extrabold text-foreground"
               >
-                {formatNumberFa(index + 1)}
+                {formatNumber(index + 1)}
               </span>
               <div className="min-w-0">
                 <p className="font-extrabold">{title}</p>

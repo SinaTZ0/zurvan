@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
+import { m } from "~/paraglide/messages";
 
 /*===== Copy Link =====*/
-/** How long «کپی شد» stays before the label goes back. */
+/** How long «Copied» stays before the label goes back. */
 const COPIED_MS = 2000;
 
 /**
@@ -29,9 +30,9 @@ export function CopyLink({ link, className }: { link: string; className?: string
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
-      toast.add({ title: "لینک کپی شد.", type: "success" });
+      toast.add({ title: m.shared_copy_link_toast(), type: "success" });
     } catch {
-      toast.add({ title: "کپی نشد؛ لینک رو دستی انتخاب کن.", type: "error" });
+      toast.add({ title: m.shared_copy_link_failed(), type: "error" });
     }
   }
 
@@ -58,7 +59,7 @@ export function CopyLink({ link, className }: { link: string; className?: string
           <CopyIcon className={cn(icon, copied && "scale-50 rotate-90 opacity-0")} />
           <CheckIcon className={cn(icon, !copied && "scale-50 -rotate-90 opacity-0")} />
         </span>
-        {copied ? "کپی شد" : "کپی لینک"}
+        {copied ? m.shared_copy_link_done() : m.shared_copy_link()}
       </Button>
     </div>
   );

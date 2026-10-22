@@ -1,17 +1,19 @@
 import { ArrowLeft, Award, CalendarHeart } from "lucide-react";
 
 import { Link } from "~/components/link";
-import { toPersianDigits } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { LINKS } from "~/routes/home/content";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
+import { m } from "~/paraglide/messages";
 
 /*===== Trainer =====*/
 // A strip of translucent tape with torn ends.
 const TAPE =
   "absolute h-5 w-16 bg-foreground/25 [clip-path:polygon(0_10%,6%_0,12%_12%,18%_0,82%_0,88%_10%,94%_0,100%_12%,100%_88%,94%_100%,88%_90%,82%_100%,18%_100%,12%_88%,6%_100%,0_90%)] md:w-20";
 
+// The scene's sides are logical: on the English pages (left to right) it is mirrored, and the sitting dog turns to face
+// the photo, which is then on his other side.
 export function StoryTrainer() {
   const photo = HEAD_TRAINER.photos.withDog;
 
@@ -21,18 +23,18 @@ export function StoryTrainer() {
       className="relative mx-auto max-w-6xl px-4 pt-32 pb-16 md:px-8 md:pt-36 md:pb-20"
     >
       {/* He hangs from the band above: the image is cut flat at the top, so the cut sits on the band's bottom edge. */}
-      <div aria-hidden className="absolute -top-px left-[6%] z-10 md:left-[8%]">
+      <div aria-hidden className="absolute end-[6%] -top-px z-10 md:end-[8%]">
         <MascotCut name="upside" className="lively-swing w-20 md:w-28" />
       </div>
       <ChalkBubble
-        tail="left"
-        className="lively-float absolute top-6 left-[calc(6%+5.4rem)] z-10 w-40 md:top-5 md:left-[calc(8%+7.6rem)]"
+        tail="end"
+        className="lively-float absolute end-[calc(6%+5.4rem)] top-6 z-10 w-40 md:end-[calc(8%+7.6rem)] md:top-5"
       >
-        از این بالا همه‌چی معلومه!
+        {m.home_trainer_hanging_bubble()}
       </ChalkBubble>
 
       {/* Foliage in the far corner, out in the page margin, so it never runs into the copy. */}
-      <div aria-hidden className="absolute bottom-6 -left-28 hidden w-32 xl:block">
+      <div aria-hidden className="absolute -end-28 bottom-6 hidden w-32 xl:block">
         <MascotCut name="plants" className="lively-sway w-full -scale-x-100" />
       </div>
 
@@ -41,15 +43,15 @@ export function StoryTrainer() {
         {/*------ Dog + framed photo ------*/}
         <div className="flex items-end gap-3 md:col-span-1 lg:contents">
           <div className="relative w-[7.5rem] shrink-0 pt-16 sm:w-40 lg:w-56">
-            <MascotCut name="plants" className="lively-sway-2 absolute right-0 bottom-0 w-24 lg:w-36" />
+            <MascotCut name="plants" className="lively-sway-2 absolute start-0 bottom-0 w-24 lg:w-36" />
             <div className="lively-wiggle-late lively-pet relative">
-              <MascotCut name="sit" className="block w-full -scale-x-100" />
+              <MascotCut name="sit" className="block w-full -scale-x-100 ltr:scale-x-100" />
             </div>
             <ChalkBubble
-              tail="left"
-              className="lively-float-2 absolute top-0 right-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg"
+              tail="end"
+              className="lively-float-2 absolute start-0 top-0 w-[7.5rem] text-sm sm:w-36 lg:w-40 lg:text-lg"
             >
-              {HEAD_TRAINER.firstName} مربی منه!
+              {m.home_trainer_bubble({ trainer: HEAD_TRAINER.firstName })}
             </ChalkBubble>
           </div>
 
@@ -86,7 +88,7 @@ export function StoryTrainer() {
             {HEAD_TRAINER.name}
           </h2>
           <p className="mt-3 font-display text-xl leading-snug font-extrabold text-foreground md:text-2xl">
-            همون کسی که سگت رو ارزیابی می‌کنه، آموزشش هم می‌ده.
+            {m.home_trainer_line()}
           </p>
           <p className="mt-4 text-lg leading-8 text-foreground/80">{HEAD_TRAINER.role}</p>
 
@@ -94,7 +96,7 @@ export function StoryTrainer() {
           <ul className="mt-6 flex flex-col gap-3 border-t border-foreground/15 pt-6 text-base text-foreground/85">
             <li className="flex items-center gap-3">
               <CalendarHeart aria-hidden className="size-5 shrink-0 text-primary" strokeWidth={1.8} />
-              از سال {toPersianDigits(String(HEAD_TRAINER.since))} با سگ‌ها کار می‌کنه
+              {m.home_trainer_since({ year: HEAD_TRAINER.sinceYear })}
             </li>
             <li className="flex items-center gap-3">
               <Award aria-hidden className="size-5 shrink-0 text-primary" strokeWidth={1.8} />
@@ -106,8 +108,8 @@ export function StoryTrainer() {
             to={LINKS.about}
             className="mt-7 inline-flex items-center gap-1.5 rounded text-base font-bold text-foreground underline decoration-primary decoration-2 underline-offset-8 hover:decoration-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
           >
-            بیشتر درباره‌ی {HEAD_TRAINER.firstName}
-            <ArrowLeft aria-hidden className="size-4" />
+            {m.home_trainer_more({ trainer: HEAD_TRAINER.firstName })}
+            <ArrowLeft aria-hidden className="size-4 ltr:-scale-x-100" />
           </Link>
         </div>
       </div>

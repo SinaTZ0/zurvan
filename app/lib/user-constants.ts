@@ -1,3 +1,5 @@
+import { m } from "~/paraglide/messages";
+
 /*===== User Constants =====*/
 // Browser-safe values shared by auth, the seeds and the sign-in page. Stored as plain text (see `app/db/schema.ts`).
 
@@ -6,10 +8,17 @@ export const USER_ROLES = ["admin", "partner", "customer"] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
 
-export const USER_ROLE_LABELS: Record<UserRole, string> = {
-  admin: "مدیر و مربی ارشد",
-  partner: "همکار",
-  customer: "مشتری",
+/** In the page's language (messages read through getters, so read them while rendering). */
+export const USER_ROLE_LABELS: Readonly<Record<UserRole, string>> = {
+  get admin() {
+    return m.shared_role_admin();
+  },
+  get partner() {
+    return m.shared_role_partner();
+  },
+  get customer() {
+    return m.shared_role_customer();
+  },
 };
 
 /** Blocked users can't sign in. */

@@ -1,6 +1,7 @@
 import { cn } from "cn";
 
 import type { CourseFamily } from "~/orpc/course/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Course Family Filter =====*/
 /** A row of pills, «همه» first, that filters the courses by family. The caller sets the spacing through `className`. */
@@ -17,8 +18,8 @@ export function CourseFamilyFilter({
 }) {
   return (
     <fieldset className={cn("flex min-w-0 [scrollbar-width:none] gap-2 overflow-x-auto pb-1", className)}>
-      <legend className="sr-only">نوع دوره</legend>
-      {[{ family: "all" as const, label: "همه" }, ...tabs].map((tab) => (
+      <legend className="sr-only">{m.shared_family_filter_legend()}</legend>
+      {[{ family: "all" as const, label: m.shared_family_filter_all() }, ...tabs].map((tab) => (
         <button
           key={tab.family}
           type="button"

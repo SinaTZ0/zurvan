@@ -5,8 +5,9 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_partner/column";
 import type { PartnerFunnel } from "~/routes/account_partner/funnel";
 
@@ -32,14 +33,12 @@ export function PartnerHero({ firstName, funnel }: { firstName: string; funnel: 
         <div className="order-2 lg:order-1 lg:col-span-7 lg:flex lg:flex-col lg:justify-center lg:py-6">
           <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
             <HandshakeIcon aria-hidden strokeWidth={2} className="size-4" />
-            همکار
+            {m.account_partner_hero_chip()}
           </p>
           <h1 id="partner-title" className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>
-            سلام <span className="text-primary">{firstName}</span>!
+            {m.account_partner_hero_title_lead()} <span className="text-primary">{firstName}</span>!
           </h1>
-          <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">
-            هر کی با لینک یا QR تو بیاد، یا شماره‌ش رو توی «مشتری‌ها» بنویسی، به اسم تو ثبت می‌شه.
-          </p>
+          <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">{m.account_partner_hero_lead()}</p>
           <TallyPlate funnel={funnel} />
         </div>
 
@@ -58,9 +57,9 @@ export function PartnerHero({ firstName, funnel }: { firstName: string; funnel: 
  */
 function TallyPlate({ funnel }: { funnel: PartnerFunnel }) {
   const cells = [
-    { label: "شماره‌ها", value: funnel.numbers },
-    { label: "ثبت‌نام‌شده", value: funnel.registered },
-    { label: "خریدار", value: funnel.bought },
+    { label: m.account_partner_tally_numbers(), value: funnel.numbers },
+    { label: m.account_partner_tally_registered(), value: funnel.registered },
+    { label: m.account_partner_tally_bought(), value: funnel.bought },
   ];
 
   return (
@@ -83,10 +82,10 @@ function TallyPlate({ funnel }: { funnel: PartnerFunnel }) {
               {value === 0 ? (
                 <>
                   <span aria-hidden>—</span>
-                  <span className="sr-only">صفر</span>
+                  <span className="sr-only">{m.account_partner_zero_sr()}</span>
                 </>
               ) : (
-                formatNumberFa(value)
+                formatNumber(value)
               )}
             </dd>
           </div>
@@ -153,7 +152,7 @@ function Street() {
           tail="left"
           className="pd-hello absolute bottom-[calc(var(--dog-w)*1.38+0.5rem)] left-[calc(50%-2.25rem)] z-20 max-w-[12rem] whitespace-nowrap lg:max-w-none"
         >
-          سلام همکار! خوش اومدی.
+          {m.account_partner_hero_bubble()}
         </ChalkBubble>
       </div>
     </div>

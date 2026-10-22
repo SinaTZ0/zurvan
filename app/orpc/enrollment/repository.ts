@@ -7,7 +7,8 @@ import type { MediaRecord } from "~/orpc/media/repository";
 /*===== Types =====*/
 export type EnrollmentRow = {
   enrollment: typeof enrollment.$inferSelect;
-  course: { slug: string; title: string; latinName: string };
+  /** `titleEn` is null until the Admin writes it. */
+  course: { slug: string; title: string; titleEn: string | null; latinName: string };
   dog: { id: string; name: string };
   dogPhoto: MediaRecord | null;
   customer: { id: string; name: string; phoneNumber: string | null };
@@ -34,7 +35,7 @@ export function findEnrollments({
   return db
     .select({
       enrollment,
-      course: { slug: course.slug, title: course.title, latinName: course.latinName },
+      course: { slug: course.slug, title: course.title, titleEn: course.titleEn, latinName: course.latinName },
       dog: { id: dog.id, name: dog.name },
       dogPhoto: media,
       customer: { id: user.id, name: user.name, phoneNumber: user.phoneNumber },

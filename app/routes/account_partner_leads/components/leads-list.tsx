@@ -4,6 +4,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { Pagination } from "~/components/pagination";
 import type { PartnerPerson } from "~/orpc/partner/contract";
+import { m } from "~/paraglide/messages";
 import { EdgeDog } from "~/routes/account_partner_leads/components/edge-dog";
 import { LeadRow } from "~/routes/account_partner_leads/components/lead-row";
 import { NobodyYet } from "~/routes/account_partner_leads/components/nobody-yet";
@@ -57,7 +58,7 @@ export function LeadsList({
       {/*===== Heading and the Dog =====*/}
       <PlateHead
         id="leads-list-title"
-        title="هر کی کجای راهه"
+        title={m.account_partner_leads_list_title()}
         figureClassName={nobody ? "me-6 sm:me-10" : "me-[5.5rem] sm:me-[6.25rem]"}
         figure={
           nobody ? (
@@ -75,7 +76,7 @@ export function LeadsList({
                   tail="left"
                   className="pl-view-pop max-w-none whitespace-nowrap [--pop-origin:2.25rem_100%]"
                 >
-                  همه رو زیر نظر دارم!
+                  {m.account_partner_leads_list_bubble()}
                 </ChalkBubble>
               </div>
             </EdgeDog>
@@ -103,7 +104,7 @@ export function LeadsList({
                   key={stage}
                   className="pl-row rounded-2xl border border-dashed border-foreground/20 px-4 py-10 text-center text-sm text-muted-foreground"
                 >
-                  کسی توی این مرحله نیست.
+                  {m.account_partner_leads_list_stage_empty()}
                 </p>
               ) : (
                 <ul key={`${stage}-${page}`} className="flex flex-col gap-3">
@@ -122,7 +123,7 @@ export function LeadsList({
             {/*------ Pages ------*/}
             {pageCount > 1 && (
               <Pagination
-                label="صفحه‌های شماره‌ها"
+                label={m.account_partner_leads_list_pages_label()}
                 page={page - 1}
                 pageCount={pageCount}
                 className="mt-6"

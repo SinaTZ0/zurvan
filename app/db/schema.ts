@@ -255,6 +255,13 @@ export const course = pgTable(
     coverAlt: text("cover_alt").notNull(),
     coverWidth: integer("cover_width").notNull(),
     coverHeight: integer("cover_height").notNull(),
+    // The English text of the public `/en` pages (docs/i18n/english-version-plan.md, step 9). Null until written: the
+    // English pages then show the Persian column. `latinName` is the owner's own and serves both languages.
+    titleEn: text("title_en"),
+    summaryEn: text("summary_en"),
+    highlightsEn: text("highlights_en").array(),
+    commandsEn: text("commands_en").array(),
+    coverAltEn: text("cover_alt_en"),
     /** Months. Null when the course has no lower bound or it isn't known yet. */
     minAgeMonths: integer("min_age_months"),
     maxAgeMonths: integer("max_age_months"),

@@ -19,6 +19,8 @@ import { MedalsBand } from "~/routes/account_dog_detail/components/medals-band";
 import { PageMotion } from "~/routes/account_dog_detail/components/page-motion";
 import { PublicRecordCard } from "~/routes/account_dog_detail/components/public-record-card";
 import { dogDetailQueries } from "~/routes/account_dog_detail/queries";
+import { m } from "~/paraglide/messages";
+import { pageHead } from "~/lib/seo";
 
 /*===== Route =====*/
 // The account shell guards the route. The API answers NOT_FOUND for another owner's dog too, so a made-up id and
@@ -38,7 +40,14 @@ export const Route = createFileRoute("/account/dogs/$dogId")({
     );
     return { name: dog.name };
   },
-  head: ({ loaderData }) => ({ meta: [{ title: loaderData ? `${loaderData.name} | آموزش K9` : "سگ من | آموزش K9" }] }),
+  head: ({ loaderData, params }) =>
+    pageHead({
+      path: `/account/dogs/${params.dogId}`,
+      title: loaderData
+        ? m.account_dog_detail_meta_title({ name: `\u2068${loaderData.name}\u2069` })
+        : m.account_dog_detail_meta_title_fallback(),
+      description: m.account_dog_detail_meta_description({ name: loaderData?.name ?? "" }),
+    }),
   // The page ends on the medals' brick band, which runs into the footer, so the shell drops its bottom padding.
   staticData: { flushFooter: true },
   component: AccountDogDetailPage,
@@ -107,8 +116,8 @@ function AccountDogDetailPage() {
             qr={fileCard.qr}
             note={
               publicStatus.isPublic
-                ? "پرونده عمومیه: هر کی این کد رو اسکن کنه، پرونده‌ی عمومی‌ش رو می‌بینه."
-                : `هر کی این کد رو اسکن کنه، فقط می‌بینه که پرونده خصوصیه. پرونده رو فقط تو و ${HEAD_TRAINER.firstName} می‌بینید.`
+                ? m.account_dog_detail_file_note_public()
+                : m.account_dog_detail_file_note_private({ trainer: HEAD_TRAINER.firstName })
             }
           />
           <PublicRecordCard dogId={dog.id} dogName={dog.name} status={publicStatus} wording={wording} />

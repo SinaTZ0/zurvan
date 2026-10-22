@@ -5,7 +5,9 @@ import { isDogId } from "~/orpc/dog/validation";
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from "~/orpc/enrollment/constants";
 import type { AdminEnrollment, Enrollment } from "~/orpc/enrollment/contract";
 import { endActiveEnrollment, findEnrollments, type EnrollmentRow } from "~/orpc/enrollment/repository";
+import { courseTitle } from "~/orpc/course/mapper";
 import { toPublicMedia } from "~/orpc/media/mapper";
+import { getLocale, type Locale } from "~/paraglide/runtime";
 
 /*===== Types =====*/
 type NotFoundResult = { kind: "not-found" };
@@ -13,14 +15,15 @@ type ConflictResult = { kind: "not-active"; errors: string[] };
 
 /*===== Mapping =====*/
 /** @throws When `status` isn't a known value: corrupted data that should surface instead of a wrong status. */
-function toEnrollment(row: EnrollmentRow): Enrollment {
+function toEnrollment({ row, locale }: { row: EnrollmentRow; locale: Locale }): Enrollment {
   const { enrollment: record } = row;
   if (!isStatus(record.status)) throw new Error(`Enrollment ${record.id} has an unknown status: ${record.status}`);
 
   return {
     id: record.id,
     status: record.status,
-    course: row.course,
+    // The shape stays `title`; only the language changes. `titleEn` is a stored column the contract doesn't carry.
+    course: { slug: row.course.slug, title: courseTitle({ locale, course: row.course }), latinName: row.course.latinName },
     dog: { ...row.dog, photo: row.dogPhoto ? toPublicMedia(row.dogPhoto) : null },
     price: record.price,
     createdAt: record.createdAt,
@@ -29,8 +32,9 @@ function toEnrollment(row: EnrollmentRow): Enrollment {
   };
 }
 
+/** The Admin is Persian, so the title is the stored one whatever language the request carries. */
 function toAdminEnrollment(row: EnrollmentRow): AdminEnrollment {
-  return { ...toEnrollment(row), customer: row.customer };
+  return { ...toEnrollment({ row, locale: "fa" }), customer: row.customer };
 }
 
 function isStatus(value: string): value is EnrollmentStatus {
@@ -49,7 +53,7 @@ export async function listMyEnrollments({
   dogId?: string;
 }): Promise<Enrollment[]> {
   if (dogId !== undefined && !isDogId(dogId)) return [];
-  return (await findEnrollments({ db, customerId, dogId })).map(toEnrollment);
+  return (await findEnrollments({ db, customerId, dogId })).map((row) => toEnrollment({ row, locale: getLocale() }));
 }
 
 export async function adminListEnrollments({

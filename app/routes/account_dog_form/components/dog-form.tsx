@@ -18,7 +18,8 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { DOG_SEX_LABELS, DOG_SEXES, VACCINATION_STATUS_LABELS, VACCINATION_STATUSES } from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
 import type { Media } from "~/orpc/media/contract";
-import { BREED_SUGGESTIONS } from "~/routes/account_dog_form/breeds";
+import { m } from "~/paraglide/messages";
+import { breedSuggestions } from "~/routes/account_dog_form/breeds";
 import { COLUMN } from "~/routes/account_dog_form/column";
 import { BirthDateField } from "~/routes/account_dog_form/components/birth-date-field";
 import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
@@ -40,19 +41,8 @@ import { applyServerError } from "~/routes/account_dog_form/server-errors";
 
 /*===== The Guide's Words =====*/
 // The center's dog looks after each plate and says what it is for, in his first person, about his buddy («رفیقم»).
-// Every line is also said in plain words by the plate's description, so the bubbles are for the eyes only.
-const trainer = HEAD_TRAINER.firstName;
-
-const IDENTITY_LINES = {
-  new: "اسم رفیقمو بنویس تا بشناسمش!",
-  edit: "اگه چیزی عوض شده، همین‌جا درستش کن.",
-  evaluated: `نژاد و تولدش قفله؛ فقط ${trainer} عوضشون می‌کنه.`,
-} as const;
-const BODY_LINE = "اینا برای ایمنی جلسه‌هاشه.";
-const TRAINER_LINE = `از ترس‌ها و دردهاش بگو؛ ${trainer} قبل از جلسه‌ی اول می‌خونه.`;
-/** Said by the dog of the first plate with an error, after a failed submit. */
-const ERROR_LINE = "یه جاش جا مونده؛ قرمزها رو ببین.";
-
+// Every line is also said in plain words by the plate's description, so the bubbles are for the eyes only. The words
+// live in messages and are read while rendering, so they follow the page's language.
 /*===== The Guides =====*/
 // Each plate's dog and the scenery that means something there: the name card by the hall stand where his leash will
 // hang (the padlock once the identity is locked), the scale by the first-aid box, listening by the desk where the head
@@ -112,6 +102,8 @@ export function DogForm({
   header: React.ReactNode;
 }) {
   const navigate = useNavigate();
+  const trainer = HEAD_TRAINER.firstName;
+  const breeds = breedSuggestions();
   const saveDog = useSaveDog({ dogId: dog?.id ?? null });
   const locked = dog?.isEvaluated === true;
   const {
@@ -138,10 +130,10 @@ export function DogForm({
   const saving = saveDog.isPending || saveDog.isSuccess;
   const printLine = saving
     ? dog
-      ? "دارم ذخیره‌ش می‌کنم…"
-      : "دارم میام تو!"
+      ? m.account_dog_form_print_saving_edit()
+      : m.account_dog_form_print_saving_new()
     : settledName
-      ? `منم ${settledName}!`
+      ? m.account_dog_form_print_name({ name: settledName })
       : null;
 
   /*------ Who Speaks ------*/
@@ -159,7 +151,7 @@ export function DogForm({
     if (section) setSpeaker((current) => ({ section, error: true, key: current.key + 1 }));
   };
   const plateVoice = (section: DogFormSection, line: string) => ({
-    line: speaker.section === section && speaker.error ? ERROR_LINE : line,
+    line: speaker.section === section && speaker.error ? m.account_dog_form_line_error() : line,
     speaking: speaker.section === section,
     speakerKey: speaker.key,
     firstLoad: speaker.key === 0,
@@ -171,7 +163,10 @@ export function DogForm({
     (submitted) => {
       saveDog.mutate(toDogInput({ values: submitted, dog }), {
         onSuccess: async (saved) => {
-          toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
+          toast.add({
+            title: dog ? m.account_dog_form_toast_saved() : m.account_dog_form_toast_added({ name: saved.name }),
+            type: "success",
+          });
           // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it. `redirectTo` is
           // any same-site path, so it goes in `href`, which the router parses.
           if (redirectTo) {
@@ -197,7 +192,11 @@ export function DogForm({
     (invalid) => speakError(Object.keys(invalid)),
   );
 
-  const identityLine = !dog ? IDENTITY_LINES.new : locked ? IDENTITY_LINES.evaluated : IDENTITY_LINES.edit;
+  const identityLine = !dog
+    ? m.account_dog_form_line_identity_new()
+    : locked
+      ? m.account_dog_form_line_identity_locked({ trainer })
+      : m.account_dog_form_line_identity_edit();
 
   return (
     <div className="overflow-x-clip">
@@ -238,19 +237,19 @@ export function DogForm({
           {/*------ Identity ------*/}
           <FormPlate
             id="identity"
-            title="شناسنامه"
-            description={`${trainer} با همینا سگت رو می‌شناسه.`}
+            title={m.account_dog_form_plate_identity_title()}
+            description={m.account_dog_form_plate_identity_description({ trainer })}
             guide={locked ? GUIDES.locked : GUIDES.identity}
             {...plateVoice("identity", identityLine)}
           >
             <Field data-invalid={!!errors.name}>
-              <FieldLabel htmlFor="dog-name">اسم</FieldLabel>
+              <FieldLabel htmlFor="dog-name">{m.account_dog_form_field_name()}</FieldLabel>
               <Input id="dog-name" autoComplete="off" aria-invalid={!!errors.name} {...register("name")} />
               <FieldError key={errors.name?.message} errors={[errors.name]} className="answer-in" />
             </Field>
 
             <ChoicePills
-              legend="جنس"
+              legend={m.account_dog_form_field_sex()}
               options={DOG_SEXES.map((sex) => ({ value: sex, label: DOG_SEX_LABELS[sex] }))}
               registration={register("sex")}
               error={errors.sex}
@@ -263,17 +262,17 @@ export function DogForm({
             ) : (
               <>
                 <Field data-invalid={!!errors.breed}>
-                  <FieldLabel htmlFor="dog-breed">نژاد</FieldLabel>
+                  <FieldLabel htmlFor="dog-breed">{m.account_dog_form_field_breed()}</FieldLabel>
                   <Input
                     id="dog-breed"
                     list="dog-breed-suggestions"
                     autoComplete="off"
-                    placeholder="مثلاً ژرمن شپرد، یا دورگه"
+                    placeholder={m.account_dog_form_breed_placeholder()}
                     aria-invalid={!!errors.breed}
                     {...register("breed")}
                   />
                   <datalist id="dog-breed-suggestions">
-                    {BREED_SUGGESTIONS.map((breed) => (
+                    {breeds.map((breed) => (
                       <option key={breed} value={breed}>
                         {breed}
                       </option>
@@ -290,18 +289,18 @@ export function DogForm({
           {/*------ Body and Health ------*/}
           <FormPlate
             id="body"
-            title="بدن و سلامت"
-            description="برای برنامه‌ی تمرین و ایمنی جلسه‌ها."
+            title={m.account_dog_form_plate_body_title()}
+            description={m.account_dog_form_plate_body_description()}
             guide={GUIDES.body}
-            {...plateVoice("body", BODY_LINE)}
+            {...plateVoice("body", m.account_dog_form_line_body())}
           >
             <Field data-invalid={!!errors.weight} className="max-w-56">
-              <FieldLabel htmlFor="dog-weight">وزن (کیلو)</FieldLabel>
+              <FieldLabel htmlFor="dog-weight">{m.account_dog_form_field_weight()}</FieldLabel>
               <Input
                 id="dog-weight"
                 inputMode="decimal"
                 autoComplete="off"
-                placeholder="مثلاً ۱۲٫۵"
+                placeholder={m.account_dog_form_weight_placeholder()}
                 aria-invalid={!!errors.weight}
                 {...register("weight")}
               />
@@ -309,17 +308,17 @@ export function DogForm({
             </Field>
 
             <ChoicePills
-              legend="عقیم شده؟"
+              legend={m.account_dog_form_field_neutered()}
               options={[
-                { value: "yes", label: "بله" },
-                { value: "no", label: "نه" },
+                { value: "yes", label: m.account_dog_form_yes() },
+                { value: "no", label: m.account_dog_form_no() },
               ]}
               registration={register("isNeutered")}
               error={errors.isNeutered}
             />
 
             <ChoicePills
-              legend="واکسن‌ها"
+              legend={m.account_dog_form_field_vaccines()}
               options={VACCINATION_STATUSES.map((status) => ({
                 value: status,
                 label: VACCINATION_STATUS_LABELS[status],
@@ -330,7 +329,8 @@ export function DogForm({
 
             <Field data-invalid={!!errors.microchipNumber}>
               <FieldLabel htmlFor="dog-microchip">
-                شماره‌ی میکروچیپ <span className="font-medium text-muted-foreground">(اختیاری)</span>
+                {m.account_dog_form_field_microchip()}{" "}
+                <span className="font-medium text-muted-foreground">{m.account_dog_form_optional()}</span>
               </FieldLabel>
               <Input
                 id="dog-microchip"
@@ -341,7 +341,7 @@ export function DogForm({
                 aria-invalid={!!errors.microchipNumber}
                 {...register("microchipNumber")}
               />
-              <FieldDescription>روی کارت واکسن یا مدارک دامپزشک نوشته شده.</FieldDescription>
+              <FieldDescription>{m.account_dog_form_microchip_hint()}</FieldDescription>
               <FieldError
                 key={errors.microchipNumber?.message}
                 errors={[errors.microchipNumber]}
@@ -353,16 +353,16 @@ export function DogForm({
           {/*------ For the Trainer ------*/}
           <FormPlate
             id="trainer"
-            title={`برای ${trainer}`}
-            description={`اینا رو فقط ${trainer} می‌خونه، قبل از اولین جلسه.`}
+            title={m.account_dog_form_plate_trainer_title({ trainer })}
+            description={m.account_dog_form_plate_trainer_description({ trainer })}
             guide={GUIDES.trainer}
-            {...plateVoice("trainer", TRAINER_LINE)}
+            {...plateVoice("trainer", m.account_dog_form_line_trainer({ trainer }))}
           >
             <Field data-invalid={!!errors.behaviorNotes}>
-              <FieldLabel htmlFor="dog-behavior">رفتارش</FieldLabel>
+              <FieldLabel htmlFor="dog-behavior">{m.account_dog_form_field_behavior()}</FieldLabel>
               <Textarea
                 id="dog-behavior"
-                placeholder="مثلاً: از سگ‌های بزرگ می‌ترسه، روی مهمون می‌پره"
+                placeholder={m.account_dog_form_behavior_placeholder()}
                 aria-invalid={!!errors.behaviorNotes}
                 {...register("behaviorNotes")}
               />
@@ -370,10 +370,10 @@ export function DogForm({
             </Field>
 
             <Field data-invalid={!!errors.medicalNotes}>
-              <FieldLabel htmlFor="dog-medical">سلامتش</FieldLabel>
+              <FieldLabel htmlFor="dog-medical">{m.account_dog_form_field_medical()}</FieldLabel>
               <Textarea
                 id="dog-medical"
-                placeholder="مثلاً: حساسیت غذایی، درد مفصل، داروی روزانه"
+                placeholder={m.account_dog_form_medical_placeholder()}
                 aria-invalid={!!errors.medicalNotes}
                 {...register("medicalNotes")}
               />
@@ -399,7 +399,13 @@ export function DogForm({
                 disabled={saveDog.isPending || busy}
               >
                 {saveDog.isPending && <Spinner data-icon="inline-start" />}
-                {saveDog.isPending ? (dog ? "در حال ذخیره…" : "در حال اضافه کردن…") : dog ? "ذخیره" : "اضافه کن"}
+                {saveDog.isPending
+                  ? dog
+                    ? m.account_dog_form_saving_edit()
+                    : m.account_dog_form_saving_new()
+                  : dog
+                    ? m.account_dog_form_submit_edit()
+                    : m.account_dog_form_submit_new()}
               </Button>
               {/* Back where they came from: `redirectTo` (a built path, so `href`, which the router parses; `to` is only
                   there for the types), else the dog's page or the list. */}
@@ -411,12 +417,14 @@ export function DogForm({
                     : linkOptions({ to: "/account" }))}
                 className={buttonVariants({ variant: "ghost", size: "lg" })}
               >
-                انصراف
+                {m.account_dog_form_cancel()}
               </Link>
             </div>
 
             {busy && (
-              <output className="answer-in block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>
+              <output className="answer-in block text-sm text-muted-foreground">
+                {m.account_dog_form_busy()}
+              </output>
             )}
 
             {/*------ The Path ------*/}

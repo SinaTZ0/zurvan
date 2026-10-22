@@ -2,12 +2,13 @@ import { cn } from "cn";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 import { buttonVariants } from "~/components/ui/button";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Pagination =====*/
 /**
  * Page numbers between a back and a forward arrow, centred under the grid. In RTL the pages run right to left, so
- * "next" points left. A hidden live line reads out the page that came up. Up to five pages are all shown; beyond that
+ * "next" points left; on the English pages the arrows are mirrored. A hidden live line reads out the page that came up. Up to five pages are all shown; beyond that
  * the list is a window (first, last and the current page with its neighbours) with «…» in the gaps, so it still fits a
  * 390px screen however long the list grows (the SMS outbox runs to dozens of pages).
  */
@@ -15,7 +16,7 @@ export function Pagination({
   page,
   pageCount,
   onPick,
-  label = "صفحه‌های دوره‌ها",
+  label,
   className,
 }: {
   /** 0-based. */
@@ -29,15 +30,15 @@ export function Pagination({
   const items = pageItems({ page, pageCount });
 
   return (
-    <nav aria-label={label} className={cn("flex items-center justify-center gap-1 sm:gap-2", className)}>
+    <nav aria-label={label ?? m.shared_pagination_courses()} className={cn("flex items-center justify-center gap-1 sm:gap-2", className)}>
       <button
         type="button"
-        aria-label="صفحه‌ی قبل"
+        aria-label={m.shared_pagination_previous()}
         disabled={page === 0}
         onClick={() => onPick(page - 1)}
         className={arrow}
       >
-        <ChevronRightIcon aria-hidden />
+        <ChevronRightIcon aria-hidden className="ltr:-scale-x-100" />
       </button>
 
       <ol className="flex items-center gap-1 sm:gap-2">
@@ -50,7 +51,7 @@ export function Pagination({
             ) : (
               <button
                 type="button"
-                aria-label={`صفحه‌ی ${formatNumberFa(index + 1)}`}
+                aria-label={m.shared_pagination_page({ page: formatNumber(index + 1) })}
                 aria-current={index === page ? "page" : undefined}
                 onClick={() => onPick(index)}
                 className={cn(
@@ -60,7 +61,7 @@ export function Pagination({
                     : "border-border bg-card text-muted-foreground hover:text-foreground",
                 )}
               >
-                {formatNumberFa(index + 1)}
+                {formatNumber(index + 1)}
               </button>
             )}
           </li>
@@ -69,16 +70,16 @@ export function Pagination({
 
       <button
         type="button"
-        aria-label="صفحه‌ی بعد"
+        aria-label={m.shared_pagination_next()}
         disabled={page === pageCount - 1}
         onClick={() => onPick(page + 1)}
         className={arrow}
       >
-        <ChevronLeftIcon aria-hidden />
+        <ChevronLeftIcon aria-hidden className="ltr:-scale-x-100" />
       </button>
 
       <p aria-live="polite" className="sr-only">
-        صفحه‌ی {formatNumberFa(page + 1)} از {formatNumberFa(pageCount)}
+        {m.shared_pagination_status({ page: formatNumber(page + 1), count: formatNumber(pageCount) })}
       </p>
     </nav>
   );

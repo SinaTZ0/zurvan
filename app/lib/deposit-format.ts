@@ -1,5 +1,6 @@
 import { formatToman } from "~/lib/course-format";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Deposit Wording =====*/
 // Browser-safe. A payment that took a deposit says so the same way on every page: how much of the full price it is, and what
@@ -18,14 +19,17 @@ export function tookDeposit({ amount, totalAmount }: Pick<DepositFacts, "amount"
   return amount < totalAmount;
 }
 
-/** «پیش‌پرداخت ٪۵۰ از ۹٬۵۰۰٬۰۰۰ تومان», or `null` for a payment of the whole price. */
+/** «پیش‌پرداخت ٪۵۰ از ۹٬۵۰۰٬۰۰۰ تومان» («50% deposit of 9,500,000 Toman»), or `null` for a payment of the whole price. */
 export function describeDeposit(facts: DepositFacts): string | null {
   if (!tookDeposit(facts)) return null;
-  return `پیش‌پرداخت ٪${formatNumberFa(facts.depositPercent)} از ${formatToman(facts.totalAmount)}`;
+  return m.shared_deposit_share({ percent: formatNumber(facts.depositPercent), total: formatToman(facts.totalAmount) });
 }
 
-/** «بقیه ۴٬۷۵۰٬۰۰۰ تومان»: what is left of the full price, or `null` when nothing is. */
+/**
+ * «بقیه ۴٬۷۵۰٬۰۰۰ تومان» («the remaining 4,750,000 Toman», lower case: the page puts it inside its own sentence): what
+ * is left of the full price, or `null` when nothing is.
+ */
 export function describeBalance(facts: DepositFacts): string | null {
   if (!tookDeposit(facts)) return null;
-  return `بقیه ${formatToman(facts.totalAmount - facts.amount)}`;
+  return m.shared_deposit_balance({ amount: formatToman(facts.totalAmount - facts.amount) });
 }

@@ -1,6 +1,7 @@
 import { env } from "~/env.server";
 import { getPaymentGateway } from "~/lib/payment-gateway.server";
 import { resolvePublicOrigin } from "~/lib/public-origin";
+import { PAYMENT_LOCALE_PARAM } from "~/orpc/checkout/constants";
 import {
   adminGetDogEligibility,
   adminListPayments,
@@ -13,6 +14,7 @@ import {
 import { base } from "~/orpc/implementer.server";
 import { requireRoleMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
+import { baseLocale, type Locale } from "~/paraglide/runtime";
 
 // The customer's procedures are scoped to the signed-in customer's own dogs and payments; `admin` ones are for the
 // Admin.
@@ -26,6 +28,7 @@ export const dogEligibilityProcedure = base.checkout.eligibility
       db: context.db,
       customerId: context.user.id,
       courseSlug: input.courseSlug,
+      locale: context.locale,
     });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.dogs;
@@ -36,7 +39,12 @@ export const myDogCoursesProcedure = base.checkout.dogCourses
   .use(requireRoleMiddleware("customer"))
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await getMyDogCourses({ db: context.db, customerId: context.user.id, dogId: input.dogId });
+    const result = await getMyDogCourses({
+      db: context.db,
+      customerId: context.user.id,
+      dogId: input.dogId,
+      locale: context.locale,
+    });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.courses;
   });
@@ -57,7 +65,10 @@ export const payCartProcedure = base.checkout.pay
       gateway: getPaymentGateway(),
       customerId: context.user.id,
       input,
-      callbackUrl: `${resolvePublicOrigin(context.headers, env.BETTER_AUTH_URL, env.HTTP_IP)}/payment/callback`,
+      callbackUrl: paymentCallbackUrl({
+        origin: resolvePublicOrigin(context.headers, env.BETTER_AUTH_URL, env.HTTP_IP),
+        locale: context.locale,
+      }),
     });
 
     if (result.kind === "invalid") {
@@ -93,3 +104,14 @@ export const adminDogEligibilityProcedure = base.checkout.admin.dogEligibility
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.courses;
   });
+
+/*===== Callback URL =====*/
+/**
+ * Where the gateway sends the customer back. The callback's own address has no language, so an English customer's
+ * carries `?lang=en` and lands on the English cart (`payment_callback`); the gateway adds its own parameters beside it.
+ */
+function paymentCallbackUrl({ origin, locale }: { origin: string; locale: Locale }): string {
+  const url = new URL("/payment/callback", origin);
+  if (locale !== baseLocale) url.searchParams.set(PAYMENT_LOCALE_PARAM, locale);
+  return url.href;
+}

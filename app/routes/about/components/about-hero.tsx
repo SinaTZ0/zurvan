@@ -4,8 +4,9 @@ import { EvaluationButton } from "~/components/evaluation-button";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/about/column";
 
 /*===== Tape =====*/
@@ -32,7 +33,7 @@ export function AboutHero() {
     <section aria-labelledby="about-title">
       {/*------ The dog on the coping ------*/}
       <div aria-hidden className={`${COLUMN} relative z-10 grid pt-2 md:pt-4 lg:grid-cols-12 lg:gap-x-10`}>
-        <div className="flex justify-start ps-12 pt-20 lg:col-span-7 lg:justify-end lg:ps-0 lg:pe-10 lg:pt-16">
+        <div className="flex justify-start ps-12 max-lg:ltr:justify-end max-lg:ltr:ps-0 max-lg:ltr:pe-12 pt-20 lg:col-span-7 lg:justify-end lg:ps-0 lg:pe-10 lg:pt-16">
           <div className="relative w-36 translate-y-[3%] md:w-44 lg:w-64">
             {/* A pool of warm light where he sits. */}
             <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.08),transparent)]" />
@@ -47,7 +48,7 @@ export function AboutHero() {
               tail="right"
               className="ab-pop absolute right-[58%] bottom-[84%] w-max max-w-[13rem] text-pretty md:max-w-[16rem]"
             >
-              سلام! اینم طلاست، مربی من.
+              {m.about_hero_bubble()}
             </ChalkBubble>
           </div>
         </div>
@@ -76,13 +77,12 @@ export function AboutHero() {
             </h1>
             <p className="mt-3 text-lead text-pretty text-muted-foreground">{HEAD_TRAINER.role}</p>
             <p className="mt-4 max-w-lg text-pretty text-foreground/85">
-              {HEAD_TRAINER.name} با {formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای توی آموزش سگ‌ها
-              کار می‌کنه؛ از آموزش‌های پایه و عمومی تا دوره‌های تخصصی، نگهبانی، ورزشی و سطوح مسابقاتی.
+              {m.about_hero_intro({ name: HEAD_TRAINER.name, years: formatNumber(HEAD_TRAINER.years) })}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <EvaluationButton className="h-12">ارزیابی رایگان بگیر</EvaluationButton>
+              <EvaluationButton className="h-12">{m.about_hero_evaluation()}</EvaluationButton>
               <Link to="/courses" className={buttonVariants({ variant: "outline", className: "h-12 px-7 text-base" })}>
-                دوره‌ها رو ببین
+                {m.about_hero_courses()}
               </Link>
             </div>
           </div>

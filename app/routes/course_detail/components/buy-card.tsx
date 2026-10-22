@@ -7,6 +7,7 @@ import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { CART_PATH } from "~/orpc/checkout/constants";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 import { BuyProblems } from "~/routes/course_detail/components/buy-problems";
 import { CourseDog } from "~/routes/course_detail/components/course-dog";
 import { DogRowList } from "~/routes/course_detail/components/dog-row-list";
@@ -61,7 +62,7 @@ export function BuyCard({
                 been seen yet, so the line says when to take it. */}
             {buy.quieter && (
               <p className="text-center text-sm text-muted-foreground">
-                سگت هنوز ارزیابی نشده؟{" "}
+                {m.course_detail_buy_quieter_ask()}{" "}
                 <Link
                   {...buy.quieter.link}
                   className="rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
@@ -74,20 +75,20 @@ export function BuyCard({
             {/* Always mounted: a live region has to exist before its text changes to be announced. The full-cart
                 message is for everyone, so it is visible; «added» only repeats what the button now says. */}
             <output className={cn("block", buy.message === "full" ? "text-sm text-pretty text-foreground" : "sr-only")}>
-              {buy.message === "added" && "به سبد اضافه شد"}
-              {buy.message === "full" && <span className="answer-in block">سبد پره. اول یکی از موردهاش رو بردار.</span>}
+              {buy.message === "added" && m.course_detail_buy_message_added()}
+              {buy.message === "full" && <span className="answer-in block">{m.course_detail_buy_message_full()}</span>}
             </output>
           </div>
 
           {buy.mode !== "evaluation" && (
             <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
-              بعد از پرداخت، {HEAD_TRAINER.firstName} زنگ می‌زنه و با هم هماهنگ می‌کنیم.
+              {m.course_detail_buy_after_pay({ trainer: HEAD_TRAINER.firstName })}
               <Link
                 to="/help"
                 hash="how-buying-works"
                 className="mt-1 block w-fit rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
-                خرید چطوری کار می‌کنه؟
+                {m.course_detail_buy_how_it_works()}
               </Link>
             </p>
           )}
@@ -103,7 +104,7 @@ export function BuyCard({
  * hangs a little askew from it. The outline is drawn by an SVG stretched to the tag (`non-scaling-stroke` keeps the ink
  * even), so the tag fits its words whatever the price; the hole is its own circle, which stretching would squash.
  * Physical sides on purpose: the point and the hole are on the tag's right, the reading start in RTL, so the tag is
- * pinned clear of the dog in the left corner.
+ * pinned clear of the dog in the left corner. In English the whole tag is mirrored (`ltr:`), the dog being on the right.
  */
 function PriceTag({ price }: { price: number | null }) {
   return (
@@ -112,20 +113,20 @@ function PriceTag({ price }: { price: number | null }) {
       {/*------ Pin and String ------*/}
       <span
         aria-hidden
-        className="absolute right-[1.375rem] bottom-[calc(50%-0.25rem)] h-[calc(50%+2.5rem)] w-0.5 rounded-full bg-foreground/45 sm:h-[calc(50%+3rem)]"
+        className="absolute right-[1.375rem] bottom-[calc(50%-0.25rem)] h-[calc(50%+2.5rem)] w-0.5 rounded-full bg-foreground/45 sm:h-[calc(50%+3rem)] ltr:right-auto ltr:left-[1.375rem]"
       />
       <span
         aria-hidden
-        className="absolute -top-[2.65rem] right-[1.125rem] size-2.5 rounded-full bg-foreground sm:-top-[3.15rem]"
+        className="absolute -top-[2.65rem] right-[1.125rem] size-2.5 rounded-full bg-foreground sm:-top-[3.15rem] ltr:right-auto ltr:left-[1.125rem]"
       />
 
       {/*------ Tag ------*/}
-      <p className="relative flex origin-[calc(100%-1.4rem)_50%] -rotate-[2.5deg] flex-col py-3 ps-14 pe-5">
+      <p className="relative flex origin-[calc(100%-1.4rem)_50%] -rotate-[2.5deg] flex-col py-3 ps-14 pe-5 ltr:origin-[1.4rem_50%] ltr:rotate-[2.5deg]">
         <svg
           aria-hidden
           viewBox="0 0 200 80"
           preserveAspectRatio="none"
-          className="absolute inset-0 size-full overflow-visible text-foreground"
+          className="absolute inset-0 size-full overflow-visible text-foreground ltr:-scale-x-100"
         >
           <path
             d="M10 2H168L198 40L168 78H10Q2 78 2 70V10Q2 2 10 2Z"
@@ -138,12 +139,12 @@ function PriceTag({ price }: { price: number | null }) {
         </svg>
         <span
           aria-hidden
-          className="absolute top-1/2 right-[1.125rem] size-2.5 -translate-y-1/2 rounded-full border-2 border-foreground bg-card"
+          className="absolute top-1/2 right-[1.125rem] size-2.5 -translate-y-1/2 rounded-full border-2 border-foreground bg-card ltr:right-auto ltr:left-[1.125rem]"
         />
 
-        <span className="relative text-sm text-muted-foreground">هزینه‌ی دوره</span>
+        <span className="relative text-sm text-muted-foreground">{m.course_detail_buy_price_label()}</span>
         <span className={cn("relative font-black text-foreground", price === null ? "text-2xl" : "text-3xl")}>
-          {price === null ? "بعد از ارزیابی" : formatToman(price)}
+          {price === null ? m.shared_course_after_evaluation() : formatToman(price)}
         </span>
       </p>
     </div>
@@ -157,17 +158,13 @@ function Body({ course, buy }: { course: Course; buy: BuyCardState }) {
     case "evaluation":
       return course.price === null ? (
         <p className="text-pretty text-muted-foreground">
-          اول {HEAD_TRAINER.firstName} سگت رو می‌بینه. ارزیابی رایگانه.
+          {m.course_detail_buy_body_evaluation({ trainer: HEAD_TRAINER.firstName })}
         </p>
       ) : null;
     case "visitor":
-      return (
-        <p className="text-pretty text-muted-foreground">وارد شو تا ببینی کدوم سگت می‌تونه این دوره رو بگذرونه.</p>
-      );
+      return <p className="text-pretty text-muted-foreground">{m.course_detail_buy_body_visitor()}</p>;
     case "no-dogs":
-      return (
-        <p className="text-pretty text-muted-foreground">اول سگت رو معرفی کن، بعد می‌بینیم کدوم دوره‌ها براش بازه.</p>
-      );
+      return <p className="text-pretty text-muted-foreground">{m.course_detail_buy_body_no_dogs()}</p>;
     case "dogs":
       return <DogRowList dogs={buy.dogs} pickedId={buy.pickedId} verdict={buy.verdict} onPick={buy.pick} />;
   }
@@ -199,20 +196,20 @@ export function BuyButton({
     case "pick":
       return (
         <Button type="button" variant="solid" size={size} disabled className={className}>
-          اول یکی از سگ‌ها رو انتخاب کن
+          {m.course_detail_buy_action_pick()}
         </Button>
       );
     case "blocked":
       return (
         <Button type="button" variant="solid" size={size} disabled className={className}>
-          افزودن به سبد
+          {m.course_detail_buy_action_add()}
         </Button>
       );
     case "add":
       return (
         <Button type="button" variant="solid" size={size} onClick={buy.add} className={className}>
           <ShoppingCartIcon aria-hidden />
-          افزودن به سبد
+          {m.course_detail_buy_action_add()}
         </Button>
       );
     case "in-cart":
@@ -228,13 +225,13 @@ export function BuyButton({
             })}
           >
             <CheckIcon aria-hidden strokeWidth={2.6} />
-            در سبد است
+            {m.course_detail_buy_action_in_cart()}
           </span>
           <Link
             to={CART_PATH}
             className="rounded-sm text-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            دیدن سبد
+            {m.course_detail_buy_action_view_cart()}
           </Link>
         </span>
       );

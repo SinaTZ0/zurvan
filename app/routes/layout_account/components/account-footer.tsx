@@ -1,19 +1,37 @@
 import { BrandEmblem } from "~/components/brand-emblem";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
+import { LanguageSwitch } from "~/components/language-switch";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { PROFILE_LINK } from "~/lib/account-links";
-import { CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_PHONE } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const LINK = `rounded text-foreground/70 transition-colors hover:text-foreground ${FOCUS}`;
 
+// Getters over the messages, so each render reads the page's language.
 const LINKS = [
-  { label: "سؤال‌های پرتکرار", to: "/help" },
-  { label: "تماس", to: "/contact" },
-  { label: PROFILE_LINK.label, to: PROFILE_LINK.to },
+  {
+    get label() {
+      return m.layout_account_footer_faq();
+    },
+    to: "/help",
+  },
+  {
+    get label() {
+      return m.layout_account_footer_contact();
+    },
+    to: "/contact",
+  },
+  {
+    get label() {
+      return PROFILE_LINK.label;
+    },
+    to: PROFILE_LINK.to,
+  },
 ] as const;
 
 /*===== Account Footer =====*/
@@ -43,7 +61,7 @@ export function AccountFooter() {
             tail="left"
             className="account-footer-bubble lively-reveal-pop absolute top-0 left-[5.75rem] text-sm md:text-base"
           >
-            الو؟ سؤالی داری؟
+            {m.layout_account_footer_bubble()}
           </ChalkBubble>
         </div>
 
@@ -51,13 +69,13 @@ export function AccountFooter() {
         <div className="flex w-full min-w-0 flex-col items-center gap-5 pb-8 text-center lg:items-start lg:text-start">
           <div className="flex items-center gap-3">
             <BrandEmblem className="size-10" />
-            <span className="font-display text-2xl font-black text-foreground">زروان</span>
+            <span className="font-display text-2xl font-black text-foreground">{CENTER.name}</span>
           </div>
           <p className="max-w-md leading-7 text-pretty text-foreground/70">
-            اینجا خونه‌ی سگ‌هاته؛ هر سؤالی بود، {HEAD_TRAINER.firstName} جواب می‌ده.
+            {m.layout_account_footer_line({ trainer: HEAD_TRAINER.firstName })}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 lg:justify-start">
-            <nav aria-label="پیوندهای حساب">
+            <nav aria-label={m.layout_account_footer_links_label()}>
               <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                 {LINKS.map((link) => (
                   <li key={link.to}>
@@ -66,6 +84,10 @@ export function AccountFooter() {
                     </Link>
                   </li>
                 ))}
+                {/* The other language, the way the storefront's footer offers it; drawn nowhere it can't lead. */}
+                <li>
+                  <LanguageSwitch className={LINK} />
+                </li>
               </ul>
             </nav>
             <a
@@ -73,7 +95,7 @@ export function AccountFooter() {
               className={`flex items-center gap-2 rounded py-1 text-foreground/85 ${FOCUS}`}
             >
               {/* The bubble already asks «سؤالی داری؟»; the link only says how. */}
-              زنگ بزن
+              {m.layout_account_footer_call()}
               <span dir="ltr" className="font-bold text-primary tabular-nums hover:underline">
                 {CENTER_PHONE.display}
               </span>

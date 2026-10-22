@@ -8,22 +8,23 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { ADMIN_PLATE } from "~/lib/admin-plate";
-import { CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Copy =====*/
 // What happened, in the site's voice, and what to do next. A missing page and a broken one need different next steps:
-// a wrong address has nothing to retry.
+// a wrong address has nothing to retry. Functions, so each is worded in the page's language when it renders.
 const COPY = {
   missing: {
-    title: "این صفحه پیدا نشد",
-    line: "شاید آدرسش عوض شده یا یه حرفش اشتباه تایپ شده.",
-    tab: "پیدا نشد",
+    title: () => m.shared_error_missing_title(),
+    line: () => m.shared_error_missing_line(),
+    tab: () => m.shared_error_missing_tab(),
   },
   broken: {
-    title: "این صفحه باز نشد",
-    line: "یه مشکلی پیش اومد. یه بار دیگه امتحان کن؛ اگه باز هم نشد، چند دقیقه‌ی دیگه سر بزن.",
-    tab: "خطا",
+    title: () => m.shared_error_broken_title(),
+    line: () => m.shared_error_broken_line(),
+    tab: () => m.shared_error_broken_tab(),
   },
 } as const;
 
@@ -50,15 +51,16 @@ export function RootErrorPage({
   const { pathname } = useLocation();
   const admin = pathname === "/admin" || pathname.startsWith("/admin/");
   const copy = missing ? COPY.missing : COPY.broken;
+  // The Admin's way back stays Persian: the Admin has no English.
   const home = admin
     ? ({ to: "/admin", label: "برو به نمای کلی" } as const)
-    : ({ to: "/", label: "برو صفحه‌ی اول" } as const);
+    : ({ to: "/", label: m.shared_error_home() } as const);
 
   /*------ Words ------*/
   const words = (
     <>
-      <h1 className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>{copy.title}</h1>
-      <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{copy.line}</p>
+      <h1 className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>{copy.title()}</h1>
+      <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{copy.line()}</p>
 
       <div className="mt-8 flex flex-wrap gap-3">
         {missing ? (
@@ -69,7 +71,7 @@ export function RootErrorPage({
           <>
             {/* A full reload: the error may have come from the layout or the root, which a client navigation keeps. */}
             <Button type="button" variant="solid" size="lg" onClick={() => window.location.reload()}>
-              دوباره امتحان کن
+              {m.shared_error_retry()}
             </Button>
             <Link to={home.to} className={buttonVariants({ variant: "outline", size: "lg" })}>
               {home.label}
@@ -81,7 +83,7 @@ export function RootErrorPage({
       {/* The customer's way out when it keeps failing; the Admin is the one they would call. */}
       {!admin && !missing && (
         <p className="mt-6 text-sm text-muted-foreground">
-          کار فوری داری؟ زنگ بزن:{" "}
+          {m.shared_error_call()}{" "}
           <a
             href={`tel:${CENTER_PHONE.tel}`}
             dir="ltr"
@@ -98,13 +100,13 @@ export function RootErrorPage({
 
   return (
     <div className="flex min-h-svh flex-col">
-      <title>{`${copy.tab} | زروان`}</title>
+      <title>{`${copy.tab()} | ${CENTER.name}`}</title>
       <meta name="robots" content="noindex" />
 
       {/*===== Header Frame =====*/}
       <header className="mx-auto w-full max-w-6xl px-4 md:px-8">
         <div className="flex h-16 items-center border-b border-foreground/25">
-          <Link to={admin ? "/admin" : "/"} aria-label="زروان، صفحه‌ی اول" className="rounded-full">
+          <Link to={admin ? "/admin" : "/"} aria-label={m.shared_error_home_label()} className="rounded-full">
             <BrandLogo className="[&_img]:size-10" />
           </Link>
         </div>
@@ -158,7 +160,7 @@ function SorryStage() {
 function DevDetails({ details }: { details: { message: string; stack?: string } }) {
   return (
     <details className="mt-8 rounded-2xl border border-dashed border-foreground/20 p-4 text-sm">
-      <summary className="cursor-pointer font-bold">جزئیات خطا (فقط موقع توسعه)</summary>
+      <summary className="cursor-pointer font-bold">{m.shared_error_dev_details()}</summary>
       <div dir="ltr" className="mt-3 text-left">
         <p className="font-bold break-words">{details.message}</p>
         {details.stack && (

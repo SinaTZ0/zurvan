@@ -1,22 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
+import { CENTER } from "~/lib/contact";
+import { pageHead } from "~/lib/seo";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { AreaBand } from "~/routes/contact/components/area-band";
 import { ContactHero } from "~/routes/contact/components/contact-hero";
 import { MessagesWall } from "~/routes/contact/components/messages-wall";
+import { m } from "~/paraglide/messages";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_public/contact")({
-  head: () => ({
-    meta: [
-      { title: "تماس با ما | زروان" },
-      {
-        name: "description",
-        content: `تلفن، تلگرام، اینستاگرام و یوتیوب ${HEAD_TRAINER.name}؛ فعال در ${CENTER_SERVICE_AREA}.`,
-      },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      path: "/contact",
+      title: m.contact_meta_title(),
+      description: m.contact_meta_description({ trainer: HEAD_TRAINER.name, area: CENTER.serviceArea }),
+    }),
   // The last band (the path under the Tehran skyline) runs into the footer, so the shell drops its bottom padding.
   staticData: { flushFooter: true },
   component: ContactPage,

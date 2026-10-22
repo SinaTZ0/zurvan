@@ -1,7 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
 import { GroundStrip } from "~/components/ground-strip";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { GroupArt, GroupFiller } from "~/routes/help/components/group-art";
 import type { FaqGroupData } from "~/routes/help/faq-data";
 
@@ -50,7 +50,7 @@ export function FaqGroup({
               aria-hidden
               className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-primary bg-background font-display text-lg font-black text-primary transition-colors group-target/faq:bg-primary group-target/faq:text-primary-foreground group-has-[:target]/faq:bg-primary group-has-[:target]/faq:text-primary-foreground"
             >
-              {formatNumberFa(group.step)}
+              {formatNumber(group.step)}
             </span>
           )}
           <h2 id={titleId} className={`${DISPLAY_HEADING} text-lg text-balance sm:text-xl lg:text-[1.375rem]`}>

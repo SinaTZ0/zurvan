@@ -1,12 +1,12 @@
 import type { MascotCutName } from "~/components/mascot-cut";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Guide Moods =====*/
 // The center's dog takes the request to the head trainer. He walks beside the form and his pose follows how far it has
 // got; when it is sent he lies down by the phone to wait for the call. Each mood is one pose and one line, in his first
-// person, informal spoken Persian (app-spec F3; the brief, Batch 5 §2).
-
-const TRAINER = HEAD_TRAINER.firstName;
+// person, informal spoken Persian (app-spec F3; the brief, Batch 5 §2). The lines are messages, so they are read when asked for
+// (`guideFor`), never held in a module-level constant that would freeze the language it first loaded in.
 
 export type GuideMood =
   /** Nothing picked yet. */
@@ -74,30 +74,44 @@ const POSES = {
   watch: { name: "watch", width: 17, phone: 9, head: 0.8 },
 } satisfies Record<string, Pose>;
 
-export const GUIDE: Record<GuideMood, { pose: Pose; line: string }> = {
-  pick: { pose: POSES.wave, line: `سلام! اول بگو کدوم رفیقم بیاد پیش ${TRAINER}.` },
-  when: { pose: POSES.calendar, line: `حالا بگو معمولاً کی وقت داری تا ${TRAINER} زنگ بزنه.` },
-  ready: { pose: POSES.envelope, line: "آماده‌ست! عکس و فیلم هم اگه داری، بذار." },
-  photos: { pose: POSES.camera, line: `عکساش رسید! ${TRAINER} بهتر می‌شناستش.` },
-  sending: { pose: POSES.envelope, line: "دارم می‌برمش…" },
-  failed: { pose: POSES.listen, line: "یه جاش جا مونده؛ قرمزها رو ببین." },
-  serverFailed: { pose: POSES.listen, line: "نشد بفرستمش؛ پایینِ فرم نوشته چرا." },
-  sent: { pose: POSES["wait-phone"], line: `رسید! منتظر زنگ ${TRAINER} می‌مونیم.` },
-  noDogs: { pose: POSES.sniff, line: "رفیقم کجاست؟ اول معرفیش کن!" },
-  nothing: { pose: POSES.watch, line: "همه‌ی رفیقام یا منتظر زنگن یا ارزیابی شدن!" },
-};
+/**
+ * The pose and the line for a mood, in the page's language. A function, not a constant: the line is a message and
+ * must be read while rendering.
+ */
+export function guideFor(mood: GuideMood): { pose: Pose; line: string } {
+  const trainer = HEAD_TRAINER.firstName;
+  switch (mood) {
+    case "pick":
+      return { pose: POSES.wave, line: m.assessment_guide_pick({ trainer }) };
+    case "when":
+      return { pose: POSES.calendar, line: m.assessment_guide_when({ trainer }) };
+    case "ready":
+      return { pose: POSES.envelope, line: m.assessment_guide_ready() };
+    case "photos":
+      return { pose: POSES.camera, line: m.assessment_guide_photos({ trainer }) };
+    case "sending":
+      return { pose: POSES.envelope, line: m.assessment_guide_sending() };
+    case "failed":
+      return { pose: POSES.listen, line: m.assessment_guide_failed() };
+    case "serverFailed":
+      return { pose: POSES.listen, line: m.assessment_guide_server_failed() };
+    case "sent":
+      return { pose: POSES["wait-phone"], line: m.assessment_guide_sent({ trainer }) };
+    case "noDogs":
+      return { pose: POSES.sniff, line: m.assessment_guide_no_dogs() };
+    case "nothing":
+      return { pose: POSES.watch, line: m.assessment_guide_nothing() };
+  }
+}
 
 /*===== Next Steps =====*/
 // What happens after the request, from the FAQ's «ارزیابی رایگان چیه؟» and «بعد از خرید» answers (app-spec F3, F5,
 // F6). `label` is the stop's short name on the receipt's road; `line` the plain sentence.
-export const NEXT_STEPS = [
-  {
-    label: `زنگ ${TRAINER}`,
-    line: `${TRAINER} بهت زنگ می‌زنه، با هم هماهنگ می‌کنید و سگت رو از نزدیک می‌بینه.`,
-  },
-  { label: "دوره‌ها باز می‌شن", line: "بعد از ارزیابی، دوره‌هایی که برای سگت مناسبه باز می‌شن." },
-  {
-    label: "خرید و آموزش",
-    line: `بعد از خرید، ${TRAINER} زنگ می‌زنه و جلسه‌ها رو با هم هماهنگ می‌کنید.`,
-  },
-] as const;
+export function nextSteps(): readonly { label: string; line: string }[] {
+  const trainer = HEAD_TRAINER.firstName;
+  return [
+    { label: m.assessment_next_call_label({ trainer }), line: m.assessment_next_call_line({ trainer }) },
+    { label: m.assessment_next_courses_label(), line: m.assessment_next_courses_line() },
+    { label: m.assessment_next_buy_label(), line: m.assessment_next_buy_line({ trainer }) },
+  ];
+}

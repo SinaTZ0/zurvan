@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { m } from "~/paraglide/messages";
 import { numberToCheck } from "~/routes/certificate/retry-number";
 
 /*===== Retry Form =====*/
@@ -35,7 +36,7 @@ export function RetryForm() {
       className="mt-7 max-w-md rounded-4xl border border-foreground/10 bg-card paper-grain p-5 shadow-[0_24px_50px_-24px_rgb(0_0_0/0.9)] sm:p-6"
     >
       <label htmlFor="certificate-number" className="mb-2 block text-sm font-bold">
-        شماره‌ی گواهی
+        {m.certificate_retry_label()}
       </label>
       <Input
         id="certificate-number"
@@ -57,13 +58,13 @@ export function RetryForm() {
           <span
             className={`col-start-1 row-start-1 transition-all duration-200 ${pending ? "scale-90 opacity-0" : ""}`}
           >
-            بررسی کن
+            {m.certificate_retry_submit()}
           </span>
           <span
             aria-hidden={!pending}
             className={`col-start-1 row-start-1 transition-all duration-200 ${pending ? "" : "scale-50 opacity-0"}`}
           >
-            <Spinner aria-label="در حال بررسی" />
+            <Spinner aria-label={m.certificate_retry_busy()} />
           </span>
         </span>
       </Button>

@@ -3,10 +3,10 @@ import { cn } from "cn";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { formatToman } from "~/lib/course-format";
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatNumber, formatTimestamp } from "~/lib/locale-format";
 import type { PartnerCommission } from "~/orpc/commission/contract";
+import { m } from "~/paraglide/messages";
 import { EdgeDog } from "~/routes/account_partner/components/edge-dog";
 import { PlateHead } from "~/routes/account_partner/components/plate-head";
 import { useInView } from "~/routes/account_partner/hooks/use-in-view";
@@ -44,15 +44,15 @@ export function CommissionPlate({
   const { ref, seen } = useInView<HTMLElement>({ threshold: 0.2 });
 
   const figures = [
-    { label: "منتظر پرداخت", value: unpaidAmount },
-    { label: "پرداخت‌شده", value: paidAmount },
+    { label: m.account_partner_commission_awaiting(), value: unpaidAmount },
+    { label: m.account_partner_commission_paid_total(), value: paidAmount },
   ];
 
   return (
     <section ref={ref} aria-labelledby="partner-commission-title">
       <PlateHead
         id="partner-commission-title"
-        title="پورسانت‌هات"
+        title={m.account_partner_commission_title()}
         figureClassName="me-[3.75rem] sm:me-[5.5rem]"
         figure={
           <EdgeDog
@@ -65,7 +65,7 @@ export function CommissionPlate({
                 tail="left"
                 className="pd-say absolute bottom-[96%] left-[calc(76%-2.25rem)] max-w-none whitespace-nowrap"
               >
-                اینا سهم توئه!
+                {m.account_partner_commission_bubble()}
               </ChalkBubble>
             )}
           </EdgeDog>
@@ -90,7 +90,7 @@ export function CommissionPlate({
                     >
                       —
                     </span>
-                    <span className="sr-only">صفر تومان</span>
+                    <span className="sr-only">{m.account_partner_zero_toman_sr()}</span>
                   </>
                 ) : (
                   <>
@@ -105,7 +105,7 @@ export function CommissionPlate({
                     >
                       {tomanDigits(value)}
                     </span>
-                    <span className="text-sm font-bold text-muted-foreground">تومان</span>
+                    <span className="text-sm font-bold text-muted-foreground">{m.account_partner_toman_unit()}</span>
                   </>
                 )}
               </dd>
@@ -115,8 +115,10 @@ export function CommissionPlate({
 
         {/*===== The Rule =====*/}
         <p className="mt-5 text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
-          از اولین خرید هر مشتری {formatNumberFa(commissionPercent)}٪ می‌گیری. {HEAD_TRAINER.firstName} اون رو بانکی
-          پرداخت می‌کنه و بهت پیامک می‌ده.
+          {m.account_partner_commission_rule({
+            percent: formatNumber(commissionPercent),
+            trainer: HEAD_TRAINER.firstName,
+          })}
         </p>
 
         {/*===== Slips =====*/}
@@ -137,7 +139,7 @@ export function CommissionPlate({
 function CommissionSlips({ commissions }: { commissions: readonly PartnerCommission[] }) {
   return (
     <ul
-      aria-label="فهرست پورسانت‌ها"
+      aria-label={m.account_partner_commission_list_label()}
       className="overflow-hidden rounded-3xl border border-foreground/10 bg-card paper-grain shadow-[0_18px_30px_-22px_rgb(0_0_0/0.95)]"
     >
       {commissions.map((commission, index) => {
@@ -154,7 +156,7 @@ function CommissionSlips({ commissions }: { commissions: readonly PartnerCommiss
             <div className="min-w-0">
               <p className="font-bold break-words">{commission.customerName}</p>
               <time dateTime={commission.createdAt.toISOString()} className="text-sm text-muted-foreground">
-                {formatJalaliTimestamp(commission.createdAt)}
+                {formatTimestamp(commission.createdAt)}
               </time>
             </div>
 
@@ -163,11 +165,11 @@ function CommissionSlips({ commissions }: { commissions: readonly PartnerCommiss
               <span className="font-bold whitespace-nowrap tabular-nums">{formatToman(commission.amount)}</span>
               {paidAt ? (
                 <span className="rounded-full border border-primary/60 px-3 py-0.5 text-xs font-bold whitespace-nowrap text-primary">
-                  پرداخت شد · {formatJalaliTimestamp(paidAt)}
+                  {m.account_partner_commission_paid_on({ date: formatTimestamp(paidAt) })}
                 </span>
               ) : (
                 <span className="rounded-full bg-muted px-3 py-0.5 text-xs whitespace-nowrap text-muted-foreground">
-                  منتظر پرداخت
+                  {m.account_partner_commission_awaiting()}
                 </span>
               )}
             </div>
@@ -185,10 +187,8 @@ function CommissionSlips({ commissions }: { commissions: readonly PartnerCommiss
  */
 function NoCommissions() {
   return (
-    <div className="pd-slip relative flex min-h-[7.5rem] items-center overflow-hidden rounded-3xl border-2 border-dashed border-foreground/15 p-5 pe-[8.5rem] [--pd-delay:.35s] sm:pe-[10rem]">
-      <p className="text-pretty text-muted-foreground">
-        هنوز پورسانتی نیست. وقتی مشتریت اولین خریدش رو کرد، اینجا میاد.
-      </p>
+    <div className="pd-slip relative flex min-h-[7.5rem] items-center overflow-hidden rounded-3xl border-2 border-dashed border-foreground/15 p-5 pe-[8.5rem] [--pd-delay:.35s] sm:pe-[10rem] ltr:ps-[8.5rem] ltr:pe-5 ltr:sm:ps-[10rem] ltr:sm:pe-5">
+      <p className="text-pretty text-muted-foreground">{m.account_partner_commission_none()}</p>
       <div
         aria-hidden
         className="pointer-events-none absolute bottom-0 left-[1.75rem] w-[6.25rem] translate-y-[3%] sm:left-[2.5rem] sm:w-[7rem]"

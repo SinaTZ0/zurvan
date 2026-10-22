@@ -2,6 +2,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Ask =====*/
 /**
@@ -16,10 +17,10 @@ export function EvaluationAsk() {
     >
       <div className="max-w-xl">
         <h2 id="ask-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          نمی‌دونی از کدوم شروع کنیم؟
+          {m.course_catalogue_ask_title()}
         </h2>
         <p className="mt-3 text-pretty text-muted-foreground">
-          توی ارزیابی رایگان، {HEAD_TRAINER.firstName} سگتو می‌بینه و با هم دوره‌ی اول رو انتخاب می‌کنیم.
+          {m.course_catalogue_ask_text({ trainer: HEAD_TRAINER.firstName })}
         </p>
       </div>
       <Link
@@ -30,7 +31,7 @@ export function EvaluationAsk() {
           className: "mt-8 w-full shrink-0 lg:mt-0 lg:w-auto lg:min-w-52",
         })}
       >
-        ارزیابی رایگان بگیر
+        {m.course_catalogue_ask_button()}
       </Link>
     </section>
   );

@@ -4,11 +4,11 @@ import { useEffect, useRef } from "react";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { formatJalaliDate, formatJalaliTimestamp } from "~/lib/jalali";
+import { formatDate, formatNumber, formatTimestamp } from "~/lib/locale-format";
 import { EVALUATION_PERIOD_LABELS, EVALUATION_WEEKDAY_LABELS } from "~/orpc/evaluation/constants";
 import type { Evaluation } from "~/orpc/evaluation/contract";
+import { m } from "~/paraglide/messages";
 import { EdgeDog } from "~/routes/assessment/components/edge-dog";
 import { NextRoad } from "~/routes/assessment/components/next-road";
 import { TapedPrint } from "~/routes/assessment/components/taped-print";
@@ -55,24 +55,34 @@ export function RequestReceipt({
   }, []);
 
   /*------ Summary ------*/
+  const join = m.assessment_receipt_join();
   const rows = [
-    { term: "سگ", detail: dog.name },
-    { term: "از چه روزی", detail: evaluation.earliestDate ? formatJalaliDate(evaluation.earliestDate) : "—" },
-    { term: "روزهای آزاد", detail: evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join("، ") },
+    { term: m.assessment_receipt_dog(), detail: dog.name },
+    { term: m.assessment_receipt_earliest(), detail: evaluation.earliestDate ? formatDate(evaluation.earliestDate) : "—" },
     {
-      term: "ساعت‌های آزاد",
-      detail: evaluation.availablePeriods.map((period) => EVALUATION_PERIOD_LABELS[period]).join("، "),
+      term: m.assessment_receipt_days(),
+      detail: evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join(join),
+    },
+    {
+      term: m.assessment_receipt_periods(),
+      detail: evaluation.availablePeriods.map((period) => EVALUATION_PERIOD_LABELS[period]).join(join),
     },
     ...(photoCount + videoCount > 0
       ? [
           {
-            term: "عکس و فیلم",
+            term: m.assessment_receipt_files(),
             detail: [
-              photoCount > 0 && `${formatNumberFa(photoCount)} عکس`,
-              videoCount > 0 && `${formatNumberFa(videoCount)} فیلم`,
+              photoCount > 0 &&
+                (photoCount === 1
+                  ? m.assessment_receipt_photos_one({ count: formatNumber(photoCount) })
+                  : m.assessment_receipt_photos_other({ count: formatNumber(photoCount) })),
+              videoCount > 0 &&
+                (videoCount === 1
+                  ? m.assessment_receipt_videos_one({ count: formatNumber(videoCount) })
+                  : m.assessment_receipt_videos_other({ count: formatNumber(videoCount) })),
             ]
               .filter(Boolean)
-              .join("، "),
+              .join(join),
           },
         ]
       : []),
@@ -116,13 +126,13 @@ export function RequestReceipt({
                   tabIndex={-1}
                   className="text-sm font-bold text-muted-foreground outline-none"
                 >
-                  رسید درخواست ارزیابی
+                  {m.assessment_receipt_title()}
                 </h2>
                 <p className={cn(DISPLAY_HEADING, "mt-1 truncate text-3xl text-primary sm:text-4xl")}>
                   <bdi>{dog.name}</bdi>
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  ثبت شد {formatJalaliTimestamp(evaluation.createdAt)}
+                  {m.assessment_receipt_sent_at({ when: formatTimestamp(evaluation.createdAt) })}
                 </p>
               </div>
             </div>
@@ -141,7 +151,7 @@ export function RequestReceipt({
       </div>
 
       {/*===== What Happens From Here =====*/}
-      <h2 className={cn(DISPLAY_HEADING, "mt-14 text-h3")}>از این به بعد چی می‌شه؟</h2>
+      <h2 className={cn(DISPLAY_HEADING, "mt-14 text-h3")}>{m.assessment_receipt_next_title()}</h2>
       <div className="mt-6">
         <NextRoad />
       </div>
@@ -149,7 +159,7 @@ export function RequestReceipt({
       {/*===== Ways On =====*/}
       <div className="mt-10 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center sm:gap-7">
         <Link to="/account" className={buttonVariants({ variant: "solid", size: "lg", className: "sm:min-w-56" })}>
-          برو به سگ‌های من
+          {m.assessment_receipt_go_dogs()}
         </Link>
         {anotherDogRequestable && (
           <Button
@@ -158,7 +168,7 @@ export function RequestReceipt({
             onClick={onAnotherDog}
             className="h-auto self-center rounded-sm p-0 text-sm sm:self-auto"
           >
-            ارزیابی برای سگ دیگه
+            {m.assessment_receipt_another()}
           </Button>
         )}
       </div>

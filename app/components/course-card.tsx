@@ -6,6 +6,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { describePrerequisites, describeSessions, formatTomanShort } from "~/lib/course-format";
 import type { CourseFamily } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Branches =====*/
 // The working and sport courses are not one course but several branches (the guard dog, the bodyguard, the tracker...;
@@ -44,9 +45,11 @@ export function CourseCard({ course, showPrerequisites = false }: { course: Cour
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <h3 className="font-extrabold sm:text-lg">{course.title}</h3>
         <p className="mt-1.5 line-clamp-2 text-sm text-pretty text-muted-foreground max-sm:hidden">{course.summary}</p>
-        {prerequisites && <p className="mt-1.5 text-xs text-muted-foreground">بعد از: {prerequisites}</p>}
+        {prerequisites && (
+          <p className="mt-1.5 text-xs text-muted-foreground">{m.shared_course_card_after({ courses: prerequisites })}</p>
+        )}
         {BRANCH_FAMILIES.has(course.family) && course.commands.length > 0 && (
-          <ul aria-label="گرایش‌ها" className="mt-2 flex flex-wrap gap-1.5">
+          <ul aria-label={m.shared_course_card_branches()} className="mt-2 flex flex-wrap gap-1.5">
             {course.commands.map((branch) => (
               <li key={branch} className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
                 {/* Names such as «IGP 1» are Latin: isolate them so the digit stays on the right side of the letters. */}
@@ -71,14 +74,14 @@ export function CourseCard({ course, showPrerequisites = false }: { course: Cour
           <Link
             to="/courses/$slug"
             params={{ slug: course.slug }}
-            aria-label={`مشاهده‌ی دوره‌ی ${course.title}`}
+            aria-label={m.shared_course_card_view_label({ title: course.title })}
             className={cn(buttonVariants({ size: "sm" }), "group/link max-sm:size-10 max-sm:px-0")}
           >
-            <span className="max-sm:hidden">مشاهده دوره</span>
+            <span className="max-sm:hidden">{m.shared_course_card_view()}</span>
             <ChevronLeftIcon
               aria-hidden
               data-icon="inline-end"
-              className="transition-transform motion-safe:group-hover/link:-translate-x-0.5"
+              className="transition-transform motion-safe:group-hover/link:-translate-x-0.5 ltr:-scale-x-100 ltr:motion-safe:group-hover/link:translate-x-0.5"
             />
           </Link>
         </div>

@@ -1,8 +1,9 @@
 import { cn } from "cn";
 import { CheckIcon } from "lucide-react";
 
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { PartnerPerson } from "~/orpc/partner/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 type Stop = {
@@ -21,16 +22,16 @@ function stopsOf(person: PartnerPerson): Stop[] {
   const registered = person.stage === "registered" || person.stage === "bought";
   return [
     {
-      label: person.source === "link" ? "لینک" : "شماره",
+      label: person.source === "link" ? m.account_partner_leads_road_link() : m.account_partner_leads_road_number(),
       reached: true,
       date: person.source === "link" ? null : person.createdAt,
     },
     {
-      label: "ثبت‌نام",
+      label: m.account_partner_leads_road_signup(),
       reached: registered,
       date: person.registeredAt ?? (person.source === "link" ? person.createdAt : null),
     },
-    { label: "خرید", reached: person.stage === "bought", date: person.boughtAt },
+    { label: m.account_partner_leads_road_purchase(), reached: person.stage === "bought", date: person.boughtAt },
   ];
 }
 
@@ -66,7 +67,7 @@ export function LeadRoad({ person, delay }: { person: PartnerPerson; delay: numb
             <li key={stop.label} className="relative">
               {index === 1 && (
                 <p className="pl-disc absolute inset-x-0 top-9 w-[200%] text-xs text-pretty text-muted-foreground [--disc-step:1]">
-                  به اسم تو ثبت نشد.
+                  {m.account_partner_leads_road_lost()}
                 </p>
               )}
             </li>
@@ -119,8 +120,8 @@ export function LeadRoad({ person, delay }: { person: PartnerPerson; delay: numb
               {stop.label}
             </span>
             {stop.reached && stop.date && (
-              <span className="text-[0.6875rem] leading-tight whitespace-nowrap text-muted-foreground tabular-nums">
-                {formatJalaliTimestamp(stop.date)}
+              <span className="text-[0.6875rem] leading-tight whitespace-nowrap text-muted-foreground tabular-nums ltr:whitespace-normal">
+                {formatTimestamp(stop.date)}
               </span>
             )}
           </li>

@@ -4,6 +4,7 @@ import type { Certificate } from "~/orpc/certificate/contract";
 import { CertificateCard } from "~/routes/account_dog_detail/components/certificate-card";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
+import { m } from "~/paraglide/messages";
 
 /*===== Certificates Section =====*/
 /**
@@ -22,7 +23,7 @@ export function CertificatesSection({
 
   return (
     <section aria-labelledby="certificates-title">
-      <SectionHead id="certificates-title" title="گواهی‌ها">
+      <SectionHead id="certificates-title" title={m.account_dog_detail_certificates_title()}>
         <div className="relative">
           {/* The easel stands behind him on his far side (physical left: he faces right, towards the heading). */}
           <MascotCut name="easel" className="absolute right-[58%] bottom-0 w-[6.5rem] translate-y-[3%] sm:w-32" />

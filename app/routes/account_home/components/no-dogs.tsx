@@ -8,6 +8,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== No Dogs =====*/
 /**
@@ -28,17 +29,17 @@ export function NoDogs() {
       {/*===== Words =====*/}
       <div className="order-2 p-6 sm:p-8 lg:order-1 lg:col-span-6 lg:flex lg:flex-col lg:justify-center lg:p-12">
         <h2 id="no-dogs-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          اولین سگت رو معرفی کن
+          {m.account_home_no_dogs_title()}
         </h2>
         <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">
-          اسم و نژادش رو بنویس تا {HEAD_TRAINER.firstName} بشناسدش. بعدش می‌تونی ارزیابی رایگانش رو بخوای.
+          {m.account_home_no_dogs_description({ trainer: HEAD_TRAINER.firstName })}
         </p>
         <Link
           to="/account/dogs/new"
           className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
         >
           <PlusIcon aria-hidden />
-          معرفی سگ
+          {m.account_home_no_dogs_button()}
         </Link>
       </div>
 
@@ -79,7 +80,7 @@ export function NoDogs() {
             tail="left"
             className="lively-reveal-pop absolute bottom-[calc(var(--dog-h)+0.4rem)] left-[calc(8.5rem+0.73*var(--dog-h)*281/375-2.25rem)] max-w-[12rem] text-pretty lg:left-[calc(12.5rem+0.73*var(--dog-h)*281/375-2.25rem)] lg:max-w-[15rem]"
           >
-            جای رفیقم اینجا خالیه!
+            {m.account_home_no_dogs_bubble()}
           </ChalkBubble>
         </div>
       </div>

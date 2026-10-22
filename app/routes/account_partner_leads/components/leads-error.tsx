@@ -7,6 +7,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_partner_leads/column";
 
 /*===== Leads Error =====*/
@@ -27,13 +28,13 @@ export function LeadsError({ notFound }: { notFound: boolean }) {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="partner-leads-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          {notFound ? "این صفحه پیدا نشد" : "صفحه‌ی شماره‌ها باز نشد"}
+          {notFound ? m.account_partner_leads_error_title_not_found() : m.account_partner_leads_error_title_failed()}
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.
+          {m.account_partner_leads_error_body()}
         </p>
         <Link to="/account/partner" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-8" })}>
-          برگرد به داشبورد
+          {m.account_partner_leads_error_back()}
         </Link>
       </div>
 
@@ -51,7 +52,7 @@ export function LeadsError({ notFound }: { notFound: boolean }) {
             tail="right"
             className="absolute right-[calc(30%-2.25rem)] bottom-[calc(100%+0.3rem)] text-pretty"
           >
-            ببخشید!
+            {m.account_partner_leads_error_bubble()}
           </ChalkBubble>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { toast } from "~/components/ui/toast";
 import { orpc } from "~/orpc/client";
 import type { PartnerPerson } from "~/orpc/partner/contract";
+import { m } from "~/paraglide/messages";
 import { EdgeDog } from "~/routes/account_partner_leads/components/edge-dog";
 import { PlateHead } from "~/routes/account_partner_leads/components/plate-head";
 import { useFlash } from "~/routes/account_partner_leads/hooks/use-flash";
@@ -21,12 +22,11 @@ import { PLATE } from "~/routes/account_partner_leads/plate";
 import { type AddLeadFormValues, addLeadFormSchema } from "~/routes/account_partner_leads/schema";
 import { applyAddLeadServerError } from "~/routes/account_partner_leads/server-errors";
 
-/*===== Constants =====*/
-// The server's own refusal for an inactive account, in the page's voice, shown up front so the partner does not type a
-// number just to be refused.
-const INACTIVE_MESSAGE = "همکاریت فعلاً متوقفه؛ شماره‌ی تازه ثبت نمی‌شه.";
-
-const LINES = { listen: "بگو، یادداشتش می‌کنم!", saved: "ثبت شد!" } as const;
+/*===== Lines =====*/
+/** The writing dog's two lines, read while rendering so they follow the page's language. */
+function lineText(line: "listen" | "saved"): string {
+  return line === "listen" ? m.account_partner_leads_form_line_listen() : m.account_partner_leads_form_line_saved();
+}
 
 /*===== Add Lead Form =====*/
 /**
@@ -65,7 +65,7 @@ export function AddLeadForm({
     addLead.mutate(submitted, {
       onSuccess: (person) => {
         reset({ phoneNumber: "" });
-        toast.add({ title: "شماره ثبت شد", type: "success" });
+        toast.add({ title: m.account_partner_leads_form_toast_added(), type: "success" });
         justAdded.flash();
         celebrate();
         onAdded(person);
@@ -86,7 +86,7 @@ export function AddLeadForm({
       {/*===== Heading and the Dog =====*/}
       <PlateHead
         id="lead-form-title"
-        title="یه شماره بنویس"
+        title={m.account_partner_leads_form_title()}
         figureClassName={blocked ? "me-[3.5rem] sm:me-[4.25rem]" : "me-[2.5rem] sm:me-[3rem]"}
         figure={
           blocked ? (
@@ -118,7 +118,7 @@ export function AddLeadForm({
           >
             {/*------ Field and Button ------*/}
             <Field data-invalid={hasFieldError}>
-              <FieldLabel htmlFor="lead-phone">شماره‌ی موبایل مشتری</FieldLabel>
+              <FieldLabel htmlFor="lead-phone">{m.account_partner_leads_form_label()}</FieldLabel>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Input
@@ -126,7 +126,7 @@ export function AddLeadForm({
                     dir="ltr"
                     inputMode="tel"
                     autoComplete="off"
-                    placeholder="۰۹۱۲…"
+                    placeholder={m.account_partner_leads_form_placeholder()}
                     className="text-base tabular-nums"
                     disabled={blocked}
                     aria-invalid={hasFieldError}
@@ -147,7 +147,7 @@ export function AddLeadForm({
             {/*------ Why It Is Off ------*/}
             {blocked && (
               <p id="lead-phone-blocked" className="text-sm text-pretty text-muted-foreground">
-                {INACTIVE_MESSAGE}
+                {m.account_partner_leads_form_inactive()}
               </p>
             )}
 
@@ -185,7 +185,7 @@ function WriteBubble({ voice }: { voice: WriteVoice }) {
         tail="left"
         className={cn("max-w-none whitespace-nowrap", speaking ? "pl-say" : "pl-quiet")}
       >
-        {LINES[voice.line ?? voice.last]}
+        {lineText(voice.line ?? voice.last)}
       </ChalkBubble>
     </div>
   );
@@ -214,7 +214,11 @@ function SubmitButton({ isPending, isAdded, disabled }: { isPending: boolean; is
         <Spinner className={cn(turn, "size-5", shown !== "pending" && "scale-50 opacity-0")} />
         <CheckIcon strokeWidth={2.6} className={cn(turn, shown !== "added" && "scale-50 -rotate-90 opacity-0")} />
       </span>
-      {isPending ? "در حال ثبت…" : isAdded ? "ثبت شد" : "ثبت شماره"}
+      {isPending
+        ? m.account_partner_leads_form_submitting()
+        : isAdded
+          ? m.account_partner_leads_form_submitted()
+          : m.account_partner_leads_form_submit()}
     </Button>
   );
 }

@@ -46,7 +46,7 @@ export function StageDog({ name, active, eager }: { name: AuthStepName; active: 
             scene.bubble,
           )}
         >
-          {scene.line}
+          {scene.line()}
         </ChalkBubble>
       </div>
     </div>

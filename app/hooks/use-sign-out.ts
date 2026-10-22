@@ -6,6 +6,7 @@ import { resetCartAtom } from "~/atoms/cart";
 import { toast } from "~/components/ui/toast";
 import { authClient } from "~/lib/auth-client";
 import { refreshSession } from "~/lib/session-guard";
+import { m } from "~/paraglide/messages";
 
 /*===== Sign Out =====*/
 /**
@@ -33,7 +34,7 @@ export function useSignOut({ redirectTo }: { redirectTo?: string } = {}) {
       resetCart();
     },
     onError: () => {
-      toast.add({ title: "خروج انجام نشد. دوباره امتحان کن.", type: "error" });
+      toast.add({ title: m.shared_sign_out_failed(), type: "error" });
     },
   });
 }

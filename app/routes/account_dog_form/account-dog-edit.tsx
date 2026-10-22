@@ -2,7 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { orNotFound } from "~/lib/not-found";
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
+import { m } from "~/paraglide/messages";
 import {
   DogFormFailed,
   DogFormNotFound,
@@ -23,9 +25,14 @@ export const Route = createFileRoute("/account/dogs/$dogId/edit")({
     const dog = await orNotFound(queryClient.ensureQueryData(editDogQuery(params.dogId)));
     return { name: dog.name };
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: loaderData ? `ویرایش ${loaderData.name} | آموزش K9` : "معرفی سگ تازه | آموزش K9" }],
-  }),
+  head: ({ loaderData, params }) =>
+    pageHead({
+      path: `/account/dogs/${params.dogId}/edit`,
+      title: loaderData
+        ? m.account_dog_form_meta_title_edit({ name: loaderData.name })
+        : m.account_dog_form_meta_title_new(),
+      description: m.account_dog_form_header_intro_edit(),
+    }),
   component: EditDogPage,
   notFoundComponent: DogFormNotFound,
   errorComponent: DogFormFailed,

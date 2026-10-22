@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
+import { m } from "~/paraglide/messages";
 
 /*===== Copy Link Button =====*/
-/** How long «کپی شد» stays before the label goes back. */
+/** How long «کپی شد» ("Copied") stays before the label goes back. */
 const COPIED_MS = 2000;
 
 /**
@@ -27,9 +28,9 @@ export function CopyLinkButton({ link }: { link: string }) {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
-      toast.add({ title: "لینک کپی شد.", type: "success" });
+      toast.add({ title: m.shared_copy_link_toast(), type: "success" });
     } catch {
-      toast.add({ title: "کپی نشد؛ لینک رو دستی انتخاب کن.", type: "error" });
+      toast.add({ title: m.shared_copy_link_failed(), type: "error" });
     }
   }
 
@@ -41,7 +42,7 @@ export function CopyLinkButton({ link }: { link: string }) {
       className="h-11 shrink-0 border-primary text-primary hover:text-primary"
     >
       {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
-      {copied ? "کپی شد" : "کپی لینک"}
+      {copied ? m.shared_copy_link_done() : m.shared_copy_link()}
     </Button>
   );
 }

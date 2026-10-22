@@ -5,12 +5,13 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
+import { entryCalendar } from "~/lib/date-entry";
 import { toLatinDigits } from "~/lib/digits";
 import { birthDateFromAge, describeDogAge, describeWeight } from "~/lib/dog-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { isValidJalali, jalaliToIso } from "~/lib/jalali";
 import { DOG_SEX_LABELS } from "~/orpc/dog/constants";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 import { PhotoPicker } from "~/routes/account_dog_form/components/photo-picker";
 import type { DogFormInput } from "~/routes/account_dog_form/schema";
 
@@ -62,7 +63,7 @@ export function PrintMount({
 
   return (
     <aside
-      aria-label="پیش‌نمایش پرونده"
+      aria-label={m.account_dog_form_preview_label()}
       className={cn(
         "relative grid grid-cols-[7rem_minmax(0,1fr)] content-start gap-x-4 overflow-hidden rounded-4xl border border-border/60 bg-sunken paper-grain p-4 shadow-[0_24px_48px_-28px_rgb(0_0_0/0.9)]",
         "lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-3 lg:p-8 lg:pb-0",
@@ -81,7 +82,7 @@ export function PrintMount({
         onChange={onPhotoChange}
         onBusyChange={onBusyChange}
         error={photoError}
-        tagName={name || "؟"}
+        tagName={name || m.account_dog_form_tag_empty()}
         microchipNumber={microchipNumber}
         frameClassName="col-start-1 row-span-2 row-start-1 self-start pt-1 lg:col-span-2 lg:row-span-1 lg:mx-auto lg:w-[20rem] lg:max-w-full lg:pt-2"
         actionsClassName="col-start-2 row-start-2 mt-3 self-start lg:col-start-2 lg:row-start-2 lg:mt-5 lg:items-end"
@@ -101,10 +102,10 @@ export function PrintMount({
           )}
         >
           {/* A dog's name can be Latin; `bdi` keeps it from flipping the sentence around it. */}
-          {name ? <bdi>{name}</bdi> : "اسمش؟"}
+          {name ? <bdi>{name}</bdi> : m.account_dog_form_name_empty()}
         </p>
         <p className="mt-1 text-sm text-pretty text-muted-foreground lg:mt-2 lg:text-base">
-          {facts || "جنس، سن و وزنش اینجا میاد."}
+          {facts || m.account_dog_form_facts_empty()}
         </p>
       </div>
 
@@ -132,7 +133,7 @@ export function PrintMount({
         aria-hidden
         className="relative mt-6 hidden border-t border-dashed border-foreground/20 pt-5 lg:col-span-2 lg:row-start-4 lg:block"
       >
-        <p className="text-sm font-bold text-primary">{HEAD_TRAINER.firstName} قبل از اولین جلسه می‌خونه</p>
+        <p className="text-sm font-bold text-primary">{m.account_dog_form_trainer_reads({ trainer: HEAD_TRAINER.firstName })}</p>
         {notes.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-2 text-sm text-pretty">
             {notes.map((note) => (
@@ -143,7 +144,7 @@ export function PrintMount({
           </ul>
         ) : (
           <p className="mt-2 text-sm text-pretty text-muted-foreground">
-            هر چی از رفتار و سلامتش بنویسی، اینجا میاد.
+            {m.account_dog_form_notes_empty()}
           </p>
         )}
       </div>
@@ -177,7 +178,7 @@ function describePartialFacts(values: DeepPartial<DogFormInput>): string {
   const weight = Number(toLatinDigits(values.weight ?? "").replace(/[٫,/]/g, "."));
   if (values.weight && !Number.isNaN(weight) && weight > 0) parts.push(describeWeight(weight));
 
-  return parts.join("، ");
+  return parts.join(m.shared_dog_facts_joiner());
 }
 
 /** The birth date the form's parts add up to, or null while they are incomplete or not a real date. */
@@ -186,6 +187,7 @@ function previewBirthDate(values: DeepPartial<DogFormInput>): string | null {
     if (!values.ageYears || !values.ageMonths) return null;
     return birthDateFromAge({ years: Number(values.ageYears), months: Number(values.ageMonths) });
   }
+  const calendar = entryCalendar();
   const date = { year: Number(values.birthYear), month: Number(values.birthMonth), day: Number(values.birthDay) };
-  return date.year && date.month && date.day && isValidJalali(date) ? jalaliToIso(date) : null;
+  return date.year && date.month && date.day && calendar.isValid(date) ? calendar.toIso(date) : null;
 }

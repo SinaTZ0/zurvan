@@ -2,10 +2,10 @@ import { cn } from "cn";
 import { CheckIcon, LockIcon, XIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
-import { formatNumberFa } from "~/lib/digits";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatNumber, formatTimestamp } from "~/lib/locale-format";
 import type { Dog } from "~/orpc/dog/contract";
 import type { Enrollment } from "~/orpc/enrollment/contract";
+import { m } from "~/paraglide/messages";
 import type { RoadMark, RoadStop, RoadTone } from "~/routes/account_home/road";
 
 /*===== Constants =====*/
@@ -50,7 +50,7 @@ export function DogRoad({
 }) {
   return (
     <ol
-      aria-label={`مسیر ${dogName}`}
+      aria-label={m.account_home_road_label({ dogName: `\u2068${dogName}\u2069` })}
       className="grid gap-y-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1.45fr)_minmax(0,1.45fr)] lg:gap-y-0 lg:pt-14"
     >
       {stops.map((stop, index) => {
@@ -172,7 +172,7 @@ function ActiveList({ enrollments }: { enrollments: readonly Enrollment[] }) {
       {enrollments.map((enrollment) => (
         <li key={enrollment.id} className="flex flex-col text-sm leading-snug">
           <span className="font-bold text-foreground">{enrollment.course.title}</span>
-          <span className="text-xs text-muted-foreground">از {formatJalaliTimestamp(enrollment.createdAt)}</span>
+          <span className="text-xs text-muted-foreground">{m.account_home_road_since({ when: formatTimestamp(enrollment.createdAt) })}</span>
         </li>
       ))}
     </ul>
@@ -196,8 +196,8 @@ function PassedChips({ courses }: { courses: Dog["passedCourses"] }) {
       ))}
       {hidden > 0 && (
         <li className={cn(chip, "text-muted-foreground")}>
-          <span aria-hidden>+{formatNumberFa(hidden)}</span>
-          <span className="sr-only">و {formatNumberFa(hidden)} دوره‌ی دیگه</span>
+          <span aria-hidden>{m.account_home_road_more_count({ count: formatNumber(hidden) })}</span>
+          <span className="sr-only">{m.account_home_road_more_sr({ count: formatNumber(hidden) })}</span>
         </li>
       )}
     </ul>
@@ -251,6 +251,7 @@ export function RoadChalk() {
             }
             @media (min-width: 64rem) {
               .ah-seg { animation-name: ah-draw-across; }
+              :root[dir="ltr"] .ah-seg { animation-name: ah-draw-across-ltr; }
               .ah-seg-0 { animation-range: entry 60% cover 40%; }
               .ah-seg-1 { animation-range: cover 38% cover 45%; }
               .ah-seg-2 { animation-range: cover 43% cover 50%; }
@@ -264,6 +265,10 @@ export function RoadChalk() {
         }
         @keyframes ah-draw-across {
           from { clip-path: inset(0 0 0 100%); }
+          to { clip-path: inset(0); }
+        }
+        @keyframes ah-draw-across-ltr {
+          from { clip-path: inset(0 100% 0 0); }
           to { clip-path: inset(0); }
         }
         @keyframes ah-halo {

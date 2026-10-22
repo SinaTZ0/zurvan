@@ -1,16 +1,47 @@
 import type { CourseFamily } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Families =====*/
 // The filter tabs, in the order a dog meets them. Behavior modification is dropped (app-spec), so it never gets a tab
-// and its course is left out of the grid.
-export const FAMILY_TABS: readonly { family: CourseFamily; label: string }[] = [
-  { family: "basics", label: "پایه" },
-  { family: "six-month", label: "شش‌ماهه‌ها" },
-  { family: "obedience", label: "فرمان‌پذیری" },
-  { family: "companion", label: "سگ همدم" },
-  { family: "working", label: "سگ‌های کار" },
-  { family: "sport", label: "ورزشی" },
+// and its course is left out of the grid. The labels are messages read through getters, in the page's language.
+export const FAMILY_TABS: readonly { family: CourseFamily; readonly label: string }[] = [
+  {
+    family: "basics",
+    get label() {
+      return m.shared_family_basics();
+    },
+  },
+  {
+    family: "six-month",
+    get label() {
+      return m.shared_family_six_month();
+    },
+  },
+  {
+    family: "obedience",
+    get label() {
+      return m.shared_family_obedience();
+    },
+  },
+  {
+    family: "companion",
+    get label() {
+      return m.shared_family_companion();
+    },
+  },
+  {
+    family: "working",
+    get label() {
+      return m.shared_family_working();
+    },
+  },
+  {
+    family: "sport",
+    get label() {
+      return m.shared_family_sport();
+    },
+  },
 ];
 
 const SHOWN_FAMILIES = new Set<CourseFamily>(FAMILY_TABS.map((tab) => tab.family));

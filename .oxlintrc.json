@@ -56,6 +56,7 @@
     ".nitro/",
     ".tanstack/",
     "app/routeTree.gen.ts",
+    "app/paraglide/",
     "playwright-report/",
     "test-results/",
     "storybook-static/"

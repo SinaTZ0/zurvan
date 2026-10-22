@@ -3,6 +3,7 @@ import type { UseFormSetError } from "react-hook-form";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { errorDataSchema } from "~/orpc/errors";
+import { m } from "~/paraglide/messages";
 import type { AddLeadFormValues } from "~/routes/account_partner_leads/schema";
 
 /*===== Add Lead =====*/
@@ -25,23 +26,27 @@ export function applyAddLeadServerError({
     if (message) setError("phoneNumber", { message });
     const [general] = parsed.data.errors;
     if (general) setError("root", { message: general });
-    if (!message && !general) setError("root", { message: "ثبت نشد. شماره رو بررسی کن و دوباره امتحان کن." });
+    if (!message && !general) setError("root", { message: m.account_partner_leads_error_not_saved() });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
+    setError("root", { message: m.account_partner_leads_error_signed_out() });
     return;
   }
   if (code === "FORBIDDEN" || code === "NOT_FOUND") {
     setError("root", {
-      message: `برای این حساب شماره ثبت نمی‌شه. اگه فکر می‌کنی اشتباهه، به ${HEAD_TRAINER.firstName} خبر بده.`,
+      message: m.account_partner_leads_error_forbidden({ trainer: HEAD_TRAINER.firstName }),
     });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {
     const errorId = error instanceof ORPCError && typeof error.data?.errorId === "string" ? error.data.errorId : null;
-    setError("root", { message: `ثبت نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
+    setError("root", {
+      message: errorId
+        ? m.account_partner_leads_error_internal_with_id({ errorId })
+        : m.account_partner_leads_error_internal(),
+    });
     return;
   }
-  setError("root", { message: "ثبت نشد. اتصال اینترنتت رو بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: m.account_partner_leads_error_network() });
 }

@@ -2,9 +2,10 @@ import { cn } from "cn";
 
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
-import { CENTER_SERVICE_AREA } from "~/lib/contact";
-import { formatNumberFa, toPersianDigits } from "~/lib/digits";
+import { CENTER } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/about/column";
 
 /*===== Scenes =====*/
@@ -95,17 +96,17 @@ export function AboutFacts() {
   return (
     <section aria-labelledby="about-facts-title" className={`${COLUMN} pt-section-sm`}>
       <h2 id="about-facts-title" className="sr-only">
-        {HEAD_TRAINER.firstName} در یک نگاه
+        {m.about_facts_title({ trainer: HEAD_TRAINER.firstName })}
       </h2>
       <div className="overflow-hidden rounded-4xl border border-border bg-sunken paper-grain shadow-sm">
         <ul className="grid divide-y divide-border lg:grid-cols-3 lg:divide-x lg:divide-y-0">
           {/*------ Experience ------*/}
           <Stage scene={<ExperienceScene />}>
             <p className="font-display text-3xl leading-tight font-extrabold text-primary lg:text-5xl">
-              از سال {toPersianDigits(String(HEAD_TRAINER.since))}
+              {m.about_facts_since({ year: HEAD_TRAINER.sinceYear })}
             </p>
             <p className="mt-2 text-pretty text-muted-foreground">
-              {formatNumberFa(HEAD_TRAINER.years)} سال سابقه و تجربه‌ی حرفه‌ای
+              {m.about_facts_experience({ years: formatNumber(HEAD_TRAINER.years) })}
             </p>
           </Stage>
 
@@ -119,7 +120,7 @@ export function AboutFacts() {
           {/*------ Area ------*/}
           <Stage scene={<AreaScene />}>
             <p className="font-display text-2xl leading-snug font-extrabold text-balance text-primary lg:text-3xl">
-              فعال در {CENTER_SERVICE_AREA}
+              {m.about_facts_area({ area: CENTER.serviceArea })}
             </p>
           </Stage>
         </ul>

@@ -9,11 +9,12 @@ import { Spinner } from "~/components/ui/spinner";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { errorDataSchema } from "~/orpc/errors";
 import type { Evaluation } from "~/orpc/evaluation/contract";
+import { m } from "~/paraglide/messages";
 import { DogPicker, type DogChoice } from "~/routes/assessment/components/dog-picker";
 import { EvaluationMediaField } from "~/routes/assessment/components/evaluation-media-field";
 import { FormPlate } from "~/routes/assessment/components/form-plate";
 import { WhenFreeFields } from "~/routes/assessment/components/when-free-fields";
-import { GUIDE, type GuideMood } from "~/routes/assessment/guide";
+import { guideFor, type GuideMood } from "~/routes/assessment/guide";
 import { useRequestEvaluation } from "~/routes/assessment/hooks/use-request-evaluation";
 import {
   evaluationRequestSchema,
@@ -152,15 +153,15 @@ export function RequestForm({
   });
 
   /*------ What the Phone Plates' Dogs Say ------*/
-  const errorLine = GUIDE.failed.line;
-  const whenSpeech = focused === 2 ? (errorPlates.has(2) && failed ? errorLine : GUIDE.when.line) : null;
+  const errorLine = guideFor("failed").line;
+  const whenSpeech = focused === 2 ? (errorPlates.has(2) && failed ? errorLine : guideFor("when").line) : null;
   const filesSpeech =
     focused === 3
       ? errorPlates.has(3) && failed
         ? errorLine
         : fileCount > 0
-          ? GUIDE.photos.line
-          : "عکس و فیلم هم اگه داری، بذار."
+          ? guideFor("photos").line
+          : m.assessment_guide_files_speech()
       : null;
 
   return (
@@ -171,8 +172,8 @@ export function RequestForm({
         <FormPlate
           number={1}
           titleId="plate-dog-title"
-          title="کدوم سگ؟"
-          description={`سگی رو انتخاب کن که می‌خوای ${trainer} ببینه. هر سگ یه ارزیابی رایگان داره.`}
+          title={m.assessment_form_dog_title()}
+          description={m.assessment_form_dog_description({ trainer })}
           done={!!dogId}
           onEnter={() => setFocused(1)}
         >
@@ -183,8 +184,8 @@ export function RequestForm({
         <FormPlate
           number={2}
           titleId="plate-when-title"
-          title="کی وقت داری؟"
-          description={`${trainer} زنگ می‌زنه و با هم یه وقت دقیق می‌ذارید؛ اینجا فقط بگو معمولاً کی آزادی.`}
+          title={m.assessment_form_when_title()}
+          description={m.assessment_form_when_description({ trainer })}
           done={whenDone}
           dog={CALENDAR_DOG}
           speech={whenSpeech}
@@ -201,10 +202,13 @@ export function RequestForm({
           titleId="plate-files-title"
           title={
             <>
-              عکس و فیلم <span className="font-sans text-base font-medium text-muted-foreground">(اختیاری)</span>
+              {m.assessment_form_files_title()}{" "}
+              <span className="font-sans text-base font-medium text-muted-foreground">
+                {m.assessment_form_files_optional()}
+              </span>
             </>
           }
-          description={`چند عکس و فیلم کوتاه از سگت کمک می‌کنه ${trainer} بهتر بشناسدش.`}
+          description={m.assessment_form_files_description({ trainer })}
           done={fileCount > 0}
           last
           dog={CAMERA_DOG}
@@ -234,10 +238,10 @@ export function RequestForm({
           className="w-full sm:w-fit sm:min-w-72"
         >
           {sending && <Spinner />}
-          درخواست ارزیابی رایگان
+          {m.assessment_form_submit()}
         </Button>
-        {busy && <output className="answer-in block text-sm text-muted-foreground">تا تموم شدن بارگذاری صبر کن</output>}
-        <p className="text-sm text-pretty text-muted-foreground">رایگانه و هیچ تعهدی نداره.</p>
+        {busy && <output className="answer-in block text-sm text-muted-foreground">{m.assessment_form_busy()}</output>}
+        <p className="text-sm text-pretty text-muted-foreground">{m.assessment_form_free_note()}</p>
       </div>
     </form>
   );
@@ -263,21 +267,23 @@ function applyServerError({ error, setError }: { error: Error; setError: UseForm
   }
   if (code === "NOT_REQUESTABLE") {
     const [message] = parsed?.success ? parsed.data.errors : [];
-    setError("root", { message: message ?? "این سگ همین حالا یه درخواست باز یا ارزیابی انجام‌شده داره." });
+    setError("root", { message: message ?? m.assessment_form_error_conflict() });
     return;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
+    setError("root", { message: m.assessment_form_error_unauthorized() });
     return;
   }
   if (code === "NOT_FOUND") {
-    setError("root", { message: "این سگ دیگه توی حسابت نیست." });
+    setError("root", { message: m.assessment_form_error_not_found() });
     return;
   }
   if (code === "INTERNAL_SERVER_ERROR") {
     const errorId = error instanceof ORPCError && typeof error.data?.errorId === "string" ? error.data.errorId : null;
-    setError("root", { message: `درخواست ثبت نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
+    setError("root", {
+      message: errorId ? m.assessment_form_error_internal_ref({ errorId }) : m.assessment_form_error_internal(),
+    });
     return;
   }
-  setError("root", { message: "درخواست ثبت نشد. اتصال اینترنتت رو بررسی کن و دوباره امتحان کن." });
+  setError("root", { message: m.assessment_form_error_network() });
 }

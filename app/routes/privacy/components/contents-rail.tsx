@@ -1,6 +1,7 @@
 import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
+import { m } from "~/paraglide/messages";
 
 /*===== Rail Scene =====*/
 /**
@@ -29,16 +30,17 @@ export function RailScene() {
  * The dog's picture looks to the right, so he lies at the plate's right with his bushes behind (physical sides, tied to
  * the picture). The plate's wrapper leaves room above for him.
  */
-const SECTIONS = [
-  { id: "kept", label: "چی ذخیره می‌شه" },
-  { id: "who-sees", label: "کی چی رو می‌بینه" },
-  { id: "yours", label: "چی رو خودت عوض می‌کنی" },
-  { id: "technical", label: "جزئیات فنی" },
-] as const;
+const SECTIONS = () =>
+  [
+    { id: "kept", label: m.privacy_section_kept() },
+    { id: "who-sees", label: m.privacy_section_who_sees() },
+    { id: "yours", label: m.privacy_section_yours() },
+    { id: "technical", label: m.privacy_section_technical() },
+  ] as const;
 
 export function ContentsRail() {
   return (
-    <nav aria-label="فهرست صفحه" className="relative mt-24 hidden lg:block">
+    <nav aria-label={m.privacy_rail_label()} className="relative mt-24 hidden lg:block">
       {/*------ Dog Lying on the Plate's Edge ------*/}
       <div aria-hidden className="pointer-events-none absolute bottom-[calc(100%-0.2rem)] left-10 z-10 w-44">
         <div className="absolute -inset-x-1/4 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_45%_55%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
@@ -52,7 +54,7 @@ export function ContentsRail() {
 
       <div className="rounded-3xl border border-border bg-card paper-grain px-6 py-5 shadow-sm">
         <ul className="space-y-1 border-s border-border ps-5">
-          {SECTIONS.map(({ id, label }) => (
+          {SECTIONS().map(({ id, label }) => (
             <li key={id}>
               <Link
                 to="/privacy"

@@ -1,6 +1,7 @@
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/logbook/column";
 import { LookupForm } from "~/routes/logbook/components/lookup-form";
 import { RecordStage } from "~/routes/logbook/components/record-stage";
@@ -25,11 +26,9 @@ export function LookupHero() {
         {/*===== Words =====*/}
         <div className="order-2 lg:order-1 lg:col-span-6 lg:flex lg:flex-col lg:justify-center">
           <h1 id="logbook-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-            پرونده‌ی <span className="text-primary">سگ</span>
+            {m.logbook_lookup_title_a()} <span className="text-primary">{m.logbook_lookup_title_b()}</span>
           </h1>
-          <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-            شماره‌ی پرونده رو QR سگ نوشته شده. اینجا بنویسش.
-          </p>
+          <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.logbook_lookup_line()}</p>
           <LookupForm />
         </div>
 
@@ -63,7 +62,7 @@ export function LookupHero() {
             tail="right"
             className="lb-pop absolute right-[calc(42%-2.25rem)] bottom-[calc(var(--ground)+var(--dog-h)+0.6rem)] max-w-[12rem] text-pretty lg:max-w-[15rem]"
           >
-            شماره‌ی پرونده‌م رو QR‌مه؛ تو هم پیداش می‌کنی.
+            {m.logbook_lookup_bubble()}
           </ChalkBubble>
         </RecordStage>
       </div>

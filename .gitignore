@@ -34,3 +34,6 @@
 
 # Server SSH credentials, kept locally
 /server-ssh.txt
+
+# Paraglide's compiled messages (`npm run i18n:compile`, or the dev server), from messages/ and project.inlang/
+/app/paraglide/

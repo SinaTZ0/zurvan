@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { CourseCard } from "~/components/course-card";
 import { Pagination } from "~/components/pagination";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 import { FamilyGroupHeader } from "~/routes/course_catalogue/components/family-group-header";
 import { groupByFamily, type FamilyGroup } from "~/routes/course_catalogue/family-groups";
 
@@ -78,7 +79,7 @@ export function ResultsGrid({
 
   return (
     <div ref={listRef} className="scroll-mt-28">
-      <h2 className="sr-only">فهرست دوره‌ها</h2>
+      <h2 className="sr-only">{m.course_catalogue_results_list()}</h2>
 
       {/*------ Groups ------*/}
       <div className="space-y-5 md:space-y-6">

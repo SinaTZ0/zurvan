@@ -2,6 +2,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { BRICK } from "~/lib/brick";
 import { CENTER_INSTAGRAM, CENTER_TELEGRAM, CENTER_YOUTUBE } from "~/lib/contact";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/contact/column";
 import { ProfileSign } from "~/routes/contact/components/profile-sign";
 
@@ -28,7 +29,7 @@ export function MessagesWall() {
           a few steps from the mailbox, his bubble opening behind him (physical sides: the bubble's tail is aimed at the
           dog). The pair sits under the hero's plate, in the paper the hero leaves for it. */}
       <div aria-hidden className={`${COLUMN} pointer-events-none absolute inset-x-0 bottom-full`}>
-        <div className="relative flex items-end justify-between md:justify-end md:gap-12 md:pe-[2%]">
+        <div className="relative flex items-end justify-between max-md:ltr:flex-row-reverse md:justify-end md:gap-12 md:pe-[2%] md:ltr:flex-row-reverse md:ltr:justify-start md:ltr:pe-[12%]">
           <div className="relative w-28 translate-y-[2%] md:w-[6.5rem]">
             {/* The pool of light he trots through. */}
             <div className="absolute -inset-x-[60%] bottom-0 h-[120%] bg-[radial-gradient(ellipse_45%_60%_at_50%_85%,rgb(255_194_26/0.08),transparent)]" />
@@ -38,13 +39,13 @@ export function MessagesWall() {
               tail="right"
               className="absolute right-[84%] bottom-[56%] w-max max-w-[9.5rem] text-pretty md:hidden"
             >
-              پیام بدی، خودم می‌رسونمش!
+              {m.contact_wall_bubble()}
             </ChalkBubble>
             <ChalkBubble
               tail="left"
               className="absolute bottom-[50%] left-[110%] hidden w-max max-w-[12rem] text-pretty md:block"
             >
-              پیام بدی، خودم می‌رسونمش!
+              {m.contact_wall_bubble()}
             </ChalkBubble>
           </div>
 
@@ -58,7 +59,7 @@ export function MessagesWall() {
 
       <div className={COLUMN}>
         <h2 id="messages-title" className="sr-only">
-          پیام بده
+          {m.contact_wall_title()}
         </h2>
         <ul className="grid gap-[var(--cord)] md:grid-cols-3 md:gap-6">
           {PROFILES.map((profile) => (

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
+import { m } from "~/paraglide/messages";
 import {
   DogFormFailed,
   DogFormNotFound,
@@ -15,7 +17,12 @@ export const Route = createFileRoute("/account/dogs/new")({
   beforeLoad: ({ context, location }) =>
     requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
   validateSearch: dogFormSearchSchema,
-  head: () => ({ meta: [{ title: "معرفی سگ تازه | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/dogs/new",
+      title: m.account_dog_form_meta_title_new(),
+      description: m.account_dog_form_header_intro_new(),
+    }),
   component: NewDogPage,
   notFoundComponent: DogFormNotFound,
   errorComponent: DogFormFailed,

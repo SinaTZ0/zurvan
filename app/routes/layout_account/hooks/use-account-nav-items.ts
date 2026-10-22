@@ -17,7 +17,6 @@ export function useAccountNavItems(role: "customer" | "partner"): readonly DeskN
   // A partner has his own two sections; he has no cart, so the count never applies to him.
   if (role === "partner") return PARTNER_NAV_ITEMS;
   if (!hydrated || count === 0) return ACCOUNT_NAV_ITEMS;
-  return ACCOUNT_NAV_ITEMS.map((item) =>
-    item.to === CART_PATH ? { ...item, badge: count, badgeLabel: "مورد" } : item,
-  );
+  // Spread while rendering, so the labels' getters are read in the page's language.
+  return ACCOUNT_NAV_ITEMS.map((item) => (item.to === CART_PATH ? { ...item, badge: count } : item));
 }

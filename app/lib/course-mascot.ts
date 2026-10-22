@@ -1,5 +1,6 @@
 import type { MascotCutName } from "~/components/mascot-cut";
 import type { CourseFamily } from "~/orpc/course/constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Course Mascot =====*/
 // Which of the mascot's eight course poses (image-reference/generated/courses/courses-8.png) stands for a course, for
@@ -47,18 +48,19 @@ export function familyMascotPose(family: CourseFamily): CourseMascotPose {
 // What the dog says beside his pose on Course Detail. A line belongs to the pose, not the course, so a course the
 // Admin adds later still gets one with its fallback pose. The lines describe what he is doing in the picture and how
 // he feels; they never promise what the course will achieve.
-const POSE_LINES: Record<CourseMascotPose, string> = {
-  "course-home": "خونه‌ی خودمون، قانون‌های خودمون!",
-  "course-manners": "سلام! دست بدیم؟",
-  "course-young": "شش ماهمه و یه دنیا انرژی دارم!",
-  "course-basics": "تا نگی بخور، تکون نمی‌خورم…",
-  "course-recall": "اومدم، اومدم!",
-  "course-companion": "قلاده‌مو آوردم. بریم بیرون؟",
-  "course-working": "هیس… دارم ردشو می‌گیرم.",
-  "course-sport": "این یکی مال منه!",
-};
+// Messages (`messages/shared/`), so a line is read in the page's language when it is asked for.
+const POSE_LINES: Record<CourseMascotPose, () => string> = {
+  "course-home": m.shared_course_mascot_home,
+  "course-manners": m.shared_course_mascot_manners,
+  "course-young": m.shared_course_mascot_young,
+  "course-basics": m.shared_course_mascot_basics,
+  "course-recall": m.shared_course_mascot_recall,
+  "course-companion": m.shared_course_mascot_companion,
+  "course-working": m.shared_course_mascot_working,
+  "course-sport": m.shared_course_mascot_sport,
+}
 
 /** The mascot's speech-bubble line for a pose. */
 export function courseMascotLine(pose: CourseMascotPose): string {
-  return POSE_LINES[pose];
+  return POSE_LINES[pose]();
 }

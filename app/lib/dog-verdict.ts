@@ -2,26 +2,25 @@ import { type LinkOptions, linkOptions } from "@tanstack/react-router";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { IneligibilityKind } from "~/lib/eligibility";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Verdict =====*/
 // What a dog says about a course, from `checkout.eligibility` or `checkout.review` (docs/app-spec.md, F4). The server's messages are written
 // about the dog in the third person («لئو اول باید دوره‌ی … رو تموم کنه»), so the bubble speaks a short first-person line
 // chosen by the kind of the first problem, and the server's own message goes under it as the exact reason.
 
-/** The dog's first-person line for the reason it can't take the course. */
-const PROBLEM_LINES: Record<IneligibilityKind, string> = {
-  "not-for-sale": "این دوره فعلاً فروخته نمی‌شه",
-  "not-evaluated": `اول باید ${HEAD_TRAINER.firstName} منو ببینه`,
-  prerequisite: "یه قدم مونده تا به این دوره برسم",
-  "too-young": "هنوز برای این دوره کوچیکم",
-  "too-old": "از این دوره گذشتم",
-  "active-enrollment": "همین الان توی این دوره‌م!",
+/** The dog's first-person line for the reason it can't take the course, in the page's language (`messages/shared/`). */
+const PROBLEM_LINES: Record<IneligibilityKind, () => string> = {
+  "not-for-sale": () => m.shared_verdict_not_for_sale(),
+  "not-evaluated": () => m.shared_verdict_not_evaluated({ trainer: HEAD_TRAINER.firstName }),
+  prerequisite: () => m.shared_verdict_prerequisite(),
+  "too-young": () => m.shared_verdict_too_young(),
+  "too-old": () => m.shared_verdict_too_old(),
+  "active-enrollment": () => m.shared_verdict_active_enrollment(),
 };
 
-const CAN_LINE = "آره، می‌تونم! آماده‌م";
-
 export type DogVerdictProblem = {
-  /** The server's Persian reason, as it is. */
+  /** The server's reason, as it is (worded in the page's language: `checkout.eligibility` reads it from the request). */
   message: string;
   /** Where the customer can go to fix it: the free evaluation, or the prerequisite course. Null when only time helps. */
   way: { label: string; link: LinkOptions } | null;
@@ -44,19 +43,19 @@ export type VerdictInput = {
 
 /** Turns one dog's eligibility into the bubble's line, the reasons and the way out of each. */
 export function getDogVerdict({ dogId, eligible, problems }: VerdictInput): DogVerdict {
-  if (eligible) return { can: true, line: CAN_LINE, problems: [] };
+  if (eligible) return { can: true, line: m.shared_verdict_can(), problems: [] };
 
   return {
     can: false,
-    line: PROBLEM_LINES[problems[0]?.kind ?? "not-for-sale"],
+    line: PROBLEM_LINES[problems[0]?.kind ?? "not-for-sale"](),
     problems: problems.map((problem) => ({
       message: problem.message,
       way:
         problem.kind === "not-evaluated"
-          ? { label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment", search: { dog: dogId } }) }
+          ? { label: m.shared_verdict_way_evaluation(), link: linkOptions({ to: "/assessment", search: { dog: dogId } }) }
           : problem.kind === "prerequisite" && problem.courseSlug
             ? {
-                label: "این دوره رو ببین",
+                label: m.shared_verdict_way_course(),
                 link: linkOptions({ to: "/courses/$slug", params: { slug: problem.courseSlug } }),
               }
             : null,

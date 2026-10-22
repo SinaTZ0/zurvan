@@ -2,6 +2,7 @@ import { EyeIcon, EyeOffIcon, LockKeyholeIcon } from "lucide-react";
 import { useState } from "react";
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "~/components/ui/input-group";
+import { m } from "~/paraglide/messages";
 
 /*===== Password Input =====*/
 /**
@@ -33,7 +34,7 @@ export function PasswordInput({
       <InputGroupAddon align="inline-end">
         <InputGroupButton
           size="icon-xs"
-          aria-label={isRevealed ? "پنهان کردن رمز عبور" : "نمایش رمز عبور"}
+          aria-label={isRevealed ? m.shared_password_hide() : m.shared_password_show()}
           aria-pressed={isRevealed}
           onClick={() => setIsRevealed((revealed) => !revealed)}
         >

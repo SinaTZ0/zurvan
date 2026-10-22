@@ -1,3 +1,5 @@
+import { m } from "~/paraglide/messages";
+
 /*===== Course Constants =====*/
 // Browser-safe values shared by the API, the seed and the storefront. Stored as plain text (see `app/db/schema.ts`).
 
@@ -29,9 +31,15 @@ export const COURSE_PLACES = ["home", "outside", "mostly-outside"] as const;
 
 export type CoursePlace = (typeof COURSE_PLACES)[number];
 
-/** As the owner's cards say it. */
-export const COURSE_PLACE_LABELS: Record<CoursePlace, string> = {
-  home: "منزل",
-  outside: "بیرون",
-  "mostly-outside": "اکثراً بیرون",
+/** As the owner's cards say it, in the page's language (messages read through getters, so read them while rendering). */
+export const COURSE_PLACE_LABELS: Readonly<Record<CoursePlace, string>> = {
+  get home() {
+    return m.shared_place_home();
+  },
+  get outside() {
+    return m.shared_place_outside();
+  },
+  get "mostly-outside"() {
+    return m.shared_place_mostly_outside();
+  },
 };

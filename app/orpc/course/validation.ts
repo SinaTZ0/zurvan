@@ -59,6 +59,23 @@ function linesSchema({ label, maxLines }: { label: string; maxLines: number }) {
     );
 }
 
+/** An optional English text (`/en`): trimmed, and blank is null, "not written yet". */
+function optionalTextSchema({ label, max }: { label: string; max: number }) {
+  return z
+    .string()
+    .trim()
+    .max(max, `${label} حداکثر ${formatNumberFa(max)} حرف می‌تونه باشه.`)
+    .optional()
+    .transform((value) => (value ? value : null));
+}
+
+/** Optional English lines: as {@link linesSchema}, and no lines at all is null. */
+function optionalLinesSchema({ label, maxLines }: { label: string; maxLines: number }) {
+  return linesSchema({ label, maxLines })
+    .optional()
+    .transform((lines) => (lines && lines.length > 0 ? lines : null));
+}
+
 function monthsSchema(label: string) {
   const message = `${label} باید بین ${formatNumberFa(0)} تا ${formatNumberFa(COURSE_MAX_AGE_MONTHS)} ماه باشه.`;
   return z.number().int().min(0, message).max(COURSE_MAX_AGE_MONTHS, message).nullable();
@@ -110,6 +127,12 @@ export const courseFormSchema = z
       .array(z.string().trim())
       .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`)
       .refine((slugs) => new Set(slugs).size === slugs.length, "یه دوره رو دو بار انتخاب کردی."),
+    // The English text, all optional (docs/i18n/english-version-plan.md, step 9).
+    titleEn: optionalTextSchema({ label: "نام انگلیسی", max: COURSE_TITLE_MAX_LENGTH }),
+    summaryEn: optionalTextSchema({ label: "توضیح کوتاه انگلیسی", max: COURSE_SUMMARY_MAX_LENGTH }),
+    highlightsEn: optionalLinesSchema({ label: "نتیجه‌های انگلیسی", maxLines: COURSE_HIGHLIGHTS_MAX_LINES }),
+    commandsEn: optionalLinesSchema({ label: "فرمان‌های انگلیسی", maxLines: COURSE_COMMANDS_MAX_LINES }),
+    coverAltEn: optionalTextSchema({ label: "توضیح انگلیسی عکس", max: COURSE_COVER_ALT_MAX_LENGTH }),
   })
   .superRefine((value, context) => {
     if (value.minAgeMonths !== null && value.maxAgeMonths !== null && value.minAgeMonths > value.maxAgeMonths) {

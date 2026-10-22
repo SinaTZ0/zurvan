@@ -2,6 +2,8 @@
 .nitro/
 .tanstack/
 app/routeTree.gen.ts
+app/paraglide/
+project.inlang/.meta.json
 playwright-report/
 test-results/
 package-lock.json

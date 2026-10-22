@@ -7,6 +7,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { Link } from "~/components/link";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 import { RisingError } from "~/routes/assessment/components/rising-error";
 import { TapedPrint } from "~/routes/assessment/components/taped-print";
 import { useChanged } from "~/routes/assessment/hooks/use-changed";
@@ -52,7 +53,7 @@ export function DogPicker({
 
   return (
     <fieldset className="min-w-0" aria-invalid={!!error} aria-describedby={error ? errorId : undefined}>
-      <legend className="sr-only">کدوم سگ؟</legend>
+      <legend className="sr-only">{m.assessment_form_dog_title()}</legend>
 
       <ul className="grid gap-x-4 gap-y-7 pt-5 sm:grid-cols-2">
         {dogs.map((dog, index) => {
@@ -122,7 +123,7 @@ export function DogPicker({
                     picked && "answer-pop",
                   )}
                 >
-                  <span aria-hidden>آماده‌م!</span>
+                  <span aria-hidden>{m.assessment_picker_ready()}</span>
                 </ChalkBubble>
               )}
             </li>
@@ -137,7 +138,7 @@ export function DogPicker({
         className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       >
         <PlusIcon aria-hidden className="size-4" />
-        معرفی سگ تازه
+        {m.assessment_picker_new_dog()}
       </Link>
     </fieldset>
   );
@@ -154,17 +155,17 @@ function Reason({ dog }: { dog: DogChoice }) {
       {dog.state === "pending" ? (
         <>
           <PhoneCallIcon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
-          <span className="font-bold text-muted-foreground">منتظر زنگ {HEAD_TRAINER.firstName}</span>
+          <span className="font-bold text-muted-foreground">{m.assessment_picker_waiting({ trainer: HEAD_TRAINER.firstName })}</span>
         </>
       ) : (
         <>
           <BadgeCheckIcon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
-          <span className="font-bold text-muted-foreground">ارزیابی شده</span>
+          <span className="font-bold text-muted-foreground">{m.assessment_picker_evaluated()}</span>
           <Link
             to="/courses"
             className="relative z-10 basis-full rounded-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
           >
-            دوره‌هاش رو ببین
+            {m.assessment_picker_see_courses()}
           </Link>
         </>
       )}

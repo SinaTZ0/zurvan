@@ -10,12 +10,9 @@ import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { downloadQrPng } from "~/lib/qr-png";
+import { m } from "~/paraglide/messages";
 import { PLATE } from "~/routes/account_partner/plate";
 import type { Qr } from "~/lib/qr";
-
-/*===== Caption =====*/
-// The card's only line: it is for the partner's customers, so it carries the site's main action, not his name.
-const CARD_CAPTION = "اسکن کن و با ارزیابی رایگان شروع کن";
 
 /*===== Shop Card =====*/
 /**
@@ -37,7 +34,7 @@ export function ShopCard({ link, qr }: { link: string; qr: Qr }) {
   return (
     <section aria-labelledby="partner-shop-title" className={cn(PLATE, "lg:p-6 xl:p-7")}>
       <h2 id="partner-shop-title" className={cn(DISPLAY_HEADING, "text-h2 text-balance")}>
-        لینک و QR تو
+        {m.account_partner_shop_title()}
       </h2>
 
       {/*===== Counter Stage =====*/}
@@ -63,9 +60,9 @@ export function ShopCard({ link, qr }: { link: string; qr: Qr }) {
               className="pd-scan absolute right-[calc(30%-2.25rem)] bottom-[calc(100%+0.25rem)] w-max max-w-none whitespace-nowrap"
             >
               {/* Two short lines, broken by hand: the bubble has only the room left of the card. */}
-              اسکنش کردم!
+              {m.account_partner_shop_bubble_line_1()}
               <br />
-              چه راحت.
+              {m.account_partner_shop_bubble_line_2()}
             </ChalkBubble>
           </div>
         </div>
@@ -85,7 +82,7 @@ export function ShopCard({ link, qr }: { link: string; qr: Qr }) {
           <CopyLinkButton link={link} />
         </div>
         <DownloadButton qr={qr} />
-        <p className="text-sm text-muted-foreground">این کارت رو کنار صندوق بذار.</p>
+        <p className="text-sm text-muted-foreground">{m.account_partner_shop_hint()}</p>
       </div>
     </section>
   );
@@ -102,7 +99,7 @@ function QrTile({ qr }: { qr: Qr }) {
           <path fill="#000" d={qr.path} />
         </svg>
       </div>
-      <p className="text-center text-sm leading-snug font-bold text-balance">{CARD_CAPTION}</p>
+      <p className="text-center text-sm leading-snug font-bold text-balance">{m.account_partner_shop_caption()}</p>
     </div>
   );
 }
@@ -118,9 +115,14 @@ function DownloadButton({ qr }: { qr: Qr }) {
   async function handleDownload() {
     setIsSaving(true);
     try {
-      await downloadQrPng({ path: qr.path, size: qr.size, caption: CARD_CAPTION, fileName: "k9-qr.png" });
+      await downloadQrPng({
+        path: qr.path,
+        size: qr.size,
+        caption: m.account_partner_shop_caption(),
+        fileName: "k9-qr.png",
+      });
     } catch {
-      toast.add({ title: "دانلود نشد؛ دوباره امتحان کن.", type: "error" });
+      toast.add({ title: m.account_partner_shop_download_failed(), type: "error" });
     } finally {
       setIsSaving(false);
     }
@@ -139,7 +141,7 @@ function DownloadButton({ qr }: { qr: Qr }) {
           )}
         />
       </span>
-      دانلود QR
+      {m.account_partner_shop_download()}
     </Button>
   );
 }

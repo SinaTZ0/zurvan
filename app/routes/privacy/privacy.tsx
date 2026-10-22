@@ -2,6 +2,8 @@ import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
+import { pageHead } from "~/lib/seo";
+import { m } from "~/paraglide/messages";
 import { ContentsRail, RailScene } from "~/routes/privacy/components/contents-rail";
 import { DataKept } from "~/routes/privacy/components/data-kept";
 import { PhotoNote } from "~/routes/privacy/components/photo-note";
@@ -13,12 +15,7 @@ import { YourHands } from "~/routes/privacy/components/your-hands";
 
 /*===== Route =====*/
 export const Route = createFileRoute("/_public/privacy")({
-  head: () => ({
-    meta: [
-      { title: "حریم خصوصی | آموزش K9" },
-      { name: "description", content: "چی از شماره و سگت ذخیره می‌شه و کی می‌بینه." },
-    ],
-  }),
+  head: () => pageHead({ path: "/privacy", title: m.privacy_meta_title(), description: m.privacy_meta_description() }),
   component: PrivacyPage,
   errorComponent: PrivacyError,
 });
@@ -104,14 +101,14 @@ function PrivacyError() {
     <section aria-labelledby="privacy-error-title" className="site-container py-section-md">
       <div className="max-w-xl">
         <h1 id="privacy-error-title" className="font-display text-h1 font-black text-balance">
-          حریم خصوصی باز نشد
+          {m.privacy_error_title()}
         </h1>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
-            دوباره امتحان کن
+            {m.privacy_error_retry()}
           </a>
           <Link to="/assessment" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            ارزیابی رایگان بگیر
+            {m.privacy_error_evaluation()}
           </Link>
         </div>
       </div>

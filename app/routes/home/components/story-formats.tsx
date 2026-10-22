@@ -1,19 +1,15 @@
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { FORMATS } from "~/routes/home/content";
+import { formats } from "~/routes/home/content";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Formats: Where we train =====*/
 // Each format gets a small storybook scene of the place itself, which says more than an icon would.
 const FORMAT_SCENES = ["home", "center", "lodge"] as const;
-// The service area is the business card's «تمام نقاط تهران» (`CENTER_SERVICE_AREA`).
-const FORMAT_DETAILS = [
-  `${HEAD_TRAINER.firstName} میاد پیش‌تون، هر جای تهران که باشید.`,
-  "سگت رو میاری مرکز و جلسه‌ها همون‌جا برگزار می‌شه.",
-  "فعلاً با یه پانسیون همکار: سگت مدتی اون‌جا می‌مونه و همون‌جا آموزش می‌بینه.",
-] as const;
-
+// The service area is the business card's «تمام نقاط تهران» (`CENTER.serviceArea`). The scene's sides are logical, so
+// the English pages (left to right) get its mirror image: the ears and the bubble stay over the heading's side.
 export function StoryFormats() {
   return (
     <section aria-labelledby="st-formats-title" className="relative bg-inverse pt-32 pb-14 md:pt-40 md:pb-16">
@@ -23,23 +19,23 @@ export function StoryFormats() {
         <div aria-hidden className="absolute inset-x-4 top-0 md:inset-x-8">
           <MascotCut
             name="hedge"
-            className="lively-sway absolute right-[-2%] bottom-[calc(100%-0.6rem)] w-36 md:w-52"
+            className="lively-sway absolute start-[-2%] bottom-[calc(100%-0.6rem)] w-36 md:w-52"
           />
           <MascotCut
             name="hedge"
-            className="lively-sway-2 absolute bottom-[calc(100%-0.6rem)] left-[-2%] w-44 -scale-x-100 md:w-80"
+            className="lively-sway-2 absolute end-[-2%] bottom-[calc(100%-0.6rem)] w-44 -scale-x-100 md:w-80"
           />
           <MascotCut
             name="ears"
-            className="lively-twitch absolute right-[12%] bottom-[calc(100%-0.5rem)] w-28 md:right-[22%] md:w-40"
+            className="lively-twitch absolute start-[12%] bottom-[calc(100%-0.5rem)] w-28 md:start-[22%] md:w-40"
           />
         </div>
         <div className="absolute inset-x-4 top-0 md:inset-x-8">
           <ChalkBubble
-            tail="right"
-            className="lively-float-2 absolute right-[calc(12%+7.5rem)] bottom-[calc(100%+1.4rem)] md:right-[calc(22%+10.5rem)] md:w-44"
+            tail="start"
+            className="lively-float-2 absolute start-[calc(12%+7.5rem)] bottom-[calc(100%+1.4rem)] md:start-[calc(22%+10.5rem)] md:w-44"
           >
-            جای تو یا جای ما؟
+            {m.home_formats_bubble()}
           </ChalkBubble>
         </div>
 
@@ -49,26 +45,28 @@ export function StoryFormats() {
               id="st-formats-title"
               className={`${DISPLAY_HEADING} lively-reveal text-4xl md:text-5xl lg:text-[2.6rem]`}
             >
-              کجا تمرین
+              {m.home_formats_title_one()}
               <br />
-              کنیم؟
+              {m.home_formats_title_two()}
             </h2>
             <p className="mt-4 max-w-xs text-lg leading-8 text-foreground/80">
-              هر کدوم برات راحت‌تره، با {HEAD_TRAINER.firstName} هماهنگش کن.
+              {m.home_formats_line({ trainer: HEAD_TRAINER.firstName })}
             </p>
           </div>
 
           {/* On phones each place is a row, its scene beside the words, so the three fit on about one screen
               instead of three tall cards. */}
           <ul className="lively-reveal grid gap-3 sm:grid-cols-3 sm:gap-4">
-            {FORMATS.map((format, index) => (
+            {formats().map((format, index) => (
               <li
-                key={format}
+                key={format.title}
                 className="lively-lift grid grid-cols-[1fr_8.5rem] items-center gap-x-3 overflow-hidden rounded-2xl border border-foreground/25 bg-card py-4 ps-4 pe-1 sm:flex sm:flex-col sm:items-stretch sm:px-5 sm:pt-5 sm:pb-0"
               >
                 <div>
-                  <h3 className="font-display text-base leading-snug font-bold text-foreground sm:text-lg">{format}</h3>
-                  <p className="mt-1.5 text-sm leading-6 text-foreground/75">{FORMAT_DETAILS[index]}</p>
+                  <h3 className="font-display text-base leading-snug font-bold text-foreground sm:text-lg">
+                    {format.title}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-6 text-foreground/75">{format.detail}</p>
                 </div>
                 <MascotCut
                   name={FORMAT_SCENES[index]}

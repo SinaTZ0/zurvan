@@ -5,7 +5,11 @@ import { z } from "zod";
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { localizedPath } from "~/lib/i18n";
+import { pageHead } from "~/lib/seo";
+import { m } from "~/paraglide/messages";
 import { SITE_RULES } from "~/lib/site-rules";
+import { LanguageSwitch } from "~/components/language-switch";
 import { orpc } from "~/orpc/client";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { AuthStage } from "~/routes/auth/components/auth-stage";
@@ -27,7 +31,11 @@ export const Route = createFileRoute("/auth")({
   // sessions are revoked on the way, so it reads as signed out and starts again at the phone step.
   beforeLoad: async ({ context: { queryClient }, search }) => {
     const session = await queryClient.ensureQueryData(orpc.session.get.queryOptions());
-    if (session.status === "active") throw redirect({ href: safeRedirect(search.redirectTo) });
+    // `redirectTo` is an internal path; a redirect's `href` skips the router's rewrite, so it is put in the page's
+    // language here (`/en/account` for someone signing in on the English site).
+    if (session.status === "active") {
+      throw redirect({ href: localizedPath({ path: safeRedirect(search.redirectTo) }) });
+    }
   },
   // What the page starts from, kept as the loader's answer rather than read from the cache: signing in clears the cache
   // (`SignInFlow`), and the page must not lose its footing while it navigates on.
@@ -43,12 +51,8 @@ export const Route = createFileRoute("/auth")({
       rulesPublished: SITE_RULES !== null,
     };
   },
-  head: () => ({
-    meta: [
-      { title: "ورود به آموزش K9" },
-      { name: "description", content: "با شماره موبایلت وارد آموزش K9 شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
-    ],
-  }),
+  head: () =>
+    pageHead({ path: "/auth", title: m.auth_meta_title(), description: m.auth_meta_description() }),
   component: AuthPage,
 });
 
@@ -85,7 +89,7 @@ function AuthPage() {
           {/* Phones: laid over the stage band's top start corner. Desktop: first in the column, scrolling with it. */}
           <Link
             to="/"
-            aria-label="زروان، صفحه‌ی اصلی"
+            aria-label={m.auth_logo_label()}
             className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
           >
             <BrandLogo />
@@ -95,9 +99,9 @@ function AuthPage() {
             {/*------ Welcome ------*/}
             <header>
               <h1 className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-                وارد شو، <span className="text-primary">منتظرتم</span>
+                {m.auth_welcome_lead()} <span className="text-primary">{m.auth_welcome_accent()}</span>
               </h1>
-              <p className="mt-3 text-pretty text-muted-foreground">بار اولته؟ حسابت همین‌جا ساخته می‌شه.</p>
+              <p className="mt-3 text-pretty text-muted-foreground">{m.auth_welcome_note()}</p>
             </header>
 
             {/*------ Steps ------*/}

@@ -2,8 +2,8 @@ import { cn } from "cn";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
 import type { MascotCutName } from "~/components/mascot-cut";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
 import { TRAIL_FILL } from "~/routes/assessment/components/chalk-defs";
 import { EdgeDog } from "~/routes/assessment/components/edge-dog";
 
@@ -72,10 +72,11 @@ export function FormPlate({
 
       {/*------ The Dog on the Edge (phones) ------*/}
       {dog && (
-        <div aria-hidden className="pointer-events-none absolute end-[4.25rem] bottom-[calc(100%-3px)] z-10 lg:hidden">
+        <div aria-hidden className="pointer-events-none absolute end-[4.25rem] bottom-[calc(100%-3px)] ltr:end-auto ltr:left-[4.25rem] z-10 lg:hidden">
           <EdgeDog name={dog.name} scenery={dog.scenery} className={dog.width}>
             {speech && (
-              // Physical: to his right (the start side), beside his head, the tail aimed down at it.
+              // Physical: to his right, beside his head, the tail aimed down at it. In English the dog stands at the physical
+              // left, as in Persian, so the bubble has room (the plate's number disc is at the start side there).
               <ChalkBubble
                 key={speech}
                 tail="left"
@@ -95,7 +96,7 @@ export function FormPlate({
           aria-hidden
           className="absolute start-5 -top-5 grid size-10 place-items-center rounded-full bg-primary font-display text-lg font-black text-primary-foreground shadow-[0_0_0_6px_var(--background)]"
         >
-          {formatNumberFa(number)}
+          {formatNumber(number)}
         </span>
 
         <h2 id={titleId} className={cn(DISPLAY_HEADING, "text-h3 text-balance")}>

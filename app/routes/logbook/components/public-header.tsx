@@ -1,6 +1,7 @@
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import type { PublicRecord } from "~/orpc/logbook/contract";
 import { COLUMN } from "~/routes/logbook/column";
 import { RecordStage } from "~/routes/logbook/components/record-stage";
@@ -37,10 +38,10 @@ export function PublicHeader({ record }: { record: PublicRecord }) {
           </h1>
           {(dog.breed || dog.ageText) && (
             <p className="mt-3 text-lead text-pretty text-muted-foreground">
-              {[dog.breed, dog.ageText].filter(Boolean).join("، ")}
+              {[dog.breed, dog.ageText].filter(Boolean).join(m.logbook_public_separator())}
             </p>
           )}
-          <p className="mt-2 text-pretty text-muted-foreground">این پرونده رو صاحب سگ عمومی کرده.</p>
+          <p className="mt-2 text-pretty text-muted-foreground">{m.logbook_public_made_public()}</p>
         </div>
 
         {/*===== Stage =====*/}
@@ -69,7 +70,7 @@ export function PublicHeader({ record }: { record: PublicRecord }) {
             tail="right"
             className="lb-pop absolute right-[calc(42%-2.25rem)] bottom-[calc(var(--ground)+var(--dog-h)+0.6rem)] max-w-[12rem] text-pretty lg:max-w-[15rem]"
           >
-            این پرونده‌ی رفیقم {dog.name}ه!
+            {m.logbook_public_bubble({ name: dog.name })}
           </ChalkBubble>
         </RecordStage>
       </div>

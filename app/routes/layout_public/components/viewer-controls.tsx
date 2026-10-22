@@ -4,6 +4,7 @@ import { USER_ROLE_LABELS } from "~/lib/user-constants";
 import { CartLink } from "~/routes/layout_public/components/cart-link";
 import { CUSTOMER_MENU_LINKS } from "~/routes/layout_public/nav-items";
 import type { Viewer } from "~/routes/layout_public/viewer";
+import { m } from "~/paraglide/messages";
 
 /*===== Viewer Controls =====*/
 /**
@@ -19,7 +20,7 @@ export function ViewerControls({ viewer }: { viewer: Viewer }) {
   const links: readonly PersonMenuLink[] = isCustomer
     ? [...CUSTOMER_MENU_LINKS, ...settings]
     : // A partner or the Admin has a panel to go to (`homePath`); the Admin's menu holds no settings.
-      [...(viewer.homePath ? [{ label: "پنل من", to: viewer.homePath }] : []), ...settings];
+      [...(viewer.homePath ? [{ label: m.layout_public_more_my_panel(), to: viewer.homePath }] : []), ...settings];
 
   return (
     <>

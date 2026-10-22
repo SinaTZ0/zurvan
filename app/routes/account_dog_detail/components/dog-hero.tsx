@@ -5,12 +5,13 @@ import { EvaluationStatusBadge } from "~/components/evaluation-status-badge";
 import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
-import { formatNumberFa } from "~/lib/digits";
 import { describeDog } from "~/lib/dog-format";
+import { formatNumber } from "~/lib/locale-format";
 import type { DogStatus } from "~/lib/dog-status";
 import type { Dog } from "~/orpc/dog/contract";
 import { COLUMN } from "~/routes/account_dog_detail/column";
 import { DogPortrait } from "~/routes/account_dog_detail/components/dog-portrait";
+import { m } from "~/paraglide/messages";
 
 /*===== Dog Hero =====*/
 /**
@@ -37,8 +38,8 @@ export function DogHero({
           to="/account"
           className="-ms-1 inline-flex items-center gap-1 rounded-sm px-1 text-sm font-bold text-muted-foreground outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <ChevronRightIcon aria-hidden className="size-4" />
-          سگ‌های من
+          <ChevronRightIcon aria-hidden className="size-4 ltr:-scale-x-100" />
+          {m.shared_account_dogs()}
         </Link>
 
         <div className="mt-5 grid grid-cols-[minmax(0,1fr)] gap-y-8 pb-10 lg:mt-2 lg:min-h-[26rem] lg:grid-cols-12 lg:gap-x-12 lg:pb-4">
@@ -58,11 +59,11 @@ export function DogHero({
                 <EvaluationStatusBadge status={status.badge} />
               ) : (
                 <span className="inline-flex h-6 shrink-0 items-center rounded-full border border-border px-2.5 text-xs font-bold whitespace-nowrap text-muted-foreground">
-                  ارزیابی نشده
+                  {m.account_dog_detail_hero_not_evaluated()}
                 </span>
               )}
               <span className="text-sm text-muted-foreground">
-                پرونده‌ی{" "}
+                {m.account_dog_detail_hero_file()}{" "}
                 <bdi dir="ltr" className="font-mono tracking-wider">
                   {dog.fileNumber}
                 </bdi>
@@ -71,9 +72,9 @@ export function DogHero({
 
             {/*------ Facts ------*/}
             <dl className="mt-7 grid max-w-xl grid-cols-3 overflow-hidden rounded-2xl border border-border bg-card paper-grain shadow-[0_14px_30px_-20px_rgb(0_0_0/0.9)]">
-              <Fact label="دوره در حال آموزش" value={counts.active} delay="0.2s" />
-              <Fact label="دوره‌ی گذرونده" value={counts.passed} delay="0.3s" />
-              <Fact label="گواهی" value={counts.certificates} delay="0.4s" />
+              <Fact label={m.account_dog_detail_fact_active()} value={counts.active} delay="0.2s" />
+              <Fact label={m.account_dog_detail_fact_passed()} value={counts.passed} delay="0.3s" />
+              <Fact label={m.account_dog_detail_fact_certificates()} value={counts.certificates} delay="0.4s" />
             </dl>
 
             {/*------ Actions ------*/}
@@ -89,7 +90,7 @@ export function DogHero({
                 params={{ dogId: dog.id }}
                 className={buttonVariants({ variant: "outline", size: "lg" })}
               >
-                ویرایش مشخصات
+                {m.account_dog_detail_hero_edit()}
               </Link>
             </div>
           </div>
@@ -124,10 +125,10 @@ function Fact({ label, value, delay }: { label: string; value: number; delay: st
         {value === 0 ? (
           <>
             <span aria-hidden>—</span>
-            <span className="sr-only">هیچی</span>
+            <span className="sr-only">{m.account_dog_detail_fact_none()}</span>
           </>
         ) : (
-          formatNumberFa(value)
+          formatNumber(value)
         )}
       </dd>
     </div>

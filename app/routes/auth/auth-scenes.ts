@@ -1,4 +1,5 @@
 import type { MascotCutName } from "~/components/mascot-cut";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /** The steps of the sign-in flow. Each is asked by a dog standing at the door; the stage keeps all four in place. */
@@ -12,8 +13,8 @@ export type AuthStepName = "phone" | "password" | "code" | "name";
 type AuthScene = {
   /** The pose that waits at the door. All four face the form (the picture's right). */
   pose: MascotCutName;
-  /** What he says in the bubble: first person, short, no orders and no promises. */
-  line: string;
+  /** What he says in the bubble: first person, short, no orders and no promises. A function, so it is worded when rendered. */
+  line: () => string;
   /** His height. The poses differ in size, so each gets the height that matches the others' heads, never past ~1.3x. */
   size: string;
   /** His idle loop: the shared `lively-*` classes. */
@@ -33,7 +34,7 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
   // Hello at the door: the paw is up.
   phone: {
     pose: "wave",
-    line: "سلام! شمارتو بده تا بشناسمت.",
+    line: () => m.auth_scene_phone(),
     size: "h-[calc(10.2*var(--u))] lg:h-[calc(25*var(--u))]",
     loop: "lively-wiggle",
     place: "left-[calc(13.4*var(--u))] lg:left-[calc(28.5*var(--u))]",
@@ -42,7 +43,7 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
   // He brings the key: the password is the other way in.
   password: {
     pose: "key-carry",
-    line: "رمزتو بگو؛ دیگه لازم نیست منتظر پیامک بمونی.",
+    line: () => m.auth_scene_password(),
     size: "h-[calc(11*var(--u))] lg:h-[calc(30.5*var(--u))]",
     loop: "lively-breathe",
     place: "left-[calc(12.5*var(--u))] lg:left-[calc(29*var(--u))]",
@@ -51,7 +52,7 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
   // The phone is in his paws: the SMS has arrived.
   code: {
     pose: "smartphone",
-    line: "پیامک رسید؟ کد پنج‌رقمی رو بگو.",
+    line: () => m.auth_scene_code(),
     size: "h-[calc(10.8*var(--u))] lg:h-[calc(30*var(--u))]",
     loop: "lively-breathe",
     place: "left-[calc(12.1*var(--u))] lg:left-[calc(29.5*var(--u))]",
@@ -60,7 +61,7 @@ export const AUTH_SCENES: Record<AuthStepName, AuthScene> = {
   // Head tilted, ears up: he is waiting to hear the name.
   name: {
     pose: "listen",
-    line: "حالا اسمتو بگو، می‌خوام صدات کنم.",
+    line: () => m.auth_scene_name(),
     size: "h-[calc(11*var(--u))] lg:h-[calc(30.5*var(--u))]",
     loop: "lively-tilt",
     place: "left-[calc(13.2*var(--u))] lg:left-[calc(28.5*var(--u))]",

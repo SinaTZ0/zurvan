@@ -7,16 +7,17 @@ import { buttonVariants } from "~/components/ui/button";
 import { PROFILE_PATH } from "~/lib/account-links";
 import { CENTER_PHONE } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 
 /*===== Notice Plate =====*/
 // Text at the start, the button under it (beside it from `sm`), and room at the end for the dog sitting on the plate's
 // floor. From `sm` the end padding is wider than the scene, so the words never run under it; on phones the words take
 // the full width and the button's row is as tall as the dog, with the button stopping short of him (`ACTION`).
-const ACTION = "flex min-h-[6.25rem] shrink-0 items-end sm:min-h-0 sm:items-center";
+const ACTION = "flex min-h-[6.25rem] shrink-0 items-end sm:min-h-0 sm:items-center max-sm:ltr:justify-end";
 const ACTION_BUTTON = "w-[calc(100%-9.75rem)] sm:w-auto sm:px-6";
 
 const NOTICE =
-  "answer-in relative flex min-h-[9rem] flex-col justify-center gap-4 overflow-hidden rounded-4xl border-2 bg-sunken paper-grain p-5 shadow-[0_18px_36px_-22px_rgb(0_0_0/0.95)] sm:min-h-[8.5rem] sm:flex-row sm:items-center sm:justify-start sm:gap-10 sm:p-7 sm:pe-[17rem]";
+  "answer-in relative flex min-h-[9rem] flex-col justify-center gap-4 overflow-hidden rounded-4xl border-2 bg-sunken paper-grain p-5 shadow-[0_18px_36px_-22px_rgb(0_0_0/0.95)] sm:min-h-[8.5rem] sm:flex-row sm:items-center sm:justify-start sm:gap-10 sm:p-7 sm:pe-[17rem] ltr:sm:ps-[17rem] ltr:sm:pe-7";
 
 /*===== Partner Notices =====*/
 /**
@@ -38,10 +39,10 @@ export function PartnerNotices({ isActive, hasSheba }: { isActive: boolean; hasS
         >
           <div>
             <h2 id="partner-sheba-notice" className="text-lg font-bold text-balance">
-              برای گرفتن پورسانت، شماره‌ی شبا لازمه.
+              {m.account_partner_notice_sheba_title()}
             </h2>
             <p className="mt-1 text-sm text-pretty text-muted-foreground">
-              {HEAD_TRAINER.firstName} پورسانت‌هات رو به همین شبا واریز می‌کنه.
+              {m.account_partner_notice_sheba_body({ trainer: HEAD_TRAINER.firstName })}
             </p>
           </div>
           <div className={ACTION}>
@@ -52,7 +53,7 @@ export function PartnerNotices({ isActive, hasSheba }: { isActive: boolean; hasS
                 className: cn(ACTION_BUTTON, "border-primary text-primary hover:text-primary"),
               })}
             >
-              نوشتن شبا
+              {m.account_partner_notice_sheba_button()}
             </Link>
           </div>
           <NoticeScene
@@ -71,8 +72,7 @@ export function PartnerNotices({ isActive, hasSheba }: { isActive: boolean; hasS
           className={cn(NOTICE, "border-destructive/55 [--answer-delay:.65s]")}
         >
           <h2 id="partner-inactive-notice" className="max-w-2xl text-lg font-bold text-pretty">
-            همکاریت فعلاً متوقفه؛ لینک و شماره‌هات کسی رو به اسم تو ثبت نمی‌کنن. برای شروع دوباره با{" "}
-            {HEAD_TRAINER.firstName} تماس بگیر.
+            {m.account_partner_notice_inactive({ trainer: HEAD_TRAINER.firstName })}
           </h2>
           <div className={ACTION}>
             <a

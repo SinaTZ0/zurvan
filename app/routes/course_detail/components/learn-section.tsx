@@ -5,6 +5,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import type { Course } from "~/orpc/course/contract";
 import { ChalkCheck } from "~/routes/course_detail/components/chalk-check";
 
@@ -28,7 +29,7 @@ export function LearnSection({ course }: { course: Course }) {
     <section aria-labelledby="learn-title">
       {/*------ Heading ------*/}
       <h2 id="learn-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-        {isBranches ? "من توی این گرایش‌ها کار می‌کنم" : "تا آخر دوره اینا رو بلدم"}
+        {isBranches ? m.course_detail_learn_title_branches() : m.course_detail_learn_title()}
       </h2>
 
       {/*------ Words ------*/}
@@ -64,7 +65,7 @@ const PLATE = "paper-grain rounded-3xl border-2 border-foreground/10 bg-backgrou
 function PeekingDog() {
   return (
     <div aria-hidden className="absolute end-4 bottom-full z-10 w-24 translate-y-[11%] sm:end-8 sm:w-28">
-      <MascotCut name="plants" className="lively-sway absolute bottom-[12%] start-[62%] w-[44%] -scale-x-100" />
+      <MascotCut name="plants" className="lively-sway absolute start-[62%] bottom-[12%] w-[44%] -scale-x-100" />
       <div className="cd-peek relative">
         <MascotCut name="peek" className="lively-breathe block w-full" />
       </div>
@@ -122,7 +123,7 @@ function BranchPills({ branches }: { branches: string[] }) {
         ))}
       </ul>
       <p className="mt-5 border-t border-foreground/15 pt-5 text-sm text-pretty text-muted-foreground">
-        شرایط و برنامه‌ی هر گرایش بعد از ارزیابی سگت مشخص می‌شود.
+        {m.course_detail_learn_branches_note()}
       </p>
     </div>
   );
@@ -146,12 +147,10 @@ function Boarding({ boardingPrice }: { boardingPrice: number | null }) {
       <div className="relative flex items-start gap-4">
         <BedDoubleIcon aria-hidden strokeWidth={1.5} className="mt-0.5 size-8 shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="font-extrabold">اگه خواستی، می‌تونم پیش مربی بمونم</p>
-          <p className="mt-1 text-sm text-pretty text-muted-foreground">
-            توی پانسیون می‌مونم و آموزش همون‌جا ادامه پیدا می‌کنه. اختیاریه و قیمتش جدا از قیمت دوره‌ست.
-          </p>
+          <p className="font-extrabold">{m.course_detail_learn_boarding_title()}</p>
+          <p className="mt-1 text-sm text-pretty text-muted-foreground">{m.course_detail_learn_boarding_text()}</p>
           <p className="mt-2 text-sm font-bold">
-            {boardingPrice === null ? "برای قیمتش تماس بگیر" : formatToman(boardingPrice)}
+            {boardingPrice === null ? m.course_detail_learn_boarding_call() : formatToman(boardingPrice)}
           </p>
         </div>
       </div>
@@ -162,15 +161,12 @@ function Boarding({ boardingPrice }: { boardingPrice: number | null }) {
 /*===== Copy =====*/
 /** One line on where the lessons happen, as the catalogue's place says it. */
 function placeLine({ place }: Course): string {
-  const where =
-    place === "home"
-      ? "همه‌ی تمرین‌هام توی خونه‌ی خودمونه، همون‌جا که هر روز زندگی می‌کنم."
-      : place === "outside"
-        ? "تمرین‌هام بیرونه، توی پارک یا کوچه‌های محله‌ی خودمون، جایی که حواسم واقعاً پرت می‌شه."
-        : "بیشتر تمرین‌هام بیرونه، توی پارک یا کوچه‌های محله‌ی خودمون، جایی که حواسم واقعاً پرت می‌شه.";
-  return `این فهرست کارت همین دوره‌ست، همون‌طور که ${HEAD_TRAINER.firstName} درس می‌ده. ${where}`;
+  const trainer = HEAD_TRAINER.firstName;
+  if (place === "home") return m.course_detail_learn_place_home({ trainer });
+  if (place === "outside") return m.course_detail_learn_place_outside({ trainer });
+  return m.course_detail_learn_place_mostly_outside({ trainer });
 }
 
 function branchesLine(): string {
-  return `هر گرایش برنامه‌ی جدای خودش رو داره. سن مناسب، تعداد جلسه‌ها و محل تمرین رو ${HEAD_TRAINER.firstName} بعد از دیدن من توی ارزیابی رایگان می‌گه.`;
+  return m.course_detail_learn_branches_line({ trainer: HEAD_TRAINER.firstName });
 }

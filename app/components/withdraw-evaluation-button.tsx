@@ -17,8 +17,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { toast } from "~/components/ui/toast";
 import { client, orpc } from "~/orpc/client";
 import { errorDataSchema } from "~/orpc/errors";
-
-const FALLBACK_MESSAGE = "انجام نشد. دوباره تلاش کن.";
+import { m } from "~/paraglide/messages";
 
 /*===== Withdraw Evaluation Button =====*/
 /**
@@ -53,7 +52,7 @@ export function WithdrawEvaluationButton({
     mutationFn: () => client.evaluation.withdraw({ id: evaluationId }),
     onSuccess: async () => {
       setOpen(false);
-      toast.add({ title: "درخواست پس گرفته شد.", type: "success" });
+      toast.add({ title: m.shared_withdraw_done(), type: "success" });
       await refresh();
       onWithdrawn?.();
     },
@@ -71,19 +70,19 @@ export function WithdrawEvaluationButton({
     // A pending request can't be dismissed: closing mid-flight would hide the outcome.
     <AlertDialog open={open} onOpenChange={(next) => !withdraw.isPending && setOpen(next)}>
       <Button type="button" variant="outline" size="sm" className={className} onClick={() => setOpen(true)}>
-        پس گرفتن درخواست
+        {m.shared_withdraw_button()}
       </Button>
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>درخواست ارزیابی {dogName} پس گرفته بشه؟</AlertDialogTitle>
-          <AlertDialogDescription>بعدش می‌تونی دوباره درخواست بدی.</AlertDialogDescription>
+          <AlertDialogTitle>{m.shared_withdraw_title({ dogName })}</AlertDialogTitle>
+          <AlertDialogDescription>{m.shared_withdraw_description()}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={withdraw.isPending}>نه، بمونه</AlertDialogCancel>
+          <AlertDialogCancel disabled={withdraw.isPending}>{m.shared_withdraw_cancel()}</AlertDialogCancel>
           <AlertDialogAction disabled={withdraw.isPending} onClick={() => withdraw.mutate()}>
             {withdraw.isPending && <Spinner aria-hidden />}
-            پس بگیر
+            {m.shared_withdraw_confirm()}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -92,11 +91,11 @@ export function WithdrawEvaluationButton({
 }
 
 /*===== Error Message =====*/
-/** The API's own Persian message for the two expected conflicts; a fixed line for everything else. */
+/** The API's own message (in the page's language) for the two expected conflicts; a fixed line for everything else. */
 function describeFailure(error: unknown): string {
   if (error instanceof ORPCError && (error.code === "NOT_WITHDRAWABLE" || error.code === "NOT_FOUND")) {
     const parsed = errorDataSchema.safeParse(error.data);
     if (parsed.success && parsed.data.errors[0]) return parsed.data.errors[0];
   }
-  return FALLBACK_MESSAGE;
+  return m.shared_withdraw_failed();
 }
