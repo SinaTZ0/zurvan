@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "build": "NODE_ENV=production vite build",
     "dev": "vite dev",
     "start": "node .output/server/index.mjs",
     "start:local": "NODE_ENV=development node .output/server/index.mjs",
