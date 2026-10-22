@@ -430,9 +430,19 @@ production build. Screenshots of 34 pages (visitor, customer, partner, Admin) at
 build of `0bf97b3` pixel for pixel (one 0.1% difference on the partner dashboard). By hand, in a browser: sign out and
 back in to the page asked for, the header greeting after sign-in, the Admin's dog search (list filters per key, URL
 after the pause, no history per key, reload keeps it), the catalogue's family filter, an Admin action (renaming a
-user) refreshing its list without a reload, video upload and playback. Not exercised in a browser: cart → payment →
-callback end to end (it would write payments into the demo data) and a blocked account (covered by the `session.get`
-integration test). Not merged; that's the owner's call.
+user) refreshing its list without a reload, video upload and playback. A throwaway customer (`09198070763`) bought
+`house-manner` end to end: add to cart on the course page, the cart, «پرداخت», the demo gateway's callback, the paid
+banner (the `?payment=` param then leaves the URL), the purchase listed. The Docker image (210 MB) runs the same build:
+pages, brotli assets with immutable caching, and a dog photo upload through `sharp`.
+
+**Open (owner's call): a customer blocked mid-session.** Blocking signs the account out (its sessions are revoked), a
+full page load lands on `/auth`, and every procedure refuses it. But the guard reads the session through the query
+cache, so in a tab that's already open a client-side navigation to a page whose data is cached still renders it (the
+person's own data, already in the browser) until something asks the server. React Router asked on every navigation.
+Options: ask on every guarded navigation and preload (`staleTime: 0` for the guard's read; one small request each, as
+before); ask at most every 30 s; or keep it and send the tab to `/auth` when a procedure answers `UNAUTHORIZED`.
+
+Not merged; that's the owner's call.
 
 ## Watch Out For
 
