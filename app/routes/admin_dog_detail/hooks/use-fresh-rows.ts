@@ -12,7 +12,7 @@ const NONE: FreshRows = { added: new Set(), edited: new Set() };
 
 /*===== Fresh Rows =====*/
 /**
- * Which rows the last revalidation added or changed, compared with the list as it was before it; nothing on the first
+ * Which rows the last refetch added or changed, compared with the list as it was before it; nothing on the first
  * render, so no row moves on load. The marks stay until the list changes again, so a re-render for another reason
  * doesn't replay or cut short a motion.
  */

@@ -1,3 +1,4 @@
+import { linkOptions, type RegisteredRouter, type ValidateLinkOptions } from "@tanstack/react-router";
 import { cn } from "cn";
 
 import { Link } from "~/components/link";
@@ -11,14 +12,24 @@ import { tomanDigits } from "../money";
 import { PopNumber } from "./pop-number";
 import { TileChevron } from "./tile-chevron";
 
-const PAID_PAYMENTS_PATH = "/admin/payments?view=paid";
+/** The paid payments, where every amount of taken money leads. */
+const PAID_PAYMENTS = linkOptions({ to: "/admin/payments", search: { view: "paid" } });
 
 /*===== Money Row =====*/
+type MoneyRowProps<TOptions = unknown> = {
+  label: string;
+  note?: string;
+  value: number;
+  /** Where the row goes: typed link options (`linkOptions(...)`), checked at the call site. */
+  link: ValidateLinkOptions<RegisteredRouter, TOptions>;
+};
+
 /** A label and its amount, the whole row the link to the list behind it. */
-function MoneyRow({ label, note, value, to }: { label: string; note?: string; value: number; to: string }) {
+function MoneyRow<TOptions>(props: MoneyRowProps<TOptions>): React.ReactNode;
+function MoneyRow({ label, note, value, link }: MoneyRowProps) {
   return (
     <Link
-      to={to}
+      {...link}
       className="group flex min-h-14 items-center gap-3 px-5 py-3 transition-colors hover:bg-foreground/[0.04] focus-visible:bg-foreground/[0.04] sm:px-6"
     >
       <span className="min-w-0 flex-1">
@@ -49,7 +60,7 @@ export function MoneyPlate({ money }: { money: DashboardOverview["money"] }) {
       <div className={cn(ADMIN_PLATE, "flex-1 overflow-hidden")}>
         {/*===== This Month =====*/}
         <Link
-          to={PAID_PAYMENTS_PATH}
+          {...PAID_PAYMENTS}
           className="group flex items-end gap-3 px-5 pt-5 pb-4 transition-colors hover:bg-foreground/[0.04] focus-visible:bg-foreground/[0.04] sm:px-6"
         >
           <span className="min-w-0 flex-1">
@@ -73,12 +84,13 @@ export function MoneyPlate({ money }: { money: DashboardOverview["money"] }) {
 
         {/*===== Rows =====*/}
         <div className={cn("divide-y border-t", ADMIN_HAIRLINE)}>
-          <MoneyRow label="دریافتی تا امروز" value={money.salesTotal} to={PAID_PAYMENTS_PATH} />
+          <MoneyRow label="دریافتی تا امروز" value={money.salesTotal} link={PAID_PAYMENTS} />
           <MoneyRow
             label="پورسانت پرداخت‌نشده"
             note={`${formatNumberFa(money.unpaidCommissions.count)} مورد`}
             value={money.unpaidCommissions.amount}
-            to="/admin/partners?view=unpaid"
+            // «unpaid» is the Partners page's default view, so the link leaves `?view=` out.
+            link={linkOptions({ to: "/admin/partners" })}
           />
         </div>
       </div>

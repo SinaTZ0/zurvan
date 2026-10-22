@@ -37,7 +37,8 @@ export function RulesContents({ sections }: { sections: SiteRules["sections"] })
           {sections.map((section, index) => (
             <li key={index}>
               <Link
-                to={`#rule-${index + 1}`}
+                to="/rules"
+                hash={`rule-${index + 1}`}
                 className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 text-sm font-bold text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none lg:rounded-xl lg:border-transparent lg:px-1 lg:py-1.5 lg:text-base"
               >
                 <span

@@ -34,13 +34,16 @@ before starting; Start moves fast and blog posts lag behind it.
 
 ## Decisions Before Starting
 
-These need the owner's call. Each has a recommendation.
+The owner decided all of these on 2026-10-22.
 
-1. **Where the work happens.** Phase A runs on `main` (each step ships on React Router). Phase B can't: the app is
-   either React Router or Start, and a half-converted `main` doesn't run. **Recommendation:** Phase B on a
-   `tanstack-start` branch, merged once it passes the checks in B10. CLAUDE.md says to work on `main` unless the user
-   asks for a branch, so this needs an explicit yes.
-2. **Freshness policy (decided 2026-10-22).** Who made the change decides how it reaches the screen:
+1. **Where the work happens (decided).** Everything happens on the `tanstack-start` branch, created from `main`,
+   Phase A included. This is the owner's explicit exception to CLAUDE.md's "commit on `main`". Phase A commits still
+   run on React Router. The B0 spike runs in a git worktree (`../zurvan-spike`) on its own branch,
+   `tanstack-start-spike` (a second exception the owner approved), which stays unmerged until B1 decides whether to
+   build on it. Nothing is merged into `main` or pushed until the owner says so. Phase B itself ran in a third worktree,
+   `../zurvan-start` on `tanstack-start`, because the owner's React Router dev server runs from the main checkout; the
+   owner chose to leave that checkout detached at `0bf97b3` (same files) until the worktree is removed.
+2. **Freshness policy (decided).** Who made the change decides how it reaches the screen:
    - **Changes the visitor makes** (adds a dog, fills the cart, an Admin marks an enrollment done): the mutation
      invalidates the query keys it changed (`orpc.x.key()`), so the next render refetches. No `staleTime` is involved.
    - **Default `staleTime`: 5 minutes** (set on the `QueryClient`). It covers changes made by someone else, like a
@@ -50,16 +53,29 @@ These need the owner's call. Each has a recommendation.
    - **Refetch on focus** stays on (Query's default). It only refetches data that's already stale, so it mostly helps
      the 30-second queries.
    - Router `defaultPreloadStaleTime: 0`, so Query's `staleTime` decides whether a preload or a click refetches.
-3. **Search params.** nuqs's TanStack Router adapter is "experimental and does not yet cover TanStack Start"
-   ([nuqs docs](https://nuqs.dev/docs/adapters#tanstack-router)). **Recommendation:** replace nuqs with TanStack
+3. **Search params (decided).** nuqs's TanStack Router adapter is "experimental and does not yet cover TanStack Start"
+   ([nuqs docs](https://nuqs.dev/docs/adapters#tanstack-router)). **Decision:** replace nuqs with TanStack
    Router's own typed search params (`validateSearch` with Zod/Standard Schema, `Route.useSearch()`,
    `navigate({ search })`). Filters that are UI-only today (`shallow: true`) simply stay out of `loaderDeps`.
-4. **Production server.** The documented Node path is Nitro (`nitro/vite`, `node .output/server/index.mjs`), and
-   Nitro v3 is still beta. The alternative is Start's own build output served by `srvx` (static client files + the
-   server's `fetch` export); the docs only spell that out for Rsbuild. **Recommendation:** try Nitro in the B0 spike,
-   fall back to `srvx` if the build or Docker image misbehaves.
+4. **Production server (decided).** The documented Node path is Nitro (`nitro/vite`, `node .output/server/index.mjs`),
+   and Nitro v3 is still beta. The alternative is Start's own build output served by `srvx` (static client files + the
+   server's `fetch` export); the docs only spell that out for Rsbuild. **Decision:** try Nitro in the B0 spike, fall
+   back to `srvx` if the build or Docker image misbehaves. **Result (B0): Nitro.** Its `node-server` build ran in
+   Docker behind Caddy without problems, so srvx wasn't needed (see B0 for what it takes).
+5. **Two refinements of Phase A (decided).**
+   - **One `session.get` procedure** serves both A1 (the viewer on public pages) and A2 (page guards). It returns
+     anonymous / unnamed / active and revokes a blocked account's sessions wherever it's read, so a blocked user is
+     simply signed out everywhere.
+   - **A public `site.config` procedure** (`{ origin, showcase }`) gives pages the values they used to read from
+     `env.server` (the site origin for links, showcase mode), instead of adding those fields to each page's own
+     procedure. Links and QR codes that need the origin (partner link, dog file card, certificate cards) are still built
+     inside their own procedures.
+6. **Typed links (decided after B0).** Every link, `navigate()` and `redirect()` uses TanStack Router's typed
+   options: `to` is a route path (`"/courses/$slug"`), with `params`, `search` and `hash` as their own props. A typo,
+   a missing param or a wrong search value is a compile error, which is one of the reasons for the move. The spike's
+   wrapper that took any string (`"/help#x"`) and cast it is not carried over.
 
-## Phase A: Prepare on React Router (on `main`)
+## Phase A: Prepare on React Router (on `tanstack-start`)
 
 Each step is a normal commit; the app keeps running on React Router. The goal is a codebase where every page loader is
 "call procedures, shape the result", so Phase B is mostly mechanical.
@@ -83,11 +99,23 @@ Also move the types that components import from `.server` files (`account_dog_de
 certificate-card,file-card}.tsx`, `account_partner/components/shop-card.tsx`) into shared, non-server modules. Start's
 import protection denies `*.server.*` in the client build; whether a type-only import passes is unconfirmed.
 
+**Done (2026-10-22).** The `viewer` became `session.get` (decision 5), which also replaced the getSession calls in
+`course_detail`, `logbook` and `auth`; `site.config` gives `auth` showcase mode and `admin_sms` / `admin_partners` the
+origin. `roleHomePath` moved to `app/lib/role-home.ts`, `Qr` and its schema to `app/lib/qr.ts`. `partner.getMine`,
+`certificate.listMine`, `dog.get` and `dog.admin.get` return their link and QR (`app/lib/referral-card.server.ts`,
+`certificate.server.ts`, `dog-file.server.ts`). Page loaders now import no `*.server` module except
+`createServerClient`, `session-guard.server` and, until A3, `referral.server`. One behavior change: a blocked customer
+on a course page reads as a visitor instead of hitting an error.
+
 ### A2. One session procedure for page guards
 
 Add a procedure that returns the session state a guard needs (signed in, has a name, role, blocked) and revokes a
 blocked account's sessions on the server. Make `requireSession` call it. In Phase B the same call moves into
 `beforeLoad`, and the redirect logic is the only thing that changes.
+
+**Done (2026-10-22).** `requireSession` asks `session.get` (from A1) and puts its `active` user (`SessionUser`: id,
+role, first and last name, phone) in `sessionContext`, which no longer holds a Better-Auth session. The `.data` URL
+normalization stays until B4.
 
 ### A3. Referral cookie without `createCookie`
 
@@ -96,6 +124,14 @@ blocked account's sessions on the server. Make `requireSession` call it. In Phas
 `setCookie` / `getCookie` (`@tanstack/react-start/server`) or a request middleware. Keep
 `app/lib/auth.server.test.ts` passing.
 
+**Done (2026-10-22).** `referral.server.ts` uses the `cookie` package: `referralCookie({ requestUrl, headers })`
+returns `{ name, value, options }` (the shape of Start's `setCookie`), `serializeReferralCookie` makes the header for
+React Router, and `readReferralCode` is synchronous. The value keeps `createCookie`'s encoding (the JSON string in
+base64), so cookies already in browsers still read; a test checks that. The cookie is now set by a root `middleware`
+in `app/root.tsx` on `/` and `/auth` (and their `.data` URLs), not in those loaders; the home page has no loader any
+more. In B1 the middleware becomes a Start request middleware. Small difference: a signed-in person opening
+`/auth?ref=…` now gets the cookie with the redirect (it was dropped before); signup ignores it for them.
+
 ### A4. Small cleanups that help both
 
 - Fix the stale comment in `app/root.tsx` ("Loader data seeds most queries": nothing seeds queries today).
@@ -103,39 +139,125 @@ blocked account's sessions on the server. Make `requireSession` call it. In Phas
   value down or read it from a query instead of a hardcoded route id.
 - `certificate/components/certificate-hero.tsx` imports `../+types/certificate`; give it its own props type.
 
-## Phase B: Switch to Start (branch `tanstack-start`)
+**Done (2026-10-22).** The root comment says what is true; `HomeHero` takes `firstName` from the account home's own
+loader (its guard's `sessionContext`); `CertificateHero` uses `CertificateVerification` from the certificate contract.
+No component reads another route's loader data or `+types` any more.
+
+## Phase B: Switch to Start (branch `tanstack-start`; B0 in the `tanstack-start-spike` worktree)
 
 ### B0. Spike: prove the risky parts first
 
-Scaffold Start next to the existing code with one public page, one guarded page, `/rpc/*` and `/api/auth/*`, then
-answer these before converting anything else:
+Done on 2026-10-22 in the `tanstack-start-spike` worktree (commit `b830c7c`, `@tanstack/react-start` 1.169.3,
+`@tanstack/react-router` 1.170.45, `nitro` 3.0.260903-beta, Vite 8.3). The spike converts the root, the router, a
+minimal public shell with the real home, privacy, rules, course detail and 404 pages, the guarded account layout and
+home, and the `/rpc/$` and `/api/auth/$` server routes; `spike/` there has its Dockerfile, Caddyfile and the
+Playwright scripts behind these answers. Everything was checked on a production build unless it says dev.
 
-- [ ] `tanstackStart({ srcDirectory: "app", router: { virtualRouteConfig: "./app/routes.ts" } })` builds with our
-      flat slices (the `router` key is in the Start plugin schema; the docs only show it for the plain router plugin).
-- [ ] Production build runs in Docker (decision 4) behind Caddy.
-- [ ] `notFound()` during SSR returns HTTP 404 (the e2e smoke test checks `/rules` → 404; unconfirmed in the docs).
-- [ ] Import protection with our `*.server.ts` files, and the `.server` type-only imports if any remain.
-- [ ] Lenis + hash links: Start scrolls to hashes itself (`defaultHashScrollIntoView`); make sure it doesn't fight
-      Lenis.
-- [ ] View transitions with `defaultViewTransition` / per-link `viewTransition`, and back/forward behavior compared
-      with today's ([`view-transitions.md`](../view-transitions.md)).
-- [ ] Preloaded data is used on click: one request per page, none at hydration.
+- [x] **Virtual routes with our flat slices work.** The B1 config,
+      `tanstackStart({ srcDirectory: "app", router: { virtualRouteConfig: "./app/routes.ts" } })`, builds and runs.
+      Paths in the config are relative to `app/routes/`, and the root can stay at `app/root.tsx` with
+      `rootRoute("../root.tsx", [...])`. A pathless `layout("public", "layout_public/…", [...])` gets the id
+      `/_public`, so its pages are `createFileRoute("/_public/courses/$slug")`; the generator writes the id into each
+      file. The tree is generated at `app/routeTree.gen.ts`, which also declares the `Register` types, so `tsc` needs
+      it: commit it and keep it out of oxlint and Prettier. The spike's files typecheck with today's `tsconfig.json`.
+- [x] **Production build in Docker behind Caddy: Nitro works** (decision 4).
+  - **Image.** `vite build` writes a self-contained `.output/`: the server bundle, with the one native dependency
+    (sharp) traced into `.output/server/node_modules`. The runtime stage just copies `.output` and runs
+    `node .output/server/index.mjs`, with no `npm ci --omit=dev`. The image is 205 MB.
+  - **Behind Caddy.** Pages, the 404s, the guard's redirect, `/rpc`, sign-in and the referral cookie all worked.
+  - **Headers.** Assets are `public, max-age=31536000, immutable`. HTML is compressed by Caddy (zstd), and Caddy's
+    1-day rule still applies to `/photo` and the favicons.
+  - **Compression.** Nitro doesn't compress responses itself (`react-router-serve` did).
+    `nitro({ compressPublicAssets: true })` pre-compresses the assets (br/gzip served). HTML is uncompressed only
+    where no Caddy sits in front (`compose.yaml`).
+  - **Local test setup.** Docker Desktop's host network isn't WSL's localhost, so the spike used a bridge network
+    with published ports.
+- [x] **`notFound()` during SSR returns HTTP 404**, in dev and production: `/rules`, an unknown address (the `$` splat)
+      and `/courses/<unknown slug>` answer 404 and render their `notFoundComponent` inside the public shell. Redirects
+      thrown from `beforeLoad` are **307** (React Router sent 302); the e2e test only checks the URL.
+- [x] **Import protection works with our `*.server.ts` files.**
+  - **Build.** A route that imports `~/env.server` at runtime fails the production build ("Import denied in client
+    environment … `**/*.server.*`").
+  - **Dev.** The import is mocked, a warning goes to the terminal, and using the value throws a clear error in the
+    browser console.
+  - **Type-only imports pass and leak nothing**, both `import type { X }` and inline `import { type X }`, even with
+    `verbatimModuleSyntax: true`, which the repo already has on.
+  - **Client bundle.** Contains no server code: no drizzle, no Better-Auth adapter, no `@orpc/server`, no router. The
+    isomorphic oRPC client's server branch is stripped.
+- [x] **Lenis + hash links behave as today**, measured side by side with the React Router build:
+  - **Same-page links glide.** A same-page link (`/privacy`'s contents) glides with Lenis when the wrapper passes
+    `resetScroll: false` and `hashScrollIntoView: false`; it stops where it stops today.
+  - **Cross-page links land on the section.** A cross-page `/privacy#who-sees` lands on the section like today
+    (Start's own `scrollIntoView`, which respects the section's `scroll-mt`).
+  - **Back restores the scroll position** (`scrollRestoration: true`), Lenis included.
+- [x] **View transitions: one router option needed.** With only the per-link `viewTransition`, link clicks fade but
+      Back/Forward don't (React Router replays the fade there).
+      `defaultViewTransition: { types: ({ pathChanged }) => (pathChanged ? [] : false) }` restores today's behavior:
+      link, Back and Forward fade when the pathname changes; hash-only and query-only steps don't. Two differences:
+  - `navigate()` calls now fade on a pathname change too, where React Router needed an opt-in.
+  - A browser without view transition types fades every navigation that doesn't set its own `viewTransition`. Our
+    links always set it.
+- [x] **Preloaded data is used on click.** On `/courses`:
+  - **Hydration:** no data request (the SSR Query cache is handed over).
+  - **Viewport preload:** each visible course link ran that course's loader, one `course.get` per link (`course.list`
+    and `session.get` came from the cache).
+  - **Click:** a course renders with **zero** requests.
+  - **Back:** zero requests.
+
+**Also found**
+
+- **Per-request isolation holds.** The server-side oRPC client is shared, with
+  `context: () => ({ headers: new Headers(getRequestHeaders()) })`. Thirty concurrent SSR requests from three
+  different sessions each rendered their own visitor.
+- **Better Auth needs no `tanstackStartCookies()`.** Sign-in goes through the `/api/auth/$` handler, which returns
+  its own `Set-Cookie`. The plugin is only for `auth.api.*` calls made inside server functions.
+- **The referral cookie** is set by a request middleware in `app/start.ts` with `setCookie`. Its value is
+  URL-encoded there (`…%3D%3D`); `readReferralCode` reads both forms.
+- **CSRF.** A custom `app/start.ts` drops Start's automatic CSRF check, so it registers
+  `createCsrfMiddleware({ filter: (ctx) => ctx.handlerType === "serverFn" })` itself.
+- **Route `headers`** set the SSR response's headers (checked with `Cache-Control: no-store`).
+- **CSS: use a side-effect `import "./app.css"` in the root.** `import appCss from "./app.css?url"` with a `<link>`
+  breaks the Nitro build: the server build hashes the file differently from the client build, so the page links a CSS
+  file that doesn't exist (404). With the side-effect import, Start adds the `<link>` itself.
+- **Use `@vitejs/plugin-react-swc` (4.3), not `@vitejs/plugin-react`.** `@vitejs/plugin-react` 6 doesn't install:
+  its optional peer `@rolldown/plugin-babel` conflicts with shadcn's Babel 7 (ERESOLVE), and `--legacy-peer-deps`
+  leaves a lockfile `npm ci` rejects. Start's docs allow the SWC plugin, and it worked.
+- **`.env` sets `NODE_ENV=development`**, and a local `vite build` then ships React's dev JSX runtime (`jsxDEV`) to
+  the browser. The Docker build is unaffected because `.env` isn't copied.
+- **Preloads skip `beforeLoad`'s cache.** The docs say a preload runs `beforeLoad` again every time. The guard reads
+  `session.get` through `ensureQueryData`, so a preload costs no request, but the guard's answer is then only as fresh
+  as that query.
+- **Storybook filter.** Start adds Vite plugins named `tanstack*`, `nitro:*` and `fullstack:*`; Storybook must drop
+  those and keep `@tailwindcss/vite:*` and `vite:react-swc*`. Not run in the spike.
+- **`Link` string paths need translating.** TanStack's `Link` doesn't parse a hash or query out of `to`, and has no
+  `className` function. The spike's wrappers split React-Router-style strings (`"/help#x"`, `"#buy-card"`) and cast
+  them, which throws away the type checking; decision 6 moves call sites to typed `to` + `params` + `hash` +
+  `search` instead.
 
 ### B1. App shell
 
 - Packages: add `@tanstack/react-start`, `@tanstack/react-router`, `@tanstack/react-router-ssr-query`,
-  `@tanstack/virtual-file-routes`, `@vitejs/plugin-react` (after `tanstackStart()` in `plugins`), and `nitro` if
-  chosen. Remove `react-router`, `@react-router/{dev,node,serve}`, `isbot`.
+  `@tanstack/virtual-file-routes`, `@vitejs/plugin-react-swc` (after `tanstackStart()` in `plugins`; B0: not
+  `@vitejs/plugin-react`), and `nitro` (`nitro({ compressPublicAssets: true })`). Remove `react-router`,
+  `@react-router/{dev,node,serve}`, `isbot`.
 - `app/router.tsx`: `getRouter()` creates the `QueryClient` per call, `createRouter({ routeTree, context: { queryClient },
-defaultPreload: "viewport", defaultPreloadStaleTime: 0, scrollRestoration: true })`, and
+defaultPreload: "viewport", defaultPreloadStaleTime: 0, scrollRestoration: true, defaultViewTransition })` (the
+  `types` function from B0), and
   `setupRouterSsrQueryIntegration({ router, queryClient })`. The integration provides `QueryClientProvider`; drop
   ours from the root.
 - `app/routes.ts`: rewrite with `@tanstack/virtual-file-routes` (`rootRoute`, `layout`, `route`, `index`) and the same
   files. Paths become `$slug`, `$dogId`, `$number`, `$id`; `logbook/{-$fileNumber}`; the 404 is a `$` splat.
+  The root stays at `app/root.tsx` (`rootRoute("../root.tsx", …)`); commit the generated `app/routeTree.gen.ts`.
 - `__root` (from `app/root.tsx`): the `<html lang="fa" dir="rtl" className="dark">` shell with `<HeadContent />` and
   `<Scripts />`; providers Jotai → Direction → Tooltip → SmoothScroll + Toaster. `createRootRouteWithContext<{
-queryClient: QueryClient }>()`. Root `errorComponent` / `notFoundComponent` render `RootErrorPage`.
-- Server-function CSRF: if we add `app/start.ts` for global middleware, register `createCsrfMiddleware` ourselves.
+queryClient: QueryClient }>()`. Root `errorComponent` / `notFoundComponent` render `RootErrorPage`. The
+  stylesheet is a side-effect `import "./app.css"` (B0: `?url` breaks the build).
+- `app/start.ts`: the referral cookie's request middleware (A3's root middleware) and `createCsrfMiddleware` for
+  server functions, which a custom `start.ts` must register itself.
+
+**Done (2026-10-22, `9907b9b`).** As planned, from the B0 spike's files. Every page module first got a placeholder
+`Route` so the generated tree was complete and links could be typed while B5 ran. `build` is
+`NODE_ENV=production vite build`, so a `NODE_ENV` left in a local `.env` can't ship React's dev runtime.
 
 ### B2. Server routes
 
@@ -143,11 +265,15 @@ Each becomes `createFileRoute(...)({ server: { handlers } })`:
 
 - `rpc/$` → `ANY`: `rpcHandler.handle(request, { prefix: "/rpc", context: { headers: request.headers } })`, 404 when
   unmatched.
-- `api/auth/$` → `GET`/`POST`: Better Auth's `handler(request)`. Add `tanstackStartCookies()` (from
-  `better-auth/tanstack-start`) as the last Better Auth plugin.
+- `api/auth/$` → `GET`/`POST`: Better Auth's `handler(request)`. B0: `tanstackStartCookies()` isn't needed, since
+  nothing calls `auth.api.*` from a server function.
 - `api/evaluation-videos` → `POST` upload; `api/evaluation-videos/$id` → `GET` (Range/206/416), `HEAD`, `DELETE`.
   They already return plain `Response`s; keep their `Cache-Control`.
 - `payment/callback` → `GET` that redirects (a `Response` with `Location`, or `redirect()`).
+
+**Done (`d0721f7`).** The video route answers `HEAD` explicitly; a `GET` on the upload collection is a 405; the callback
+returns a plain 302. Checked on the production build: upload 201, a range 206 with `Content-Range`, an unsatisfiable
+range 416, HEAD, DELETE 204, signed out 401, another account 404, callback 302 to the Cart.
 
 ### B3. One oRPC client for both sides
 
@@ -156,7 +282,7 @@ Replace `app/orpc/client.ts` + `app/orpc/server-client.server.ts` with the
 
 ```ts
 const getORPCClient = createIsomorphicFn()
-  .server(() => createRouterClient(router, { context: async () => ({ headers: getRequestHeaders() }) }))
+  .server(() => createRouterClient(router, { context: () => ({ headers: new Headers(getRequestHeaders()) }) }))
   .client((): RouterClient<typeof router> => createORPCClient(new RPCLink({ url: "/rpc" })));
 ```
 
@@ -164,12 +290,23 @@ The server branch shares one client across requests; per-request data must come 
 above), never module state. Keep `orpc = createTanstackQueryUtils(client)` for `queryOptions()` / `mutationOptions()`
 / `.key()`.
 
+**Done (`5522fba`).** As planned; `~/orpc/server-client.server` is gone.
+
 ### B4. Page guards
 
 `requireSession({ roles })` (10 route middlewares) becomes a `beforeLoad` on `layout_account`, `layout_admin` and the
 8 guarded pages. It calls the A2 session procedure, then `throw redirect({ to: "/auth", search: { redirectTo } })`,
 or redirects to the role's home. The `.data` URL normalization in `signInRedirect` goes away (`location.href` is the
-real page). `sessionContext` becomes the object `beforeLoad` returns, which children read from `context`.
+real page). `sessionContext` becomes the object `beforeLoad` returns, which children read from `context`. B0: read
+`session.get` with `ensureQueryData` (preloads re-run `beforeLoad` every time, and the query cache keeps them free),
+and clear or invalidate that query on sign-in, sign-out and a blocked answer so the guard never trusts a stale
+session. Redirects are 307 now.
+
+**Done (`1364c6d`, `c1258cc`).** `requireSession({ queryClient, location, roles })` in `app/lib/session-guard.ts`,
+returning `{ user }` into the route context; layouts and the 8 guarded pages call it from `beforeLoad`. Instead of
+clearing the session query, `refreshSession` fetches it again (`staleTime: 0`) after signing in, signing out and giving
+a name, so the header and the next guard see the new answer. Role homes are typed route paths. The role matrix
+(visitor, customer, partner, Admin over every guarded page) gives the same redirects as React Router, as 307s.
 
 ### B5. Pages
 
@@ -193,6 +330,16 @@ Convert per area, one commit per batch: storefront (14 + `auth`), account (9), A
 
 `app/hooks/use-admin-action.ts` centralizes the Admin refresh, so most Admin pages change in one place.
 
+**Done (`4ff0a75` storefront, `5c06058` account, `6364ab4` Admin).** Loaders `ensureQueryData` everything a page
+shows; components read the same options with `useSuspenseQuery` (conditional reads: `useQuery` with `enabled`), so
+invalidation reaches the screen; loaders return only what `head` needs. `orNotFound` (`app/lib/not-found.ts`) maps the
+API's `NOT_FOUND` to `notFound()`. The dog and course forms are one module under two thin routes. The Admin's
+"busy" dimming comes from its queries' `isFetching`; the evaluations list and a customer's dog status use
+`staleTime: 30_000`. Behavior notes: the Admin's evaluations list refetches (and dims briefly) when the tab regains
+focus after 30 s; clicking the current page in a nav reuses cached data instead of reloading; a renamed dog's tab title
+updates on the next navigation; `certificate.verify` keeps the default 5 minutes (a revoked certificate can show valid
+that long in a tab that already read it: open question whether it should be 0).
+
 ### B6. Search params
 
 Each `search-params.ts` becomes a schema for `validateSearch`; components use `Route.useSearch()` and
@@ -200,24 +347,57 @@ Each `search-params.ts` becomes a schema for `validateSearch`; components use `R
 filters don't, so changing them doesn't refetch (today's `shallow: true`). `createSerializer` links become typed
 `<Link to search>`. `header-search.tsx` keeps a plain GET `<form action="/courses">` so it works before hydration.
 
+**Done (in the B5 commits).** Every field `.optional().catch(undefined)`; defaults applied where read and left out of
+URLs; nuqs's `replace` / no-scroll defaults kept; paging pushes. Only `admin_sms` (kind, page) and `buy` (dog) have
+`loaderDeps`; the catalogue filters the cached `course.list` in the component. The Admin search boxes debounce the URL
+through `app/hooks/use-search-text.ts`. Unknown keys (`utm_*`) survive a page load, but a filter change on a page with a
+schema drops them (nuqs kept them). nuqs is uninstalled.
+
 ### B7. Links, view transitions, prefetch
 
 - `Link`/`NavLink` wrappers keep their rules on TanStack's `Link`: `preload` = `"viewport"` (storefront, account),
   `"intent"` (Admin), `false` for same-pathname and `reloadDocument` links; `viewTransition` only when the pathname
-  changes; same-page hash links don't reset scroll (`resetScroll: false`) so Lenis can glide.
+  changes; same-page hash links set `resetScroll: false` and `hashScrollIntoView: false` so Lenis can glide (B0).
+- Typed links (decision 6). Build the wrappers with `createLink`, which keeps `Link`'s type parameters, and add the
+  defaults above on top. Move the ~125 call sites to typed options: template strings like `` `/courses/${slug}` ``
+  become `to="/courses/$slug" params={{ slug }}`, `"#buy-card"` becomes `hash="buy-card"`, and query strings move
+  into `search`. The same goes for `navigate()` and `redirect()`. `npm run typecheck` then flags any link to a page
+  that doesn't exist.
+- `NavLink` needs its own `isActive`, because TanStack's `Link` has no `className` function. Use `activeProps` /
+  `activeOptions` or the render-prop `children`.
 - Update `.oxlintrc.json`'s restricted import to `@tanstack/react-router`'s `Link`.
 - Delete `app/hooks/use-default-prefetch.ts`'s React Router note; the "data isn't reused" caveat no longer applies.
+
+**Done (`77fd4b7`).** `Link` is TanStack's `Link` typed as `LinkComponent<"a">` with the defaults computed from
+`router.buildLocation(props)` (no `createLink` needed: it wraps TanStack's own `Link`). `NavLink` adds `end` and
+`className` as a function. Finding: `to` accepts a plain `string` without complaint, so link data kept in lists and
+props is typed as `StaticRoutePath` (`app/lib/route-path.ts`) or built with `linkOptions`; dog statuses and verdicts
+carry typed link options. The few links that can't be route paths: an SMS message's in-app link (its path comes from
+the text: `<a>` + `navigate({ href })`), the dog form's validated `redirectTo` (`href`), and full-reload retry
+links (`<a href>`). Checked on the production build: preloaded data is used on the click (no request), no query is
+fetched again at hydration on any page, Back restores scroll, the fade runs on link, Back and Forward, a same-page hash
+glides with Lenis and a cross-page hash lands on its section.
 
 ### B8. Tooling and deploy
 
 - `package.json` scripts: `dev: vite dev`, `build: vite build`, `start` per decision 4, `typecheck: tsc` (the route
   tree is generated by the plugin).
-- `tsconfig.json`: drop `.react-router/types` from `include` and `rootDirs`; keep `~/*`. Don't enable
-  `verbatimModuleSyntax` (the docs warn it can leak server bundles into the client).
-- `.gitignore` / `.oxlintrc.json` ignores: `.react-router/`, `build/` → the generated route tree and `.output/`.
-- Dockerfile: copy the new output, new `CMD`. `compose.yaml` comment about `react-router-serve` serving assets.
-- Playwright `webServer` command. Storybook: filter Start's Vite plugins in `.storybook/main.ts`; replace the
-  `createRoutesStub` decorator in `app/routes/rules/rules.stories.tsx` with a memory-history router.
+- `tsconfig.json`: drop `.react-router/types` from `include` and `rootDirs`; keep `~/*`. Turn `verbatimModuleSyntax`
+  off, as the docs advise (it's on today; B0 saw no leak with it, and nothing depends on it).
+- `.env` / `.env.example`: drop `NODE_ENV=development` (`env.server.ts` already defaults to it), or a local build
+  ships React's dev runtime (B0).
+- `.gitignore` / `.oxlintrc.json` ignores: `.react-router/`, `build/` → `.output/`, `.nitro/`, `.tanstack/`, and
+  the generated `app/routeTree.gen.ts` (committed, but not linted or formatted).
+- Dockerfile: the build stage as today; the runtime stage copies only `.output` and runs
+  `node .output/server/index.mjs`, so the production-dependencies stage goes (B0's `spike/Dockerfile`).
+  `compose.yaml`: its comment says `react-router-serve` serves compressed assets; now the assets are pre-compressed
+  and HTML is compressed only behind Caddy.
+- Playwright `webServer` command. Storybook: in `.storybook/main.ts`, drop plugins named `tanstack*`, `nitro:*` and
+  `fullstack:*`; replace the `createRoutesStub` decorator in `app/routes/rules/rules.stories.tsx` with a
+  memory-history router.
+
+**Done (`275c21a`).** As planned. The Docker image wasn't rebuilt (the Dockerfile is B0's, which was), Storybook
+builds and the rules stories render in a memory-history router, the 6 smoke tests pass unchanged against the build.
 
 ### B9. Docs and agent instructions
 
@@ -230,6 +410,10 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   equivalents (user's call).
 - `docs/tanstack-start/why-tanstack-start.md`: move "What ships now" into history.
 
+**Done**, except the skills under `.agents/skills/` (`react-router/`, `orpc/references/react-router.md`), which are
+the owner's call. `docs/nuqs.md` became `docs/search-params.md`; CLAUDE.md, the frontend guideline, view
+transitions, the README and the smaller mentions describe Start.
+
 ### B10. Verify, then merge
 
 - `npm run lint`, `npm run typecheck`, `npm run build`, the Vitest suite once, and `npm run test:e2e` (adapt the 6
@@ -240,6 +424,26 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   page, page fade, RTL.
 - Network check: a preloaded page renders without a data request; nothing is fetched twice at hydration.
 - Merge to `main`, deploy, and keep the previous image to roll back to.
+
+**Status (2026-10-22).** Lint, typecheck and build pass; the Vitest suite once (192 tests); `test:e2e` 6/6 against the
+production build. Screenshots of 34 pages (visitor, customer, partner, Admin) at 390 and 1440 match a React Router
+build of `0bf97b3` pixel for pixel (one 0.1% difference on the partner dashboard). By hand, in a browser: sign out and
+back in to the page asked for, the header greeting after sign-in, the Admin's dog search (list filters per key, URL
+after the pause, no history per key, reload keeps it), the catalogue's family filter, an Admin action (renaming a
+user) refreshing its list without a reload, video upload and playback. A throwaway customer (`09198070763`) bought
+`house-manner` end to end: add to cart on the course page, the cart, «پرداخت», the demo gateway's callback, the paid
+banner (the `?payment=` param then leaves the URL), the purchase listed. The Docker image (210 MB) runs the same build:
+pages, brotli assets with immutable caching, and a dog photo upload through `sharp`.
+
+**A customer blocked mid-session (decided 2026-10-22: leave on refusal).** Blocking revokes the account's sessions,
+a full page load lands on `/auth`, and every procedure refuses it. The guard reads the session through the query cache,
+so an open tab doesn't notice at once; the first API call that answers `UNAUTHORIZED` (a query or a mutation) asks for
+the session again and, if it's gone, runs the page's guards again, which send the tab to `/auth?redirectTo=<page>`
+(`leaveOnRefusal` in `app/router.tsx`). Checked: a throwaway customer blocked on `/account` is sent to sign in on the
+next refetch. Until then, cached pages (their own data, already in the browser) still open. `certificate.verify` keeps
+the default 5 minutes (decided the same day).
+
+Not merged; that's the owner's call.
 
 ## Watch Out For
 

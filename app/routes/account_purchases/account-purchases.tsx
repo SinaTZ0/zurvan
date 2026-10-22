@@ -1,11 +1,12 @@
-import { isRouteErrorResponse } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
-import { requireSession } from "~/lib/session-guard.server";
+import { requireSession } from "~/lib/session-guard";
+import type { Payment } from "~/orpc/checkout/contract";
+import { orpc } from "~/orpc/client";
+import type { Dog } from "~/orpc/dog/contract";
 import type { Media } from "~/orpc/media/contract";
-import { createServerClient } from "~/orpc/server-client.server";
-import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
 
-import type { Route } from "./+types/account-purchases";
 import { COLUMN } from "./column";
 import { NextCourseBand } from "./components/next-course-band";
 import { NoPurchases } from "./components/no-purchases";
@@ -14,28 +15,31 @@ import { PurchasesError } from "./components/purchases-error";
 import { PurchasesHero } from "./components/purchases-hero";
 import { SlipsSection } from "./components/slips-section";
 
-/*===== Handle =====*/
-// The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
-// padding when a page's handle sets this.
-export const handle: AccountLayoutHandle = { flushFooter: true };
-
-/*===== Guard =====*/
+/*===== Route =====*/
 // The account layout lets partners in too, but payments are a customer's (docs/app-spec.md, F5).
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
+export const Route = createFileRoute("/account/purchases")({
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
+  loader: async ({ context: { queryClient } }) => {
+    // The dogs are read only for their photos: a payment item carries just the dog's id and name.
+    await Promise.all([
+      queryClient.ensureQueryData(orpc.checkout.payments.queryOptions()),
+      queryClient.ensureQueryData(orpc.refund.listMine.queryOptions()),
+      queryClient.ensureQueryData(orpc.dog.list.queryOptions()),
+    ]);
+  },
+  head: () => ({ meta: [{ title: "خریدها | آموزش K9" }] }),
+  // The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
+  // padding for it.
+  staticData: { flushFooter: true },
+  component: AccountPurchasesPage,
+  notFoundComponent: () => <PurchasesError notFound />,
+  errorComponent: () => <PurchasesError notFound={false} />,
+});
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "خریدها | آموزش K9" }];
-
-/*===== Loader =====*/
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  // The dogs are read only for their photos: a payment item carries just the dog's id and name.
-  const [payments, refunds, dogs] = await Promise.all([
-    client.checkout.payments(),
-    client.refund.listMine(),
-    client.dog.list(),
-  ]);
-
+/*===== Slips =====*/
+/** The payments newest first, each dog's photo by its id, and the hero's three numbers. */
+function buildPurchases({ payments, dogs }: { payments: readonly Payment[]; dogs: readonly Dog[] }) {
   /*------ Order ------*/
   // The API already returns newest first; sorting again keeps the page right if that ever changes.
   // oxlint-disable-next-line unicorn/no-array-sort -- a fresh array from the spread.
@@ -53,7 +57,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     training: paidItems.filter((item) => item.enrollment?.status === "active").length,
   };
 
-  return { payments: sorted, refunds, photos, tally };
+  return { payments: sorted, photos, tally };
 }
 
 /*===== Purchases =====*/
@@ -62,8 +66,11 @@ export async function loader({ request }: Route.LoaderArgs) {
  * one paper slip per payment (the dog and course on each line, what each turned into, what was given back), and the
  * closing brick band towards the next course. The app only records; there is nothing to pay or edit here.
  */
-export default function AccountPurchasesPage({ loaderData }: Route.ComponentProps) {
-  const { payments, refunds, photos, tally } = loaderData;
+function AccountPurchasesPage() {
+  const { data: allPayments } = useSuspenseQuery(orpc.checkout.payments.queryOptions());
+  const { data: refunds } = useSuspenseQuery(orpc.refund.listMine.queryOptions());
+  const { data: dogs } = useSuspenseQuery(orpc.dog.list.queryOptions());
+  const { payments, photos, tally } = buildPurchases({ payments: allPayments, dogs });
 
   return (
     <>
@@ -85,10 +92,4 @@ export default function AccountPurchasesPage({ loaderData }: Route.ComponentProp
       <NextCourseBand />
     </>
   );
-}
-
-/*===== Error Boundary =====*/
-// Inside the account shell, so a failed list still has the header, the footer and a way on.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <PurchasesError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

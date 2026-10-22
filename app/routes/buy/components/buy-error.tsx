@@ -1,5 +1,5 @@
+import { useLocation } from "@tanstack/react-router";
 import { cn } from "cn";
-import { useLocation } from "react-router";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
@@ -16,10 +16,10 @@ import { COLUMN, STRIP_FADE } from "~/routes/buy/plate";
  * sorry dog on a short path, the words at the start, «دوباره امتحان کن» reloading the same address (the dog included)
  * and «دوره‌ها» as the quieter way on. On phones the little scene is a band on top.
  *
- * The route's handle drops the shell's bottom padding (the page ends on its path), so this carries its own.
+ * The route's `staticData` drops the shell's bottom padding (the page ends on its path), so this carries its own.
  */
 export function BuyError({ notFound }: { notFound: boolean }) {
-  const { pathname, search } = useLocation();
+  const href = useLocation({ select: (location) => location.href });
 
   return (
     <section
@@ -38,9 +38,9 @@ export function BuyError({ notFound }: { notFound: boolean }) {
           یه مشکلی پیش اومد. دوباره امتحان کن یا از صفحه‌ی دوره‌ها شروع کن.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to={`${pathname}${search}`} reloadDocument className={buttonVariants({ variant: "solid", size: "lg" })}>
+          <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
             دوباره امتحان کن
-          </Link>
+          </a>
           <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg" })}>
             دوره‌ها
           </Link>

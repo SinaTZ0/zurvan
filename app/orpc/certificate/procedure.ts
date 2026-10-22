@@ -1,3 +1,4 @@
+import { buildCertificateCard } from "~/lib/certificate.server";
 import {
   adminIssueCertificate,
   adminListCertificates,
@@ -17,7 +18,10 @@ export const listMyCertificatesProcedure = base.certificate.listMine
   .handler(async ({ context, input, errors }) => {
     const result = await listMyCertificates({ db: context.db, ownerId: context.user.id, dogId: input.dogId });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
-    return result.certificates;
+    return result.certificates.map((certificate) => ({
+      ...certificate,
+      ...buildCertificateCard({ number: certificate.number }),
+    }));
   });
 
 /*===== Public =====*/

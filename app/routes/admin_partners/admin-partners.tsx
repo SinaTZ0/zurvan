@@ -1,20 +1,19 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CheckCheckIcon, HandshakeIcon, PlusIcon, WalletIcon } from "lucide-react";
-import { useQueryStates } from "nuqs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills, type AdminFilterOption } from "~/components/admin-filter-pills";
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { Button, buttonVariants } from "~/components/ui/button";
-import { env } from "~/env.server";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
 import type { AdminCommission } from "~/orpc/commission/contract";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { CreateSheet } from "~/routes/admin_partners/components/create-sheet";
 import { DeactivateDialog } from "~/routes/admin_partners/components/deactivate-dialog";
 import { LEAVE_MS, PageMotion } from "~/routes/admin_partners/components/page-motion";
@@ -26,13 +25,10 @@ import { PaySlip } from "~/routes/admin_partners/components/pay-slip";
 import { countsAsUnpaid, type LeavingLine, withLeavingLines } from "~/routes/admin_partners/leaving";
 import { groupUnpaid, listPaid } from "~/routes/admin_partners/partner-views";
 import {
-  ADMIN_PARTNERS_PATH,
-  adminPartnersSearchParams,
+  adminPartnersSearchSchema,
+  DEFAULT_PARTNER_VIEW,
   type PartnerView,
-  serializeAdminPartnersSearchParams,
 } from "~/routes/admin_partners/search-params";
-
-import type { Route } from "./+types/admin-partners";
 
 /*===== Constants =====*/
 const VIEW_LABELS: Record<PartnerView, string> = {
@@ -45,19 +41,28 @@ const VIEW_LABELS: Record<PartnerView, string> = {
 const RISE_STEP_S = 0.06;
 const MAX_STAGGERED = 5;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "همکاران | مدیریت آموزش K9" }];
+/*===== Queries =====*/
+const partnersQuery = () => orpc.partner.admin.list.queryOptions();
+const commissionsQuery = () => orpc.commission.admin.list.queryOptions({ input: {} });
+// The site's origin, only for showing the referral link as it will be printed.
+const siteQuery = () => orpc.site.config.queryOptions();
 
-/*===== Loader =====*/
-// The guard is the layout's. Both lists come whole, once: the view, the counts and the open drawer are shallow URL state
-// applied in the component (docs/nuqs.md), so none of them waits for the server. `siteOrigin` is only for showing the
-// referral link as it will be printed.
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [partners, commissions] = await Promise.all([client.partner.admin.list(), client.commission.admin.list({})]);
-
-  return { partners, commissions, siteOrigin: env.BETTER_AUTH_URL.replace(/\/+$/, "") };
-}
+/*===== Route =====*/
+// The guard is the layout's. Both lists come whole, once: the view, the counts and the open drawer are URL state applied
+// in the component, so none is a loader dep and none of them waits for the server.
+export const Route = createFileRoute("/admin/partners")({
+  validateSearch: adminPartnersSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(partnersQuery()),
+      queryClient.ensureQueryData(commissionsQuery()),
+      queryClient.ensureQueryData(siteQuery()),
+    ]),
+  head: () => ({ meta: [{ title: "همکاران | مدیریت آموزش K9" }] }),
+  component: AdminPartnersPage,
+  notFoundComponent: () => <PartnersError notFound />,
+  errorComponent: () => <PartnersError notFound={false} />,
+});
 
 /*===== Admin Partners =====*/
 /**
@@ -70,11 +75,19 @@ export async function loader({ request }: Route.LoaderArgs) {
  * (`leaving`), so it can be stamped and fold away (and its slip with it, if it was the last), while the sum and the
  * pill's count change as the stamp lands.
  */
-export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) {
-  const { partners, commissions, siteOrigin } = loaderData;
+function AdminPartnersPage() {
+  const { data: partners, isFetching: partnersFetching } = useSuspenseQuery(partnersQuery());
+  const { data: commissions, isFetching: commissionsFetching } = useSuspenseQuery(commissionsQuery());
+  const {
+    data: { origin: siteOrigin },
+  } = useSuspenseQuery(siteQuery());
 
   /*------ URL State ------*/
-  const [{ view, partner: openId, new: creating }, setParams] = useQueryStates(adminPartnersSearchParams);
+  const search = Route.useSearch();
+  const view = search.view ?? DEFAULT_PARTNER_VIEW;
+  const openId = search.partner ?? null;
+  const creating = search.new !== undefined;
+  const navigate = useNavigate({ from: Route.fullPath });
 
   /*------ Dialogs ------*/
   // One pay dialog for every «پرداخت شد» (slips and drawer). The target outlives the dialog's closing so its words
@@ -85,14 +98,8 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
   const [deactivateOpen, setDeactivateOpen] = useState(false);
 
   /*------ Busy ------*/
-  // Only a reload of this page dims the list (a navigation to it, or the revalidation after a write); leaving for
-  // another Admin page shouldn't flash it.
-  const location = useLocation();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const busy =
-    revalidator.state === "loading" ||
-    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+  // Only a reload of the lists dims them (the refetch after a write); leaving for another Admin page shouldn't flash it.
+  const busy = partnersFetching || commissionsFetching;
 
   /*------ Leaving Lines ------*/
   const [leaving, setLeaving] = useState<LeavingLine[]>([]);
@@ -172,9 +179,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
   const drawerBodyRef = useRef<HTMLDivElement>(null);
 
   /*------ Handlers ------*/
-  const hrefFor = (partnerId: string) =>
-    serializeAdminPartnersSearchParams(ADMIN_PARTNERS_PATH, { view, partner: partnerId });
-  const openPartner = (partnerId: string) => void setParams({ partner: partnerId });
+  const searchFor = (partnerId: string) => ({ view: search.view, partner: partnerId });
 
   /** A new view: drops every kept line (a new view never shows another view's exit) and lets the list rise in. */
   function changeView(next: PartnerView) {
@@ -182,7 +187,11 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
     setLeaving([]);
     setArrival((previous) => previous + 1);
     // Replace, not push: a view isn't a place to go Back to.
-    void setParams({ view: next }, { history: "replace" });
+    void navigate({
+      search: (prev) => ({ ...prev, view: next === DEFAULT_PARTNER_VIEW ? undefined : next }),
+      replace: true,
+      resetScroll: false,
+    });
   }
 
   function askToPay(commission: AdminCommission) {
@@ -239,7 +248,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
           type="button"
           variant="outline"
           className="h-11 border-foreground/20 bg-transparent ps-3.5 md:h-10 dark:bg-transparent"
-          onClick={() => void setParams({ new: "1" })}
+          onClick={() => void navigate({ search: (prev) => ({ ...prev, new: 1 }), resetScroll: false })}
         >
           <PlusIcon aria-hidden strokeWidth={1.7} />
           همکار تازه
@@ -281,11 +290,10 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
                     <PaySlip
                       key={block.partnerId}
                       block={block}
-                      href={hrefFor(block.partnerId)}
+                      search={searchFor(block.partnerId)}
                       paidBefore={paidByPartner.get(block.partnerId) ?? { count: 0, amount: 0 }}
                       motion={motion}
                       rise={rise(index)}
-                      onOpen={() => openPartner(block.partnerId)}
                       onPay={askToPay}
                     />
                   ))}
@@ -301,13 +309,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
                   </AdminEmptyState>
                 </div>
               ) : (
-                <PaidLedger
-                  key={arrival}
-                  commissions={paidCommissions}
-                  hrefFor={hrefFor}
-                  onOpen={openPartner}
-                  rise={rise}
-                />
+                <PaidLedger key={arrival} commissions={paidCommissions} searchFor={searchFor} rise={rise} />
               ))}
 
             {/*===== Roster =====*/}
@@ -329,13 +331,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
                 {/*------ Rows ------*/}
                 <ul key={arrival} aria-label="فهرست همکاران" className={cn("divide-y", ADMIN_HAIRLINE)}>
                   {partners.map((partner, index) => (
-                    <PartnerRow
-                      key={partner.id}
-                      partner={partner}
-                      href={hrefFor(partner.id)}
-                      rise={rise(index)}
-                      onOpen={() => openPartner(partner.id)}
-                    />
+                    <PartnerRow key={partner.id} partner={partner} search={searchFor(partner.id)} rise={rise(index)} />
                   ))}
                 </ul>
               </div>
@@ -353,7 +349,9 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
         bodyRef={drawerBodyRef}
         // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
         // forward entry that reopens it.
-        onClose={() => void setParams({ partner: null }, { history: "replace" })}
+        onClose={() =>
+          void navigate({ search: (prev) => ({ ...prev, partner: undefined }), replace: true, resetScroll: false })
+        }
         onPay={askToPay}
         onDeactivate={() => {
           setDeactivateSession((session) => session + 1);
@@ -363,15 +361,20 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
 
       {/*===== Create Sheet =====*/}
       <CreateSheet
-        open={creating !== null}
+        open={creating}
         siteOrigin={siteOrigin}
-        onClose={() => void setParams({ new: null }, { history: "replace" })}
+        onClose={() =>
+          void navigate({ search: (prev) => ({ ...prev, new: undefined }), replace: true, resetScroll: false })
+        }
         onCreated={(partner) => {
           if (view !== "partners") {
             setLeaving([]);
             setArrival((previous) => previous + 1);
           }
-          void setParams({ view: "partners", partner: partner.id, new: null });
+          void navigate({
+            search: (prev) => ({ ...prev, view: "partners", partner: partner.id, new: undefined }),
+            resetScroll: false,
+          });
         }}
       />
 
@@ -401,9 +404,7 @@ export default function AdminPartnersPage({ loaderData }: Route.ComponentProps) 
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function PartnersError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader

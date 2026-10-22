@@ -6,15 +6,15 @@ Jotai. Check the next section before creating an atom.
 
 ## What Goes Where
 
-| State                                                                    | Owner                                                     |
-| ------------------------------------------------------------------------ | --------------------------------------------------------- |
-| Server data                                                              | Route `loader`, or TanStack Query through the oRPC client |
-| Shareable or bookmarkable state (filters, tabs, pagination, selected id) | URL search params through nuqs ([`nuqs.md`](./nuqs.md))   |
-| Form input                                                               | The form and its `schema.ts`                              |
-| State used by one component, or passed one or two levels down            | `useState` and props                                      |
-| Client state shared across distant parts of the tree                     | **Jotai**                                                 |
+| State                                                                    | Owner                                                                      |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Server data                                                              | TanStack Query through the oRPC client (loaders fill it)                   |
+| Shareable or bookmarkable state (filters, tabs, pagination, selected id) | The route's typed search params ([`search-params.md`](./search-params.md)) |
+| Form input                                                               | The form and its `schema.ts`                                               |
+| State used by one component, or passed one or two levels down            | `useState` and props                                                       |
+| Client state shared across distant parts of the tree                     | **Jotai**                                                                  |
 
-Never copy loader or query data into atoms. Two copies drift apart, and revalidation stops reaching the UI.
+Never copy query data into atoms. Two copies drift apart, and invalidation stops reaching the UI.
 
 ## Defining Atoms
 
@@ -79,9 +79,9 @@ and callbacks through props, so they stay reusable and easy to preview in Storyb
 - **Keep the root `<Provider>`.** Without it, Jotai falls back to one module-level default store. On the server that
   store is shared by every request, so one user's state could leak into another user's render. Don't call
   `getDefaultStore()` either, for the same reason.
-- **Seeding from loader data** is rarely needed: read loader data directly. When an atom must start from a
+- **Seeding from server data** is rarely needed: read the query directly. When an atom must start from a
   server value, call `useHydrateAtoms([[atom, value]])` at the top of the route component. Hydration happens only once
-  per store, so later loader revalidations won't update the atom.
+  per store, so later refetches won't update the atom.
 
 ## Utilities
 
@@ -98,7 +98,7 @@ All of these are imported from `jotai/utils`.
 
 ## Don'ts
 
-- Don't fetch server data with async atoms. Loaders and TanStack Query handle caching, revalidation, and errors.
+- Don't fetch server data with async atoms. Loaders and TanStack Query handle caching, invalidation, and errors.
 - Don't create one large "app state" atom. Separate atoms keep re-renders local.
 - Don't use Jotai for state that only one subtree uses. `useState` and props are simpler.
 

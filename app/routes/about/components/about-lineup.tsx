@@ -4,13 +4,14 @@ import { ArrowLeft } from "lucide-react";
 import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
+import { isCatalogueFamily } from "~/lib/catalogue-search-params";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { CourseMascotPose } from "~/lib/course-mascot";
 import type { CourseFamily } from "~/orpc/course/constants";
 import { COLUMN } from "~/routes/about/column";
 
 /*===== Types =====*/
-/** One family of the lineup: what the loader sends (a family with at least one course, its tab label and its pose). */
+/** One family of the lineup: what the page passes (a family with at least one course, its tab label and its pose). */
 export type LineupFamily = { family: CourseFamily; label: string; pose: CourseMascotPose };
 
 // Each dog's own idle loop, in turn, so a row of them never moves in step.
@@ -57,7 +58,9 @@ export function AboutLineup({ families }: { families: LineupFamily[] }) {
           {families.map(({ family, label, pose }, index) => (
             <li key={family}>
               <Link
-                to={`/courses?family=${family}`}
+                to="/courses"
+                // Every lineup family is a catalogue family (`familiesWithCourses`); the check only narrows the type.
+                search={{ family: isCatalogueFamily(family) ? family : undefined }}
                 className={cn(
                   FOCUS,
                   "ab-lift lively-lift group flex h-full flex-col items-center rounded-3xl max-lg:border max-lg:border-border max-lg:bg-card max-lg:paper-grain",

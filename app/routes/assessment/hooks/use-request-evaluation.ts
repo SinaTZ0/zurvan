@@ -6,8 +6,8 @@ import type { EvaluationRequestValues } from "~/routes/assessment/schema";
 
 /*===== Request Evaluation =====*/
 /**
- * Sends the free evaluation request (F3). Nothing is invalidated here: the page revalidates its loader itself, because
- * it needs the fresh dog states for the «another dog» link, not for a cached query.
+ * Sends the free evaluation request (F3). Nothing is invalidated here: the page refreshes the dogs and evaluations
+ * itself once the receipt is on its way, so it decides when the dog states change on screen.
  */
 export function useRequestEvaluation() {
   return useMutation({

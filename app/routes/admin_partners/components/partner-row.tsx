@@ -7,6 +7,7 @@ import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
 import type { AdminPartner } from "~/orpc/partner/contract";
 import { useChanged } from "~/routes/admin_partners/hooks/use-changed";
+import type { AdminPartnersSearch } from "~/routes/admin_partners/search-params";
 
 /*===== Columns =====*/
 /**
@@ -24,8 +25,8 @@ export const ROSTER_BOX = "mx-1.5 rounded-2xl border border-transparent px-3 sm:
 
 /*===== Partner Row =====*/
 /**
- * One partner in the roster. The name is a stretched link that opens his file (`href` keeps it a real link for a new
- * tab and before hydration); the phone link sits above it (`relative z-10`) so it stays tappable.
+ * One partner in the roster. The name is a stretched link that opens his file in place (`search` keeps it a real link
+ * for a new tab and before hydration); the phone link sits above it (`relative z-10`) so it stays tappable.
  *
  * The counts follow the road a person walks and are cumulative, as on the partner's own dashboard: every number he is
  * still counting (lost ones are not), people who signed up (bought ones included), people who bought. What he is owed
@@ -40,15 +41,14 @@ export const ROSTER_BOX = "mx-1.5 rounded-2xl border border-transparent px-3 sm:
  */
 export function PartnerRow({
   partner,
-  href,
+  search,
   rise,
-  onOpen,
 }: {
   partner: AdminPartner;
-  href: string;
+  /** The page's search with this partner's file open (`?partner=`). */
+  search: AdminPartnersSearch;
   /** The row's delay (seconds) in a list that just arrived under a new view, or null when it didn't. */
   rise: number | null;
-  onOpen: () => void;
 }) {
   const { counts, commissions } = partner;
   const inactive = !partner.isActive;
@@ -83,14 +83,9 @@ export function PartnerRow({
         {/*------ Name ------*/}
         <div className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1 [grid-area:name]">
           <Link
-            to={href}
-            onClick={(event) => {
-              // A plain click opens the file in place (a shallow URL change, no loader run); a new-tab click keeps the
-              // browser's own behaviour.
-              if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-              event.preventDefault();
-              onOpen();
-            }}
+            to="/admin/partners"
+            search={search}
+            resetScroll={false}
             className="min-w-0 rounded-sm text-sm font-bold break-words outline-none after:absolute after:inset-0 after:rounded-2xl"
           >
             <bdi>{partner.name}</bdi>

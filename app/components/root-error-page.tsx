@@ -1,5 +1,5 @@
 import { cn } from "cn";
-import { useLocation } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { GroundStrip } from "~/components/ground-strip";
@@ -50,7 +50,9 @@ export function RootErrorPage({
   const { pathname } = useLocation();
   const admin = pathname === "/admin" || pathname.startsWith("/admin/");
   const copy = missing ? COPY.missing : COPY.broken;
-  const home = admin ? { to: "/admin", label: "برو به نمای کلی" } : { to: "/", label: "برو صفحه‌ی اول" };
+  const home = admin
+    ? ({ to: "/admin", label: "برو به نمای کلی" } as const)
+    : ({ to: "/", label: "برو صفحه‌ی اول" } as const);
 
   /*------ Words ------*/
   const words = (

@@ -8,7 +8,7 @@ import { formatNumberFa } from "~/lib/digits";
  * A small flat-gold count beside a page's label: work waiting in the Admin's rail and tab bar. `label` is what a screen
  * reader adds after the number. Nothing renders for 0: an empty badge would read as something to do.
  *
- * When the number changes while it is on screen (he answered something and the page revalidated), the badge pops
+ * When the number changes while it is on screen (he answered something and the counts refetched), the badge pops
  * (`answer-pop`, keyed by the value). It never pops on its first render, so a page load or a sheet opening is still.
  * `className` places it elsewhere, e.g. small on a tab's icon.
  */

@@ -1,3 +1,4 @@
+import { linkOptions } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ArrowLeftIcon } from "lucide-react";
 
@@ -32,7 +33,7 @@ const TAPE =
  * start side, so the dog's name and state come within the first scroll.
  *
  * Motion: the first panel is part of the page's load (its bubble pops after the hero's); later panels rise in as they
- * scroll into view. After a change while the page is open (a withdrawn request, revalidated by the button), the bubble
+ * scroll into view. After a change while the page is open (a withdrawn request, refetched by the button), the bubble
  * pops again with the new line, the badge and the action fade in, and the road's stops that changed turn.
  */
 export function DogPanel({
@@ -48,7 +49,7 @@ export function DogPanel({
   index: number;
 }) {
   const titleId = `dog-panel-${dog.id}`;
-  const detailPath = `/account/dogs/${dog.id}`;
+  const detailLink = linkOptions({ to: "/account/dogs/$dogId", params: { dogId: dog.id } });
   const changed = useChanged(status.kind);
   const road = buildRoad({ dog, status, activeCount: activeEnrollments.length });
 
@@ -72,7 +73,7 @@ export function DogPanel({
             className={cn("relative px-1 pt-2", index % 2 ? "rotate-1 sm:rotate-[1.5deg]" : "-rotate-1 sm:-rotate-2")}
           >
             <Link
-              to={detailPath}
+              {...detailLink}
               aria-hidden
               tabIndex={-1}
               className="lively-lift block rounded-sm bg-foreground p-2 shadow-[0_18px_40px_-16px_rgb(0_0_0/0.9)] md:p-2.5"
@@ -120,7 +121,7 @@ export function DogPanel({
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <h2 id={titleId} className="font-display text-3xl leading-tight font-black text-primary lg:text-4xl">
                 <Link
-                  to={detailPath}
+                  {...detailLink}
                   className="rounded-sm decoration-2 underline-offset-8 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <bdi>{dog.name}</bdi>
@@ -160,7 +161,7 @@ export function DogPanel({
             <div key={status.kind} className={cn("w-full sm:w-auto", changed && "answer-in")}>
               {status.action ? (
                 <Link
-                  to={status.action.to}
+                  {...status.action.link}
                   className={buttonVariants({
                     variant: "solid",
                     size: "lg",
@@ -175,7 +176,7 @@ export function DogPanel({
             </div>
 
             <Link
-              to={detailPath}
+              {...detailLink}
               className="group/history inline-flex items-center gap-1.5 rounded-sm text-sm font-bold text-muted-foreground underline-offset-4 outline-none hover:text-foreground hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <span>

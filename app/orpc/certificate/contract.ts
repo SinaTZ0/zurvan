@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+import { qrLinkSchema } from "~/lib/qr";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
 
@@ -19,6 +20,11 @@ export const certificateSchema = z.object({
 });
 
 export type Certificate = z.infer<typeof certificateSchema>;
+
+/** A certificate on its owner's page, with the public address that verifies it and that address as a QR code. */
+export const myCertificateSchema = certificateSchema.extend(qrLinkSchema.shape);
+
+export type MyCertificate = z.infer<typeof myCertificateSchema>;
 
 /**
  * What the public verification page may say, for anyone holding a number. A valid certificate says which course and when;
@@ -69,7 +75,7 @@ const baseErrors = { ...commonErrors, ...authErrors, ...roleErrors };
 export const listMyCertificatesContract = oc
   .errors({ ...baseErrors, ...notFoundError })
   .input(dogIdInputSchema)
-  .output(z.array(certificateSchema));
+  .output(z.array(myCertificateSchema));
 
 /** The certificates of any dog, for the Admin. */
 export const adminListCertificatesContract = oc

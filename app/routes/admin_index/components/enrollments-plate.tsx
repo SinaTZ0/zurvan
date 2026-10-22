@@ -28,9 +28,10 @@ export function EnrollmentsPlate({ enrollments }: { enrollments: DashboardOvervi
   const total = active + completed + cancelled;
 
   const figures = [
-    { key: "active", label: "در حال آموزش", value: active, to: "/admin/enrollments?status=active" },
-    { key: "completed", label: "تمام شده", value: completed, to: "/admin/enrollments?status=completed" },
-    { key: "cancelled", label: "لغو شده", value: cancelled, to: "/admin/enrollments?status=cancelled" },
+    // «active» is the list's default filter, so its link leaves `?status=` out.
+    { key: "active", label: "در حال آموزش", value: active, status: undefined },
+    { key: "completed", label: "تمام شده", value: completed, status: "completed" },
+    { key: "cancelled", label: "لغو شده", value: cancelled, status: "cancelled" },
   ] as const;
 
   return (
@@ -41,7 +42,8 @@ export function EnrollmentsPlate({ enrollments }: { enrollments: DashboardOvervi
           {figures.map((figure) => (
             <li key={figure.key} className="min-w-0 border-s border-foreground/10 first:border-s-0">
               <Link
-                to={figure.to}
+                to="/admin/enrollments"
+                search={{ status: figure.status }}
                 className="group flex h-full flex-col gap-1.5 rounded-2xl px-2 py-2 transition-colors hover:bg-foreground/[0.04] focus-visible:bg-foreground/[0.04] sm:px-4"
               >
                 <span className="flex items-center justify-between gap-2">

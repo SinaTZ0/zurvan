@@ -11,7 +11,7 @@ import { toast } from "~/components/ui/toast";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { downloadQrPng } from "~/lib/qr-png";
 import { PLATE } from "~/routes/account_partner/plate";
-import type { ReferralQr } from "~/routes/account_partner/qr.server";
+import type { Qr } from "~/lib/qr";
 
 /*===== Caption =====*/
 // The card's only line: it is for the partner's customers, so it carries the site's main action, not his name.
@@ -33,7 +33,7 @@ const CARD_CAPTION = "اسکن کن و با ارزیابی رایگان شروع
  * bubble floats. The copy button's icon turns into a check; while the PNG is made, the download icon turns into a
  * spinner.
  */
-export function ShopCard({ link, qr }: { link: string; qr: ReferralQr }) {
+export function ShopCard({ link, qr }: { link: string; qr: Qr }) {
   return (
     <section aria-labelledby="partner-shop-title" className={cn(PLATE, "lg:p-6 xl:p-7")}>
       <h2 id="partner-shop-title" className={cn(DISPLAY_HEADING, "text-h2 text-balance")}>
@@ -93,7 +93,7 @@ export function ShopCard({ link, qr }: { link: string; qr: ReferralQr }) {
 
 /*===== QR Tile =====*/
 /** The printed card itself: the brand, the code on pure white, the caption. Its own surface is ivory, never dimmed. */
-function QrTile({ qr }: { qr: ReferralQr }) {
+function QrTile({ qr }: { qr: Qr }) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-2xl bg-foreground p-3.5 text-background shadow-[0_18px_30px_-16px_rgb(0_0_0/0.95)] ring-1 ring-background/15 ring-inset sm:p-4">
       <BrandLogo className="text-[1.15rem]" />
@@ -112,7 +112,7 @@ function QrTile({ qr }: { qr: ReferralQr }) {
  * «دانلود QR»: the code and its caption as a PNG to print. While it is made, the button is disabled and its icon turns
  * into a spinner (the two icons share one grid cell and turn into each other). A failure says so in a toast.
  */
-function DownloadButton({ qr }: { qr: ReferralQr }) {
+function DownloadButton({ qr }: { qr: Qr }) {
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleDownload() {

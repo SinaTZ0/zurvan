@@ -1,8 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { UsersRoundIcon } from "lucide-react";
-import { debounce, useQueryStates } from "nuqs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills } from "~/components/admin-filter-pills";
@@ -14,7 +14,7 @@ import { ADMIN_HAIRLINE, ADMIN_PLATE, ADMIN_TEAR } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
 import { normalizeForSearch } from "~/lib/search";
 import type { AdminUser } from "~/orpc/user/contract";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { NoMatch } from "~/routes/admin_users/components/no-match";
 import { LEAVE_MS, PageMotion } from "~/routes/admin_users/components/page-motion";
 import { ResultLine } from "~/routes/admin_users/components/result-line";
@@ -23,20 +23,17 @@ import { UserDialog } from "~/routes/admin_users/components/user-dialog";
 import { UserRow } from "~/routes/admin_users/components/user-row";
 import { UserSearchField } from "~/routes/admin_users/components/user-search-field";
 import { countUsers, filterUsers } from "~/routes/admin_users/filter-users";
+import { useSearchText } from "~/hooks/use-search-text";
 import { type LeavingRow, withLeavingRows } from "~/routes/admin_users/leaving";
 import { indexRollData } from "~/routes/admin_users/roll-data";
 import {
-  ADMIN_USERS_PATH,
-  adminUsersSearchParams,
+  adminUsersSearchSchema,
   PAGE_SIZE,
   ROLE_FILTERS,
   type RoleFilter,
-  serializeAdminUsersSearchParams,
   STATUS_FILTERS,
   type StatusFilter,
 } from "~/routes/admin_users/search-params";
-
-import type { Route } from "./+types/admin-users";
 
 /*===== Constants =====*/
 const ROLE_LABELS: Record<RoleFilter, string> = {
@@ -59,22 +56,29 @@ const TYPING_DELAY_MS = 300;
 const STAGGERED = 6;
 const RISE_STEP_S = 0.05;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "کاربران | مدیریت آموزش K9" }];
+/*===== Queries =====*/
+const usersQuery = () => orpc.user.admin.list.queryOptions();
+const dogsQuery = () => orpc.dog.admin.list.queryOptions();
+const partnersQuery = () => orpc.partner.admin.list.queryOptions();
 
-/*===== Loader =====*/
+/*===== Route =====*/
 // The guard is the layout's. The whole roll comes once: the role, the status, the search, the counts, the paging and
-// the open dialog are shallow URL state applied in the component, so changing them never waits for the server. The
-// dogs and the partners are read only for what the roll draws (a partner's code, a customer's dogs in the dialog).
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [users, dogs, partners] = await Promise.all([
-    client.user.admin.list(),
-    client.dog.admin.list(),
-    client.partner.admin.list(),
-  ]);
-  return { users, ...indexRollData({ dogs, partners }) };
-}
+// the open dialog are URL state applied in the component, so none is a loader dep and changing them never waits for
+// the server. The dogs and the partners are read only for what the roll draws (a partner's code, a customer's dogs in
+// the dialog).
+export const Route = createFileRoute("/admin/users")({
+  validateSearch: adminUsersSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([
+      queryClient.ensureQueryData(usersQuery()),
+      queryClient.ensureQueryData(dogsQuery()),
+      queryClient.ensureQueryData(partnersQuery()),
+    ]),
+  head: () => ({ meta: [{ title: "کاربران | مدیریت آموزش K9" }] }),
+  component: AdminUsersPage,
+  notFoundComponent: () => <UsersError notFound />,
+  errorComponent: () => <UsersError notFound={false} />,
+});
 
 /*===== Summary =====*/
 /** «۲۵ نفر: ۲۲ مشتری، ۲ همکار، یه مدیر»، and how many are blocked when anyone is. */
@@ -109,21 +113,51 @@ function describeRoll(users: readonly AdminUser[]): string {
  * dims its row and stamps the chip (an unblock brings it back); a saved name flashes its row once. Nothing moves on
  * load.
  */
-export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
-  const { users, dogsByOwner, partnersById } = loaderData;
+function AdminUsersPage() {
+  const { data: users, isFetching: usersFetching } = useSuspenseQuery(usersQuery());
+  const { data: dogs, isFetching: dogsFetching } = useSuspenseQuery(dogsQuery());
+  const { data: partners, isFetching: partnersFetching } = useSuspenseQuery(partnersQuery());
+  const { dogsByOwner, partnersById } = useMemo(() => indexRollData({ dogs, partners }), [dogs, partners]);
 
   /*------ URL State ------*/
-  const [{ role, status, q, page: requestedPage, user: openId }, setParams] = useQueryStates(adminUsersSearchParams);
+  const search = Route.useSearch();
+  const role = search.role ?? "all";
+  const status = search.status ?? "all";
+  const openId = search.user ?? null;
+  const navigate = useNavigate({ from: Route.fullPath });
+  // The list follows each key; the URL's `q` follows after a pause, replacing its entry (and going back to page one).
+  const searchText = useSearchText({
+    urlText: search.q ?? "",
+    delayMs: TYPING_DELAY_MS,
+    commit: (text) =>
+      void navigate({
+        search: (prev) => ({ ...prev, q: text === "" ? undefined : text, page: undefined }),
+        replace: true,
+        resetScroll: false,
+      }),
+  });
+  const q = searchText.text;
+  // While a typed search waits for the URL, the list is already on its first page.
+  const requestedPage = searchText.typing ? 1 : (search.page ?? 1);
 
   /*------ Pending ------*/
-  // Only a reload of this page dims the roll (a revalidation, or the rail's link to the page he is on); the URL state
-  // is shallow, so typing and the pills never do, and leaving for another page shouldn't flash it.
-  const location = useLocation();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const pending =
-    revalidator.state === "loading" ||
-    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+  // Only a reload of the lists dims the roll (the refetch after he saves or blocks); the URL state isn't a loader dep,
+  // so typing and the pills never do, and leaving for another page shouldn't flash it.
+  const pending = usersFetching || dogsFetching || partnersFetching;
+
+  /** A new role or status pill (or both), from the first page. Replace: a filter isn't a place to go Back to. */
+  function showFilters(next: { role?: RoleFilter; status?: StatusFilter }) {
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        ...("role" in next && { role: next.role === "all" ? undefined : next.role }),
+        ...("status" in next && { status: next.status === "all" ? undefined : next.status }),
+        page: undefined,
+      }),
+      replace: true,
+      resetScroll: false,
+    });
+  }
 
   /*------ Derived Lists ------*/
   const summary = useMemo(() => describeRoll(users), [users]);
@@ -185,8 +219,10 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
 
   // An id that isn't in the list (an old link, or a person who is gone) opens nothing and leaves the URL clean.
   useEffect(() => {
-    if (openId !== null && opened === null) void setParams({ user: null }, { history: "replace" });
-  }, [openId, opened, setParams]);
+    if (openId !== null && opened === null) {
+      void navigate({ search: (prev) => ({ ...prev, user: undefined }), replace: true, resetScroll: false });
+    }
+  }, [openId, opened, navigate]);
 
   /*------ Exit Start ------*/
   // Once the dialog is closed (its button, Escape or Back), the rows it changed start their exit, not under its
@@ -213,7 +249,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
 
   /*------ Handlers ------*/
   function clearSearch() {
-    void setParams({ q: null, page: null }, { history: "replace" });
+    searchText.set("");
   }
 
   /** The API accepted a block or an unblock: when it takes the person out of the status pill, keep the row a moment. */
@@ -235,7 +271,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
   function closeDialog() {
     // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
     // forward entry that reopens it.
-    void setParams({ user: null }, { history: "replace" });
+    void navigate({ search: (prev) => ({ ...prev, user: undefined }), replace: true, resetScroll: false });
   }
 
   return (
@@ -254,16 +290,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
         <>
           {/*===== Search =====*/}
           <div className="flex flex-col gap-1.5">
-            <UserSearchField
-              value={q}
-              onChange={(value) =>
-                void setParams(
-                  { q: value || null, page: null },
-                  { history: "replace", limitUrlUpdates: debounce(TYPING_DELAY_MS) },
-                )
-              }
-              onClear={clearSearch}
-            />
+            <UserSearchField value={q} onChange={searchText.change} onClear={clearSearch} />
             <div className="ps-5">
               <ResultLine searching={searching} count={matches.length} />
             </div>
@@ -278,7 +305,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
               label="نقش"
               options={ROLE_FILTERS.map((value) => ({ value, label: ROLE_LABELS[value], count: byRole[value] }))}
               value={role}
-              onChange={(next) => void setParams({ role: next, page: null }, { history: "replace" })}
+              onChange={(next) => showFilters({ role: next })}
               className="xl:flex-nowrap"
             />
             <span aria-hidden className={cn("hidden h-7 shrink-0 border-s xl:block", ADMIN_TEAR)} />
@@ -290,7 +317,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
                 count: byStatus[value],
               }))}
               value={status}
-              onChange={(next) => void setParams({ status: next, page: null }, { history: "replace" })}
+              onChange={(next) => showFilters({ status: next })}
               className="xl:flex-nowrap"
             />
           </div>
@@ -315,7 +342,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
                 status={status}
                 matchesInAll={matchesInAll}
                 onClear={clearSearch}
-                onShowAll={() => void setParams({ role: "all", status: "all", page: null }, { history: "replace" })}
+                onShowAll={() => showFilters({ role: "all", status: "all" })}
                 className={cn(rising && "answer-in")}
               />
             ) : (
@@ -344,13 +371,12 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
                     <UserRow
                       key={person.id}
                       user={person}
-                      href={serializeAdminUsersSearchParams(ADMIN_USERS_PATH, { role, status, q, user: person.id })}
+                      search={{ ...search, user: person.id }}
                       partnerCode={partnersById[person.id]?.code}
                       open={person.id === openId}
                       rise={rising && index < STAGGERED ? index * RISE_STEP_S : null}
                       leaving={leavingIds.has(person.id)}
                       folding={foldingIds.has(person.id)}
-                      onOpen={() => void setParams({ user: person.id })}
                     />
                   ))}
                 </ul>
@@ -367,7 +393,10 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
               className="mt-6"
               onPick={(next) => {
                 // Paging is the one change the Back button should undo.
-                void setParams({ page: next === 0 ? null : next + 1 }, { history: "push" });
+                void navigate({
+                  search: (prev) => ({ ...prev, page: next === 0 ? undefined : next + 1 }),
+                  resetScroll: false,
+                });
                 scrollToRoll();
               }}
             />
@@ -390,9 +419,7 @@ export default function AdminUsersPage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function UsersError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader

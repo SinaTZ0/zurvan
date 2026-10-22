@@ -2,7 +2,7 @@ import { PlusIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
-import { NEW_DOG_PATH } from "~/routes/buy/components/dog-picker";
+import { NEW_DOG_LINK } from "~/routes/buy/components/dog-picker";
 import { StagePanel } from "~/routes/buy/components/stage-panel";
 
 /*===== No Dogs Panel =====*/
@@ -27,7 +27,7 @@ export function NoDogsPanel() {
         دوره‌ها برای هر سگ جدا حساب می‌شه؛ بعد از معرفی، همین‌جا برمی‌گردی.
       </p>
       <Link
-        to={NEW_DOG_PATH}
+        {...NEW_DOG_LINK}
         className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
       >
         <PlusIcon aria-hidden />

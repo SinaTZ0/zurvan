@@ -13,6 +13,7 @@ import { PrintStrip } from "~/routes/admin_evaluations/components/print-strip";
 import { describeWaiting } from "~/routes/admin_evaluations/dates";
 import { useChanged } from "~/routes/admin_evaluations/hooks/use-changed";
 import type { AnswerKind } from "~/routes/admin_evaluations/schema";
+import type { AdminEvaluationsSearch } from "~/routes/admin_evaluations/search-params";
 
 /*===== Phone =====*/
 /** `09123456789` as «۰۹۱۲ ۳۴۵ ۶۷۸۹», easier to read off a phone's row; any other shape is shown as it is. */
@@ -47,17 +48,16 @@ export type RowExit = { kind: AnswerKind; fold: boolean };
  */
 export function EvaluationRow({
   evaluation,
-  href,
+  search,
   leaving,
   exit,
   rise,
   quietChip,
-  onOpen,
   onAnswer,
 }: {
   evaluation: AdminEvaluation;
-  /** The drawer's URL, so the link works for a new tab and before hydration. */
-  href: string;
+  /** The page's search with this request's drawer open; a real link, so it works for a new tab and before hydration. */
+  search: AdminEvaluationsSearch;
   leaving: boolean;
   exit: RowExit | null;
   /** The row's delay (seconds) in a list that just arrived under a new filter, or null when it didn't. */
@@ -67,7 +67,6 @@ export function EvaluationRow({
    * columns line up, and the phone's stamp lands where it was) but isn't drawn.
    */
   quietChip: boolean;
-  onOpen: () => void;
   onAnswer: (kind: AnswerKind) => void;
 }) {
   const { dog, customer, status } = evaluation;
@@ -113,15 +112,12 @@ export function EvaluationRow({
           <div className={cn("flex min-w-0 items-center gap-3 [grid-area:dog]", rejecting && "ev-dim")}>
             <DogThumb name={dog.name} photo={dog.photo} className="size-11 text-base" />
             <div className="min-w-0">
+              {/* A click opens the drawer in place: a search-only change (a history entry, so Back closes it) that
+                  keeps the scroll and doesn't refetch the list. */}
               <Link
-                to={href}
-                onClick={(event) => {
-                  // A plain click opens the drawer in place (a shallow URL change, no loader run); a new-tab click
-                  // keeps the browser's own behaviour.
-                  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                  event.preventDefault();
-                  onOpen();
-                }}
+                to="/admin/evaluations"
+                search={search}
+                resetScroll={false}
                 className="block truncate rounded-sm text-sm font-bold outline-none after:absolute after:inset-0 focus-visible:after:ring-3 focus-visible:after:ring-ring/50 focus-visible:after:ring-inset"
               >
                 <bdi>{dog.name}</bdi>

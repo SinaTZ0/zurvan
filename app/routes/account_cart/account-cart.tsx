@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { isRouteErrorResponse, useNavigate } from "react-router";
+import { z } from "zod";
 
 import { formatNumberFa } from "~/lib/digits";
-import { requireSession } from "~/lib/session-guard.server";
-import { CART_PATH } from "~/orpc/checkout/constants";
+import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
 import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
 import { groupByDog, selectCartItems, summarize } from "~/routes/account_cart/cart-groups";
@@ -26,24 +26,24 @@ import { useCartRemoval } from "~/routes/account_cart/hooks/use-cart-removal";
 import { useCartReview } from "~/routes/account_cart/hooks/use-cart-review";
 import { useFolding } from "~/routes/account_cart/hooks/use-folding";
 
-import type { Route } from "./+types/account-cart";
+/*===== Search Params =====*/
+// The gateway's result, `?payment=paid|failed`, added by the payment callback. Any other value is ignored.
+const cartSearchSchema = z.object({
+  payment: z.enum(["paid", "failed"]).optional().catch(undefined),
+});
 
-/*===== Guard =====*/
-// Customers only: the cart is a customer's, and a partner has no dogs to buy for (docs/app-spec.md, Pages).
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "سبد من | آموزش K9" }];
-
-/*===== Loader =====*/
-/**
- * Reads the gateway's `?payment=` result. The cart itself is in the browser, so there is nothing else to load; the
- * loader is also what makes the guard run on client-side navigations. Any value but `paid` and `failed` is ignored.
- */
-export function loader({ request }: Route.LoaderArgs) {
-  const payment = new URL(request.url).searchParams.get("payment");
-  return { payment: payment === "paid" ? ("paid" as const) : payment === "failed" ? ("failed" as const) : null };
-}
+/*===== Route =====*/
+// Customers only: the cart is a customer's, and a partner has no dogs to buy for (docs/app-spec.md, Pages). The cart
+// itself is in the browser, so there is nothing to load; the review is asked for on the client.
+export const Route = createFileRoute("/account/cart")({
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
+  validateSearch: cartSearchSchema,
+  head: () => ({ meta: [{ title: "سبد من | آموزش K9" }] }),
+  component: AccountCartPage,
+  notFoundComponent: () => <CartPageError notFound />,
+  errorComponent: () => <CartPageError notFound={false} />,
+});
 
 /*===== Cart =====*/
 /**
@@ -53,8 +53,9 @@ export function loader({ request }: Route.LoaderArgs) {
  * and «پرداخت»), sticky beside the bags on a laptop. The gateway's result comes back as a banner, the page's one moment.
  * The review (prices, eligibility, total) comes from the server on the client, because the cart lives in the browser.
  */
-export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
-  const navigate = useNavigate();
+function AccountCartPage() {
+  const navigate = useNavigate({ from: Route.fullPath });
+  const search = Route.useSearch();
   const queryClient = useQueryClient();
   const { items, ready } = useCartItems();
   const review = useCartReview({ items, ready });
@@ -74,9 +75,9 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
   const [availablePeriods, setAvailablePeriods] = useState<EvaluationPeriod[]>([]);
 
   /*------ Payment Result ------*/
-  // Seeded once from the loader: the param is stripped below, so a refresh never shows the banner again, and the
-  // banner survives the loader running again without it.
-  const [payment] = useState(loaderData.payment);
+  // Seeded once from the URL: the param is stripped below, so a refresh never shows the banner again, and the banner
+  // survives the URL losing it.
+  const [payment] = useState(search.payment ?? null);
   const handledPayment = useRef(false);
 
   useEffect(() => {
@@ -86,7 +87,7 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
     // Only `paid` changes the cart, once: the server took the bought items out when the payment settled, so the cart is
     // read again (items added on another device since stay). `failed` leaves it exactly as it was.
     if (payment === "paid") void queryClient.invalidateQueries({ queryKey: orpc.cart.get.queryKey() });
-    void navigate(CART_PATH, { replace: true, preventScrollReset: true });
+    void navigate({ search: {}, replace: true, resetScroll: false });
   }, [ready, payment, queryClient, navigate]);
 
   /*------ Reviewed Items ------*/
@@ -193,9 +194,4 @@ export default function AccountCartPage({ loaderData }: Route.ComponentProps) {
       </div>
     </div>
   );
-}
-
-/*===== Error Boundary =====*/
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <CartPageError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

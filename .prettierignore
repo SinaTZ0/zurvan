@@ -1,5 +1,7 @@
-build/
-.react-router/
+.output/
+.nitro/
+.tanstack/
+app/routeTree.gen.ts
 playwright-report/
 test-results/
 package-lock.json

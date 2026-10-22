@@ -1,7 +1,8 @@
-import { useMutation } from "@tanstack/react-query";
-import { useRevalidator } from "react-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 
 import { authClient } from "~/lib/auth-client";
+import { refreshSession } from "~/lib/session-guard";
 import type { NameFormValues } from "~/routes/account_profile/schema";
 import { describeNameError } from "~/routes/account_profile/server-errors";
 
@@ -11,11 +12,12 @@ import { describeNameError } from "~/routes/account_profile/server-errors";
  * is what it shows wherever a full name is needed, so it follows the two parts. A failure throws an `Error` whose
  * message is already the Persian sentence to show.
  *
- * The route is revalidated on success, which re-runs the account layout's loader, so the header's first name changes
- * without a reload.
+ * On success the session is asked for again and the router re-runs the account guard, whose `user` is the route
+ * context the header greets by name, so the header's first name changes without a reload.
  */
 export function useSaveName() {
-  const revalidator = useRevalidator();
+  const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async ({ firstName, lastName }: NameFormValues) => {
@@ -28,6 +30,9 @@ export function useSaveName() {
       }
       if (result.error) throw new Error(describeNameError(result.error));
     },
-    onSuccess: () => revalidator.revalidate(),
+    onSuccess: async () => {
+      await refreshSession(queryClient);
+      await router.invalidate();
+    },
   });
 }

@@ -1,11 +1,11 @@
-import { ORPCError } from "@orpc/client";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
-import { useQueryStates } from "nuqs";
 import { useMemo, useRef, useState } from "react";
-import { data, isRouteErrorResponse, useRevalidator } from "react-router";
 
-import { requireSession } from "~/lib/session-guard.server";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orNotFound } from "~/lib/not-found";
+import { requireSession } from "~/lib/session-guard";
+import { orpc } from "~/orpc/client";
 import { COLUMN } from "~/routes/account_partner_leads/column";
 import { AddLeadForm } from "~/routes/account_partner_leads/components/add-lead-form";
 import { HowItCounts } from "~/routes/account_partner_leads/components/how-it-counts";
@@ -13,33 +13,30 @@ import { LeadsError } from "~/routes/account_partner_leads/components/leads-erro
 import { LeadsHero } from "~/routes/account_partner_leads/components/leads-hero";
 import { LeadsList } from "~/routes/account_partner_leads/components/leads-list";
 import { PageMotion } from "~/routes/account_partner_leads/components/page-motion";
-import { PAGE_SIZE, partnerLeadsSearchParams } from "~/routes/account_partner_leads/search-params";
+import { PAGE_SIZE, partnerLeadsSearchSchema } from "~/routes/account_partner_leads/search-params";
 import { countPeople, filterPeople } from "~/routes/account_partner_leads/stages";
 
-import type { Route } from "./+types/account-partner-leads";
-
-/*===== Guard =====*/
+/*===== Route =====*/
 // The account layout lets customers in too; the partner's pages are his alone (docs/app-spec.md, Pages).
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["partner"] })];
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "شماره‌ها و مشتری‌ها | آموزش K9" }];
-
-/*===== Loader =====*/
-// The whole list comes once: the stage pills, their counts and the paging are applied in the component, so changing
-// them never waits for the server. `getMine` is only for `isActive`.
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [people, profile] = await Promise.all([
-    client.partner.leads.list(),
-    client.partner.getMine().catch((error: unknown) => {
-      // A partner user with no `partner` row is a broken account, not an empty page.
-      if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
-      throw error;
-    }),
-  ]);
-  return { people, isActive: profile.isActive };
-}
+export const Route = createFileRoute("/account/partner/leads")({
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["partner"] }),
+  validateSearch: partnerLeadsSearchSchema,
+  // The whole list comes once: the stage pills, their counts and the paging are applied in the component, so changing
+  // them never waits for the server. `getMine` is only for `isActive`; a partner user with no `partner` row is a broken
+  // account, not an empty page.
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData(orpc.partner.leads.list.queryOptions()),
+      orNotFound(queryClient.ensureQueryData(orpc.partner.getMine.queryOptions())),
+    ]);
+  },
+  head: () => ({ meta: [{ title: "شماره‌ها و مشتری‌ها | آموزش K9" }] }),
+  component: AccountPartnerLeadsPage,
+  // Inside the account shell, so the header and the partner's tabs stay on screen.
+  notFoundComponent: () => <LeadsError notFound />,
+  errorComponent: () => <LeadsError notFound={false} />,
+});
 
 /*===== Leads and Customers =====*/
 /**
@@ -50,20 +47,27 @@ export async function loader({ request }: Route.LoaderArgs) {
  * plate (the start column, sticky on desktop); the list's plate lines every person's road up in one column, so the gold
  * reads down the list. Phones: the hero, the form, the note, then the list.
  */
-export default function AccountPartnerLeadsPage({ loaderData }: Route.ComponentProps) {
-  const { people, isActive } = loaderData;
+function AccountPartnerLeadsPage() {
+  const queryClient = useQueryClient();
+  const { data: people } = useSuspenseQuery(orpc.partner.leads.list.queryOptions());
+  const {
+    data: { isActive },
+  } = useSuspenseQuery(orpc.partner.getMine.queryOptions());
 
   /*------ URL State ------*/
-  const [{ stage, page: requestedPage }, setParams] = useQueryStates(partnerLeadsSearchParams);
+  const search = Route.useSearch();
+  const stage = search.stage ?? "all";
+  const requestedPage = search.page ?? 1;
+  const navigate = useNavigate({ from: Route.fullPath });
 
   /*------ Pending ------*/
-  const revalidator = useRevalidator();
-  const pending = revalidator.state !== "idle";
+  // While the list is read again after an add (not on every background refetch).
+  const [pending, setPending] = useState(false);
 
   /*------ The Row That Was Just Added ------*/
-  // Found by comparing the ids before and after the revalidation, not by trusting the add's answer: the list is what
-  // the partner sees, and a row that is not there cannot be highlighted. Adjusting state while rendering (not in an
-  // effect) keeps it to one render, with no frame where the new row is there but not marked.
+  // Found by comparing the ids before and after the list is read again, not by trusting the add's answer: the list is
+  // what the partner sees, and a row that is not there cannot be highlighted. Adjusting state while rendering (not in
+  // an effect) keeps it to one render, with no frame where the new row is there but not marked.
   const [knownPeople, setKnownPeople] = useState(people);
   const [awaitingNew, setAwaitingNew] = useState(false);
   const [highlightedIds, setHighlightedIds] = useState<ReadonlySet<string>>(new Set());
@@ -107,12 +111,18 @@ export default function AccountPartnerLeadsPage({ loaderData }: Route.ComponentP
             isActive={isActive}
             onAdded={(person) => {
               // The new person shows first on page one; a filter or page that hides them is dropped so he sees it land.
-              void setParams({
-                stage: stage === "all" || stage === person.stage ? undefined : "all",
-                page: null,
+              void navigate({
+                search: (prev) => ({
+                  stage: stage === "all" || stage === person.stage ? prev.stage : undefined,
+                  page: undefined,
+                }),
+                replace: true,
+                resetScroll: false,
               });
               setAwaitingNew(true);
-              void revalidator.revalidate();
+              setPending(true);
+              // The partner dashboard's funnel counts the same people, so the whole partner domain is read again.
+              void queryClient.invalidateQueries({ queryKey: orpc.partner.key() }).finally(() => setPending(false));
             }}
           />
 
@@ -131,20 +141,23 @@ export default function AccountPartnerLeadsPage({ loaderData }: Route.ComponentP
           highlightedIds={highlightedIds}
           pending={pending}
           listRef={listRef}
-          onStage={(next) => void setParams({ stage: next, page: null })}
+          onStage={(next) =>
+            void navigate({
+              search: { stage: next === "all" ? undefined : next, page: undefined },
+              replace: true,
+              resetScroll: false,
+            })
+          }
           onPage={(next) => {
-            // Paging is the one change the Back button should undo.
-            void setParams({ page: next === 1 ? null : next }, { history: "push" });
+            // Paging is the one change the Back button should undo, so it pushes.
+            void navigate({
+              search: (prev) => ({ ...prev, page: next === 1 ? undefined : next }),
+              resetScroll: false,
+            });
             listRef.current?.scrollIntoView({ block: "start" });
           }}
         />
       </div>
     </>
   );
-}
-
-/*===== Error Boundary =====*/
-// Inside the account shell, so the header and the partner's tabs stay on screen.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <LeadsError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

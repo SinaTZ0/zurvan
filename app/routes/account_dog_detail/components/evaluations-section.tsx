@@ -46,7 +46,7 @@ export function EvaluationsSection({ evaluations, status }: { evaluations: Evalu
             <p className="mt-1 text-sm text-pretty text-muted-foreground">ارزیابی رایگانه و تعهدی نداره.</p>
           </div>
           {status.action && (
-            <Link to={status.action.to} className={buttonVariants({ variant: "solid" })}>
+            <Link {...status.action.link} className={buttonVariants({ variant: "solid" })}>
               {status.action.label}
             </Link>
           )}

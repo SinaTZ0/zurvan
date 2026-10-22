@@ -5,7 +5,7 @@ import { formatNumberFa } from "~/lib/digits";
 
 /*===== Pop Number =====*/
 /**
- * A number that pops (`answer-pop`, app.css) when a revalidation brings a different value, and only then: the page has
+ * A number that pops (`answer-pop`, app.css) when a refetch brings a different value, and only then: the page has
  * no load moment, so the first render (the server's, then hydration) shows it still. The span is keyed by the value, so
  * every later change remounts it and plays the pop again. Reduced motion: `answer-pop` is off, the new value is simply
  * there.

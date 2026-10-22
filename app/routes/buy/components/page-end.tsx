@@ -7,7 +7,7 @@ import { STRIP_FADE } from "~/routes/buy/plate";
 /*===== Page End =====*/
 /**
  * The page ends on a short stretch of path with a bush at either end, running straight into the footer (the route's
- * handle sets `flushFooter`), so the last plate isn't followed by a dead strip of paper. Its height also keeps the
+ * `staticData` sets `flushFooter`), so the last plate isn't followed by a dead strip of paper. Its height also keeps the
  * floating cart bar off the last row when the page is scrolled to the end.
  */
 export function PageEnd() {

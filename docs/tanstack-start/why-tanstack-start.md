@@ -1,6 +1,6 @@
 # Why We're Moving to TanStack Start
 
-This repo is moving from React Router v8 (Framework Mode) to TanStack Start. The reason is data loading: in React
+This repo moved from React Router v8 (Framework Mode) to TanStack Start on the `tanstack-start` branch (2026-10-22). The reason is data loading: in React
 Router a page's data can't be prepared ahead of a click and then reused, while in TanStack Start that's the default.
 This doc explains the problem, what we tried inside React Router, and why TanStack Start's model fits an app whose data
 layer is already oRPC + TanStack Query.
@@ -69,11 +69,12 @@ Nothing is rendered and no route code runs; the browser only downloads files. Wh
 | Custom code-only prefetch (preload route modules from the manifest)                                    | Works, but re-implements prefetching on `UNSAFE_FrameworkContext` / `UNSAFE_DataRouterContext`, which can break on any upgrade.                                                                                 |
 | `clientLoader` + TanStack Query (`ensureQueryData`)                                                    | Prefetch never runs it, so data still isn't prefetched. Needs custom wiring (`useFetcher().load()` on viewport), a `clientLoader` per route, a browser-wide `QueryClient`, and invalidation for every mutation. |
 
-### What ships now (until the migration)
+### What shipped before the migration (history)
 
 Native `prefetch="viewport"` (storefront, account) and `"intent"` (Admin) through the `Link`/`NavLink` wrappers, with
-`routeDiscovery: { mode: "initial" }`. Code is ready before the click; data is fetched fresh on the click; each visible
-link costs one wasted loader run. See `app/hooks/use-default-prefetch.ts`.
+`routeDiscovery: { mode: "initial" }`. Code was ready before the click; data was fetched fresh on the click; each
+visible link cost one wasted loader run. Since the move (branch `tanstack-start`, 2026-10-22) the same preload rules
+live in `app/components/link.tsx`, and the preloaded data is what the click renders.
 
 ## How TanStack Start Loads Data
 

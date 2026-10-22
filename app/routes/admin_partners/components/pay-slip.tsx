@@ -14,6 +14,7 @@ import { ShebaInset } from "~/routes/admin_partners/components/sheba-inset";
 import { tomanDigits } from "~/routes/admin_partners/money";
 import type { UnpaidBlockData } from "~/routes/admin_partners/partner-views";
 import { NOTCH } from "~/routes/admin_partners/slip-marks";
+import type { AdminPartnersSearch } from "~/routes/admin_partners/search-params";
 
 /*===== Types =====*/
 /** Where each paid line of the pay sheet stands in its exit, by commission id. */
@@ -46,21 +47,22 @@ export type SlipMotion = {
  */
 export function PaySlip({
   block,
-  href,
+  search,
   paidBefore,
   motion,
   rise,
-  onOpen,
   onPay,
 }: {
   block: UnpaidBlockData;
-  /** The partner's file (`?partner=`), so the name works for a new tab and before hydration. */
-  href: string;
+  /**
+   * The page's search with the partner's file open (`?partner=`): a real link, so the name works for a new tab and
+   * before hydration. A click opens the file in place (a search-only change that keeps the scroll).
+   */
+  search: AdminPartnersSearch;
   /** What he has paid this partner so far, as the page counts it (a line still stamping isn't in it yet). */
   paidBefore: { count: number; amount: number };
   motion: SlipMotion;
   rise: number | null;
-  onOpen: () => void;
   onPay: (commission: AdminCommission) => void;
 }) {
   const headingId = useId();
@@ -105,14 +107,9 @@ export function PaySlip({
               <div className="flex min-w-0 flex-col gap-2.5">
                 <h2 id={headingId} className={cn(DISPLAY_HEADING, "text-xl break-words")}>
                   <Link
-                    to={href}
-                    onClick={(event) => {
-                      // A plain click opens the file in place (a shallow URL change, no loader run).
-                      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-                        return;
-                      event.preventDefault();
-                      onOpen();
-                    }}
+                    to="/admin/partners"
+                    search={search}
+                    resetScroll={false}
                     className="rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                   >
                     <bdi>{name}</bdi>

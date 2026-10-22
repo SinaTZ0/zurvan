@@ -11,7 +11,7 @@ const FINISHED_FILL: React.CSSProperties = {
 /**
  * A bar split into in training (ivory), finished (ivory at half) and the rest (cancelled), each segment's length its
  * share of `scale`. Every segment is a full-width layer scaled from the start edge (`scaleX`), the finished one under
- * the active one, so a revalidation slides each to its new share with a transform (`ov-seg`, page-motion.tsx). The app
+ * the active one, so a refetch slides each to its new share with a transform (`ov-seg`, page-motion.tsx). The app
  * is right-to-left only, so the start edge is the physical right (`origin-right`).
  *
  * - `strip`: the enrollments' strip; `scale` is the total, so the three shares fill it and the rest is the dashed

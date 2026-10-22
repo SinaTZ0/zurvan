@@ -37,7 +37,8 @@ export function PurchaseRow({ purchase }: { purchase: LatestPurchase }) {
           >
             <span className="min-w-0 text-pretty">
               <Link
-                to={`/admin/dogs/${item.dog.id}`}
+                to="/admin/dogs/$dogId"
+                params={{ dogId: item.dog.id }}
                 className="rounded-sm font-bold underline-offset-4 hover:underline"
               >
                 <bdi>{item.dog.name}</bdi>

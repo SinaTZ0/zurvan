@@ -66,7 +66,8 @@ export function EnrollmentLine({
               <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {/* The dog's name opens its page (F2); the buttons stay the way to end the enrollment. */}
                 <Link
-                  to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+                  to="/admin/dogs/$dogId"
+                  params={{ dogId: dog.id }}
                   className="truncate rounded-sm text-sm font-bold underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <bdi>{dog.name}</bdi>

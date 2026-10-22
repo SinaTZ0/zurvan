@@ -17,7 +17,7 @@ export type AdminFilterOption<Value extends string> = {
  * in flat gold, the others outlined in ink, each with its count in a small disc. The gold crossfades from the old pill
  * to the new one, and a count that changes under him (a row moved to another status) pops.
  *
- * It holds no state and doesn't call nuqs: the page passes the value and a callback, so the pills stay reusable. On
+ * It holds no state and doesn't touch the URL: the page passes the value and a callback, so the pills stay reusable. On
  * phones the row scrolls sideways and snaps to each pill instead of wrapping into a second line; from `sm` it wraps.
  * A page opened on a pill far down the row (`?status=withdrawn` on a phone) scrolls the row once so that pill shows.
  */

@@ -1,9 +1,12 @@
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
-import { isRouteErrorResponse, useNavigation } from "react-router";
+import { z } from "zod";
 
 import { isShownFamily } from "~/lib/course-families";
-import { requireSession } from "~/lib/session-guard.server";
-import { createServerClient } from "~/orpc/server-client.server";
+import { requireSession } from "~/lib/session-guard";
+import { orpc } from "~/orpc/client";
+import type { Dog } from "~/orpc/dog/contract";
 import { splitCourses } from "~/routes/buy/buy-lists";
 import { BuyError } from "~/routes/buy/components/buy-error";
 import { BuyHero } from "~/routes/buy/components/buy-hero";
@@ -17,55 +20,55 @@ import { PageMotion } from "~/routes/buy/components/page-motion";
 import { PickFirstPanel } from "~/routes/buy/components/pick-first-panel";
 import { useChanged } from "~/routes/buy/hooks/use-changed";
 import { COLUMN } from "~/routes/buy/plate";
-import type { PublicLayoutHandle } from "~/routes/layout_public/layout-public";
+import { dogCoursesQuery, dogsQuery } from "~/routes/buy/queries";
 
-import type { Route } from "./+types/buy";
+/*===== Search =====*/
+// The picked dog's id. A bad value is dropped (no dog picked) rather than failing the page.
+const buySearchSchema = z.object({ dog: z.string().optional().catch(undefined) });
 
-/*===== Handle =====*/
-// The page ends on a stretch of path that runs straight into the footer: the public shell drops `main`'s bottom
-// padding when a page's handle sets this.
-export const handle: PublicLayoutHandle = { flushFooter: true };
-
-/*===== Guard =====*/
-// Customers only. A visitor is sent to sign in and brought back here, the query string included (`requireSession`); a
-// partner or the Admin goes to their own home.
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [
-  { title: "خرید دوره | آموزش K9" },
-  { name: "description", content: "اول سگت رو انتخاب کن؛ برای هر دوره می‌بینی مناسبشه یا اول چی لازمه." },
-];
-
-/*===== Headers =====*/
-// The page lists someone's own dogs and what each can take, so no shared cache may keep it (the public layout sets none).
-export const headers: Route.HeadersFunction = ({ parentHeaders }) => {
-  const result = new Headers(parentHeaders);
-  result.set("Cache-Control", "private, no-store");
-  return result;
-};
-
-/*===== Loader =====*/
+/*===== Route =====*/
 /**
  * The purchase page that starts from the dog (docs/app-spec.md, F5). The dog is `?dog=<id>`; with exactly one dog it is
  * chosen already. The verdict for every course comes from the server's eligibility check, the same one the cart and
  * «پرداخت» use, so nothing is offered that couldn't be bought. A dog that isn't the customer's is just not picked.
  */
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [dogs, courses] = await Promise.all([client.dog.list(), client.course.list()]);
+export const Route = createFileRoute("/_public/buy")({
+  // Customers only. A visitor is sent to sign in and brought back here, the query string included (`requireSession`);
+  // a partner or the Admin goes to their own home.
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
+  validateSearch: buySearchSchema,
+  loaderDeps: ({ search }) => ({ dog: search.dog }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    const [dogs] = await Promise.all([
+      queryClient.ensureQueryData(dogsQuery()),
+      queryClient.ensureQueryData(orpc.course.list.queryOptions()),
+    ]);
 
-  const asked = new URL(request.url).searchParams.get("dog");
-  const dog = dogs.find((candidate) => candidate.id === asked) ?? (dogs.length === 1 ? dogs[0] : undefined);
+    const dog = pickDog({ dogs, asked: deps.dog });
+    if (dog) await queryClient.ensureQueryData(dogCoursesQuery(dog.id));
+  },
+  head: () => ({
+    meta: [
+      { title: "خرید دوره | آموزش K9" },
+      { name: "description", content: "اول سگت رو انتخاب کن؛ برای هر دوره می‌بینی مناسبشه یا اول چی لازمه." },
+    ],
+  }),
+  // The page lists someone's own dogs and what each can take, so no shared cache may keep it (the public layout sets
+  // none).
+  headers: () => ({ "Cache-Control": "private, no-store" }),
+  // The page ends on a stretch of path that runs straight into the footer, so the public shell drops `main`'s bottom
+  // padding.
+  staticData: { flushFooter: true },
+  component: BuyPage,
+  notFoundComponent: () => <BuyError notFound />,
+  errorComponent: () => <BuyError notFound={false} />,
+});
 
-  const verdicts = dog ? await client.checkout.dogCourses({ dogId: dog.id }) : [];
-
-  return {
-    dogs,
-    dogId: dog?.id ?? null,
-    courses: courses.filter((course) => isShownFamily(course.family)),
-    verdicts,
-  };
+/*===== Picked Dog =====*/
+/** The dog the address asks for, or the only dog when there is just one; none for an id that isn't the customer's. */
+function pickDog({ dogs, asked }: { dogs: Dog[]; asked: string | undefined }): Dog | undefined {
+  return dogs.find((candidate) => candidate.id === asked) ?? (dogs.length === 1 ? dogs[0] : undefined);
 }
 
 /*===== Page =====*/
@@ -76,20 +79,29 @@ export async function loader({ request }: Route.LoaderArgs) {
  * first. Adding goes to the cart; «پرداخت» is there, behind the floating cart bar.
  *
  * Picking a dog is a navigation (`?dog=`): while it loads, the pressed print lifts at once (the pending location's dog)
- * and the plates below dim; when it lands, the h1 and the bubbles re-key and the plates arrive staggered.
+ * and the plates below dim; when it lands, the h1 and the bubbles re-key and the plates arrive staggered. The page keeps
+ * showing the last dog's search until the next dog's verdicts are in.
  */
-export default function BuyPage({ loaderData }: Route.ComponentProps) {
-  const { dogs, dogId, courses, verdicts } = loaderData;
-  const dog = dogs.find((candidate) => candidate.id === dogId) ?? null;
-  const lists = dog ? splitCourses({ courses, verdicts, dogId: dog.id }) : null;
+function BuyPage() {
+  const { dog: asked } = Route.useSearch();
+  const { data: dogs } = useSuspenseQuery(dogsQuery());
+  const { data: catalogue } = useSuspenseQuery(orpc.course.list.queryOptions());
+  const dog = pickDog({ dogs, asked }) ?? null;
+  const dogId = dog?.id ?? null;
+  // Only with a dog picked, so not a suspense read; the loader has already put it in the cache.
+  const { data: verdicts } = useQuery({
+    ...dogCoursesQuery(dogId ?? ""),
+    enabled: dogId !== null,
+  });
+  const courses = catalogue.filter((course) => isShownFamily(course.family));
+  const lists = dog && verdicts ? splitCourses({ courses, verdicts, dogId: dog.id }) : null;
   const changed = useChanged(dogId ?? "none");
 
   /*------ The Dog Being Opened ------*/
-  const navigation = useNavigation();
-  const pending =
-    navigation.state === "loading" && navigation.location.pathname === "/buy"
-      ? new URLSearchParams(navigation.location.search).get("dog")
-      : null;
+  const pending = useRouterState({
+    select: (state) =>
+      state.status === "pending" && state.location.pathname === "/buy" ? state.location.search.dog : undefined,
+  });
   const pendingDog = pending ? dogs.find((candidate) => candidate.id === pending) : undefined;
   const pickedId = pendingDog?.id ?? dogId;
   const loading = pendingDog !== undefined && pendingDog.id !== dogId;
@@ -143,9 +155,4 @@ export default function BuyPage({ loaderData }: Route.ComponentProps) {
       <CartBar />
     </>
   );
-}
-
-/*===== Error Boundary =====*/
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <BuyError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

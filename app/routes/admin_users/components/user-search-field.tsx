@@ -5,8 +5,8 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "
 
 /*===== User Search Field =====*/
 /**
- * The roll's search, a grained field on the sunken paper, as on the Dogs register. The value is the URL's `q`, which
- * the page updates on every keystroke (debounced in the URL). It is not a form: the list filters as he types, so Enter
+ * The roll's search, a grained field on the sunken paper, as on the Dogs register. The value is the page's search text,
+ * which follows every keystroke (the URL's `q` follows after a pause). It is not a form: the list filters as he types, so Enter
  * has nothing to submit. The clear button (40px) appears once there is something to clear and gives focus back to the
  * field.
  */

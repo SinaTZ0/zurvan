@@ -1,50 +1,59 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
-import { data, redirect } from "react-router";
+import { z } from "zod";
 
 import { BrandLogo } from "~/components/brand-logo";
 import { Link } from "~/components/link";
-import { env } from "~/env.server";
-import { authForHeaders } from "~/lib/auth.server";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { referralCookieFromUrl } from "~/lib/referral.server";
 import { SITE_RULES } from "~/lib/site-rules";
+import { orpc } from "~/orpc/client";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { AuthStage } from "~/routes/auth/components/auth-stage";
 import { SignInFlow } from "~/routes/auth/components/sign-in-flow";
 import { TrustNote } from "~/routes/auth/components/trust-note";
 
-import type { Route } from "./+types/auth";
-
 /** Where people land after signing in when nothing asked for a page. The account area sends each role on from there. */
 const DEFAULT_REDIRECT = "/account";
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [
-  { title: "ورود به آموزش K9" },
-  { name: "description", content: "با شماره موبایلت وارد آموزش K9 شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
-];
+/*===== Search =====*/
+// `redirectTo`: the page to return to after signing in (the guards and sign-out send it). A partner's `?ref=` code is
+// remembered by the server before the page renders (`app/start.ts`), so the page itself doesn't read it.
+const authSearchSchema = z.object({ redirectTo: z.string().optional().catch(undefined) });
 
-/*===== Loader =====*/
-export async function loader({ request }: Route.LoaderArgs) {
-  const redirectTo = safeRedirect(new URL(request.url).searchParams.get("redirectTo"));
-  const [session, referralCookie] = await Promise.all([
-    authForHeaders(request.headers).api.getSession({ headers: request.headers }),
-    // A partner's link can land here too: remember its `?ref=` code so signup can attribute the customer (F7).
-    referralCookieFromUrl(request.url, request.headers),
-  ]);
-
-  // Signed-in people have nothing to do here, unless their new account still has no name.
-  if (session?.user.firstName) throw redirect(redirectTo);
-
-  return data(
-    // `rulesPublished`: the name step asks for the tick only when approved rules exist (F13).
-    { showcase: env.SHOWCASE_MODE, redirectTo, needsName: !!session, rulesPublished: SITE_RULES !== null },
-    referralCookie ? { headers: { "Set-Cookie": referralCookie } } : undefined,
-  );
-}
+/*===== Route =====*/
+export const Route = createFileRoute("/auth")({
+  validateSearch: authSearchSchema,
+  // Signed-in people have nothing to do here, unless their new account still has no name. A blocked account's
+  // sessions are revoked on the way, so it reads as signed out and starts again at the phone step.
+  beforeLoad: async ({ context: { queryClient }, search }) => {
+    const session = await queryClient.ensureQueryData(orpc.session.get.queryOptions());
+    if (session.status === "active") throw redirect({ href: safeRedirect(search.redirectTo) });
+  },
+  // What the page starts from, kept as the loader's answer rather than read from the cache: signing in clears the cache
+  // (`SignInFlow`), and the page must not lose its footing while it navigates on.
+  loader: async ({ context: { queryClient } }) => {
+    const [session, site] = await Promise.all([
+      queryClient.ensureQueryData(orpc.session.get.queryOptions()),
+      queryClient.ensureQueryData(orpc.site.config.queryOptions()),
+    ]);
+    return {
+      showcase: site.showcase,
+      needsName: session.status === "unnamed",
+      // The name step asks for the tick only when approved rules exist (F13).
+      rulesPublished: SITE_RULES !== null,
+    };
+  },
+  head: () => ({
+    meta: [
+      { title: "ورود به آموزش K9" },
+      { name: "description", content: "با شماره موبایلت وارد آموزش K9 شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت." },
+    ],
+  }),
+  component: AuthPage,
+});
 
 /** Only same-site paths, so a crafted `?redirectTo=` link can't send someone to another site after signing in. */
-function safeRedirect(value: string | null) {
+function safeRedirect(value: string | undefined) {
   return value?.startsWith("/") && !value.startsWith("//") ? value : DEFAULT_REDIRECT;
 }
 
@@ -59,8 +68,9 @@ function safeRedirect(value: string | null) {
  * left half. Phones: the stage is a band on top (moved first by `order`, so the form keeps the first place in the tab
  * order) with the logo laid over its start corner, and the plate follows.
  */
-export default function AuthPage({ loaderData }: Route.ComponentProps) {
-  const { showcase, redirectTo, needsName, rulesPublished } = loaderData;
+function AuthPage() {
+  const { showcase, needsName, rulesPublished } = Route.useLoaderData();
+  const redirectTo = safeRedirect(Route.useSearch().redirectTo);
   // Which dog is up follows the flow's step; the flow reports each change.
   const firstStep: AuthStepName = needsName ? "name" : "phone";
   const [step, setStep] = useState<AuthStepName>(firstStep);

@@ -13,7 +13,7 @@ export type LaterReason = DogVerdictProblem & { kind: IneligibilityKind };
 export type LaterCourse = { course: Course; reasons: LaterReason[] };
 
 /** The reason every course in «بعداً باز می‌شن» shares, lifted out once above the rows (in practice: no evaluation). */
-export type Gate = { message: string; way: { label: string; to: string } };
+export type Gate = { message: string; way: NonNullable<DogVerdictProblem["way"]> };
 
 export type BuyLists = {
   /** «الان می‌تونه»: the courses with a price the server says the dog can buy now. */

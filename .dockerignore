@@ -1,5 +1,6 @@
-.react-router
-build
+.output
+.nitro
+.tanstack
 node_modules
 README.md
 

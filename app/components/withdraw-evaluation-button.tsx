@@ -1,7 +1,6 @@
 import { ORPCError } from "@orpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useRevalidator } from "react-router";
 
 import {
   AlertDialog,
@@ -26,8 +25,8 @@ const FALLBACK_MESSAGE = "انجام نشد. دوباره تلاش کن.";
  * A quiet button that, after a confirmation, takes back the customer's pending evaluation request (F3). `withdrawn`
  * is final, which is why it asks first; the customer can simply request again afterwards.
  *
- * Both a success and a "no longer pending" conflict reload the route loaders: in the conflict case the Admin has
- * answered in the meantime, and the page must show that answer instead of a stale button.
+ * Both a success and a "no longer pending" conflict refetch the evaluations and dogs the page shows: in the conflict
+ * case the Admin has answered in the meantime, and the page must show that answer instead of a stale button.
  */
 export function WithdrawEvaluationButton({
   evaluationId,
@@ -43,7 +42,11 @@ export function WithdrawEvaluationButton({
 }) {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
-  const revalidator = useRevalidator();
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: orpc.evaluation.key() }),
+      queryClient.invalidateQueries({ queryKey: orpc.dog.key() }),
+    ]);
 
   /*------ Mutation ------*/
   const withdraw = useMutation({
@@ -51,11 +54,7 @@ export function WithdrawEvaluationButton({
     onSuccess: async () => {
       setOpen(false);
       toast.add({ title: "درخواست پس گرفته شد.", type: "success" });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: orpc.evaluation.key() }),
-        queryClient.invalidateQueries({ queryKey: orpc.dog.key() }),
-      ]);
-      await revalidator.revalidate();
+      await refresh();
       onWithdrawn?.();
     },
     onError: (error) => {
@@ -63,7 +62,7 @@ export function WithdrawEvaluationButton({
       toast.add({ title: describeFailure(error), type: "error" });
       // The request was answered or removed meanwhile: show the page as it is now.
       if (error instanceof ORPCError && (error.code === "NOT_WITHDRAWABLE" || error.code === "NOT_FOUND")) {
-        void revalidator.revalidate();
+        void refresh();
       }
     },
   });

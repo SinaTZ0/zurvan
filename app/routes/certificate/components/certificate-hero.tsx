@@ -7,10 +7,7 @@ import { VerdictDisc } from "~/routes/certificate/components/verdict-disc";
 import { VerdictStage } from "~/routes/certificate/components/verdict-stage";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-
-import type { Route } from "../+types/certificate";
-
-type Verification = Route.ComponentProps["loaderData"]["verification"];
+import type { CertificateVerification } from "~/orpc/certificate/contract";
 
 /*===== Certificate Hero =====*/
 /**
@@ -25,7 +22,7 @@ type Verification = Route.ComponentProps["loaderData"]["verification"];
  * - revoked: the card rises, the sorry dog settles a little lower at 0.4s, the bubble pops at 0.9s.
  * - unknown: the dog walks in along the path (0 to 0.8s) and the bubble pops when he arrives.
  */
-export function CertificateHero({ verification }: { verification: Verification }) {
+export function CertificateHero({ verification }: { verification: CertificateVerification }) {
   return (
     <section
       aria-labelledby="certificate-title"

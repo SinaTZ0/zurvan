@@ -12,12 +12,13 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { useSignOut } from "~/hooks/use-sign-out";
+import type { StaticRoutePath } from "~/lib/route-path";
 
 /*===== Types =====*/
 /** One link in the person menu. */
 export type PersonMenuLink = {
   label: string;
-  to: string;
+  to: StaticRoutePath;
   /** Listed only below `lg`: the account header already shows it as a tab on desktop. */
   phonesOnly?: boolean;
 };

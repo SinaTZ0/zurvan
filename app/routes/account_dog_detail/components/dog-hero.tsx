@@ -80,11 +80,15 @@ export function DogHero({
             {/* The state's one main action, and the quieter edit beside it; the edit alone while the dog only waits. */}
             <div className="mt-7 flex flex-wrap gap-3">
               {status.action && (
-                <Link to={status.action.to} className={buttonVariants({ variant: "solid", size: "lg" })}>
+                <Link {...status.action.link} className={buttonVariants({ variant: "solid", size: "lg" })}>
                   {status.action.label}
                 </Link>
               )}
-              <Link to={`/account/dogs/${dog.id}/edit`} className={buttonVariants({ variant: "outline", size: "lg" })}>
+              <Link
+                to="/account/dogs/$dogId/edit"
+                params={{ dogId: dog.id }}
+                className={buttonVariants({ variant: "outline", size: "lg" })}
+              >
                 ویرایش مشخصات
               </Link>
             </div>

@@ -207,7 +207,8 @@ function RailStop({
         </p>
       ) : (
         <Link
-          to={`/courses/${entry.slug}`}
+          to="/courses/$slug"
+          params={{ slug: entry.slug }}
           className="group -m-1 block rounded-md p-1 pt-2.5 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <span className="font-bold transition-colors group-hover:text-primary">{entry.title}</span>
@@ -275,7 +276,7 @@ function buildNotes({ course, lane }: { course: Course; lane: CourseLane }): { t
 /** A course name inside a sentence, linked. Underlined on hover rather than with a chevron, which would break the line. */
 function CourseLink({ slug, children }: { slug: string; children: React.ReactNode }) {
   return (
-    <Link to={`/courses/${slug}`} className="font-bold text-primary underline-offset-4 hover:underline">
+    <Link to="/courses/$slug" params={{ slug }} className="font-bold text-primary underline-offset-4 hover:underline">
       {children}
     </Link>
   );

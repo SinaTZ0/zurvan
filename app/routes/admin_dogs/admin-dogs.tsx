@@ -1,8 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { PawPrintIcon } from "lucide-react";
-import { debounce, useQueryStates } from "nuqs";
 import { useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills } from "~/components/admin-filter-pills";
@@ -13,21 +13,21 @@ import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
 import { normalizeForSearch } from "~/lib/search";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { DogRow } from "~/routes/admin_dogs/components/dog-row";
 import { DogSearchField } from "~/routes/admin_dogs/components/dog-search-field";
 import { NoMatch } from "~/routes/admin_dogs/components/no-match";
 import { REGISTER_COLUMNS, REGISTER_PADDING } from "~/routes/admin_dogs/components/register-columns";
 import { ResultLine } from "~/routes/admin_dogs/components/result-line";
 import { countDogs, filterDogs, stateOf } from "~/routes/admin_dogs/filter-dogs";
+import { useSearchText } from "~/hooks/use-search-text";
 import {
-  adminDogsSearchParams,
+  adminDogsSearchSchema,
+  DEFAULT_DOG_STATE_FILTER,
   DOG_STATE_FILTERS,
   type DogStateFilter,
   PAGE_SIZE,
 } from "~/routes/admin_dogs/search-params";
-
-import type { Route } from "./+types/admin-dogs";
 
 /*===== Constants =====*/
 const STATE_LABELS: Record<DogStateFilter, string> = {
@@ -43,21 +43,23 @@ const TYPING_DELAY_MS = 300;
 const STAGGERED = 6;
 const RISE_STEP_S = 0.05;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "سگ‌ها | مدیریت آموزش K9" }];
+/*===== Queries =====*/
+const dogsQuery = () => orpc.dog.admin.list.queryOptions();
+// Only the waiting evaluation requests, to know which dogs are waiting for their answer.
+const requestsQuery = () => orpc.evaluation.admin.list.queryOptions({ input: { status: "requested" } });
 
-/*===== Loader =====*/
+/*===== Route =====*/
 // The guard is the layout's. Both lists come whole: the search, the status filter, the counts and the paging are applied
-// in the component, so changing them never waits for the server. Only the evaluation requests are read, to know which
-// dogs are waiting for their answer.
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [dogs, requests] = await Promise.all([
-    client.dog.admin.list(),
-    client.evaluation.admin.list({ status: "requested" }),
-  ]);
-  return { dogs, waitingDogIds: requests.map((evaluation) => evaluation.dog.id) };
-}
+// in the component, so none of them is a loader dep and changing them never waits for the server.
+export const Route = createFileRoute("/admin/dogs")({
+  validateSearch: adminDogsSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([queryClient.ensureQueryData(dogsQuery()), queryClient.ensureQueryData(requestsQuery())]),
+  head: () => ({ meta: [{ title: "سگ‌ها | مدیریت آموزش K9" }] }),
+  component: AdminDogsPage,
+  notFoundComponent: () => <DogsError notFound />,
+  errorComponent: () => <DogsError notFound={false} />,
+});
 
 /*===== Admin Dogs =====*/
 /**
@@ -68,24 +70,45 @@ export async function loader({ request }: Route.LoaderArgs) {
  * Motion only answers him: when a filter, a search or a page changes which dogs are listed, the first rows rise in, and
  * the result count pops. Nothing moves on load.
  */
-export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
-  const { dogs, waitingDogIds } = loaderData;
+function AdminDogsPage() {
+  const { data: dogs, isFetching: dogsFetching } = useSuspenseQuery(dogsQuery());
+  const { data: requests, isFetching: requestsFetching } = useSuspenseQuery(requestsQuery());
 
   /*------ URL State ------*/
-  const [{ q, state, page: requestedPage }, setParams] = useQueryStates(adminDogsSearchParams);
+  const search = Route.useSearch();
+  const state = search.state ?? DEFAULT_DOG_STATE_FILTER;
+  const navigate = useNavigate({ from: Route.fullPath });
+  // The list follows each key; the URL's `q` follows after a pause, replacing its entry (and going back to page one).
+  const searchText = useSearchText({
+    urlText: search.q ?? "",
+    delayMs: TYPING_DELAY_MS,
+    commit: (text) =>
+      void navigate({
+        search: (prev) => ({ ...prev, q: text === "" ? undefined : text, page: undefined }),
+        replace: true,
+        resetScroll: false,
+      }),
+  });
+  const q = searchText.text;
+  // While a typed search waits for the URL, the list is already on its first page.
+  const requestedPage = searchText.typing ? 1 : (search.page ?? 1);
 
   /*------ Pending ------*/
-  // Only a reload of this page dims the register (a revalidation, or the rail's link to the page he is on); the URL
-  // state is shallow, so typing and the pills never do, and leaving for another page shouldn't flash it.
-  const location = useLocation();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const pending =
-    revalidator.state === "loading" ||
-    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+  // Only a reload of the lists dims the register; the URL state isn't a loader dep, so typing and the pills never do,
+  // and leaving for another page shouldn't flash it.
+  const pending = dogsFetching || requestsFetching;
+
+  /** A new state filter, from its first page. Replace, not push: a filter isn't a place to go Back to. */
+  function showState(next: DogStateFilter) {
+    void navigate({
+      search: (prev) => ({ ...prev, state: next === DEFAULT_DOG_STATE_FILTER ? undefined : next, page: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  }
 
   /*------ Derived Lists ------*/
-  const waiting = useMemo(() => new Set(waitingDogIds), [waitingDogIds]);
+  const waiting = useMemo(() => new Set(requests.map((evaluation) => evaluation.dog.id)), [requests]);
   const counts = useMemo(() => countDogs({ dogs }), [dogs]);
   const matches = useMemo(() => filterDogs({ dogs, waiting, query: q, state }), [dogs, waiting, q, state]);
   const searching = normalizeForSearch(q) !== "";
@@ -124,7 +147,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
 
   /*------ Handlers ------*/
   function clearSearch() {
-    void setParams({ q: null, page: null }, { history: "replace" });
+    searchText.set("");
   }
 
   return (
@@ -149,16 +172,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
         <>
           {/*===== Search =====*/}
           <div className="flex flex-col gap-1.5">
-            <DogSearchField
-              value={q}
-              onChange={(value) =>
-                void setParams(
-                  { q: value || null, page: null },
-                  { history: "replace", limitUrlUpdates: debounce(TYPING_DELAY_MS) },
-                )
-              }
-              onClear={clearSearch}
-            />
+            <DogSearchField value={q} onChange={searchText.change} onClear={clearSearch} />
             <div className="ps-5">
               <ResultLine searching={searching} count={matches.length} />
             </div>
@@ -170,7 +184,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
             label="وضعیت ارزیابی"
             options={DOG_STATE_FILTERS.map((value) => ({ value, label: STATE_LABELS[value], count: counts[value] }))}
             value={state}
-            onChange={(next) => void setParams({ state: next, page: null })}
+            onChange={showState}
             className="mt-3"
           />
 
@@ -193,7 +207,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
                 state={state}
                 matchesInAll={matchesInAll}
                 onClear={clearSearch}
-                onShowAll={() => void setParams({ state: "all", page: null })}
+                onShowAll={() => showState("all")}
                 className={cn(moved && "answer-in")}
               />
             ) : (
@@ -239,7 +253,10 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
               className="mt-6"
               onPick={(next) => {
                 // Paging is the one change the Back button should undo.
-                void setParams({ page: next === 0 ? null : next + 1 }, { history: "push" });
+                void navigate({
+                  search: (prev) => ({ ...prev, page: next === 0 ? undefined : next + 1 }),
+                  resetScroll: false,
+                });
                 scrollToRegister();
               }}
             />
@@ -252,9 +269,7 @@ export default function AdminDogsPage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function DogsError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader

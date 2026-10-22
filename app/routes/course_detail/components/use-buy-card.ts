@@ -1,3 +1,4 @@
+import { type LinkOptions, linkOptions } from "@tanstack/react-router";
 import { useAtomValue, useSetAtom } from "jotai";
 import { useState } from "react";
 
@@ -22,7 +23,7 @@ export type BuyMode = "evaluation" | "visitor" | "no-dogs" | "dogs";
 
 /** The one main button, as a state. The card and the phone bar both draw it. */
 export type BuyAction =
-  | { kind: "link"; label: string; to: string }
+  | { kind: "link"; label: string; link: LinkOptions }
   /** Several dogs and none picked yet. */
   | { kind: "pick" }
   /** The picked dog can't take the course. */
@@ -34,7 +35,7 @@ export type BuyCardState = {
   mode: BuyMode;
   action: BuyAction;
   /** The outline button under the main one (signed out only). */
-  quieter: { label: string; to: string } | null;
+  quieter: { label: string; link: LinkOptions } | null;
   dogs: readonly DogEligibility[];
   /** The picked dog's id, or null. A customer with exactly one dog has it picked from the start. */
   pickedId: string | null;
@@ -79,7 +80,7 @@ export function useBuyCard({
           : "dogs";
 
   /*------ Picked Dog ------*/
-  // Derived, not stored: if the loader reloads and the chosen dog is gone, nothing stale is left behind.
+  // Derived, not stored: if the dogs are read again and the chosen dog is gone, nothing stale is left behind.
   const picked =
     eligibility.find((entry) => entry.dog.id === chosenId) ?? (eligibility.length === 1 ? eligibility[0] : undefined);
   const verdict = picked ? getDogVerdict({ ...picked, dogId: picked.dog.id }) : null;
@@ -89,18 +90,18 @@ export function useBuyCard({
   const action: BuyAction = (() => {
     switch (mode) {
       case "evaluation":
-        return { kind: "link", label: "ارزیابی رایگان", to: "/assessment" };
+        return { kind: "link", label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment" }) };
       case "visitor":
         return {
           kind: "link",
           label: "ورود و افزودن به سبد",
-          to: `/auth?redirectTo=${encodeURIComponent(`/courses/${course.slug}`)}`,
+          link: linkOptions({ to: "/auth", search: { redirectTo: `/courses/${course.slug}` } }),
         };
       case "no-dogs":
         return {
           kind: "link",
           label: "معرفی سگ",
-          to: `/account/dogs/new?redirectTo=${encodeURIComponent(`/courses/${course.slug}`)}`,
+          link: linkOptions({ to: "/account/dogs/new", search: { redirectTo: `/courses/${course.slug}` } }),
         };
       case "dogs":
         if (!verdict) return { kind: "pick" };
@@ -112,7 +113,7 @@ export function useBuyCard({
   return {
     mode,
     action,
-    quieter: mode === "visitor" ? { label: "ارزیابی رایگان", to: "/assessment" } : null,
+    quieter: mode === "visitor" ? { label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment" }) } : null,
     dogs: eligibility,
     pickedId: picked?.dog.id ?? null,
     verdict,

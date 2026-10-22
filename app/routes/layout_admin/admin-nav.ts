@@ -12,19 +12,24 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import type { StaticRoutePath } from "~/lib/route-path";
+
 /*===== Admin Navigation =====*/
 // The Admin's pages (docs/app-spec.md, Pages), in the order he works through a day: answer the requests, call the
 // customers, check the money. After those come the setup pages (courses, users, SMS, settings): the list has two groups
 // and the rail and the «بیشتر» sheet draw the slip's dashed tear between them. Add each page here when it is built; the
 // rail and the phone's tab bar both read this list. With more than four pages the bar keeps the first three and puts
-// the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`). The counts are added by the layout, from its loader.
+// the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`). The counts are added by the layout, from the Overview query.
+
+/** An Admin page without params: what the rail and the tab bar can link to. */
+export type AdminNavPath = Extract<StaticRoutePath, "/admin" | `/admin/${string}`>;
 
 /** One page in the Admin's rail and bottom tabs. */
 export type AdminNavItem = {
   /** `daily` pages come first; `setup` pages follow after the tear. Items must be listed with the daily ones first. */
   group: "daily" | "setup";
   label: string;
-  to: string;
+  to: AdminNavPath;
   icon: LucideIcon;
   /** Active only on this exact URL. */
   end?: boolean;

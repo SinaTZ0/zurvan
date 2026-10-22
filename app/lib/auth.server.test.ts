@@ -31,7 +31,7 @@ vi.mock("~/lib/sms.server", () => ({
 }));
 vi.mock("~/lib/referral.server", () => ({
   findPartnerForNewCustomer: async () => null,
-  readReferralCode: async () => null,
+  readReferralCode: () => null,
 }));
 
 const { auth, authForHeaders } = await import("~/lib/auth.server");
@@ -113,18 +113,24 @@ describe("domain and IP authentication", () => {
   });
 
   it("keeps referral cookies usable on HTTP and secure on the domain", async () => {
-    const { referralCookieFromUrl } =
+    const { referralCookie, serializeReferralCookie } =
       await vi.importActual<typeof import("~/lib/referral.server")>("~/lib/referral.server");
-    const ipCookie = await referralCookieFromUrl(
-      "http://203.0.113.10/?ref=PARTNER",
-      new Headers({ host: "203.0.113.10" }),
-    );
-    const domainCookie = await referralCookieFromUrl(
-      "https://k9training.example/?ref=PARTNER",
-      new Headers({ host: "k9training.example" }),
-    );
-    expect(ipCookie).toContain("zurvan_ref=");
-    expect(ipCookie).not.toMatch(/; Secure/i);
-    expect(domainCookie).toMatch(/; Secure/i);
+    const ipCookie = referralCookie({
+      requestUrl: "http://203.0.113.10/?ref=PARTNER",
+      headers: new Headers({ host: "203.0.113.10" }),
+    });
+    const domainCookie = referralCookie({
+      requestUrl: "https://k9training.example/?ref=PARTNER",
+      headers: new Headers({ host: "k9training.example" }),
+    });
+    expect(ipCookie && serializeReferralCookie(ipCookie)).toContain("zurvan_ref=");
+    expect(ipCookie && serializeReferralCookie(ipCookie)).not.toMatch(/; Secure/i);
+    expect(domainCookie && serializeReferralCookie(domainCookie)).toMatch(/; Secure/i);
+  });
+
+  it("reads referral cookies set before the move off React Router's createCookie", async () => {
+    const { readReferralCode } = await vi.importActual<typeof import("~/lib/referral.server")>("~/lib/referral.server");
+    // What `createCookie("zurvan_ref").serialize("PARTNER")` wrote: the JSON string in base64, URL-encoded.
+    expect(readReferralCode(new Headers({ Cookie: "zurvan_ref=IlBBUlRORVIi" }))).toBe("PARTNER");
   });
 });

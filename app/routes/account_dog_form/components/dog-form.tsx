@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { linkOptions, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { useNavigate } from "react-router";
 
 import { FormAlert } from "~/components/form-alert";
 import { GroundStrip } from "~/components/ground-strip";
@@ -172,10 +172,17 @@ export function DogForm({
       saveDog.mutate(toDogInput({ values: submitted, dog }), {
         onSuccess: async (saved) => {
           toast.add({ title: dog ? "تغییرات ذخیره شد." : `${saved.name} اضافه شد.`, type: "success" });
-          // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it.
-          const destination = redirectTo ? (dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id })) : null;
+          // A new dog goes back with its id (`?dog=`), so the page that sent them here can preselect it. `redirectTo` is
+          // any same-site path, so it goes in `href`, which the router parses.
+          if (redirectTo) {
+            const href = dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id });
+            await navigate({ href, viewTransition: true });
+            return;
+          }
           // Without a `redirectTo`, a new dog goes to the Dashboard (where it now appears), an edit to the dog's page.
-          await navigate(destination ?? (dog ? `/account/dogs/${saved.id}` : "/account"), { viewTransition: true });
+          await (dog
+            ? navigate({ to: "/account/dogs/$dogId", params: { dogId: saved.id }, viewTransition: true })
+            : navigate({ to: "/account", viewTransition: true }));
         },
         onError: (error) => {
           const fields = applyServerError({ error, setError });
@@ -190,7 +197,6 @@ export function DogForm({
     (invalid) => speakError(Object.keys(invalid)),
   );
 
-  const cancelTo = redirectTo ?? (dog ? `/account/dogs/${dog.id}` : "/account");
   const identityLine = !dog ? IDENTITY_LINES.new : locked ? IDENTITY_LINES.evaluated : IDENTITY_LINES.edit;
 
   return (
@@ -395,7 +401,16 @@ export function DogForm({
                 {saveDog.isPending && <Spinner data-icon="inline-start" />}
                 {saveDog.isPending ? (dog ? "در حال ذخیره…" : "در حال اضافه کردن…") : dog ? "ذخیره" : "اضافه کن"}
               </Button>
-              <Link to={cancelTo} className={buttonVariants({ variant: "ghost", size: "lg" })}>
+              {/* Back where they came from: `redirectTo` (a built path, so `href`, which the router parses; `to` is only
+                  there for the types), else the dog's page or the list. */}
+              <Link
+                {...(redirectTo
+                  ? linkOptions({ to: ".", href: redirectTo })
+                  : dog
+                    ? linkOptions({ to: "/account/dogs/$dogId", params: { dogId: dog.id } })
+                    : linkOptions({ to: "/account" }))}
+                className={buttonVariants({ variant: "ghost", size: "lg" })}
+              >
                 انصراف
               </Link>
             </div>

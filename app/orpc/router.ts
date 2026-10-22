@@ -93,12 +93,14 @@ import {
   adminMarkRefundPaidProcedure,
   listMyRefundsProcedure,
 } from "~/orpc/refund/procedure";
+import { getSessionProcedure } from "~/orpc/session/procedure";
 import { adminListSmsProcedure } from "~/orpc/sms/procedure";
 import {
   adminGetSettingsProcedure,
   adminUpdateSettingProcedure,
   commissionPercentProcedure,
 } from "~/orpc/setting/procedure";
+import { siteConfigProcedure } from "~/orpc/site/procedure";
 import { adminListUsersProcedure, adminSetUserStatusProcedure, adminUpdateUserProcedure } from "~/orpc/user/procedure";
 
 /*===== API Router =====*/
@@ -232,6 +234,9 @@ export const router = implementer.router({
       cancel: adminCancelRefundProcedure,
     },
   },
+  session: {
+    get: getSessionProcedure,
+  },
   sms: {
     admin: {
       list: adminListSmsProcedure,
@@ -243,6 +248,9 @@ export const router = implementer.router({
       get: adminGetSettingsProcedure,
       update: adminUpdateSettingProcedure,
     },
+  },
+  site: {
+    config: siteConfigProcedure,
   },
   user: {
     admin: {

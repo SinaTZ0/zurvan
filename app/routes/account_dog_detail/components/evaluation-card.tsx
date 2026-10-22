@@ -16,7 +16,7 @@ import { PLATE } from "~/routes/account_dog_detail/plate";
  * days and times), the Admin's reason when he rejected it, and what was sent with it. An evaluation the Admin recorded
  * himself has no request behind it, so it has no dates to show and no media.
  *
- * When the status changes under the page (the request withdrawn, which reloads the loader), the status row arrives
+ * When the status changes under the page (the request withdrawn, which refetches the page's queries), the status row arrives
  * again (`answer-in`, keyed by the status) and the withdraw button leaves; on the first load nothing moves.
  */
 export function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {

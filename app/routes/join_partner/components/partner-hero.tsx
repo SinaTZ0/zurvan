@@ -21,10 +21,10 @@ import { COLUMN } from "~/routes/join_partner/column";
  * Wide: words at the start, the street at the end. Phones: the street on top, the words under.
  *
  * The street's pieces are placed by physical sides because they are tied to the pictures (he looks to the right, at the
- * words, and his bubble's tail is aimed at his head), not to the reading direction. The percent comes from the loader
- * (the Admin's setting); nothing here depends on its width.
+ * words, and his bubble's tail is aimed at his head), not to the reading direction. The percent comes from the settings
+ * (the Admin's); nothing here depends on its width.
  *
- * @param commissionPercent The commission percent in force, read by the page's loader.
+ * @param commissionPercent The commission percent in force, read from the settings by the page.
  */
 export function PartnerHero({ commissionPercent }: { commissionPercent: number }) {
   return (
@@ -91,7 +91,11 @@ export function PartnerHero({ commissionPercent }: { commissionPercent: number }
             eager
             className="lively-sway-2 absolute right-[92%] bottom-0 w-[40%] translate-y-[3%] -scale-x-100 lg:right-[88%]"
           />
-          <MascotCut name="groomed" eager className="jp-dog lively-breathe lively-pet relative block w-full translate-y-[3%]" />
+          <MascotCut
+            name="groomed"
+            eager
+            className="jp-dog lively-breathe lively-pet relative block w-full translate-y-[3%]"
+          />
           <ChalkBubble
             tail="right"
             className="jp-pop absolute right-[calc(40%-36px)] bottom-[calc(100%+0.4rem)] w-max max-w-[13.5rem] text-pretty lg:max-w-[16rem]"

@@ -1,7 +1,6 @@
 import { AwardIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
-import { certificatePath } from "~/lib/certificate";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { PublicRecord } from "~/orpc/logbook/contract";
 
@@ -21,7 +20,8 @@ export function CertificateRows({ certificates }: { certificates: PublicRecord["
         {certificates.map((entry, index) => (
           <li key={entry.number} className={`lively-reveal lb-card-${(index % 3) + 1}`}>
             <Link
-              to={certificatePath(entry.number)}
+              to="/certificate/$number"
+              params={{ number: entry.number }}
               className="lb-row flex items-center gap-4 rounded-3xl border border-border bg-card paper-grain p-5 shadow-[0_14px_30px_-18px_rgb(0_0_0/0.9)] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <span

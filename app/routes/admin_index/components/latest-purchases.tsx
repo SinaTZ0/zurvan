@@ -25,7 +25,8 @@ export function LatestPurchases({ purchases }: { purchases: readonly LatestPurch
           آخرین خریدها
         </h3>
         <Link
-          to="/admin/payments?view=paid"
+          to="/admin/payments"
+          search={{ view: "paid" }}
           className="group inline-flex min-h-10 items-center gap-1 rounded-full px-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           همه‌ی پرداخت‌ها

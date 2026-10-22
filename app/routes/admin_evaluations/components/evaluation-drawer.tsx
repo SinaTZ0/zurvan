@@ -139,7 +139,8 @@ function DrawerBody({
           {/* The dog's name opens its page (F2). The row behind the drawer is a stretched link, so the link lives here. */}
           <SheetTitle className={cn(DISPLAY_HEADING, "text-xl break-words")}>
             <Link
-              to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+              to="/admin/dogs/$dogId"
+              params={{ dogId: dog.id }}
               className="rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <bdi>{dog.name}</bdi>

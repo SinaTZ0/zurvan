@@ -1,39 +1,35 @@
-// The one place allowed to import React Router's Link (see .oxlintrc.json).
-import { type LinkProps, Link as RouterLink, useLocation, useResolvedPath } from "react-router";
+// The one place allowed to import TanStack Router's Link (see .oxlintrc.json).
+import { type LinkComponent, Link as RouterLink, useLocation, useRouter } from "@tanstack/react-router";
 
-import { useDefaultPrefetch } from "~/hooks/use-default-prefetch";
-import { useDefaultViewTransition } from "~/hooks/use-default-view-transition";
-
+/*===== Link =====*/
 /**
- * React Router's `Link` that fades the page when it navigates to another pathname. Pass `viewTransition` to override
- * the default. See docs/view-transitions.md. It also prefetches the target page by default (see `useDefaultPrefetch`);
- * pass `prefetch` to override.
+ * TanStack Router's `Link`, fully typed (`to` is a route path, with `params`, `search` and `hash` as their own props),
+ * with the site's defaults. Any prop the call site passes wins.
  *
- * A hash link to the current page (`/#courses` on `/`) keeps the scroll position when React Router navigates, so the
- * smooth scroller (see `SmoothScroll`) can glide to the section; otherwise React Router's own instant jump would win.
+ * - **Preload:** `viewport` on the storefront and account, so every page linked from what's on screen is ready before
+ *   it's clicked, data included (the query cache keeps it for the click). Under `/admin` it is `intent` (hover or
+ *   focus): its pages are long lists of links, and preloading every visible row would fire a request per row. Links
+ *   that stay on the current pathname (query or hash only, like filter pills) and `reloadDocument` links don't preload.
+ * - **Same-page hash links** (`hash="courses"` on the page that has it) neither reset the scroll nor jump to the
+ *   element, so the smooth scroller (`SmoothScroll`) can glide there.
+ * - **The page fade** is the router's default (`defaultViewTransition` in `app/router.tsx`): only when the pathname
+ *   changes. See docs/view-transitions.md.
  */
-export function Link({
-  to,
-  relative,
-  viewTransition,
-  preventScrollReset,
-  prefetch,
-  reloadDocument,
-  ...props
-}: LinkProps & React.RefAttributes<HTMLAnchorElement>) {
-  const { pathname } = useLocation();
-  const target = useResolvedPath(to, { relative });
-  const isSamePageHash = target.pathname === pathname && target.hash !== "";
+export const Link: LinkComponent<"a"> = (props) => {
+  const router = useRouter();
+  const currentPathname = useLocation({ select: (location) => location.pathname });
+  // Where the link goes, resolved the way the router will (params filled in, relative paths resolved).
+  const target = router.buildLocation(props as Parameters<typeof router.buildLocation>[0]);
+  const samePathname = target.pathname === currentPathname;
+  const samePageHash = samePathname && target.hash !== "";
+  const inAdmin = currentPathname === "/admin" || currentPathname.startsWith("/admin/");
 
   return (
     <RouterLink
-      to={to}
-      relative={relative}
-      preventScrollReset={preventScrollReset ?? (isSamePageHash || undefined)}
-      viewTransition={useDefaultViewTransition({ to, relative, viewTransition })}
-      prefetch={useDefaultPrefetch({ to, relative, prefetch, reloadDocument })}
-      reloadDocument={reloadDocument}
+      preload={props.reloadDocument || samePathname ? false : inAdmin ? "intent" : "viewport"}
+      resetScroll={samePageHash ? false : undefined}
+      hashScrollIntoView={samePageHash ? false : undefined}
       {...props}
     />
   );
-}
+};

@@ -4,9 +4,10 @@
 !.env.example
 /node_modules/
 
-# React Router
-/.react-router/
-/build/
+# TanStack Start and Nitro build output
+/.output/
+/.nitro/
+/.tanstack/
 .tmp-claude
 
 # Playwright

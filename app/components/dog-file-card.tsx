@@ -6,7 +6,7 @@ import { CopyLinkButton } from "~/components/copy-link-button";
 import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
 import { downloadQrPng } from "~/lib/qr-png";
-import type { Qr } from "~/lib/qr.server";
+import type { Qr } from "~/lib/qr";
 
 /*===== Dog File Card =====*/
 /**

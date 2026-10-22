@@ -5,7 +5,6 @@ import { Link } from "~/components/link";
 import { Button } from "~/components/ui/button";
 import { describeDog } from "~/lib/dog-format";
 import type { AdminDog } from "~/orpc/dog/contract";
-import { ADMIN_DOGS_PATH } from "~/routes/admin_dog_detail/search-params";
 import { INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
 
 /*===== Dog Header =====*/
@@ -18,7 +17,7 @@ export function DogHeader({ dog, onEdit }: { dog: AdminDog; onEdit: () => void }
     <div>
       {/* In RTL the start side is the right, so «back» points right. */}
       <Link
-        to={ADMIN_DOGS_PATH}
+        to="/admin/dogs"
         className="-ms-1 mb-2 inline-flex h-10 items-center gap-1.5 rounded-full ps-1 pe-3 text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         <ArrowRightIcon aria-hidden className="size-4" />

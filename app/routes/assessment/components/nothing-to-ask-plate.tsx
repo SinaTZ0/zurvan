@@ -5,7 +5,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { NEW_DOG_PATH, type DogChoice } from "~/routes/assessment/components/dog-picker";
+import { NEW_DOG_LINK, type DogChoice } from "~/routes/assessment/components/dog-picker";
 import { PLATE } from "~/routes/assessment/components/form-plate";
 import { TapedPrint } from "~/routes/assessment/components/taped-print";
 
@@ -60,7 +60,7 @@ export function NothingToAskPlate({ dogs }: { dogs: readonly DogChoice[] }) {
           برو به سگ‌های من
         </Link>
         <Link
-          to={NEW_DOG_PATH}
+          {...NEW_DOG_LINK}
           className="inline-flex items-center gap-1.5 self-center rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:self-auto"
         >
           <PlusIcon aria-hidden className="size-4" />

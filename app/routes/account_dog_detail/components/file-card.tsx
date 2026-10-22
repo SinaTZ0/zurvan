@@ -7,7 +7,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { Button } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
 import { downloadQrPng } from "~/lib/qr-png";
-import type { Qr } from "~/lib/qr.server";
+import type { Qr } from "~/lib/qr";
 import { CopyLink } from "~/routes/account_dog_detail/components/copy-link";
 import { EdgeDog } from "~/routes/account_dog_detail/components/edge-dog";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";

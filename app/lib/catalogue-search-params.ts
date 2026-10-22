@@ -1,4 +1,4 @@
-import { createLoader, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 import type { CourseFamily } from "~/orpc/course/constants";
 
@@ -16,7 +16,7 @@ export const TYPING_DELAY_MS = 350;
 /** Cards per page: four rows of three on desktop. */
 export const PAGE_SIZE = 12;
 
-/** The longest search the field takes; a longer one in the URL is cut by the loader. */
+/** The longest search the field takes; a longer one in the URL is cut where it's read. */
 export const MAX_QUERY_LENGTH = 60;
 
 /**
@@ -37,13 +37,24 @@ export function isCatalogueFamily(value: string): value is (typeof CATALOGUE_FAM
   return (CATALOGUE_FAMILIES as readonly string[]).includes(value);
 }
 
-/*===== Parsers =====*/
-// `family` has no default: absent means "all", and `null` is how a component clears it. `page` is 1-based in the URL.
-export const catalogueSearchParams = {
-  q: parseAsString.withDefault(""),
-  family: parseAsStringLiteral(CATALOGUE_FAMILIES),
-  page: parseAsInteger.withDefault(1),
-};
+/*===== Schema =====*/
+/**
+ * The catalogue route's `validateSearch`. Every field is optional and a bad value is dropped rather than failing the
+ * page, since anyone can type a URL. Defaults are applied where the values are read: no `q` is an empty search, no
+ * `family` is "all", no `page` is the first page (1-based). Links and navigations leave a value out when it equals its
+ * default, so the URL stays clean.
+ *
+ * `q` also takes a number: the router reads `?q=123` (a search typed into the header's form before hydration) as a
+ * number, and a digits-only search is still a search.
+ */
+export const catalogueSearchSchema = z.object({
+  q: z
+    .union([z.string(), z.number()])
+    .transform((value) => String(value))
+    .optional()
+    .catch(undefined),
+  family: z.enum(CATALOGUE_FAMILIES).optional().catch(undefined),
+  page: z.number().int().optional().catch(undefined),
+});
 
-/*===== Server Loader =====*/
-export const loadCatalogueSearchParams = createLoader(catalogueSearchParams);
+export type CatalogueSearch = z.output<typeof catalogueSearchSchema>;

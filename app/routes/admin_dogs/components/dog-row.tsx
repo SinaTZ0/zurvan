@@ -47,7 +47,8 @@ export function DogRow({ dog, state, rise }: { dog: AdminDog; state: DogEvaluati
         </span>
         <div className="contents xl:block xl:min-w-0">
           <Link
-            to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+            to="/admin/dogs/$dogId"
+            params={{ dogId: dog.id }}
             data-row-link
             className="block min-w-0 self-center text-base leading-6 font-bold break-words outline-none [grid-area:name] after:absolute after:inset-0"
           >

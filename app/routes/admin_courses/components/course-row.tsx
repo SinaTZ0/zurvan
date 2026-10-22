@@ -189,7 +189,8 @@ export function CourseRow({
       {/*===== Actions =====*/}
       <div className="mt-3 grid grid-cols-2 gap-2 [grid-area:acts] md:mt-1.5 md:flex md:justify-end xl:mt-0 xl:self-center">
         <Link
-          to={`/admin/courses/${course.slug}/edit`}
+          to="/admin/courses/$slug/edit"
+          params={{ slug: course.slug }}
           className={buttonVariants({ variant: "outline", size: "sm", className: cn(INK_OUTLINE, "h-11 md:h-10") })}
         >
           ویرایش

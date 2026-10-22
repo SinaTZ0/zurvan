@@ -1,8 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ReceiptTextIcon } from "lucide-react";
-import { useQueryStates } from "nuqs";
 import { useRef, useState } from "react";
-import { isRouteErrorResponse, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills } from "~/components/admin-filter-pills";
@@ -12,32 +12,35 @@ import { Pagination } from "~/components/pagination";
 import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 
 import { CollapsedPayment } from "./components/collapsed-payment";
 import { FlagPlate } from "./components/flag-plate";
 import { PaymentSlip } from "./components/payment-slip";
 import { PaymentsMotion } from "./components/payments-motion";
 import { countByView, flagTotals, matchesView } from "./payment-views";
-import type { Route } from "./+types/admin-payments";
-import { PAGE_SIZE, paymentsSearchParams, type PaymentView } from "./search-params";
+import { DEFAULT_PAYMENT_VIEW, PAGE_SIZE, paymentsSearchSchema, type PaymentView } from "./search-params";
 
 /*===== Constants =====*/
 // A filter or a page change staggers only the first slips in; the rest of a long page is simply there.
 const STAGGERED = 6;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "پرداخت‌ها | مدیریت آموزش K9" }];
+/*===== Queries =====*/
+const paymentsQuery = () => orpc.checkout.admin.payments.queryOptions({ input: {} });
+const refundsQuery = () => orpc.refund.admin.list.queryOptions({ input: {} });
 
-/*===== Loader =====*/
+/*===== Route =====*/
 // The whole list, newest first, from the API. Filtering and paging happen in the component (URL state), so the loader
-// doesn't read any search params.
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [payments, refunds] = await Promise.all([client.checkout.admin.payments({}), client.refund.admin.list({})]);
-
-  return { payments, refunds };
-}
+// has no search deps.
+export const Route = createFileRoute("/admin/payments")({
+  validateSearch: paymentsSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    Promise.all([queryClient.ensureQueryData(paymentsQuery()), queryClient.ensureQueryData(refundsQuery())]),
+  head: () => ({ meta: [{ title: "پرداخت‌ها | مدیریت آموزش K9" }] }),
+  component: AdminPaymentsPage,
+  notFoundComponent: () => <PaymentsError notFound />,
+  errorComponent: () => <PaymentsError notFound={false} />,
+});
 
 /*===== Page =====*/
 /**
@@ -45,22 +48,30 @@ export async function loader({ request }: Route.LoaderArgs) {
  * piece and flagged at the top. Money is given back outside the app, but the decision, the amount, the transfer's
  * reference and who did it are recorded here: each paid slip ends on its refunds.
  */
-export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) {
-  const { payments, refunds } = loaderData;
+function AdminPaymentsPage() {
+  const { data: payments, isFetching: paymentsFetching } = useSuspenseQuery(paymentsQuery());
+  const { data: refunds, isFetching: refundsFetching } = useSuspenseQuery(refundsQuery());
 
   /*------ URL State ------*/
-  // Shallow: the list is already here, so a filter or a page only changes what is shown.
-  const [{ view, page }, setParams] = useQueryStates(paymentsSearchParams, { shallow: true });
+  // The list is already here, so a filter or a page only changes what is shown.
+  const search = Route.useSearch();
+  const view = search.view ?? DEFAULT_PAYMENT_VIEW;
+  const page = search.page ?? 1;
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  /** A new filter, from its first page. Replace, not push: a filter isn't a place to go Back to. */
+  function showView(next: PaymentView) {
+    void navigate({
+      search: (prev) => ({ ...prev, view: next === DEFAULT_PAYMENT_VIEW ? undefined : next, page: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  }
 
   /*------ Pending ------*/
-  // Only a reload of this page dims the list (a navigation to it, or the revalidation after a refund is answered);
-  // leaving for another Admin page shouldn't flash it.
-  const location = useLocation();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const pending =
-    revalidator.state === "loading" ||
-    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+  // Only a reload of the list dims it (the refetch after a refund is answered); leaving for another Admin page
+  // shouldn't flash it.
+  const pending = paymentsFetching || refundsFetching;
 
   /*------ Counts and Filter ------*/
   const counts = countByView(payments);
@@ -116,14 +127,14 @@ export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) 
       <FlagPlate
         visible={counts.flagged > 0 && view !== "flagged"}
         totals={flagTotals(payments)}
-        onShow={() => setParams({ view: "flagged", page: null })}
+        onShow={() => showView("flagged")}
       />
 
       {/*===== Filter =====*/}
       <AdminFilterPills<PaymentView>
         label="وضعیت"
         value={view}
-        onChange={(next) => setParams({ view: next, page: null })}
+        onChange={showView}
         options={[
           { value: "all", label: "همه", count: counts.all },
           { value: "paid", label: "پرداخت‌شده", count: counts.paid },
@@ -188,7 +199,10 @@ export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) 
           pageCount={pageCount}
           // Paging is the one change the Back button should undo, as on the catalogue.
           onPick={(index) => {
-            void setParams({ page: index === 0 ? null : index + 1 }, { history: "push" });
+            void navigate({
+              search: (prev) => ({ ...prev, page: index === 0 ? undefined : index + 1 }),
+              resetScroll: false,
+            });
             scrollToLedger();
           }}
         />
@@ -199,9 +213,7 @@ export default function AdminPaymentsPage({ loaderData }: Route.ComponentProps) 
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the shell stays usable while this list is down.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function PaymentsError({ notFound }: { notFound: boolean }) {
   return (
     <>
       <AdminPageHeader

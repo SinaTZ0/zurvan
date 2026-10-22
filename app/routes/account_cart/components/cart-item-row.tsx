@@ -79,7 +79,7 @@ export function CartItemRow({
                       <>
                         {" "}
                         <Link
-                          to={problem.way.to}
+                          {...problem.way.link}
                           className="rounded-sm font-bold whitespace-nowrap underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
                         >
                           {problem.way.label}

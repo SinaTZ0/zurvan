@@ -1,42 +1,28 @@
-import { ORPCError } from "@orpc/client";
 import { ArrowUpLeftIcon } from "lucide-react";
-import { data, isRouteErrorResponse } from "react-router";
 
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
+import type { AdminCourse } from "~/orpc/course/contract";
 import { CourseForm } from "~/routes/admin_course_form/components/course-form";
 import { INK_OUTLINE } from "~/routes/admin_course_form/surfaces";
 
-import type { Route } from "./+types/admin-course-form";
+// The page shared by two routes, each a thin file beside this one: `/admin/courses/new` (`admin-course-new.tsx`) and
+// `/admin/courses/$slug/edit` (`admin-course-edit.tsx`). The edit route passes the course; the new one passes `null`.
+// The admin layout guards both.
 
-// One module for two routes (see `routes.ts`): `/admin/courses/new` and `/admin/courses/:slug/edit`. A `slug` param
-// means edit.
+/*===== Queries =====*/
+/** The whole catalogue, for the prerequisite choices. Both routes read it. */
+export const coursesQuery = () => orpc.course.admin.list.queryOptions();
 
-const COURSES_PATH = "/admin/courses";
+/** The course being edited. The API answers NOT_FOUND for an unknown slug, which the edit route turns into a 404. */
+export const courseQuery = (slug: string) => orpc.course.admin.get.queryOptions({ input: { slug } });
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: `${loaderData?.course ? `ویرایش ${loaderData.course.title}` : "دوره‌ی تازه"} | مدیریت آموزش K9` },
-];
-
-/*===== Loader =====*/
-// The admin layout guards the route. The whole catalogue is loaded for the prerequisite choices; the API answers
-// NOT_FOUND for an unknown slug, which becomes a 404.
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const slug = params.slug;
-
-  const [course, courses] = await Promise.all([
-    slug ? client.course.admin.get({ slug }) : null,
-    client.course.admin.list(),
-  ]).catch((error: unknown) => {
-    if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
-    throw error;
-  });
-
-  return { course, courses };
+/*===== Head =====*/
+/** The tab's title: the course being edited, or «دوره‌ی تازه» (also while there is no course to name). */
+export function courseFormTitle(courseTitle: string | undefined) {
+  return `${courseTitle ? `ویرایش ${courseTitle}` : "دوره‌ی تازه"} | مدیریت آموزش K9`;
 }
 
 /*===== Admin Course Form =====*/
@@ -44,9 +30,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * F8's form for writing a course the way the public pages show it, and for fixing one when its price, age range or
  * wording changes. The real catalogue card beside the form shows what customers will see.
  */
-export default function AdminCourseForm({ loaderData }: Route.ComponentProps) {
-  const { course, courses } = loaderData;
-
+export function AdminCourseForm({ course, courses }: { course: AdminCourse | null; courses: AdminCourse[] }) {
   return (
     <div>
       {/*===== Header =====*/}
@@ -55,7 +39,8 @@ export default function AdminCourseForm({ loaderData }: Route.ComponentProps) {
           {course?.status === "approved" && (
             // A new tab: the form keeps what he has typed while he looks at the live page.
             <Link
-              to={`/courses/${course.slug}`}
+              to="/courses/$slug"
+              params={{ slug: course.slug }}
               target="_blank"
               rel="noopener"
               className={buttonVariants({ variant: "outline", className: INK_OUTLINE })}
@@ -65,7 +50,10 @@ export default function AdminCourseForm({ loaderData }: Route.ComponentProps) {
               <span className="sr-only">(توی برگه‌ی تازه)</span>
             </Link>
           )}
-          <Link to={COURSES_PATH} className={buttonVariants({ variant: "ghost", className: "text-muted-foreground" })}>
+          <Link
+            to="/admin/courses"
+            className={buttonVariants({ variant: "ghost", className: "text-muted-foreground" })}
+          >
             بازگشت به دوره‌ها
           </Link>
         </div>
@@ -93,9 +81,7 @@ function summaryFor(course: { status: string } | null): string | undefined {
 
 /*===== Error Boundary =====*/
 // Inside the Admin shell, so the rail and tabs stay on screen.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+export function CourseFormError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -106,7 +92,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."
         }
       />
-      <Link to={COURSES_PATH} className={buttonVariants({ variant: "outline", className: INK_OUTLINE })}>
+      <Link to="/admin/courses" className={buttonVariants({ variant: "outline", className: INK_OUTLINE })}>
         برگرد به دوره‌ها
       </Link>
     </div>

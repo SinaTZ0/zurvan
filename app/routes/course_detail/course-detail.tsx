@@ -1,12 +1,14 @@
-import { ORPCError } from "@orpc/client";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import { useRef } from "react";
-import { data, isRouteErrorResponse } from "react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { authForHeaders } from "~/lib/auth.server";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orNotFound } from "~/lib/not-found";
+import { orpc } from "~/orpc/client";
+import type { Course } from "~/orpc/course/contract";
+import type { SessionState } from "~/orpc/session/contract";
 import { BuyCard } from "~/routes/course_detail/components/buy-card";
 import { ClosingBand } from "~/routes/course_detail/components/closing-band";
 import { CourseHero } from "~/routes/course_detail/components/course-hero";
@@ -17,59 +19,64 @@ import { useBuyCard, type Viewer } from "~/routes/course_detail/components/use-b
 import { COLUMN } from "~/routes/course_detail/column";
 import { getLane } from "~/routes/course_detail/lane";
 
-import type { PublicLayoutHandle } from "~/routes/layout_public/layout-public";
-
-import type { Route } from "./+types/course-detail";
-
-/*===== Handle =====*/
-// The closing band, a brick wall, runs straight into the footer.
-export const handle: PublicLayoutHandle = { flushFooter: true };
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = ({ loaderData }) => {
-  if (!loaderData) return [{ title: "دوره پیدا نشد | آموزش K9" }];
-  const { course } = loaderData;
-  return [{ title: `${course.title} | آموزش K9` }, { name: "description", content: course.summary }];
-};
-
-/*===== Loader =====*/
+/*===== Route =====*/
 // Public: a visitor reads the course, so there is no guard. The session is only read to know who is looking.
 // Working and sport dogs (`/courses/working-dogs`, `/courses/sport`) are course rows too, so they land here.
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [course, catalogue, session] = await Promise.all([
-    client.course.get({ slug: params.slug }).catch((error: unknown) => {
-      if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
-      throw error;
-    }),
-    client.course.list(),
-    authForHeaders(request.headers).api.getSession({ headers: request.headers }),
-  ]);
+export const Route = createFileRoute("/_public/courses/$slug")({
+  loader: async ({ context: { queryClient }, params }) => {
+    const [course, , session] = await Promise.all([
+      orNotFound(queryClient.ensureQueryData(orpc.course.get.queryOptions({ input: { slug: params.slug } }))),
+      queryClient.ensureQueryData(orpc.course.list.queryOptions()),
+      queryClient.ensureQueryData(orpc.session.get.queryOptions()),
+    ]);
 
-  /*------ Viewer ------*/
-  // A customer who hasn't given a name yet is still finishing sign-up: for this page they are a visitor, and the sign-in
-  // page asks for the name before sending them back here.
-  const viewer: Viewer = !session
-    ? "visitor"
-    : session.user.role !== "customer"
-      ? "other"
-      : session.user.firstName
-        ? "customer"
-        : "visitor";
+    if (canBuy({ viewer: toBuyViewer(session), course })) {
+      await queryClient.ensureQueryData(orpc.checkout.eligibility.queryOptions({ input: { courseSlug: course.slug } }));
+    }
+    return { title: course.title, summary: course.summary };
+  },
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [{ title: `${loaderData.title} | آموزش K9` }, { name: "description", content: loaderData.summary }]
+      : [{ title: "دوره پیدا نشد | آموزش K9" }],
+  }),
+  // The closing band, a brick wall, runs straight into the footer.
+  staticData: { flushFooter: true },
+  component: CourseDetailPage,
+  notFoundComponent: () => <CourseError missing />,
+  errorComponent: () => <CourseError missing={false} />,
+});
 
-  /*------ Which Dogs Can Buy ------*/
-  // Only a customer, and only for a course that has a price (a working or sport course isn't sold online).
-  const eligibility =
-    viewer === "customer" && course.price !== null
-      ? await client.checkout.eligibility({ courseSlug: course.slug })
-      : [];
+/*===== Viewer =====*/
+/**
+ * Who is looking, for the buy card. A customer who hasn't given a name yet is still finishing sign-up: for this page
+ * they are a visitor, and the sign-in page asks for the name before sending them back here. A blocked account reads as
+ * signed out.
+ */
+function toBuyViewer(session: SessionState): Viewer {
+  if (session.status === "anonymous") return "visitor";
+  if (session.user.role !== "customer") return "other";
+  return session.status === "active" ? "customer" : "visitor";
+}
 
-  return { course, lane: getLane({ course, catalogue }), viewer, eligibility };
+/** Only a customer, and only for a course that has a price (a working or sport course isn't sold online). */
+function canBuy({ viewer, course }: { viewer: Viewer; course: Pick<Course, "price"> }) {
+  return viewer === "customer" && course.price !== null;
 }
 
 /*===== Page =====*/
-export default function CourseDetailPage({ loaderData }: Route.ComponentProps) {
-  const { course, lane, viewer, eligibility } = loaderData;
+function CourseDetailPage() {
+  const { slug } = Route.useParams();
+  const { data: course } = useSuspenseQuery(orpc.course.get.queryOptions({ input: { slug } }));
+  const { data: catalogue } = useSuspenseQuery(orpc.course.list.queryOptions());
+  const { data: session } = useSuspenseQuery(orpc.session.get.queryOptions());
+  const viewer = toBuyViewer(session);
+  // Conditional, so not a suspense read; the loader has already put it in the cache for the server render.
+  const { data: eligibility = [] } = useQuery({
+    ...orpc.checkout.eligibility.queryOptions({ input: { courseSlug: course.slug } }),
+    enabled: canBuy({ viewer, course }),
+  });
+  const lane = getLane({ course, catalogue });
   // The card and the phone bar draw the same state, so it is worked out once here.
   const buy = useBuyCard({ course, viewer, eligibility });
   const cardRef = useRef<HTMLDivElement>(null);
@@ -104,17 +111,15 @@ export default function CourseDetailPage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Renders inside the public layout, so a mistyped course link still has the header, footer and a way on.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function CourseError({ missing }: { missing: boolean }) {
   return (
     <section aria-labelledby="course-error-title" className={`${COLUMN} py-section-md`}>
       <div className="max-w-xl">
         <h1 id="course-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
-          {notFound ? "این دوره پیدا نشد" : "صفحه‌ی این دوره باز نشد"}
+          {missing ? "این دوره پیدا نشد" : "صفحه‌ی این دوره باز نشد"}
         </h1>
         <p className="mt-4 text-lead text-pretty text-muted-foreground">
-          {notFound
+          {missing
             ? "شاید نشانی‌اش عوض شده باشد. همه‌ی دوره‌ها را ببین، یا با ارزیابی رایگان شروع کن تا دوره‌ی مناسب سگت را با هم پیدا کنیم."
             : "مشکلی پیش آمد و اطلاعات دوره نرسید. صفحه را دوباره باز کن یا چند دقیقه‌ی دیگر سر بزن."}
         </p>

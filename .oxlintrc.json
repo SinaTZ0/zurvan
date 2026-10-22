@@ -1,14 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "unicorn",
-    "oxc",
-    "import",
-    "react",
-    "jsx-a11y",
-    "vitest"
-  ],
+  "plugins": ["typescript", "unicorn", "oxc", "import", "react", "jsx-a11y", "vitest"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn"
@@ -30,9 +22,9 @@
       {
         "paths": [
           {
-            "name": "react-router",
-            "importNames": ["Link", "NavLink"],
-            "message": "Import Link from ~/components/link or NavLink from ~/components/nav-link, which add page view transitions (docs/view-transitions.md)."
+            "name": "@tanstack/react-router",
+            "importNames": ["Link"],
+            "message": "Import Link from ~/components/link or NavLink from ~/components/nav-link, which add the site's preload and hash-scroll defaults (docs/view-transitions.md)."
           }
         ]
       }
@@ -53,15 +45,17 @@
       }
     },
     {
-      "files": ["app/components/link.tsx", "app/components/nav-link.tsx"],
+      "files": ["app/components/link.tsx"],
       "rules": {
         "no-restricted-imports": "off"
       }
     }
   ],
   "ignorePatterns": [
-    ".react-router/",
-    "build/",
+    ".output/",
+    ".nitro/",
+    ".tanstack/",
+    "app/routeTree.gen.ts",
     "playwright-report/",
     "test-results/",
     "storybook-static/"

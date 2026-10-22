@@ -1,3 +1,5 @@
+import { type LinkOptions, linkOptions } from "@tanstack/react-router";
+
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { IneligibilityKind } from "~/lib/eligibility";
 
@@ -22,7 +24,7 @@ export type DogVerdictProblem = {
   /** The server's Persian reason, as it is. */
   message: string;
   /** Where the customer can go to fix it: the free evaluation, or the prerequisite course. Null when only time helps. */
-  way: { label: string; to: string } | null;
+  way: { label: string; link: LinkOptions } | null;
 };
 
 export type DogVerdict = {
@@ -51,9 +53,12 @@ export function getDogVerdict({ dogId, eligible, problems }: VerdictInput): DogV
       message: problem.message,
       way:
         problem.kind === "not-evaluated"
-          ? { label: "ارزیابی رایگان", to: `/assessment?dog=${dogId}` }
+          ? { label: "ارزیابی رایگان", link: linkOptions({ to: "/assessment", search: { dog: dogId } }) }
           : problem.kind === "prerequisite" && problem.courseSlug
-            ? { label: "این دوره رو ببین", to: `/courses/${problem.courseSlug}` }
+            ? {
+                label: "این دوره رو ببین",
+                link: linkOptions({ to: "/courses/$slug", params: { slug: problem.courseSlug } }),
+              }
             : null,
     })),
   };

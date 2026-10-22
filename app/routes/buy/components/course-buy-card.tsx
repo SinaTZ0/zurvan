@@ -86,7 +86,8 @@ export function CourseBuyCard({
       <div className="min-w-0 self-center sm:self-auto sm:px-5 sm:pt-5 lg:px-6 lg:pt-6">
         <h3 className="font-extrabold text-pretty sm:text-lg">
           <Link
-            to={`/courses/${course.slug}`}
+            to="/courses/$slug"
+            params={{ slug: course.slug }}
             className="rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             {course.title}

@@ -31,7 +31,7 @@ app/orpc/
 ```
 
 Shared infrastructure (database client and schema, storage, crypto, generic helpers) lives outside `app/orpc/`, e.g. in
-`app/db/` and `app/lib/`. A single resource route mounts the RPC handler. Keep feature folders flat and add files only
+`app/db/` and `app/lib/`. A single server route (`app/routes/rpc/rpc.ts`) mounts the RPC handler. Keep feature folders flat and add files only
 when they earn their place. Promote code out of a feature only when a second consumer needs it.
 
 ## Layers

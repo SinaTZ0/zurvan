@@ -1,17 +1,15 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { useState } from "react";
-import { useNavigate } from "react-router";
 
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { refreshSession } from "~/lib/session-guard";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { CodeStep } from "~/routes/auth/components/code-step";
 import { NameStep } from "~/routes/auth/components/name-step";
 import { PasswordStep } from "~/routes/auth/components/password-step";
 import { PhoneStep } from "~/routes/auth/components/phone-step";
-
-/** Where someone who forgot their password lands after signing in with a code: the card where a new one is set. */
-const NEW_PASSWORD_PATH = "/account/profile#password";
 
 type Step =
   | { name: "phone" }
@@ -47,6 +45,7 @@ export function SignInFlow({
   onStepChange,
 }: {
   showcase: boolean;
+  /** A same-site path (the page made sure), where the person goes once signed in. */
   redirectTo: string;
   /** Approved site rules exist, so the name step asks for the tick and records it (F13). */
   rulesPublished: boolean;
@@ -68,10 +67,17 @@ export function SignInFlow({
     onStepChange(next.name);
   };
 
-  async function finish(to = redirectTo) {
-    // Drop anything cached for a previous account before showing this one's data.
+  /**
+   * Leaves for `redirectTo`, or, for someone who forgot their password and signed in with a code, for the profile's
+   * password card where a new one is set.
+   */
+  async function finish({ forgot = false }: { forgot?: boolean } = {}) {
+    // Drop anything cached for a previous account before showing this one's data, and ask for the new session before
+    // the next page's guard reads it.
     queryClient.clear();
-    await navigate(to, { viewTransition: true });
+    await refreshSession(queryClient);
+    if (forgot) await navigate({ to: "/account/profile", hash: "password", viewTransition: true });
+    else await navigate({ href: redirectTo, viewTransition: true });
   }
 
   return (
@@ -122,7 +128,7 @@ export function SignInFlow({
             onResent={(sentAt) => setStep({ ...step, sentAt })}
             onEditPhone={() => goTo({ name: "phone" })}
             onVerified={async (user) => {
-              if (user.firstName) await finish(step.forgot ? NEW_PASSWORD_PATH : redirectTo);
+              if (user.firstName) await finish({ forgot: step.forgot });
               else goTo({ name: "name" });
             }}
           />

@@ -1,4 +1,4 @@
-import { createSerializer, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 import type { EvaluationStatus } from "~/orpc/evaluation/constants";
 
@@ -14,17 +14,16 @@ export const EVALUATION_FILTERS = [
 
 export type EvaluationFilter = (typeof EVALUATION_FILTERS)[number];
 
-/** The page's own path, which the row links are built on. */
-export const ADMIN_EVALUATIONS_PATH = "/admin/evaluations";
+/** The filter an absent `?status=` means; links leave it out of the URL. */
+export const DEFAULT_EVALUATION_FILTER = "requested" satisfies EvaluationFilter;
 
-/*===== Parsers =====*/
-// Both are shallow: the loader fetches the whole list once and the page filters it, so a change never needs a loader
-// run. `evaluation` (the open drawer) pushes a history entry, so Back closes the drawer; it has no default because
-// "absent" means closed.
-export const adminEvaluationsSearchParams = {
-  status: parseAsStringLiteral(EVALUATION_FILTERS).withDefault("requested").withOptions({ shallow: true }),
-  evaluation: parseAsString.withOptions({ shallow: true, history: "push" }),
-};
+/*===== Search Schema =====*/
+// Neither is in the loader's deps: the loader fetches the whole list once and the page filters it, so a change never
+// needs a loader run. `evaluation` (the open drawer) is pushed as a history entry, so Back closes the drawer; absent
+// means closed. A hand-typed bad value is dropped (`.catch`) instead of failing the page.
+export const adminEvaluationsSearchSchema = z.object({
+  status: z.enum(EVALUATION_FILTERS).optional().catch(undefined),
+  evaluation: z.string().optional().catch(undefined),
+});
 
-/*===== Links =====*/
-export const serializeAdminEvaluationsSearchParams = createSerializer(adminEvaluationsSearchParams);
+export type AdminEvaluationsSearch = z.infer<typeof adminEvaluationsSearchSchema>;

@@ -1,9 +1,9 @@
 import { cn } from "cn";
 import { useState } from "react";
 
+import { Link } from "~/components/link";
 import { Button } from "~/components/ui/button";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
-import { certificatePath } from "~/lib/certificate";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { Certificate } from "~/orpc/certificate/contract";
 import type { AdminEnrollment } from "~/orpc/enrollment/contract";
@@ -97,9 +97,10 @@ function CertificateRow({
       {/*------ Certificate ------*/}
       {certificate ? (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:justify-end">
-          <a
+          <Link
             key={certificate.id}
-            href={certificatePath(certificate.number)}
+            to="/certificate/$number"
+            params={{ number: certificate.number }}
             target="_blank"
             rel="noreferrer"
             dir="ltr"
@@ -113,7 +114,7 @@ function CertificateRow({
             )}
           >
             {certificate.number}
-          </a>
+          </Link>
 
           {certificate.revokedAt ? (
             <span

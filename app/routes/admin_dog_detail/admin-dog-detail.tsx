@@ -1,8 +1,7 @@
-import { ORPCError } from "@orpc/client";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
-import { useQueryStates } from "nuqs";
 import { useRef, useState } from "react";
-import { data, isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
 
 import { getDogEvaluationState } from "~/components/dog-evaluation-stamp";
 import { AdminPageHeader } from "~/components/admin-page-header";
@@ -10,9 +9,9 @@ import { DogFileCard } from "~/components/dog-file-card";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_PLATE } from "~/lib/admin-plate";
-import { buildDogFileCard } from "~/lib/dog-file.server";
+import { orNotFound } from "~/lib/not-found";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
 import { DetailMotion } from "~/routes/admin_dog_detail/components/detail-motion";
@@ -29,45 +28,49 @@ import { SessionSheet } from "~/routes/admin_dog_detail/components/session-sheet
 import { useStickyColumn } from "~/routes/admin_dog_detail/hooks/use-sticky-column";
 import { summarizeEvaluations } from "~/routes/admin_dog_detail/evaluation-summary";
 import { buildLadder } from "~/routes/admin_dog_detail/ladder";
-import { ADMIN_DOGS_PATH, adminDogDetailSearchParams } from "~/routes/admin_dog_detail/search-params";
+import { adminDogDetailSearchSchema } from "~/routes/admin_dog_detail/search-params";
 
-import type { Route } from "./+types/admin-dog-detail";
+/*===== Constants =====*/
+// Whether an owner can make a record public at all (approved wording exists); the session form offers its mark only then.
+const PUBLIC_RECORDS_AVAILABLE = PUBLIC_RECORD_CONSENT !== null;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: `${loaderData?.dog.name ?? "سگ"} | مدیریت آموزش K9` },
-];
-
-/*===== Loader =====*/
-// The admin layout guards the route. The API answers NOT_FOUND for a made-up or malformed id, which becomes a 404.
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const dogId = params.dogId;
-
-  const [dog, eligibility, evaluations, enrollments, logbook, certificates] = await Promise.all([
-    client.dog.admin.get({ id: dogId }),
-    client.checkout.admin.dogEligibility({ dogId }),
-    client.evaluation.admin.list({ dogId }),
-    client.enrollment.admin.list({ dogId }),
-    client.logbook.admin.list({ dogId }),
-    client.certificate.admin.list({ dogId }),
-  ]).catch((error: unknown) => {
-    if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
-    throw error;
-  });
-
+/*===== Queries =====*/
+/** Everything the file shows, one query per procedure, for the loader and the page alike. */
+function dogFileQueries(dogId: string) {
   return {
-    dog,
-    eligibility,
-    evaluations,
-    enrollments,
-    logbook,
-    certificates,
-    // Whether an owner can make a record public at all (approved wording exists); the session form offers its mark only then.
-    publicRecordsAvailable: PUBLIC_RECORD_CONSENT !== null,
-    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
+    dog: orpc.dog.admin.get.queryOptions({ input: { id: dogId } }),
+    eligibility: orpc.checkout.admin.dogEligibility.queryOptions({ input: { dogId } }),
+    evaluations: orpc.evaluation.admin.list.queryOptions({ input: { dogId } }),
+    enrollments: orpc.enrollment.admin.list.queryOptions({ input: { dogId } }),
+    logbook: orpc.logbook.admin.list.queryOptions({ input: { dogId } }),
+    certificates: orpc.certificate.admin.list.queryOptions({ input: { dogId } }),
   };
 }
+
+/*===== Route =====*/
+// The admin layout guards the route. The API answers NOT_FOUND for a made-up or malformed id, which becomes a 404.
+// The sheets' search params aren't loader deps.
+export const Route = createFileRoute("/admin/dogs/$dogId")({
+  validateSearch: adminDogDetailSearchSchema,
+  loader: async ({ context: { queryClient }, params }) => {
+    const queries = dogFileQueries(params.dogId);
+    const [dog] = await orNotFound(
+      Promise.all([
+        queryClient.ensureQueryData(queries.dog),
+        queryClient.ensureQueryData(queries.eligibility),
+        queryClient.ensureQueryData(queries.evaluations),
+        queryClient.ensureQueryData(queries.enrollments),
+        queryClient.ensureQueryData(queries.logbook),
+        queryClient.ensureQueryData(queries.certificates),
+      ]),
+    );
+    return { name: dog.name };
+  },
+  head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.name ?? "سگ"} | مدیریت آموزش K9` }] }),
+  component: AdminDogDetailPage,
+  notFoundComponent: () => <DogDetailError notFound />,
+  errorComponent: () => <DogDetailError notFound={false} />,
+});
 
 /*===== Admin Dog Detail =====*/
 /**
@@ -80,12 +83,29 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  *   and the file card last. The start column's wrapper is `display: contents` there, so its cards are items of the one
  *   grid and the file card can move to the end with `order` (it is rendered once).
  */
-export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, eligibility, evaluations, enrollments, logbook, certificates, publicRecordsAvailable, fileCard } =
-    loaderData;
+function AdminDogDetailPage() {
+  const { dogId } = Route.useParams();
+  const queries = dogFileQueries(dogId);
+  const { data: dog, isFetching: dogFetching } = useSuspenseQuery(queries.dog);
+  const { data: eligibility, isFetching: eligibilityFetching } = useSuspenseQuery(queries.eligibility);
+  const { data: evaluations, isFetching: evaluationsFetching } = useSuspenseQuery(queries.evaluations);
+  const { data: enrollments, isFetching: enrollmentsFetching } = useSuspenseQuery(queries.enrollments);
+  const { data: logbook, isFetching: logbookFetching } = useSuspenseQuery(queries.logbook);
+  const { data: certificates, isFetching: certificatesFetching } = useSuspenseQuery(queries.certificates);
+  const { fileCard } = dog;
 
   /*------ URL State ------*/
-  const [{ edit, session }, setParams] = useQueryStates(adminDogDetailSearchParams);
+  const search = Route.useSearch();
+  const edit = search.edit ?? false;
+  const session = search.session ?? null;
+  const navigate = useNavigate({ from: Route.fullPath });
+  // Opening a sheet pushes a history entry, so Back closes it.
+  const openSheet = (next: { edit: true } | { session: string }) =>
+    void navigate({ search: (prev) => ({ ...prev, ...next }), resetScroll: false });
+  // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
+  // forward entry that reopens it.
+  const closeSheet = (key: "edit" | "session") =>
+    void navigate({ search: (prev) => ({ ...prev, [key]: undefined }), replace: true, resetScroll: false });
   // `session` is `new`, an entry's id, or nothing; an id that is no entry (deleted meanwhile) shows nothing.
   const editingEntry = session && session !== "new" ? (logbook.find((entry) => entry.id === session) ?? null) : null;
   const sessionOpen = session === "new" || editingEntry !== null;
@@ -94,9 +114,19 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
   const [evaluating, setEvaluating] = useState(false);
 
   /*------ Busy ------*/
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const busy = navigation.state !== "idle" || revalidator.state !== "idle";
+  // Leaving for another page, or the file refetching after something he did here. Opening or closing a sheet only
+  // changes the search, which shouldn't dim the page.
+  const leavingPage = useRouterState({
+    select: (state) => state.status === "pending" && state.location.pathname !== state.resolvedLocation?.pathname,
+  });
+  const busy =
+    leavingPage ||
+    dogFetching ||
+    eligibilityFetching ||
+    evaluationsFetching ||
+    enrollmentsFetching ||
+    logbookFetching ||
+    certificatesFetching;
 
   /*------ Sticky Column ------*/
   const startColumn = useRef<HTMLDivElement>(null);
@@ -110,7 +140,7 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
   return (
     <div>
       <DetailMotion />
-      <DogHeader dog={dog} onEdit={() => setParams({ edit: true })} />
+      <DogHeader dog={dog} onEdit={() => openSheet({ edit: true })} />
 
       <div
         aria-busy={busy}
@@ -157,9 +187,9 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
           <CertificatesSection enrollments={enrollments} certificates={certificates} />
           <LogbookSection
             entries={logbook}
-            publicRecordsAvailable={publicRecordsAvailable}
-            onAdd={() => setParams({ session: "new" })}
-            onEdit={(entry) => setParams({ session: entry.id })}
+            publicRecordsAvailable={PUBLIC_RECORDS_AVAILABLE}
+            onAdd={() => openSheet({ session: "new" })}
+            onEdit={(entry) => openSheet({ session: entry.id })}
           />
           <EvaluationsSection evaluations={evaluations} />
           <DetailsSection dog={dog} />
@@ -167,22 +197,16 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
       </div>
 
       {/*===== Edit Sheet =====*/}
-      <EditSheet
-        dog={dog}
-        open={edit}
-        // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
-        // forward entry that reopens it.
-        onClose={() => setParams({ edit: null }, { history: "replace" })}
-      />
+      <EditSheet dog={dog} open={edit} onClose={() => closeSheet("edit")} />
 
       {/*===== Session Sheet =====*/}
       <SessionSheet
         dog={dog}
         enrollments={enrollments}
         entry={editingEntry}
-        publicRecordsAvailable={publicRecordsAvailable}
+        publicRecordsAvailable={PUBLIC_RECORDS_AVAILABLE}
         open={sessionOpen}
-        onClose={() => setParams({ session: null }, { history: "replace" })}
+        onClose={() => closeSheet("session")}
       />
 
       {/*===== Evaluate Dialog =====*/}
@@ -193,9 +217,7 @@ export default function AdminDogDetailPage({ loaderData }: Route.ComponentProps)
 
 /*===== Error Boundary =====*/
 // Inside the admin layout, so the rail and the way back stay on screen.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function DogDetailError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -206,7 +228,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."
         }
       />
-      <Link to={notFound ? ADMIN_DOGS_PATH : "/admin"} className={buttonVariants({ variant: "outline" })}>
+      <Link to={notFound ? "/admin/dogs" : "/admin"} className={buttonVariants({ variant: "outline" })}>
         {notFound ? "همه‌ی سگ‌ها" : "برگرد به نمای کلی"}
       </Link>
     </div>

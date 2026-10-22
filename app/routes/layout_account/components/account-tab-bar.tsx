@@ -1,4 +1,4 @@
-import { useMatches } from "react-router";
+import { useMatches } from "@tanstack/react-router";
 
 import { NavLink } from "~/components/nav-link";
 import type { DeskExitLink, DeskNavItem } from "~/routes/layout_account/account-nav";
@@ -15,16 +15,10 @@ const ICON =
   "size-[1.375rem] transition-colors duration-300 motion-reduce:transition-none group-aria-[current=page]:text-primary";
 
 /**
- * A route that is a focused step, with its own fixed action bar (booking, checkout), sets this in its `handle`, and
- * the tab bar steps aside so the two bars never stack.
+ * The phone's tab bar, below `lg`: the sections (with the cart's count) and «دوره‌ها». Nothing on a focused step: a
+ * route with its own fixed action bar (booking, checkout) sets `staticData: { hideBottomTabs: true }`, and the tab bar
+ * steps aside so the two bars never stack.
  */
-export type DeskRouteHandle = { hideBottomTabs?: boolean };
-
-function isDeskRouteHandle(handle: unknown): handle is DeskRouteHandle {
-  return typeof handle === "object" && handle !== null && "hideBottomTabs" in handle;
-}
-
-/** The phone's tab bar, below `lg`: the sections (with the cart's count) and «دوره‌ها». Nothing on a focused step. */
 export function AccountTabBar({
   items,
   exitLink,
@@ -35,7 +29,7 @@ export function AccountTabBar({
   /** The nav landmark's name, e.g. «حساب من». */
   label: string;
 }) {
-  const hidden = useMatches().some((match) => isDeskRouteHandle(match.handle) && match.handle.hideBottomTabs);
+  const hidden = useMatches({ select: (matches) => matches.some((match) => match.staticData.hideBottomTabs) });
   if (hidden) return null;
   // The exit link has the same shape as a section minus the optional parts.
   const tabs: readonly DeskNavItem[] = [...items, exitLink];

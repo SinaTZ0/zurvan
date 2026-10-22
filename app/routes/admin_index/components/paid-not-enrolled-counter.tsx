@@ -29,7 +29,8 @@ export function PaidNotEnrolledCounter({ count, amount }: { count: number; amoun
 
   return (
     <Link
-      to="/admin/payments?view=flagged"
+      to="/admin/payments"
+      search={{ view: "flagged" }}
       style={TORN_EDGE}
       className="group flex items-center gap-4 rounded-t-2xl border border-b-0 border-dashed border-destructive/60 bg-destructive/[0.08] p-4 pb-6 transition-colors hover:border-destructive hover:bg-destructive/[0.12] focus-visible:border-destructive"
     >

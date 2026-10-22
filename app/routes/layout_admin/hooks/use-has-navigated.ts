@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 
 /*===== Has Navigated =====*/
 /**
@@ -11,7 +11,7 @@ import { useLocation } from "react-router";
  * animation instead of appearing for a frame and then restarting.
  */
 export function useHasNavigated(): boolean {
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const [firstPathname] = useState(pathname);
   const [moved, setMoved] = useState(false);
   if (!moved && pathname !== firstPathname) setMoved(true);

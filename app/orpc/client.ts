@@ -1,16 +1,27 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterContractClient } from "@orpc/contract";
+import { createRouterClient } from "@orpc/server";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { createIsomorphicFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 
 import type { contract } from "~/orpc/contract";
+import { router } from "~/orpc/router";
 
-/*===== Browser Client =====*/
-// Typed from the contract only, so no server code reaches the bundle. The link resolves `/rpc`
-// against the current origin, so call it from the browser only; loaders use the server client.
-const link = new RPCLink({ url: "/rpc" });
+/*===== Client =====*/
+// One client for loaders and components (docs/orpc.md). On the server it calls procedures in-process: handler plugins
+// and status codes don't apply, and errors arrive as `ORPCError`. That instance is shared by every request, so the
+// request's headers come through the context function, never module state. In the browser it is an HTTP client typed
+// from the contract; Start's build drops the server branch, and `router` with it.
+const getClient = createIsomorphicFn()
+  .server((): RouterContractClient<typeof contract> =>
+    createRouterClient(router, { context: () => ({ headers: new Headers(getRequestHeaders()) }) }),
+  )
+  // The link resolves `/rpc` against the current origin; it must match the server route (`app/routes/rpc/`).
+  .client((): RouterContractClient<typeof contract> => createORPCClient(new RPCLink({ url: "/rpc" })));
 
-export const client: RouterContractClient<typeof contract> = createORPCClient(link);
+export const client = getClient();
 
 /*===== TanStack Query =====*/
 /** Query and mutation option builders for every procedure, e.g. `orpc.dog.list.queryOptions()`. */

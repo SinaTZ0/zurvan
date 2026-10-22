@@ -81,7 +81,8 @@ function LaterRow({ row }: { row: LaterCourse }) {
           <div className="flex items-baseline justify-between gap-3">
             <h3 className="font-bold text-pretty text-foreground/90">
               <Link
-                to={`/courses/${course.slug}`}
+                to="/courses/$slug"
+                params={{ slug: course.slug }}
                 className="rounded-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 {course.title}
@@ -134,7 +135,7 @@ function Reason({ reason }: { reason: LaterReason }) {
           <>
             {" "}
             <Link
-              to={reason.way.to}
+              {...reason.way.link}
               className="rounded-sm font-bold whitespace-nowrap underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {reason.way.label}
@@ -158,7 +159,8 @@ function NoPriceNote({ slug, message }: { slug: string; message: string }) {
       <span>
         {message}{" "}
         <Link
-          to={`/courses/${slug}`}
+          to="/courses/$slug"
+          params={{ slug }}
           className="rounded-sm font-bold whitespace-nowrap text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           ببین چطور می‌شه

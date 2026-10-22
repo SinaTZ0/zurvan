@@ -28,7 +28,7 @@ function HelpLine({ className }: { className?: string }) {
 
 /*===== Area Band =====*/
 /**
- * The page's last band, which runs into the footer (the route's `handle`): the service area under the Tehran skyline,
+ * The page's last band, which runs into the footer (the route's `staticData`): the service area under the Tehran skyline,
  * on a long path. The companion dog trots with his leash in front of the skyline, and the think dog wonders beside the
  * line that points to the help page.
  *
@@ -89,7 +89,7 @@ export function AreaBand() {
           {/*------ Help Line and the Think Dog (wide screens) ------*/}
           {/* The dog stands at the sign's start corner, looking toward it. */}
           <div className="absolute end-0 bottom-5 hidden w-[26%] min-w-[17rem] lg:block">
-            <HelpLine className="mb-3 me-0 ms-auto w-[calc(100%-4.5rem)] min-w-0" />
+            <HelpLine className="ms-auto me-0 mb-3 w-[calc(100%-4.5rem)] min-w-0" />
             <div aria-hidden className="pointer-events-none absolute start-0 bottom-0 w-[4.75rem]">
               <MascotCut name="plants" className="lively-sway-2 absolute bottom-0 left-[60%] w-[80%]" />
               <MascotCut name="think" className="lively-tilt relative block w-full" />

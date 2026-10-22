@@ -1,3 +1,4 @@
+import { buildReferralCard } from "~/lib/referral-card.server";
 import { base } from "~/orpc/implementer.server";
 import { requireRoleMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
@@ -21,7 +22,7 @@ export const getMyPartnerProfileProcedure = base.partner.getMine
 
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
 
-    return result.profile;
+    return { ...result.profile, ...buildReferralCard({ code: result.profile.code }) };
   });
 
 export const updateMyPartnerProfileProcedure = base.partner.updateMine

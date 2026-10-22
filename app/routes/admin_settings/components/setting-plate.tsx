@@ -97,7 +97,7 @@ export function SettingPlate({ setting, busy }: { setting: AdminSetting; busy: b
     onSuccess: () => setStamp((count) => count + 1),
   });
 
-  // After a save the loader returns the stored number: the field follows it, and shows it as unchanged.
+  // After a save the refetched settings hold the stored number: the field follows it, and shows it as unchanged.
   useEffect(() => {
     reset({ value: toShown(String(setting.value)) });
   }, [reset, setting.value]);

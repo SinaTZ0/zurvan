@@ -1,4 +1,4 @@
-import { useLocation } from "react-router";
+import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
@@ -9,18 +9,22 @@ import { Road } from "~/routes/help/components/road";
 import { FAQ_GROUPS, QUESTION_IDS } from "~/routes/help/faq-data";
 import { useHashOpen } from "~/routes/help/hooks/use-hash-open";
 
-import type { Route } from "./+types/help";
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [
-  { title: "سؤال‌های پرتکرار | آموزش K9" },
-  { name: "description", content: "همه‌ی چیزهایی که برای خرید دوره، ارزیابی رایگان و ورود لازم داری." },
-];
+/*===== Route =====*/
+export const Route = createFileRoute("/_public/help")({
+  head: () => ({
+    meta: [
+      { title: "سؤال‌های پرتکرار | آموزش K9" },
+      { name: "description", content: "همه‌ی چیزهایی که برای خرید دوره، ارزیابی رایگان و ورود لازم داری." },
+    ],
+  }),
+  component: HelpPage,
+  errorComponent: HelpError,
+});
 
 /*===== Page =====*/
 // Static: no loader, so the whole page (every question, closed) renders on the server and works as anchors before
 // hydration. The open questions live here so one hash hook can open any of them, whichever group it's in.
-export default function HelpPage() {
+function HelpPage() {
   const { openIds, changeGroup } = useHashOpen({ questionIds: QUESTION_IDS });
 
   return (
@@ -65,8 +69,8 @@ export default function HelpPage() {
 
 /*===== Error Boundary =====*/
 // Renders inside the public layout, so a failure still has the header and footer. The retry is a full page load.
-export function ErrorBoundary() {
-  const { pathname, search } = useLocation();
+function HelpError() {
+  const href = useLocation({ select: (location) => location.href });
 
   return (
     <section aria-labelledby="help-error-title" className="site-container py-section-md">
@@ -78,9 +82,9 @@ export function ErrorBoundary() {
           مشکلی پیش آمد. دوباره امتحان کن یا چند دقیقه‌ی دیگه سر بزن.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link to={`${pathname}${search}`} reloadDocument className={buttonVariants({ variant: "solid", size: "lg" })}>
+          <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
             دوباره امتحان کن
-          </Link>
+          </a>
           <Link to="/assessment" className={buttonVariants({ variant: "outline", size: "lg" })}>
             ارزیابی رایگان بگیر
           </Link>

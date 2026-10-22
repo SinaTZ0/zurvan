@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSetAtom } from "jotai";
-import { useNavigate } from "react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 import { resetCartAtom } from "~/atoms/cart";
 import { toast } from "~/components/ui/toast";
 import { authClient } from "~/lib/auth-client";
+import { refreshSession } from "~/lib/session-guard";
 
 /*===== Sign Out =====*/
 /**
@@ -22,12 +23,12 @@ export function useSignOut({ redirectTo }: { redirectTo?: string } = {}) {
       if (error) throw new Error(error.message ?? "Sign-out failed");
     },
     onSuccess: async () => {
-      await navigate(redirectTo ? `/auth?redirectTo=${encodeURIComponent(redirectTo)}` : "/auth", {
-        viewTransition: true,
-      });
-      // The next account on this device must not see this one's cached dogs. Cleared after leaving: clearing while a
-      // page is mounted would refetch its queries without a session.
-      queryClient.clear();
+      // The sign-in page sends a signed-in person on, so it must see the new answer, not the cached one.
+      await refreshSession(queryClient);
+      await navigate({ to: "/auth", search: redirectTo ? { redirectTo } : {}, viewTransition: true });
+      // The next account on this device must not see this one's cached dogs. Dropped after leaving, and only what no
+      // mounted page reads: dropping a mounted page's queries would refetch them without a session.
+      queryClient.removeQueries({ predicate: (query) => query.getObserversCount() === 0 });
       // The account keeps its cart; this browser must not show it to the next person, or merge it into their account.
       resetCart();
     },

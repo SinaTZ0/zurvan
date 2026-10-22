@@ -48,7 +48,8 @@ export function CoursePreview({
             return (
               <li key={section.id}>
                 <Link
-                  to={`#${sectionAnchor(section.id)}`}
+                  to="."
+                  hash={sectionAnchor(section.id)}
                   className={cn(
                     "flex h-9 items-center gap-1.5 rounded-lg px-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
                     invalid

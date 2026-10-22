@@ -1,12 +1,10 @@
-import { ORPCError } from "@orpc/client";
-import { data, isRouteErrorResponse } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { buildCertificateCard } from "~/lib/certificate.server";
-import { buildDogFileCard } from "~/lib/dog-file.server";
 import { getDogStatus } from "~/lib/dog-status";
+import { orNotFound } from "~/lib/not-found";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
-import { createServerClient } from "~/orpc/server-client.server";
 import { COLUMN } from "~/routes/account_dog_detail/column";
 import { BuddyCorner } from "~/routes/account_dog_detail/components/buddy-corner";
 import { CertificatesSection } from "~/routes/account_dog_detail/components/certificates-section";
@@ -20,59 +18,33 @@ import { LogbookSection } from "~/routes/account_dog_detail/components/logbook-s
 import { MedalsBand } from "~/routes/account_dog_detail/components/medals-band";
 import { PageMotion } from "~/routes/account_dog_detail/components/page-motion";
 import { PublicRecordCard } from "~/routes/account_dog_detail/components/public-record-card";
-import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
+import { dogDetailQueries } from "~/routes/account_dog_detail/queries";
 
-import type { Route } from "./+types/account-dog-detail";
-
-/*===== Handle =====*/
-// The page ends on the medals' brick band, which runs into the footer, so the shell drops its bottom padding.
-export const handle: AccountLayoutHandle = { flushFooter: true };
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.dog ? `${loaderData.dog.name} | آموزش K9` : "سگ من | آموزش K9" },
-];
-
-/*===== Loader =====*/
+/*===== Route =====*/
 // The account shell guards the route. The API answers NOT_FOUND for another owner's dog too, so a made-up id and
-// someone else's dog look the same.
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const dogId = params.dogId;
-
-  const [dog, evaluations, enrollments, logbook, certificates, publicStatus] = await Promise.all([
-    client.dog.get({ id: dogId }),
-    client.evaluation.listMine({ dogId }),
-    client.enrollment.listMine({ dogId }),
-    client.logbook.list({ dogId }),
-    client.certificate.listMine({ dogId }),
-    client.logbook.publicStatus({ dogId }),
-  ]).catch((error: unknown) => {
-    if (error instanceof ORPCError && error.code === "NOT_FOUND") throw data(null, { status: 404 });
-    throw error;
-  });
-
-  return {
-    dog,
-    evaluations,
-    enrollments,
-    logbook,
-    certificates: certificates.map((certificate) => ({
-      certificate,
-      ...buildCertificateCard({ number: certificate.number }),
-    })),
-    publicStatus,
-    // The approved wording the owner agrees to, present only once the owner has approved one.
-    wording: PUBLIC_RECORD_CONSENT,
-    fileCard: buildDogFileCard({ fileNumber: dog.fileNumber }),
-    // The hero's three numbers, from what is already read. A revoked certificate isn't counted: it proves nothing.
-    counts: {
-      active: enrollments.filter((enrollment) => enrollment.status === "active").length,
-      passed: dog.passedCourses.length,
-      certificates: certificates.filter((certificate) => certificate.revokedAt === null).length,
-    },
-  };
-}
+// someone else's dog look the same: both are the page's 404.
+export const Route = createFileRoute("/account/dogs/$dogId")({
+  loader: async ({ context: { queryClient }, params }) => {
+    const queries = dogDetailQueries(params.dogId);
+    const [dog] = await orNotFound(
+      Promise.all([
+        queryClient.ensureQueryData(queries.dog),
+        queryClient.ensureQueryData(queries.evaluations),
+        queryClient.ensureQueryData(queries.enrollments),
+        queryClient.ensureQueryData(queries.logbook),
+        queryClient.ensureQueryData(queries.certificates),
+        queryClient.ensureQueryData(queries.publicStatus),
+      ]),
+    );
+    return { name: dog.name };
+  },
+  head: ({ loaderData }) => ({ meta: [{ title: loaderData ? `${loaderData.name} | آموزش K9` : "سگ من | آموزش K9" }] }),
+  // The page ends on the medals' brick band, which runs into the footer, so the shell drops its bottom padding.
+  staticData: { flushFooter: true },
+  component: AccountDogDetailPage,
+  notFoundComponent: () => <DogDetailError notFound />,
+  errorComponent: () => <DogDetailError notFound={false} />,
+});
 
 /*===== Dog Detail =====*/
 /**
@@ -84,9 +56,26 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * clipboard on the courses, the diploma by the certificates, writing the diary, waiting by the phone for the evaluation
  * call, the tag on the file card, the medals on the wall). He never stands on the photo.
  */
-export default function AccountDogDetailPage({ loaderData }: Route.ComponentProps) {
-  const { dog, evaluations, enrollments, logbook, certificates, publicStatus, wording, fileCard, counts } = loaderData;
+function AccountDogDetailPage() {
+  const { dogId } = Route.useParams();
+  const queries = dogDetailQueries(dogId);
+  const { data: dog } = useSuspenseQuery(queries.dog);
+  const { data: evaluations } = useSuspenseQuery(queries.evaluations);
+  const { data: enrollments } = useSuspenseQuery(queries.enrollments);
+  const { data: logbook } = useSuspenseQuery(queries.logbook);
+  const { data: myCertificates } = useSuspenseQuery(queries.certificates);
+  const { data: publicStatus } = useSuspenseQuery(queries.publicStatus);
   const status = getDogStatus({ dog, evaluations, enrollments });
+  const certificates = myCertificates.map(({ link, qr, ...certificate }) => ({ certificate, link, qr }));
+  // The approved wording the owner agrees to, present only once the owner has approved one.
+  const wording = PUBLIC_RECORD_CONSENT;
+  const { fileCard } = dog;
+  // The hero's three numbers, from what is already read. A revoked certificate isn't counted: it proves nothing.
+  const counts = {
+    active: enrollments.filter((enrollment) => enrollment.status === "active").length,
+    passed: dog.passedCourses.length,
+    certificates: myCertificates.filter((certificate) => certificate.revokedAt === null).length,
+  };
 
   return (
     <div className="overflow-x-clip">
@@ -136,10 +125,4 @@ export default function AccountDogDetailPage({ loaderData }: Route.ComponentProp
       />
     </div>
   );
-}
-
-/*===== Error Boundary =====*/
-// Inside the account shell, so the header and its way back stay on screen.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <DogDetailError notFound={isRouteErrorResponse(error) && error.status === 404} />;
 }

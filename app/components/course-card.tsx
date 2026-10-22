@@ -69,7 +69,8 @@ export function CourseCard({ course, showPrerequisites = false }: { course: Cour
           {/* The whole card isn't a link: the price and summary stay selectable, and there's one clear target. On
               phones the button is only the arrow, to fit the row. */}
           <Link
-            to={`/courses/${course.slug}`}
+            to="/courses/$slug"
+            params={{ slug: course.slug }}
             aria-label={`مشاهده‌ی دوره‌ی ${course.title}`}
             className={cn(buttonVariants({ size: "sm" }), "group/link max-sm:size-10 max-sm:px-0")}
           >

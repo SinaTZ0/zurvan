@@ -1,14 +1,12 @@
-import { createLoader, parseAsInteger, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 import { SMS_KINDS } from "~/orpc/sms/constants";
 
-/*===== Parsers =====*/
-// Both params are read by the loader (the API pages on the server), so they are not shallow: changing a filter or a page
-// runs the loader. `kind` has no default: absent means every kind. `page` is 1-based in the URL, 0-based for the API.
-export const smsSearchParams = {
-  kind: parseAsStringLiteral(SMS_KINDS),
-  page: parseAsInteger.withDefault(1),
-};
-
-/*===== Server Loader =====*/
-export const loadSmsSearchParams = createLoader(smsSearchParams);
+/*===== Search Schema =====*/
+// Both are loader deps (the API pages on the server), so changing a filter or a page fetches that page. `kind` absent
+// means every kind. `page` is 1-based in the URL (absent is the first), 0-based for the API. A hand-typed bad value is
+// dropped (`.catch`) instead of failing the page.
+export const smsSearchSchema = z.object({
+  kind: z.enum(SMS_KINDS).optional().catch(undefined),
+  page: z.number().int().optional().catch(undefined),
+});

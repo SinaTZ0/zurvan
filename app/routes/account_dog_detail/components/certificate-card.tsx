@@ -3,7 +3,7 @@ import { CheckIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
 import { formatJalaliTimestamp } from "~/lib/jalali";
-import type { Qr } from "~/lib/qr.server";
+import type { Qr } from "~/lib/qr";
 import type { Certificate } from "~/orpc/certificate/contract";
 import { CopyLink } from "~/routes/account_dog_detail/components/copy-link";
 
