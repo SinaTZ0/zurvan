@@ -479,8 +479,9 @@
   color: var(--saffron-text);
 }
 
-/* Page fade on client navigations. Links opt in through ~/components/link (docs/view-transitions.md); without these
-   rules the browser's default cross-fade runs at 250ms. The page ignores input while it runs, so keep it short. */
+/* Page fade on client navigations that change the pathname (`defaultViewTransition` in app/router.tsx,
+   docs/view-transitions.md); without these rules the browser's default cross-fade runs at 250ms. The page ignores
+   input while it runs, so keep it short. */
 ::view-transition-group(root),
 ::view-transition-old(root),
 ::view-transition-new(root) {
