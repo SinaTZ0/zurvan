@@ -12,8 +12,8 @@ import { type LinkComponent, Link as RouterLink, useLocation, useRouter } from "
  *   that stay on the current pathname (query or hash only, like filter pills) and `reloadDocument` links don't preload.
  * - **Same-page hash links** (`hash="courses"` on the page that has it) neither reset the scroll nor jump to the
  *   element, so the smooth scroller (`SmoothScroll`) can glide there.
- * - **The page fade** is the router's default (`defaultViewTransition` in `app/router.tsx`): only when the pathname
- *   changes. See docs/view-transitions.md.
+ * - **The page transition** (a slide forward or back, or a fade) is the router's default (`defaultViewTransition` in
+ *   `app/router.tsx`): only when the pathname changes. See docs/view-transitions.md.
  */
 export const Link: LinkComponent<"a"> = (props) => {
   const router = useRouter();

@@ -35,7 +35,7 @@ export function AccountTabBar({
   const tabs: readonly DeskNavItem[] = [...items, exitLink];
 
   return (
-    <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md lg:hidden">
+    <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md [view-transition-name:tab-dock] lg:hidden">
       <nav aria-label={`${label}، منوی پایین`}>
         <ul className="flex h-[4.25rem] items-stretch rounded-[1.6rem] border border-foreground/15 bg-card/90 px-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)] backdrop-blur-md">
           {tabs.map((item) => {

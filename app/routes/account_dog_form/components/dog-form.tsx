@@ -176,13 +176,13 @@ export function DogForm({
           // any same-site path, so it goes in `href`, which the router parses.
           if (redirectTo) {
             const href = dog ? redirectTo : withDogParam({ redirectTo, dogId: saved.id });
-            await navigate({ href, viewTransition: true });
+            await navigate({ href });
             return;
           }
           // Without a `redirectTo`, a new dog goes to the Dashboard (where it now appears), an edit to the dog's page.
           await (dog
-            ? navigate({ to: "/account/dogs/$dogId", params: { dogId: saved.id }, viewTransition: true })
-            : navigate({ to: "/account", viewTransition: true }));
+            ? navigate({ to: "/account/dogs/$dogId", params: { dogId: saved.id } })
+            : navigate({ to: "/account" }));
         },
         onError: (error) => {
           const fields = applyServerError({ error, setError });

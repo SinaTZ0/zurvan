@@ -37,7 +37,7 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
 
   return (
     <>
-      <div className="group/dock fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md lg:hidden">
+      <div className="group/dock fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md [view-transition-name:tab-dock] lg:hidden">
         {/*------ Dock ------*/}
         {/* A page can dock its own strip on top of the bar (Course Detail's buy bar), portalled into this element by
             its id. While the strip is open it carries `data-dock-open`, and the bar squares its top corners so the two

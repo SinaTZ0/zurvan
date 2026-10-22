@@ -25,7 +25,7 @@ export function useSignOut({ redirectTo }: { redirectTo?: string } = {}) {
     onSuccess: async () => {
       // The sign-in page sends a signed-in person on, so it must see the new answer, not the cached one.
       await refreshSession(queryClient);
-      await navigate({ to: "/auth", search: redirectTo ? { redirectTo } : {}, viewTransition: true });
+      await navigate({ to: "/auth", search: redirectTo ? { redirectTo } : {} });
       // The next account on this device must not see this one's cached dogs. Dropped after leaving, and only what no
       // mounted page reads: dropping a mounted page's queries would refetch them without a session.
       queryClient.removeQueries({ predicate: (query) => query.getObserversCount() === 0 });

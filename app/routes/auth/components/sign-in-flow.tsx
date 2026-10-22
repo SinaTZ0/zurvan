@@ -76,8 +76,8 @@ export function SignInFlow({
     // the next page's guard reads it.
     queryClient.clear();
     await refreshSession(queryClient);
-    if (forgot) await navigate({ to: "/account/profile", hash: "password", viewTransition: true });
-    else await navigate({ href: redirectTo, viewTransition: true });
+    if (forgot) await navigate({ to: "/account/profile", hash: "password" });
+    else await navigate({ href: redirectTo });
   }
 
   return (

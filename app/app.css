@@ -479,12 +479,68 @@
   color: var(--saffron-text);
 }
 
-/* Page fade on client navigations that change the pathname (`defaultViewTransition` in app/router.tsx,
-   docs/view-transitions.md); without these rules the browser's default cross-fade runs at 250ms. The page ignores
-   input while it runs, so keep it short. */
+/*===== Page Transition =====*/
+/* Client navigations that change the pathname (`pageTransitionTypes` in app/lib/page-transition.ts,
+   docs/view-transitions.md). Between unrelated pages it is the browser's cross-fade, shortened (the default runs
+   250ms); a `forward` or `back` type adds a short slide. The page ignores input while it runs, so keep it short. */
 ::view-transition-group(root),
 ::view-transition-old(root),
 ::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+
+/*------ Slide ------*/
+/* The site is right to left, so forward runs leftward: the next page comes in from the left and the old one leaves
+   to the right; back mirrors it. The shift is a nudge, not a full-width slide: the old page is gone before the new
+   one arrives, so the strip the shift uncovers at the edge never shows. */
+:root {
+  --page-shift: 1.75rem;
+  /* The old page leaves, a beat passes, the new one settles in: about half a second in all. */
+  --page-leave: 220ms;
+  --page-gap: 100ms;
+  --page-enter: 380ms;
+}
+
+html:active-view-transition-type(forward)::view-transition-old(root) {
+  animation: var(--page-leave) ease-in both page-leave;
+  --page-to: var(--page-shift);
+}
+
+html:active-view-transition-type(forward)::view-transition-new(root) {
+  animation: var(--page-enter) var(--ease-silk) var(--page-gap) both page-enter;
+  --page-from: calc(-1 * var(--page-shift));
+}
+
+html:active-view-transition-type(back)::view-transition-old(root) {
+  animation: var(--page-leave) ease-in both page-leave;
+  --page-to: calc(-1 * var(--page-shift));
+}
+
+html:active-view-transition-type(back)::view-transition-new(root) {
+  animation: var(--page-enter) var(--ease-silk) var(--page-gap) both page-enter;
+  --page-from: var(--page-shift);
+}
+
+@keyframes page-leave {
+  to {
+    opacity: 0;
+    transform: translateX(var(--page-to));
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--page-from));
+  }
+}
+
+/*------ Steady Chrome ------*/
+/* The phone's floating tab bar (one per shell, never two at once) and the Admin's sticky header keep their own
+   snapshot, so they stay put while the page under them slides. The public and account headers scroll with the page,
+   so they slide with it: a name would fly them in from wherever the old page had scrolled them. */
+::view-transition-group(tab-dock),
+::view-transition-group(admin-header) {
   animation-duration: 200ms;
 }
 

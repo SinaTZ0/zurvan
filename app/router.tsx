@@ -3,6 +3,7 @@ import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
+import { pageTransitionTypes } from "~/lib/page-transition";
 import { refreshSession } from "~/lib/session-guard";
 import { routeTree } from "~/routeTree.gen";
 
@@ -62,10 +63,11 @@ export function getRouter() {
     // Query's staleTime decides whether a preload or a click fetches.
     defaultPreloadStaleTime: 0,
     scrollRestoration: true,
-    // The page fade, for every navigation that changes the pathname, Back and Forward included (a link's own
-    // `viewTransition` wins). Query-only and hash-only changes stay instant. Browsers without view transition types
-    // fade every navigation that doesn't set its own. See docs/view-transitions.md.
-    defaultViewTransition: { types: ({ pathChanged }) => (pathChanged ? [] : false) },
+    // The page transition, for every navigation that changes the pathname, Back and Forward included (a link's own
+    // `viewTransition` wins): a slide forward or back, or a fade between unrelated pages. Query-only and hash-only
+    // changes stay instant. Browsers without view transition types fade every navigation that doesn't set its own.
+    // See docs/view-transitions.md.
+    defaultViewTransition: { types: pageTransitionTypes },
   });
 
   // Also provides the `QueryClientProvider`, and streams the queries a server render filled to the browser.
