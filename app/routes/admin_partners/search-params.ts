@@ -1,4 +1,4 @@
-import { createSerializer, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 /*===== Constants =====*/
 /** The three views, in the order the pills show. «unpaid» first: paying is what he comes here to do. */
@@ -6,18 +6,18 @@ export const PARTNER_VIEWS = ["unpaid", "paid", "partners"] as const;
 
 export type PartnerView = (typeof PARTNER_VIEWS)[number];
 
-/** The page's own path, which the row links are built on. */
-export const ADMIN_PARTNERS_PATH = "/admin/partners";
+/** The view an absent `?view=` means; links leave it out of the URL. */
+export const DEFAULT_PARTNER_VIEW = "unpaid" satisfies PartnerView;
 
-/*===== Parsers =====*/
-// All shallow: the loader fetches both lists once and the page filters them, so a change never needs a loader run.
-// `partner` (the open drawer) and `new` (the create sheet) push a history entry so Back closes them; neither has a
-// default because "absent" means closed. `new` is the literal «1» (`?new=1`), not nuqs's boolean «true».
-export const adminPartnersSearchParams = {
-  view: parseAsStringLiteral(PARTNER_VIEWS).withDefault("unpaid").withOptions({ shallow: true }),
-  partner: parseAsString.withOptions({ shallow: true, history: "push" }),
-  new: parseAsStringLiteral(["1"] as const).withOptions({ shallow: true, history: "push" }),
-};
+/*===== Search Schema =====*/
+// None is a loader dep: the loader fetches both lists once and the page filters them, so a change never needs a loader
+// run. `partner` (the open drawer) and `new` (the create sheet) are pushed as history entries so Back closes them;
+// absent means closed. `new` is the number 1 (`?new=1`). A hand-typed bad value is dropped (`.catch`) instead of
+// failing the page.
+export const adminPartnersSearchSchema = z.object({
+  view: z.enum(PARTNER_VIEWS).optional().catch(undefined),
+  partner: z.string().optional().catch(undefined),
+  new: z.literal(1).optional().catch(undefined),
+});
 
-/*===== Links =====*/
-export const serializeAdminPartnersSearchParams = createSerializer(adminPartnersSearchParams);
+export type AdminPartnersSearch = z.infer<typeof adminPartnersSearchSchema>;

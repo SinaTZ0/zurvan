@@ -5,6 +5,7 @@ import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatToman } from "~/lib/course-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import type { AdminCommission } from "~/orpc/commission/contract";
+import type { AdminPartnersSearch } from "~/routes/admin_partners/search-params";
 
 /*===== Columns =====*/
 // From `md` one row in fixed tracks, shared by the head and the rows: the day paid, the partner, the customer, the
@@ -22,14 +23,15 @@ const LEDGER_PADDING = "px-4 sm:px-5 xl:px-6";
  */
 export function PaidLedger({
   commissions,
-  hrefFor,
-  onOpen,
+  searchFor,
   rise,
 }: {
   commissions: readonly AdminCommission[];
-  /** The partner's file (`?partner=`), so the name works for a new tab and before hydration. */
-  hrefFor: (partnerId: string) => string;
-  onOpen: (partnerId: string) => void;
+  /**
+   * The page's search with a partner's file open (`?partner=`): a real link, so the name works for a new tab and before
+   * hydration. A click opens the file in place (a search-only change that keeps the scroll).
+   */
+  searchFor: (partnerId: string) => AdminPartnersSearch;
   rise: (index: number) => number | null;
 }) {
   return (
@@ -69,12 +71,9 @@ export function PaidLedger({
               {/*------ Partner ------*/}
               <p className="min-w-0 [grid-area:partner]">
                 <Link
-                  to={hrefFor(commission.partner.id)}
-                  onClick={(event) => {
-                    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                    event.preventDefault();
-                    onOpen(commission.partner.id);
-                  }}
+                  to="/admin/partners"
+                  search={searchFor(commission.partner.id)}
+                  resetScroll={false}
                   className="inline-flex min-h-6 items-center rounded-sm text-sm font-bold break-words underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <bdi>{commission.partner.name}</bdi>

@@ -1,13 +1,13 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
-import { isRouteErrorResponse, useRevalidator } from "react-router";
 
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 
 import { CoursesPlate } from "./components/courses-plate";
 import { EnrollmentsPlate } from "./components/enrollments-plate";
@@ -16,36 +16,38 @@ import { PageMotion } from "./components/page-motion";
 import { SectionHead } from "./components/section-head";
 import { WaitingPlate } from "./components/waiting-plate";
 import { describeTodayInTehran } from "./today";
-import type { Route } from "./+types/admin-index";
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "نمای کلی | مدیریت آموزش K9" }];
-
-/*===== Loader =====*/
-// The guard is the layout's. One call reads every number on the page; nothing here is cached, so a revalidation (the
-// layout runs one after any answer on another page) always shows the truth. Today's date is computed here, on the
-// Tehran clock, so the server's render and the hydrated page can't disagree about the day.
-export async function loader({ request }: Route.LoaderArgs) {
-  const overview = await createServerClient(request).dashboard.admin.overview();
-
-  return { overview, today: describeTodayInTehran() };
-}
+/*===== Route =====*/
+// The guard is the layout's. One call reads every number on the page, the same query the layout's badges read, so
+// any Admin action (which invalidates every API query) refreshes both. Today's date is computed in the loader, on the
+// Tehran clock, and handed to the page as loader data, so the server's render and the hydrated page can't disagree
+// about the day.
+export const Route = createFileRoute("/admin/")({
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.ensureQueryData(orpc.dashboard.admin.overview.queryOptions());
+    return { today: describeTodayInTehran() };
+  },
+  head: () => ({ meta: [{ title: "نمای کلی | مدیریت آموزش K9" }] }),
+  component: AdminIndexPage,
+  notFoundComponent: () => <OverviewError notFound />,
+  errorComponent: () => <OverviewError notFound={false} />,
+});
 
 /*===== Admin Overview =====*/
 /**
  * F11: what waits for the Admin today and how the center is doing, in one glance. Only the work is lit: one plate at
  * the top holds the day's work (the counters in gold above zero, the latest purchases to call), and everything under it
  * is calm ivory, so on a good day the page shows no gold at all. Every number links to its list, already filtered. The
- * page writes nothing; its only motion answers a revalidation (a changed number pops, a strip slides).
+ * page writes nothing; its only motion answers a refetch (a changed number pops, a strip slides).
  */
-export default function AdminIndexPage({ loaderData }: Route.ComponentProps) {
-  const { overview, today } = loaderData;
+function AdminIndexPage() {
+  const { today } = Route.useLoaderData();
+  const { data: overview, isFetching } = useSuspenseQuery(orpc.dashboard.admin.overview.queryOptions());
   const { waiting, enrollments, money, courses } = overview;
 
   /*------ Pending ------*/
-  // The layout revalidates after an answer elsewhere; the page dims while the new numbers load.
-  const revalidator = useRevalidator();
-  const pending = revalidator.state !== "idle";
+  // An answer elsewhere marks the numbers stale; the page dims while the new ones load.
+  const pending = isFetching;
 
   // «،» rather than «·»: a middle dot beside a Persian digit reads as a zero («۲۹ مهر · ۲» looks like «۲۰»).
   const waitingCount = waiting.evaluationRequests + waiting.paidNotEnrolled.count;
@@ -100,9 +102,7 @@ export default function AdminIndexPage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function OverviewError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -115,17 +115,23 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
             ? "از منو برو سراغ صفحه‌ای که می‌خوای."
             : "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن."}
         </p>
-        <Link
-          to="/admin"
-          reloadDocument={!notFound}
-          className={buttonVariants({ variant: "solid", className: "w-full shrink-0 px-6 sm:w-auto" })}
-        >
-          {notFound ? "برگرد به نمای کلی" : "دوباره باز کن"}
-        </Link>
+        {notFound ? (
+          <Link
+            to="/admin"
+            className={buttonVariants({ variant: "solid", className: "w-full shrink-0 px-6 sm:w-auto" })}
+          >
+            برگرد به نمای کلی
+          </Link>
+        ) : (
+          // A full reload, past whatever failed in the app.
+          <a
+            href="/admin"
+            className={buttonVariants({ variant: "solid", className: "w-full shrink-0 px-6 sm:w-auto" })}
+          >
+            دوباره باز کن
+          </a>
+        )}
       </div>
     </div>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/admin/")({});

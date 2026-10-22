@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import { EllipsisIcon, XIcon } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 
 import { NavBadge } from "~/components/nav-badge";
 import { NavLink } from "~/components/nav-link";
@@ -33,7 +33,7 @@ const ICON_BADGE = "absolute -end-3 -top-2 ms-0 h-4 min-w-4 px-1 text-[10px]";
  * the `Drawer` is not RTL-correct).
  */
 export function AdminBottomTabs({ items }: { items: readonly AdminNavItem[] }) {
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const grow = useHasNavigated();
   const [moreOpen, setMoreOpen] = useState(false);
 

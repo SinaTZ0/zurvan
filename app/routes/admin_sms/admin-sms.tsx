@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, redirect, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import { MessageSquareDashedIcon, MessageSquareTextIcon } from "lucide-react";
-import { useQueryStates } from "nuqs";
 import { useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, redirect, useLocation, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills } from "~/components/admin-filter-pills";
@@ -15,66 +14,53 @@ import { ADMIN_HAIRLINE, ADMIN_PLATE, ADMIN_TEAR } from "~/lib/admin-plate";
 import { formatNumberFa, toPersianDigits } from "~/lib/digits";
 import { formatJalaliTimestamp } from "~/lib/jalali";
 import { SHOWCASE_SIGN_IN_CODE } from "~/lib/user-constants";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { SMS_KIND_LABELS, SMS_KINDS, SMS_PAGE_SIZE, type SmsKind } from "~/orpc/sms/constants";
 import { SmsMessageRow } from "~/routes/admin_sms/components/sms-message-row";
 import { describeDay } from "~/routes/admin_sms/dates";
 import { groupByDay } from "~/routes/admin_sms/day-groups";
-import { loadSmsSearchParams, smsSearchParams } from "~/routes/admin_sms/search-params";
-
-import type { Route } from "./+types/admin-sms";
+import { smsSearchSchema } from "~/routes/admin_sms/search-params";
 
 /*===== Constants =====*/
 /** A list that arrived under a new kind or page staggers its first rows in; the rest of the page is simply there. */
 const STAGGERED = 6;
 const RISE_STEP_S = 0.05;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "پیامک‌ها | مدیریت آموزش K9" }];
+/*===== Queries =====*/
+/** One page of the outbox; `page` is 1-based, as in the URL (the API's is 0-based). */
+const listQuery = ({ kind, page }: { kind: SmsKind | undefined; page: number }) =>
+  orpc.sms.admin.list.queryOptions({ input: { kind, page: Math.max(page - 1, 0) } });
+// The header counts every message and shows the newest of them, so a filtered or later page also reads the first page
+// of the whole outbox (the same query as the list's when that is the page on screen).
+const newestQuery = () => listQuery({ kind: undefined, page: 1 });
+// The links the app writes into its own messages start with the site's origin, so a bubble can open them here.
+const siteQuery = () => orpc.site.config.queryOptions();
 
-/*===== Loader =====*/
-// The outbox grows with every sign-in code, so the API pages it. A page past the end (an old link, or a filter that got
-// narrower) is redirected to the last page, so the URL always shows what the list shows.
-export async function loader({ request }: Route.LoaderArgs) {
-  const { kind, page } = loadSmsSearchParams(request);
-  const client = createServerClient(request);
-  const sms = client.sms.admin;
+/*===== Route =====*/
+// The outbox grows with every sign-in code, so the API pages it: the kind and the page are loader deps, and changing
+// either fetches that page. A page past the end (an old link, or a filter that got narrower) is redirected to the last
+// page, so the URL always shows what the list shows.
+export const Route = createFileRoute("/admin/sms")({
+  validateSearch: smsSearchSchema,
+  loaderDeps: ({ search }) => ({ kind: search.kind, page: search.page ?? 1 }),
+  loader: async ({ context: { queryClient }, deps: { kind, page } }) => {
+    const [list] = await Promise.all([
+      queryClient.ensureQueryData(listQuery({ kind, page })),
+      queryClient.ensureQueryData(newestQuery()),
+      queryClient.ensureQueryData(siteQuery()),
+    ]);
 
-  const [list, site] = await Promise.all([
-    sms.list({ kind: kind ?? undefined, page: Math.max(page - 1, 0) }),
-    client.site.config(),
-  ]);
-
-  const pageCount = Math.max(1, Math.ceil(list.total / SMS_PAGE_SIZE));
-  const current = Math.min(Math.max(page, 1), pageCount);
-
-  if (current !== page) {
-    const url = new URL(request.url);
-    if (current === 1) url.searchParams.delete("page");
-    else url.searchParams.set("page", String(current));
-    throw redirect(`${url.pathname}${url.search}`);
-  }
-
-  /*------ Summary ------*/
-  // The header counts every message and shows the newest of them, so a filtered or later page asks for the first page
-  // of the whole outbox once more.
-  // The unfiltered list's counts are the same whatever the filter, so `list.kindCounts` is the whole outbox's count.
-  const everything = kind === null && current === 1 ? list : await sms.list({ page: 0 });
-  const allTotal = sumCounts(list.kindCounts);
-
-  return {
-    kind,
-    page: current,
-    pageCount,
-    items: list.items,
-    total: list.total,
-    kindCounts: list.kindCounts,
-    allTotal,
-    newest: everything.items[0]?.createdAt ?? null,
-    // The links the app writes into its own messages start with this, so a bubble can open them here.
-    appOrigin: site.origin,
-  };
-}
+    const pageCount = Math.max(1, Math.ceil(list.total / SMS_PAGE_SIZE));
+    const current = Math.min(Math.max(page, 1), pageCount);
+    if (current !== page) {
+      throw redirect({ to: "/admin/sms", search: { kind, page: current === 1 ? undefined : current } });
+    }
+  },
+  head: () => ({ meta: [{ title: "پیامک‌ها | مدیریت آموزش K9" }] }),
+  component: AdminSmsPage,
+  notFoundComponent: () => <SmsError notFound />,
+  errorComponent: () => <SmsError notFound={false} />,
+});
 
 /*===== Helpers =====*/
 function sumCounts(counts: Partial<Record<SmsKind, number>>): number {
@@ -87,30 +73,42 @@ function sumCounts(counts: Partial<Record<SmsKind, number>>): number {
  * first, grouped by the Tehran day under muted labels inside one plate, each message a row with its bubble as the
  * receiver's phone would show it. Paged on the server (the one Admin list that is); nothing here is resent or deleted.
  *
- * Motion only answers him: a new kind or page makes the first rows rise in. Nothing moves on load or on a revalidation.
+ * Motion only answers him: a new kind or page makes the first rows rise in. Nothing moves on load or on a refetch.
  */
-export default function AdminSmsPage({ loaderData }: Route.ComponentProps) {
-  const { kind, page, pageCount, items, total, kindCounts, allTotal, newest, appOrigin } = loaderData;
-
+function AdminSmsPage() {
   /*------ URL State ------*/
-  // Not shallow: the loader reads both params. Changing the kind starts again on the first page.
-  const [, setParams] = useQueryStates(smsSearchParams);
+  // Both are loader deps, so a change waits for its page. Changing the kind starts again on the first page.
+  const { kind, page: requestedPage = 1 } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  /*------ Data ------*/
+  const {
+    data: { items, total, kindCounts },
+  } = useSuspenseQuery(listQuery({ kind, page: requestedPage }));
+  const { data: everything } = useSuspenseQuery(newestQuery());
+  const {
+    data: { origin: appOrigin },
+  } = useSuspenseQuery(siteQuery());
+  // The loader has sent a page past the end to the last one, so the URL's page is the one shown.
+  const pageCount = Math.max(1, Math.ceil(total / SMS_PAGE_SIZE));
+  const page = Math.min(Math.max(requestedPage, 1), pageCount);
+  // The unfiltered list's counts are the same whatever the filter, so `kindCounts` is the whole outbox's count.
+  const allTotal = sumCounts(kindCounts);
+  const newest = everything.items[0]?.createdAt ?? null;
 
   /*------ Pending ------*/
-  // A change to this page's own URL or a revalidation dims the list; leaving for another Admin page shouldn't flash it.
-  const location = useLocation();
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const pending =
-    revalidator.state === "loading" ||
-    (navigation.state !== "idle" && navigation.location?.pathname === location.pathname);
+  // A change to this page's own URL dims the list while its page loads; leaving for another Admin page shouldn't
+  // flash it.
+  const pending = useRouterState({
+    select: (state) => state.status === "pending" && state.location.pathname === state.resolvedLocation?.pathname,
+  });
 
   /*------ Days ------*/
   const days = useMemo(() => groupByDay(items), [items]);
 
   /*------ Motion ------*/
   // The rows rise in once the kind or the page has changed (React's "adjust state on a prop change" pattern), never on
-  // load. Keyed by the view, not by the rows, so a new message arriving on a revalidation moves nothing.
+  // load. Keyed by the view, not by the rows, so a new message arriving on a refetch moves nothing.
   const viewKey = `${kind ?? "all"}:${page}`;
   const [lastViewKey, setLastViewKey] = useState(viewKey);
   const [moved, setMoved] = useState(false);
@@ -174,7 +172,13 @@ export default function AdminSmsPage({ loaderData }: Route.ComponentProps) {
         label="نوع پیام"
         className="sm:flex-nowrap sm:overflow-x-auto lg:flex-wrap lg:overflow-visible"
         value={kind ?? "all"}
-        onChange={(next) => void setParams({ kind: next === "all" ? null : next, page: null })}
+        onChange={(next) =>
+          void navigate({
+            search: (prev) => ({ ...prev, kind: next === "all" ? undefined : next, page: undefined }),
+            replace: true,
+            resetScroll: false,
+          })
+        }
         options={[{ value: "all", label: "همه", count: allTotal }, ...kindOptions]}
       />
       {kind === "sign-in-code" && (
@@ -231,7 +235,7 @@ export default function AdminSmsPage({ loaderData }: Route.ComponentProps) {
                         key={message.id}
                         message={message}
                         appOrigin={appOrigin}
-                        showKind={kind === null}
+                        showKind={kind === undefined}
                         rise={nextRise()}
                       />
                     ))}
@@ -252,7 +256,10 @@ export default function AdminSmsPage({ loaderData }: Route.ComponentProps) {
           pageCount={pageCount}
           onPick={(index) => {
             // Paging is the one change the Back button should undo, as on the catalogue.
-            void setParams({ page: index === 0 ? null : index + 1 }, { history: "push" });
+            void navigate({
+              search: (prev) => ({ ...prev, page: index === 0 ? undefined : index + 1 }),
+              resetScroll: false,
+            });
             scrollToList();
           }}
         />
@@ -279,9 +286,7 @@ function ShowcaseNote() {
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay while the outbox is down.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function SmsError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -294,6 +299,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/admin/sms")({});

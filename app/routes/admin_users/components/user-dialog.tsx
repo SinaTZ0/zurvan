@@ -41,9 +41,9 @@ export function UserDialog({
   userId: string | null;
   /** The match for the id in the full list; null when the id is unknown (the page clears the param). */
   user: AdminUser | null;
-  /** The customer's dogs, by the loader. */
+  /** The customer's dogs, from the page's queries. */
   dogs: readonly OwnedDog[];
-  /** The partner's code and switch, by the loader. */
+  /** The partner's code and switch, from the page's queries. */
   partner: PartnerFacts | undefined;
   onClose: () => void;
   /** The API accepted a block or an unblock (before the list reloads). */
@@ -194,7 +194,8 @@ function CustomerDogs({ dogs }: { dogs: readonly OwnedDog[] }) {
       {dogs.map((dog) => (
         <li key={dog.id}>
           <Link
-            to={`/admin/dogs/${encodeURIComponent(dog.id)}`}
+            to="/admin/dogs/$dogId"
+            params={{ dogId: dog.id }}
             className="group flex min-h-12 items-center gap-3 rounded-2xl px-2 py-1.5 transition-colors outline-none hover:bg-foreground/[0.04] focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <DogThumb name={dog.name} photo={dog.photo} className="size-10 text-sm ring-foreground/15" />
@@ -230,7 +231,8 @@ function PartnerLine({ user, partner }: { user: AdminUser; partner: PartnerFacts
         <p className="text-sm text-muted-foreground">{spokenName(user)} توی صفحه‌ی همکارا پیدا نشد.</p>
       )}
       <Link
-        to={`/admin/partners?view=partners&partner=${encodeURIComponent(user.id)}`}
+        to="/admin/partners"
+        search={{ view: "partners", partner: user.id }}
         className={buttonVariants({
           variant: "outline",
           size: "sm",

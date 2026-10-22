@@ -180,7 +180,8 @@ function PartnerNote({ user }: { user: AdminUser }) {
     <p className="text-sm leading-6 text-pretty text-muted-foreground">
       {PARTNER_NOTE}{" "}
       <Link
-        to={`/admin/partners?view=partners&partner=${encodeURIComponent(user.id)}`}
+        to="/admin/partners"
+        search={{ view: "partners", partner: user.id }}
         className="rounded-sm text-foreground underline underline-offset-4 outline-none hover:text-foreground/80 focus-visible:ring-3 focus-visible:ring-ring/50"
       >
         صفحه‌ی همکارا

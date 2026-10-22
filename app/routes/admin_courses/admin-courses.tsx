@@ -1,8 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { cn } from "cn";
 import { BookOpenIcon, PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { isRouteErrorResponse, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminPageHeader } from "~/components/admin-page-header";
@@ -10,17 +10,14 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { useAdminAction } from "~/hooks/use-admin-action";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
-import { client } from "~/orpc/client";
+import { client, orpc } from "~/orpc/client";
 import type { AdminCourse } from "~/orpc/course/contract";
-import { createServerClient } from "~/orpc/server-client.server";
 import { ArchiveDialog } from "~/routes/admin_courses/components/archive-dialog";
 import { CourseRow, type MoveDirection } from "~/routes/admin_courses/components/course-row";
 import { CoursesMotion } from "~/routes/admin_courses/components/courses-motion";
 import { PopNumber } from "~/routes/admin_courses/components/pop-number";
 import { useSwapSlide } from "~/routes/admin_courses/hooks/use-swap-slide";
 import { INK_OUTLINE, SHELF_COLUMNS, SHELF_PADDING } from "~/routes/admin_courses/surfaces";
-
-import type { Route } from "./+types/admin-courses";
 
 /*===== Focus =====*/
 /** Puts focus back on the arrow he pressed once the rows have swapped, or on its twin if that one is now at the end. */
@@ -39,15 +36,16 @@ function refocus({ slug, direction }: { slug: string; direction: MoveDirection }
   };
 }
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "دوره‌ها | مدیریت آموزش K9" }];
-
-/*===== Loader =====*/
+/*===== Route =====*/
 // The guard is the layout's. Every course comes once, in catalogue order, archived ones included: there are a dozen,
 // so nothing is filtered, paged or kept in the URL.
-export async function loader({ request }: Route.LoaderArgs) {
-  return { courses: await createServerClient(request).course.admin.list() };
-}
+export const Route = createFileRoute("/admin/courses")({
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.course.admin.list.queryOptions()),
+  head: () => ({ meta: [{ title: "دوره‌ها | مدیریت آموزش K9" }] }),
+  component: AdminCoursesPage,
+  notFoundComponent: () => <CoursesError notFound />,
+  errorComponent: () => <CoursesError notFound={false} />,
+});
 
 /*===== Admin Courses =====*/
 /**
@@ -61,8 +59,8 @@ export async function loader({ request }: Route.LoaderArgs) {
  * the rows slide back to the server's order and a toast says it didn't happen. After a success the reloaded list has
  * the same order, so dropping the copy moves nothing.
  */
-export default function AdminCoursesPage({ loaderData }: Route.ComponentProps) {
-  const { courses: loadedCourses } = loaderData;
+function AdminCoursesPage() {
+  const { data: loadedCourses, isFetching } = useSuspenseQuery(orpc.course.admin.list.queryOptions());
 
   /*------ Order ------*/
   // The slugs in the order he just made, until the server's list agrees (or the write fails).
@@ -114,8 +112,8 @@ export default function AdminCoursesPage({ loaderData }: Route.ComponentProps) {
   });
 
   /*------ Pending ------*/
-  const revalidator = useRevalidator();
-  const busy = revalidator.state !== "idle";
+  // The refetch after a write.
+  const busy = isFetching;
 
   const onSaleCount = courses.filter((course) => course.status === "approved").length;
   const archivedCount = courses.length - onSaleCount;
@@ -257,9 +255,7 @@ export default function AdminCoursesPage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function CoursesError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -272,6 +268,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/admin/courses")({});

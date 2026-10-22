@@ -1,4 +1,4 @@
-import { Link } from "~/components/link";
+import { useNavigate } from "@tanstack/react-router";
 
 /*===== Constants =====*/
 const URL_PATTERN = /(https?:\/\/[^\s]+)/g;
@@ -32,9 +32,7 @@ export function SmsBody({ body, appOrigin }: { body: string; appOrigin: string }
     return (
       <span key={`${index}-${href}`}>
         {url?.origin === appOrigin ? (
-          <Link to={`${url.pathname}${url.search}${url.hash}`} dir="ltr" className={LINK_CLASS}>
-            {href}
-          </Link>
+          <InAppLink path={`${url.pathname}${url.search}${url.hash}`}>{href}</InAppLink>
         ) : (
           <a href={href} target="_blank" rel="noreferrer" dir="ltr" className={LINK_CLASS}>
             {href}
@@ -44,6 +42,31 @@ export function SmsBody({ body, appOrigin }: { body: string; appOrigin: string }
       </span>
     );
   });
+}
+
+/*===== In-App Link =====*/
+/**
+ * A link into the app found in a message's text. The path comes from the data, not the code, so it can't be a typed
+ * route: it is a plain anchor (a new tab works as usual) whose plain click the router opens in place from the built
+ * `href`, as `Link` would.
+ */
+function InAppLink({ path, children }: { path: string; children: React.ReactNode }) {
+  const navigate = useNavigate();
+
+  return (
+    <a
+      href={path}
+      dir="ltr"
+      className={LINK_CLASS}
+      onClick={(event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        void navigate({ href: path });
+      }}
+    >
+      {children}
+    </a>
+  );
 }
 
 /*===== Helpers =====*/

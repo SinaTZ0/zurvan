@@ -43,7 +43,8 @@ export function PaymentItemRow({
 
       <div className="min-w-0">
         <Link
-          to={`/admin/dogs/${encodeURIComponent(item.dog.id)}`}
+          to="/admin/dogs/$dogId"
+          params={{ dogId: item.dog.id }}
           className="inline-flex min-h-6 items-center rounded-sm text-sm font-bold underline-offset-4 outline-none hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <bdi>{item.dog.name}</bdi>
@@ -52,7 +53,11 @@ export function PaymentItemRow({
       </div>
 
       {chip && (
-        <EnrollmentStatusBadge status={chip} quiet className="col-start-2 row-start-2 w-fit sm:col-start-3 sm:row-start-1" />
+        <EnrollmentStatusBadge
+          status={chip}
+          quiet
+          className="col-start-2 row-start-2 w-fit sm:col-start-3 sm:row-start-1"
+        />
       )}
 
       <p className="col-start-3 row-start-1 text-sm font-bold whitespace-nowrap sm:col-start-4">

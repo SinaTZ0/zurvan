@@ -1,4 +1,4 @@
-import { createSerializer, parseAsInteger, parseAsString, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 /*===== Constants =====*/
 /** People per page: twenty dense rows, about a screen and a half at 1440 and two screens on a phone. */
@@ -12,20 +12,17 @@ export const STATUS_FILTERS = ["all", "active", "blocked"] as const;
 
 export type StatusFilter = (typeof STATUS_FILTERS)[number];
 
-/** The page's own path, which the row links are built on. */
-export const ADMIN_USERS_PATH = "/admin/users";
+/*===== Search Schema =====*/
+// None is a loader dep: the loader fetches the whole list once and the page filters it. `role` and `status` default to
+// «all» and `page` to the first (1-based, as on the Dogs page); links leave the defaults out. `user` (the open dialog)
+// is pushed as a history entry so Back closes it; absent means closed. A hand-typed bad value is dropped (`.catch`)
+// instead of failing the page.
+export const adminUsersSearchSchema = z.object({
+  role: z.enum(ROLE_FILTERS).optional().catch(undefined),
+  status: z.enum(STATUS_FILTERS).optional().catch(undefined),
+  q: z.string().optional().catch(undefined),
+  page: z.number().int().optional().catch(undefined),
+  user: z.string().optional().catch(undefined),
+});
 
-/*===== Parsers =====*/
-// All shallow: the loader fetches the whole list once and the page filters it, so none of these needs a loader run.
-// `page` is 1-based in the URL (`?page=2` is the second page), as on the Dogs page. `user` (the open dialog) pushes a
-// history entry so Back closes it; it has no default because "absent" means closed.
-export const adminUsersSearchParams = {
-  role: parseAsStringLiteral(ROLE_FILTERS).withDefault("all").withOptions({ shallow: true }),
-  status: parseAsStringLiteral(STATUS_FILTERS).withDefault("all").withOptions({ shallow: true }),
-  q: parseAsString.withDefault("").withOptions({ shallow: true }),
-  page: parseAsInteger.withDefault(1).withOptions({ shallow: true }),
-  user: parseAsString.withOptions({ shallow: true, history: "push" }),
-};
-
-/*===== Links =====*/
-export const serializeAdminUsersSearchParams = createSerializer(adminUsersSearchParams);
+export type AdminUsersSearch = z.infer<typeof adminUsersSearchSchema>;

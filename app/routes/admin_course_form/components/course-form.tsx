@@ -2,10 +2,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "cn";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
-import { useNavigate, useRevalidator } from "react-router";
+import { useIsFetching } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 
 import { useAdminAction } from "~/hooks/use-admin-action";
-import { client } from "~/orpc/client";
+import { client, orpc } from "~/orpc/client";
 import type { AdminCourse, CourseInput } from "~/orpc/course/contract";
 import type { Media } from "~/orpc/media/contract";
 import { AgeSection } from "~/routes/admin_course_form/components/age-section";
@@ -34,8 +35,6 @@ import { COURSE_FORM_SECTIONS, type CourseFormSectionId } from "~/routes/admin_c
 type SaveRequest =
   | { kind: "create"; input: CourseInput & { slug: string; coverMediaId: string } }
   | { kind: "update"; input: CourseInput & { slug: string; coverMediaId?: string } };
-
-const COURSES_PATH = "/admin/courses";
 
 /*===== Course Form =====*/
 /**
@@ -82,9 +81,9 @@ export function CourseForm({ course, courses }: { course: AdminCourse | null; co
     failureFallback: "ذخیره نشد. دوباره امتحان کن.",
     // The form shows the failure itself (fields and alert), so a toast would say it twice.
     toastFailure: false,
-    onSuccess: () => void navigate(COURSES_PATH),
+    onSuccess: () => void navigate({ to: "/admin/courses" }),
     // The course is gone (NOT_FOUND): the hook has toasted why; there is nothing left to edit.
-    onConflict: () => void navigate(COURSES_PATH),
+    onConflict: () => void navigate({ to: "/admin/courses" }),
   });
 
   const onSubmit = handleSubmit(
@@ -134,10 +133,10 @@ export function CourseForm({ course, courses }: { course: AdminCourse | null; co
     ),
   );
 
-  /*------ Revalidating ------*/
-  // After a save the hook reloads the loaders before going back to Courses; the page says it is busy meanwhile.
-  const revalidator = useRevalidator();
-  const busy = revalidator.state !== "idle";
+  /*------ Refetching ------*/
+  // After a save the hook refetches the API's queries before going back to Courses; the page says it is busy while
+  // the courses are on their way.
+  const busy = useIsFetching({ queryKey: orpc.course.key() }) > 0;
 
   /*------ Preview ------*/
   // A short window would hide the facts under the card behind a plain sticky `top`.

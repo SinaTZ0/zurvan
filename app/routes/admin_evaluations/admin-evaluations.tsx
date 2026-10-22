@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CheckCheckIcon, ClipboardCheckIcon, type LucideIcon } from "lucide-react";
-import { useQueryStates } from "nuqs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, useNavigation, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills, type AdminFilterOption } from "~/components/admin-filter-pills";
@@ -13,7 +12,6 @@ import { buttonVariants } from "~/components/ui/button";
 import { ADMIN_HAIRLINE, ADMIN_PLATE } from "~/lib/admin-plate";
 import { formatNumberFa } from "~/lib/digits";
 import type { AdminEvaluation } from "~/orpc/evaluation/contract";
-import { createServerClient } from "~/orpc/server-client.server";
 import { EvaluateDialog } from "~/routes/admin_evaluations/components/evaluate-dialog";
 import { EvaluationDrawer } from "~/routes/admin_evaluations/components/evaluation-drawer";
 import { EvaluationRow } from "~/routes/admin_evaluations/components/evaluation-row";
@@ -23,15 +21,13 @@ import { describeDay } from "~/routes/admin_evaluations/dates";
 import { groupByDay } from "~/routes/admin_evaluations/day-groups";
 import { type LeavingRow, withLeavingRows } from "~/routes/admin_evaluations/leaving";
 import type { AnswerKind } from "~/routes/admin_evaluations/schema";
+import { adminEvaluationsQueryOptions } from "~/routes/admin_evaluations/queries";
 import {
-  ADMIN_EVALUATIONS_PATH,
-  adminEvaluationsSearchParams,
+  adminEvaluationsSearchSchema,
+  DEFAULT_EVALUATION_FILTER,
   EVALUATION_FILTERS,
   type EvaluationFilter,
-  serializeAdminEvaluationsSearchParams,
 } from "~/routes/admin_evaluations/search-params";
-
-import type { Route } from "./+types/admin-evaluations";
 
 /*===== Constants =====*/
 const FILTER_LABELS: Record<EvaluationFilter, string> = {
@@ -59,15 +55,17 @@ const EMPTY_VIEWS: Record<EvaluationFilter, { title: string; body?: string; icon
 const RISE_STEP_S = 0.05;
 const MAX_STAGGERED = 5;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "ارزیابی‌ها | مدیریت آموزش K9" }];
-
-/*===== Loader =====*/
-// The whole list, once: the status filter, the counts and the open drawer are shallow URL state applied in the component
-// (docs/nuqs.md), so none of them runs this again. The admin layout guards the route.
-export async function loader({ request }: Route.LoaderArgs) {
-  return { evaluations: await createServerClient(request).evaluation.admin.list({}) };
-}
+/*===== Route =====*/
+// The whole list, once: the status filter, the counts and the open drawer are URL state the component applies, so
+// none of them is a loader dep. The admin layout guards the route.
+export const Route = createFileRoute("/admin/evaluations")({
+  validateSearch: adminEvaluationsSearchSchema,
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(adminEvaluationsQueryOptions()),
+  head: () => ({ meta: [{ title: "ارزیابی‌ها | مدیریت آموزش K9" }] }),
+  component: AdminEvaluationsPage,
+  notFoundComponent: () => <EvaluationsError notFound />,
+  errorComponent: () => <EvaluationsError notFound={false} />,
+});
 
 /*===== Admin Evaluations =====*/
 /**
@@ -78,11 +76,14 @@ export async function loader({ request }: Route.LoaderArgs) {
  * A request he answers in «در انتظار» doesn't just vanish when the list reloads: the page keeps a copy of it for under
  * a second (`leaving`), put back where it stood, so it can be stamped and fold away.
  */
-export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProps) {
-  const { evaluations } = loaderData;
+function AdminEvaluationsPage() {
+  const { data: evaluations, isFetching } = useSuspenseQuery(adminEvaluationsQueryOptions());
 
   /*------ URL State ------*/
-  const [{ status, evaluation: openId }, setParams] = useQueryStates(adminEvaluationsSearchParams);
+  const search = Route.useSearch();
+  const status = search.status ?? DEFAULT_EVALUATION_FILTER;
+  const openId = search.evaluation ?? null;
+  const navigate = useNavigate({ from: Route.fullPath });
 
   /*------ Answers ------*/
   // One dialog for every button. The target stays after closing so the exit animation keeps its words, and `session`
@@ -96,9 +97,12 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
   }
 
   /*------ Busy ------*/
-  const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const busy = navigation.state !== "idle" || revalidator.state !== "idle";
+  // Leaving for another page, or the list refetching after an answer. A filter or the drawer only changes the search,
+  // which shouldn't dim the list.
+  const leavingPage = useRouterState({
+    select: (state) => state.status === "pending" && state.location.pathname !== state.resolvedLocation?.pathname,
+  });
+  const busy = leavingPage || isFetching;
 
   /*------ Leaving Rows ------*/
   const [leaving, setLeaving] = useState<LeavingRow[]>([]);
@@ -160,7 +164,11 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
     setLeaving([]);
     setArrival((previous) => previous + 1);
     // Replace, not push: a filter isn't a place to go Back to.
-    void setParams({ status: next }, { history: "replace" });
+    void navigate({
+      search: (prev) => ({ ...prev, status: next === DEFAULT_EVALUATION_FILTER ? undefined : next }),
+      replace: true,
+      resetScroll: false,
+    });
   }
 
   /** The API accepted an answer: in «در انتظار», keep the row, in its place, until its exit has played. */
@@ -296,15 +304,11 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
                               <EvaluationRow
                                 key={evaluation.id}
                                 evaluation={evaluation}
-                                href={serializeAdminEvaluationsSearchParams(ADMIN_EVALUATIONS_PATH, {
-                                  status,
-                                  evaluation: evaluation.id,
-                                })}
+                                search={{ status: search.status, evaluation: evaluation.id }}
                                 leaving={kind !== undefined}
                                 exit={kind && playing.has(evaluation.id) ? { kind, fold: !folding } : null}
                                 rise={nextRise()}
                                 quietChip={status === "requested"}
-                                onOpen={() => void setParams({ evaluation: evaluation.id })}
                                 onAnswer={(next) => startAnswer({ kind: next, evaluation })}
                               />
                             );
@@ -327,7 +331,9 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
         footerRef={footerRef}
         // Closing replaces the entry: the open state was pushed so Back closes it, but a close button must not leave a
         // forward entry that reopens it.
-        onClose={() => void setParams({ evaluation: null }, { history: "replace" })}
+        onClose={() =>
+          void navigate({ search: (prev) => ({ ...prev, evaluation: undefined }), replace: true, resetScroll: false })
+        }
         onAnswer={(kind) => opened && startAnswer({ kind, evaluation: opened })}
       />
 
@@ -358,9 +364,7 @@ export default function AdminEvaluationsPage({ loaderData }: Route.ComponentProp
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function EvaluationsError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -373,6 +377,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/admin/evaluations")({});

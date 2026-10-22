@@ -1,9 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cn } from "cn";
 import { CheckCheckIcon, GraduationCapIcon } from "lucide-react";
-import { useQueryStates } from "nuqs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { isRouteErrorResponse, useRevalidator } from "react-router";
 
 import { AdminEmptyState } from "~/components/admin-empty-state";
 import { AdminFilterPills } from "~/components/admin-filter-pills";
@@ -13,20 +12,19 @@ import { Pagination } from "~/components/pagination";
 import { buttonVariants } from "~/components/ui/button";
 import { formatNumberFa } from "~/lib/digits";
 import type { AdminEnrollment } from "~/orpc/enrollment/contract";
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { CustomerBlock, type LineMotion } from "~/routes/admin_enrollments/components/customer-block";
 import { FinishDialog, type FinishKind } from "~/routes/admin_enrollments/components/finish-dialog";
 import { LEAVE_MS, PageMotion } from "~/routes/admin_enrollments/components/page-motion";
 import { filterByStatus, groupByCustomer } from "~/routes/admin_enrollments/group-by-customer";
 import { type LeavingLine, withLeavingLines } from "~/routes/admin_enrollments/leaving";
 import {
-  adminEnrollmentsSearchParams,
+  adminEnrollmentsSearchSchema,
+  DEFAULT_ENROLLMENT_FILTER,
   ENROLLMENT_FILTERS,
   type EnrollmentFilter,
   PAGE_SIZE,
 } from "~/routes/admin_enrollments/search-params";
-
-import type { Route } from "./+types/admin-enrollments";
 
 /*===== Constants =====*/
 const FILTER_LABELS: Record<EnrollmentFilter, string> = {
@@ -48,15 +46,18 @@ const EMPTY_VIEWS: Record<EnrollmentFilter, { title: string; body?: string }> = 
 const RISE_STEP_S = 0.06;
 const MAX_STAGGERED = 5;
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "ثبت‌نام‌ها | مدیریت آموزش K9" }];
-
-/*===== Loader =====*/
+/*===== Route =====*/
 // The guard is the layout's. The whole list comes once (active first, then newest): the status filter, the counts, the
 // grouping by customer and the paging are all applied in the component, so changing them never waits for the server.
-export async function loader({ request }: Route.LoaderArgs) {
-  return { enrollments: await createServerClient(request).enrollment.admin.list({}) };
-}
+export const Route = createFileRoute("/admin/enrollments")({
+  validateSearch: adminEnrollmentsSearchSchema,
+  loader: ({ context: { queryClient } }) =>
+    queryClient.ensureQueryData(orpc.enrollment.admin.list.queryOptions({ input: {} })),
+  head: () => ({ meta: [{ title: "ثبت‌نام‌ها | مدیریت آموزش K9" }] }),
+  component: AdminEnrollmentsPage,
+  notFoundComponent: () => <EnrollmentsError notFound />,
+  errorComponent: () => <EnrollmentsError notFound={false} />,
+});
 
 /*===== Admin Enrollments =====*/
 /**
@@ -67,11 +68,14 @@ export async function loader({ request }: Route.LoaderArgs) {
  * A line he closes doesn't just vanish when the list reloads: the page keeps a copy of it for under a second
  * (`leaving`), put back where it stood, so it can be stamped and fold away (and its block with it, if it was the last).
  */
-export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProps) {
-  const { enrollments } = loaderData;
+function AdminEnrollmentsPage() {
+  const { data: enrollments, isFetching } = useSuspenseQuery(orpc.enrollment.admin.list.queryOptions({ input: {} }));
 
   /*------ URL State ------*/
-  const [{ status, page: requestedPage }, setParams] = useQueryStates(adminEnrollmentsSearchParams);
+  const search = Route.useSearch();
+  const status = search.status ?? DEFAULT_ENROLLMENT_FILTER;
+  const requestedPage = search.page ?? 1;
+  const navigate = useNavigate({ from: Route.fullPath });
 
   /*------ Dialog ------*/
   // One dialog for every line. The target stays after closing so the exit animation keeps its words, and `session`
@@ -80,8 +84,8 @@ export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProp
   const [dialogOpen, setDialogOpen] = useState(false);
 
   /*------ Pending ------*/
-  const revalidator = useRevalidator();
-  const pending = revalidator.state !== "idle";
+  // An ending marks the list stale; it dims while the new one loads.
+  const pending = isFetching;
 
   /*------ Leaving Lines ------*/
   const [leaving, setLeaving] = useState<LeavingLine[]>([]);
@@ -210,7 +214,15 @@ export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProp
               onChange={(next) => {
                 if (next === status) return;
                 changeView();
-                void setParams({ status: next, page: null });
+                void navigate({
+                  search: (prev) => ({
+                    ...prev,
+                    status: next === DEFAULT_ENROLLMENT_FILTER ? undefined : next,
+                    page: undefined,
+                  }),
+                  replace: true,
+                  resetScroll: false,
+                });
               }}
             />
           </div>
@@ -260,7 +272,10 @@ export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProp
               onPick={(next) => {
                 changeView();
                 // Paging is the one change the Back button should undo.
-                void setParams({ page: next === 0 ? null : next + 1 }, { history: "push" });
+                void navigate({
+                  search: (prev) => ({ ...prev, page: next === 0 ? undefined : next + 1 }),
+                  resetScroll: false,
+                });
                 listRef.current?.scrollIntoView({ block: "start" });
               }}
             />
@@ -286,9 +301,7 @@ export default function AdminEnrollmentsPage({ loaderData }: Route.ComponentProp
 
 /*===== Error Boundary =====*/
 // Renders inside the Admin layout, so the rail and tabs stay.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function EnrollmentsError({ notFound }: { notFound: boolean }) {
   return (
     <div>
       <AdminPageHeader
@@ -301,6 +314,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </div>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/admin/enrollments")({});

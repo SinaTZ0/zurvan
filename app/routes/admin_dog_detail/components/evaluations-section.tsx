@@ -16,7 +16,7 @@ import { INK_LINK, QUIET_LINE } from "~/routes/admin_dog_detail/surfaces";
  * where the answers are.
  */
 export function EvaluationsSection({ evaluations }: { evaluations: AdminEvaluation[] }) {
-  // A copy is sorted (the loader's array stays as it is); `toSorted` isn't in this project's TS lib.
+  // A copy is sorted (the query's array stays as it is); `toSorted` isn't in this project's TS lib.
   // oxlint-disable-next-line unicorn/no-array-sort
   const newestFirst = [...evaluations].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 

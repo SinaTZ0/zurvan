@@ -10,8 +10,8 @@ export type PartnerFacts = Pick<AdminPartner, "code" | "isActive">;
 
 /*===== Indexes =====*/
 /**
- * The loader's two side lists cut down to what the roll shows, keyed by the user's id (a partner's id is his user's),
- * so the page sends no leads, Sheba numbers or dog details it doesn't draw.
+ * The page's two side lists cut down to what the roll shows, keyed by the user's id (a partner's id is his user's), so
+ * a row and the dialog look their person up at once.
  */
 export function indexRollData({ dogs, partners }: { dogs: readonly AdminDog[]; partners: readonly AdminPartner[] }) {
   const dogsByOwner: Record<string, OwnedDog[]> = {};

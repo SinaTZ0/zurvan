@@ -12,6 +12,7 @@ import { UserDisc } from "~/routes/admin_users/components/user-disc";
 import { describeLastLogin } from "~/routes/admin_users/dates";
 import { useSettledChange } from "~/routes/admin_users/hooks/use-settled-change";
 import { isNameless, spokenName } from "~/routes/admin_users/people";
+import type { AdminUsersSearch } from "~/routes/admin_users/search-params";
 
 /*===== Constants =====*/
 // What dims on a blocked row: everything but the «مسدود» chip, so the chip is the one thing that stands out. The
@@ -21,8 +22,8 @@ const DIMS =
 
 /*===== User Row =====*/
 /**
- * One person on the roll, a line in the plate. The name is a stretched link that opens the dialog (`href` keeps it a
- * real link for a new tab and before hydration); the number sits above it (`relative z-10`) so it stays a call.
+ * One person on the roll, a line in the plate. The name is a stretched link that opens the dialog (`search` keeps it
+ * a real link for a new tab and before hydration); the number sits above it (`relative z-10`) so it stays a call.
  *
  * - **Below `xl`:** the disc, the name with its chips, and under it the number and «آخرین ورود» (from `sm` also the
  *   registration and the dogs or code). The whole row opens the dialog.
@@ -38,16 +39,16 @@ const DIMS =
  */
 export function UserRow({
   user,
-  href,
+  search,
   partnerCode,
   open,
   rise,
   leaving,
   folding,
-  onOpen,
 }: {
   user: AdminUser;
-  href: string;
+  /** The page's search with this person's dialog open. */
+  search: AdminUsersSearch;
   /** The partner's referral code, for a partner's row. */
   partnerCode: string | undefined;
   /** Whether this person's dialog is open over the roll. */
@@ -57,7 +58,6 @@ export function UserRow({
   leaving: boolean;
   /** Its exit has started (the dialog has closed): it folds away. */
   folding: boolean;
-  onOpen: () => void;
 }) {
   const status = useSettledChange({ value: user.status, hold: open });
   const name = useSettledChange({ value: user.name, hold: open });
@@ -111,17 +111,14 @@ export function UserRow({
 
           {/*===== Name and Chips =====*/}
           <div className="flex min-w-0 items-center gap-2 [grid-area:name]">
+            {/* A click opens the dialog in place: a search-only change (a history entry, so Back closes it) that keeps
+                the scroll and doesn't refetch the roll. */}
             <Link
-              to={href}
+              to="/admin/users"
+              search={search}
+              resetScroll={false}
               data-row-link
               aria-label={nameless ? `بی‌نام، ${spoken}` : undefined}
-              onClick={(event) => {
-                // A plain click opens the dialog in place (a shallow URL change, no loader run); a new-tab click keeps
-                // the browser's own behaviour.
-                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                event.preventDefault();
-                onOpen();
-              }}
               className={cn(
                 "min-w-0 truncate text-sm leading-6 outline-none after:absolute after:inset-0",
                 nameless ? "text-muted-foreground" : "font-bold",
