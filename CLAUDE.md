@@ -2,7 +2,7 @@
 
 These instructions apply to the entire repository unless overridden by a more specific `AGENTS.md` in a subdirectory.
 
-This is a React Router v8 application using Framework Mode. The application's user-facing content is in Persian.
+This is a TanStack Start v1 application (TanStack Router, TanStack Query, oRPC; served by Nitro). The application's user-facing content is in Persian. The move from React Router v8 is described in `docs/tanstack-start/`.
 
 ## Naming
 
@@ -45,10 +45,11 @@ This is a React Router v8 application using Framework Mode. The application's us
 - If test prerequisites are unavailable, report the limitation. Do not automatically provision databases or push schemas just to run tests.
 - Story files are maintained UI documentation. Preserve them during test cleanup, including their existing `play` functions, controls, and callback actions. Keep Storybook for manual previews and accessibility review; do not reintroduce its automatic test runner.
 
-## Route Module Slices (Framework Mode)
+## Route Module Slices
 
 - **Keep Route Slices Flat:** In this repository, route module directories under `app/routes/` (or the configured `appDirectory`) must be flat. URL hierarchy does not imply folder nesting (e.g. use `dashboard_user/`, never `dashboard/user/`).
-- **Colocate Route Internals:** A route module file, its route exports (`loader`, `action`, `clientLoader`, `clientAction`, `ErrorBoundary`, `meta`, `headers`), `./+types/...` imports, and route-only internals (components, hooks, queries, schemas) must live inside that route's slice.
+- **Declare Routes in Code:** Routes are declared in `app/routes.ts` (TanStack virtual file routes) over the slices; the plugin generates `app/routeTree.gen.ts` (committed, never edited by hand). One module serving two URLs gets a thin route file per URL next to it (e.g. `account_dog_form/account-dog-new.tsx` and `account-dog-edit.tsx`).
+- **Colocate Route Internals:** A route module file, its `Route` (`createFileRoute` with `beforeLoad`, `validateSearch`, `loaderDeps`, `loader`, `head`, `headers`, `staticData`, `component`, `errorComponent`, `notFoundComponent`, or `server.handlers` for a server route), and route-only internals (components, hooks, query options, schemas, search params) must live inside that route's slice. Loaders run on the server and in the browser, so a route module never imports a `*.server.*` module at runtime; server-only work belongs in oRPC procedures. See [docs/frontend-guideline.md](docs/frontend-guideline.md).
 - **Promote Only When Shared:** Keep code with its immediate route consumer. Only move it to a shared or broader domain location when multiple routes consume it or it clearly belongs to a broader domain abstraction.
 
 ```text

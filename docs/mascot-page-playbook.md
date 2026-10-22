@@ -95,7 +95,7 @@ Patterns:
 
 Do this before the user sees anything:
 
-1. Serve on your own port (`npx react-router dev --port 5191 --strictPort`; never touch 5173), stop it after with `kill $(lsof -t -iTCP:5191 -sTCP:LISTEN)`.
+1. Serve on your own port (`npx vite dev --port 5191 --strictPort`; never touch 5173), stop it after with `kill $(lsof -t -iTCP:5191 -sTCP:LISTEN)`.
 2. Shoot full pages at 1440 and 390, scrolling through first so scroll-driven reveals have run, then back to the top with `animations: "disabled"`. Signed in: Playwright `storageState` files of the demo accounts (`.tmp-claude/state-<phone>.json`). Tools: `.tmp-claude/tools/shot-detail-full.mjs`, `shot-phone.mjs` (four phone screens into one sheet), `crop.mjs` (sharp; `setContent` with `file://` images doesn't work).
 3. A full-page phone shot shows the fixed tab bar in the middle of the page: that's the screenshot, not a bug. Use viewport-sized shots for phones.
 4. Go over each shot asking: where is it black and empty? Where does a dog float? Does any text run under a cut-out? Does anything wrap that shouldn't (prices)? Is there horizontal scroll (`document.documentElement.scrollWidth`)?

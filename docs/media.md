@@ -5,12 +5,12 @@ How the app stores, processes and serves images: avatars, dog photos, evaluation
 ## Overview
 
 ```text
-upload:  browser ──multipart──▶ React Router (oRPC) ──sharp──▶ WebP variants ──S3 PUT──▶ SeaweedFS (bucket zurvann)
+upload:  browser ──multipart──▶ app server (oRPC) ──sharp──▶ WebP variants ──S3 PUT──▶ SeaweedFS (bucket zurvann)
 serve:   browser ──GET /media/…──▶ nginx ──▶ SeaweedFS S3 (read-only, files only)
 ```
 
 - **SeaweedFS** stores the files in the `zurvann` bucket and runs in the same Docker Compose project as the app. Its ports are not published in production; only nginx and the app can reach it.
-- **The app writes.** Uploads go through the React Router server, which checks, converts and resizes the image, then puts every variant into the bucket with the S3 API.
+- **The app writes.** Uploads go through the app's server, which checks, converts and resizes the image, then puts every variant into the bucket with the S3 API.
 - **nginx reads.** It forwards `GET` and `HEAD` requests for image files to SeaweedFS and refuses everything else. Users never write to SeaweedFS directly.
 - The browser never receives the original upload. Only the generated WebP variants are stored.
 

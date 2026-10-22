@@ -40,7 +40,9 @@ The owner decided all of these on 2026-10-22.
    Phase A included. This is the owner's explicit exception to CLAUDE.md's "commit on `main`". Phase A commits still
    run on React Router. The B0 spike runs in a git worktree (`../zurvan-spike`) on its own branch,
    `tanstack-start-spike` (a second exception the owner approved), which stays unmerged until B1 decides whether to
-   build on it. Nothing is merged into `main` or pushed until the owner says so.
+   build on it. Nothing is merged into `main` or pushed until the owner says so. Phase B itself ran in a third worktree,
+   `../zurvan-start` on `tanstack-start`, because the owner's React Router dev server runs from the main checkout; the
+   owner chose to leave that checkout detached at `0bf97b3` (same files) until the worktree is removed.
 2. **Freshness policy (decided).** Who made the change decides how it reaches the screen:
    - **Changes the visitor makes** (adds a dog, fills the cart, an Admin marks an enrollment done): the mutation
      invalidates the query keys it changed (`orpc.x.key()`), so the next render refetches. No `staleTime` is involved.
@@ -253,6 +255,10 @@ queryClient: QueryClient }>()`. Root `errorComponent` / `notFoundComponent` rend
 - `app/start.ts`: the referral cookie's request middleware (A3's root middleware) and `createCsrfMiddleware` for
   server functions, which a custom `start.ts` must register itself.
 
+**Done (2026-10-22, `9907b9b`).** As planned, from the B0 spike's files. Every page module first got a placeholder
+`Route` so the generated tree was complete and links could be typed while B5 ran. `build` is
+`NODE_ENV=production vite build`, so a `NODE_ENV` left in a local `.env` can't ship React's dev runtime.
+
 ### B2. Server routes
 
 Each becomes `createFileRoute(...)({ server: { handlers } })`:
@@ -264,6 +270,10 @@ Each becomes `createFileRoute(...)({ server: { handlers } })`:
 - `api/evaluation-videos` → `POST` upload; `api/evaluation-videos/$id` → `GET` (Range/206/416), `HEAD`, `DELETE`.
   They already return plain `Response`s; keep their `Cache-Control`.
 - `payment/callback` → `GET` that redirects (a `Response` with `Location`, or `redirect()`).
+
+**Done (`d0721f7`).** The video route answers `HEAD` explicitly; a `GET` on the upload collection is a 405; the callback
+returns a plain 302. Checked on the production build: upload 201, a range 206 with `Content-Range`, an unsatisfiable
+range 416, HEAD, DELETE 204, signed out 401, another account 404, callback 302 to the Cart.
 
 ### B3. One oRPC client for both sides
 
@@ -280,6 +290,8 @@ The server branch shares one client across requests; per-request data must come 
 above), never module state. Keep `orpc = createTanstackQueryUtils(client)` for `queryOptions()` / `mutationOptions()`
 / `.key()`.
 
+**Done (`5522fba`).** As planned; `~/orpc/server-client.server` is gone.
+
 ### B4. Page guards
 
 `requireSession({ roles })` (10 route middlewares) becomes a `beforeLoad` on `layout_account`, `layout_admin` and the
@@ -289,6 +301,12 @@ real page). `sessionContext` becomes the object `beforeLoad` returns, which chil
 `session.get` with `ensureQueryData` (preloads re-run `beforeLoad` every time, and the query cache keeps them free),
 and clear or invalidate that query on sign-in, sign-out and a blocked answer so the guard never trusts a stale
 session. Redirects are 307 now.
+
+**Done (`1364c6d`, `c1258cc`).** `requireSession({ queryClient, location, roles })` in `app/lib/session-guard.ts`,
+returning `{ user }` into the route context; layouts and the 8 guarded pages call it from `beforeLoad`. Instead of
+clearing the session query, `refreshSession` fetches it again (`staleTime: 0`) after signing in, signing out and giving
+a name, so the header and the next guard see the new answer. Role homes are typed route paths. The role matrix
+(visitor, customer, partner, Admin over every guarded page) gives the same redirects as React Router, as 307s.
 
 ### B5. Pages
 
@@ -312,12 +330,28 @@ Convert per area, one commit per batch: storefront (14 + `auth`), account (9), A
 
 `app/hooks/use-admin-action.ts` centralizes the Admin refresh, so most Admin pages change in one place.
 
+**Done (`4ff0a75` storefront, `5c06058` account, `6364ab4` Admin).** Loaders `ensureQueryData` everything a page
+shows; components read the same options with `useSuspenseQuery` (conditional reads: `useQuery` with `enabled`), so
+invalidation reaches the screen; loaders return only what `head` needs. `orNotFound` (`app/lib/not-found.ts`) maps the
+API's `NOT_FOUND` to `notFound()`. The dog and course forms are one module under two thin routes. The Admin's
+"busy" dimming comes from its queries' `isFetching`; the evaluations list and a customer's dog status use
+`staleTime: 30_000`. Behavior notes: the Admin's evaluations list refetches (and dims briefly) when the tab regains
+focus after 30 s; clicking the current page in a nav reuses cached data instead of reloading; a renamed dog's tab title
+updates on the next navigation; `certificate.verify` keeps the default 5 minutes (a revoked certificate can show valid
+that long in a tab that already read it: open question whether it should be 0).
+
 ### B6. Search params
 
 Each `search-params.ts` becomes a schema for `validateSearch`; components use `Route.useSearch()` and
 `navigate({ search: (prev) => ({ ...prev, page: 2 }) })`. Params that drive the loader go in `loaderDeps`; UI-only
 filters don't, so changing them doesn't refetch (today's `shallow: true`). `createSerializer` links become typed
 `<Link to search>`. `header-search.tsx` keeps a plain GET `<form action="/courses">` so it works before hydration.
+
+**Done (in the B5 commits).** Every field `.optional().catch(undefined)`; defaults applied where read and left out of
+URLs; nuqs's `replace` / no-scroll defaults kept; paging pushes. Only `admin_sms` (kind, page) and `buy` (dog) have
+`loaderDeps`; the catalogue filters the cached `course.list` in the component. The Admin search boxes debounce the URL
+through `app/hooks/use-search-text.ts`. Unknown keys (`utm_*`) survive a page load, but a filter change on a page with a
+schema drops them (nuqs kept them). nuqs is uninstalled.
 
 ### B7. Links, view transitions, prefetch
 
@@ -333,6 +367,16 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   `activeOptions` or the render-prop `children`.
 - Update `.oxlintrc.json`'s restricted import to `@tanstack/react-router`'s `Link`.
 - Delete `app/hooks/use-default-prefetch.ts`'s React Router note; the "data isn't reused" caveat no longer applies.
+
+**Done (`77fd4b7`).** `Link` is TanStack's `Link` typed as `LinkComponent<"a">` with the defaults computed from
+`router.buildLocation(props)` (no `createLink` needed: it wraps TanStack's own `Link`). `NavLink` adds `end` and
+`className` as a function. Finding: `to` accepts a plain `string` without complaint, so link data kept in lists and
+props is typed as `StaticRoutePath` (`app/lib/route-path.ts`) or built with `linkOptions`; dog statuses and verdicts
+carry typed link options. The few links that can't be route paths: an SMS message's in-app link (its path comes from
+the text: `<a>` + `navigate({ href })`), the dog form's validated `redirectTo` (`href`), and full-reload retry
+links (`<a href>`). Checked on the production build: preloaded data is used on the click (no request), no query is
+fetched again at hydration on any page, Back restores scroll, the fade runs on link, Back and Forward, a same-page hash
+glides with Lenis and a cross-page hash lands on its section.
 
 ### B8. Tooling and deploy
 
@@ -352,6 +396,9 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   `fullstack:*`; replace the `createRoutesStub` decorator in `app/routes/rules/rules.stories.tsx` with a
   memory-history router.
 
+**Done (`275c21a`).** As planned. The Docker image wasn't rebuilt (the Dockerfile is B0's, which was), Storybook
+builds and the rules stories render in a memory-history router, the 6 smoke tests pass unchanged against the build.
+
 ### B9. Docs and agent instructions
 
 - `CLAUDE.md`: the framework line and the "Route Module Slices (Framework Mode)" section (keep flat slices; describe
@@ -363,6 +410,10 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   equivalents (user's call).
 - `docs/tanstack-start/why-tanstack-start.md`: move "What ships now" into history.
 
+**Done**, except the skills under `.agents/skills/` (`react-router/`, `orpc/references/react-router.md`), which are
+the owner's call. `docs/nuqs.md` became `docs/search-params.md`; CLAUDE.md, the frontend guideline, view
+transitions, the README and the smaller mentions describe Start.
+
 ### B10. Verify, then merge
 
 - `npm run lint`, `npm run typecheck`, `npm run build`, the Vitest suite once, and `npm run test:e2e` (adapt the 6
@@ -373,6 +424,15 @@ filters don't, so changing them doesn't refetch (today's `shallow: true`). `crea
   page, page fade, RTL.
 - Network check: a preloaded page renders without a data request; nothing is fetched twice at hydration.
 - Merge to `main`, deploy, and keep the previous image to roll back to.
+
+**Status (2026-10-22).** Lint, typecheck and build pass; the Vitest suite once (192 tests); `test:e2e` 6/6 against the
+production build. Screenshots of 34 pages (visitor, customer, partner, Admin) at 390 and 1440 match a React Router
+build of `0bf97b3` pixel for pixel (one 0.1% difference on the partner dashboard). By hand, in a browser: sign out and
+back in to the page asked for, the header greeting after sign-in, the Admin's dog search (list filters per key, URL
+after the pause, no history per key, reload keeps it), the catalogue's family filter, an Admin action (renaming a
+user) refreshing its list without a reload, video upload and playback. Not exercised in a browser: cart → payment →
+callback end to end (it would write payments into the demo data) and a blocked account (covered by the `session.get`
+integration test). Not merged; that's the owner's call.
 
 ## Watch Out For
 

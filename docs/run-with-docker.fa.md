@@ -62,7 +62,7 @@ docker compose up --build
 - وقتی دیگر متن جدیدی اضافه نشد و چیزی شبیه این دیدید، برنامه آماده است:
 
 ```text
-app-1  | [react-router-serve] http://localhost:3000
+app-1  | ➜ Listening on: http://localhost:3000/ (all interfaces)
 ```
 
 > ⚠️ **این پنجره‌ی ترمینال را نبندید.** تا وقتی باز است، برنامه در حال اجراست.
