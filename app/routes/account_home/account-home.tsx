@@ -1,5 +1,5 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { isRouteErrorResponse } from "react-router";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
@@ -7,68 +7,35 @@ import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { getDogStatus } from "~/lib/dog-status";
-import { requireSession, sessionContext } from "~/lib/session-guard.server";
-import { createServerClient } from "~/orpc/server-client.server";
+import { requireSession } from "~/lib/session-guard";
 import { COLUMN } from "~/routes/account_home/column";
 import { DogPanel } from "~/routes/account_home/components/dog-panel";
 import { RoadChalk } from "~/routes/account_home/components/dog-road";
 import { HomeHero } from "~/routes/account_home/components/home-hero";
 import { NextStepsBand } from "~/routes/account_home/components/next-steps-band";
 import { NoDogs } from "~/routes/account_home/components/no-dogs";
-import type { AccountLayoutHandle } from "~/routes/layout_account/layout-account";
+import { buildCards, dogsQuery, enrollmentsQuery, evaluationsQuery } from "~/routes/account_home/queries";
 
-import type { Route } from "./+types/account-home";
-
-/*===== Handle =====*/
-// The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
-// padding when a page's handle sets this.
-export const handle: AccountLayoutHandle = { flushFooter: true };
-
-/*===== Guard =====*/
+/*===== Route =====*/
 // The account layout lets partners in too, but my dogs, requests and courses are a customer's (docs/app-spec.md, Pages).
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "سگ‌های من | آموزش K9" }];
-
-/*===== Loader =====*/
-export async function loader({ request, context }: Route.LoaderArgs) {
-  const { firstName } = context.get(sessionContext);
-  const client = createServerClient(request);
-  const [dogs, evaluations, enrollments] = await Promise.all([
-    client.dog.list(),
-    client.evaluation.listMine({}),
-    client.enrollment.listMine({}),
-  ]);
-
-  /*------ One Card per Dog ------*/
-  const cards = dogs.map((dog) => ({
-    dog,
-    status: getDogStatus({ dog, evaluations, enrollments }),
-    activeEnrollments: enrollments.filter(
-      (enrollment) => enrollment.dog.id === dog.id && enrollment.status === "active",
-    ),
-  }));
-
-  /*------ Order ------*/
-  // A request waiting for the Admin goes first; it is the dog the owner is most likely to look for. Then newest first.
-  cards.sort(
-    (a, b) =>
-      Number(b.status.waitingEvaluation !== null) - Number(a.status.waitingEvaluation !== null) ||
-      b.dog.createdAt.getTime() - a.dog.createdAt.getTime(),
-  );
-
-  /*------ Tally ------*/
-  // The hero's three numbers, from what was read above: only the customer's own dogs' courses.
-  const tally = {
-    dogs: cards.length,
-    training: cards.reduce((sum, card) => sum + card.activeEnrollments.length, 0),
-    passed: cards.reduce((sum, card) => sum + card.dog.passedCourses.length, 0),
-  };
-
-  return { firstName, cards, tally };
-}
+export const Route = createFileRoute("/account/")({
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData(dogsQuery()),
+      queryClient.ensureQueryData(evaluationsQuery()),
+      queryClient.ensureQueryData(enrollmentsQuery()),
+    ]);
+  },
+  head: () => ({ meta: [{ title: "سگ‌های من | آموزش K9" }] }),
+  // The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
+  // padding for it.
+  staticData: { flushFooter: true },
+  component: AccountHomePage,
+  notFoundComponent: () => <HomeError notFound />,
+  errorComponent: () => <HomeError notFound={false} />,
+});
 
 /*===== Dashboard =====*/
 /**
@@ -77,13 +44,17 @@ export async function loader({ request, context }: Route.LoaderArgs) {
  * the end the brick band of what happens from here. Open requests and enrollments belong to their dog's panel instead
  * of sections of their own.
  */
-export default function AccountHomePage({ loaderData }: Route.ComponentProps) {
-  const { firstName, cards, tally } = loaderData;
+function AccountHomePage() {
+  const { user } = Route.useRouteContext();
+  const { data: dogs } = useSuspenseQuery(dogsQuery());
+  const { data: evaluations } = useSuspenseQuery(evaluationsQuery());
+  const { data: enrollments } = useSuspenseQuery(enrollmentsQuery());
+  const { cards, tally } = buildCards({ dogs, evaluations, enrollments });
 
   return (
     <>
       {/*===== Hero =====*/}
-      <HomeHero firstName={firstName} tally={cards.length > 0 ? tally : null} />
+      <HomeHero firstName={user.firstName} tally={cards.length > 0 ? tally : null} />
 
       {/*===== Dogs =====*/}
       <div className={COLUMN}>
@@ -107,9 +78,7 @@ export default function AccountHomePage({ loaderData }: Route.ComponentProps) {
 
 /*===== Error Boundary =====*/
 // Inside the account shell, so a failed list still has the header, the footer and a way on.
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  const notFound = isRouteErrorResponse(error) && error.status === 404;
-
+function HomeError({ notFound }: { notFound: boolean }) {
   return (
     <section aria-labelledby="account-home-error-title" className={`${COLUMN} py-section-md`}>
       <div className="grid items-end gap-y-8 md:grid-cols-[minmax(0,34rem)_16rem] md:gap-x-16">
@@ -144,6 +113,3 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
     </section>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/account/")({});

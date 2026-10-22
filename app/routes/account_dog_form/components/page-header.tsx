@@ -1,3 +1,4 @@
+import { linkOptions } from "@tanstack/react-router";
 import { cn } from "cn";
 import { ChevronRightIcon } from "lucide-react";
 
@@ -14,7 +15,9 @@ export function PageHeader({ dog }: { dog: { id: string; name: string } | null }
     <header>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <Link
-          to={dog ? `/account/dogs/${dog.id}` : "/account"}
+          {...(dog
+            ? linkOptions({ to: "/account/dogs/$dogId", params: { dogId: dog.id } })
+            : linkOptions({ to: "/account" }))}
           className="-ms-1 inline-flex items-center gap-1 rounded-sm px-1 text-sm font-bold text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <ChevronRightIcon aria-hidden className="size-4" />

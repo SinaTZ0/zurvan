@@ -14,7 +14,7 @@ import { COLUMN } from "../column";
 /**
  * What the page shows when it can't read the payments, inside the account shell (its header and way back stay on
  * screen): the `sorry` dog on a short path between two bushes, ears back. Words at the start, the stage at the end (on
- * phones the stage on top). The page's handle drops the shell's bottom padding, so this carries its own.
+ * phones the stage on top). The page's `flushFooter` drops the shell's bottom padding, so this carries its own.
  */
 export function PurchasesError({ notFound }: { notFound: boolean }) {
   return (

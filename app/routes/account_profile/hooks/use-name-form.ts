@@ -10,8 +10,9 @@ import { type NameFormValues, nameFormSchema } from "~/routes/account_profile/sc
 /**
  * The name form's state, held by the page rather than the card so the tag can follow what is typed.
  *
- * `saved` starts from the loader and moves to the submitted values on success, so the tag and the disabled save button
- * are right at once, without waiting for the route to reload (which still happens: the headers need the new name).
+ * `saved` starts from the session and moves to the submitted values on success, so the tag and the disabled save
+ * button are right at once, without waiting for the session to be read again (which still happens: the headers need the
+ * new name).
  * `onFailed` runs for a refused submit, the form's own checks or the server's, so the card's dog can say so.
  */
 export function useNameForm({

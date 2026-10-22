@@ -15,7 +15,7 @@ import { COLUMN } from "~/routes/account_dog_detail/column";
  * nosing along a short path, the scent gone cold; anything else gets the `sorry` dog. Words at the start, the stage at
  * the end (on phones the stage on top, about 12rem).
  *
- * The page's handle drops the shell's bottom padding (the dog's page ends on its brick band), so this carries its own.
+ * The page's `flushFooter` drops the shell's bottom padding (the dog's page ends on its brick band), so this carries its own.
  */
 export function DogDetailError({ notFound }: { notFound: boolean }) {
   return (

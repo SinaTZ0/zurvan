@@ -14,7 +14,7 @@ const LINKS = [
   { label: "سؤال‌های پرتکرار", to: "/help" },
   { label: "تماس", to: "/contact" },
   { label: PROFILE_LINK.label, to: PROFILE_LINK.to },
-];
+] as const;
 
 /*===== Account Footer =====*/
 /**

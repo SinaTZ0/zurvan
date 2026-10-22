@@ -1,6 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useRevalidator } from "react-router";
 
 import { cn } from "cn";
 
@@ -40,7 +39,7 @@ export function PublicRecordCard({
   /** The approved wording to show; present whenever `status.available`. */
   wording: PublicRecordConsent | null;
 }) {
-  const revalidator = useRevalidator();
+  const queryClient = useQueryClient();
   const [agreed, setAgreed] = useState(false);
   const changed = useChanged(status.isPublic);
   const setPublic = useMutation({
@@ -48,7 +47,8 @@ export function PublicRecordCard({
     onSuccess: async (next) => {
       toast.add({ title: next.isPublic ? "پرونده عمومی شد." : "پرونده دوباره خصوصی شد.", type: "success" });
       setAgreed(false);
-      await revalidator.revalidate();
+      // The card's state and the file card's note both come from the dog's public status.
+      await queryClient.invalidateQueries({ queryKey: orpc.logbook.key() });
     },
   });
 

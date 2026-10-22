@@ -1,4 +1,4 @@
-import { parseAsInteger, parseAsStringLiteral } from "nuqs/server";
+import { z } from "zod";
 
 /*===== Constants =====*/
 /** People per page. A row is a whole card on a phone, so twenty is a few screens, not a wall. */
@@ -8,10 +8,12 @@ export const LEAD_STAGE_FILTERS = ["all", "lead", "registered", "bought", "lost"
 
 export type LeadStageFilter = (typeof LEAD_STAGE_FILTERS)[number];
 
-/*===== Parsers =====*/
-// Shallow: the loader returns the partner's whole list once and never reads these, so the pills and the pager only move
-// the URL and the component filters. `page` is 1-based in the URL.
-export const partnerLeadsSearchParams = {
-  stage: parseAsStringLiteral(LEAD_STAGE_FILTERS).withDefault("all").withOptions({ shallow: true }),
-  page: parseAsInteger.withDefault(1).withOptions({ shallow: true }),
-};
+/*===== Schema =====*/
+// UI-only, so the route has no `loaderDeps`: the loader reads the partner's whole list once and never these, and the
+// pills and the pager only move the URL while the component filters. A value the URL doesn't have, or one that isn't
+// valid, means the default (`stage` "all", `page` 1), and navigations leave the defaults out of the URL. `page` is
+// 1-based.
+export const partnerLeadsSearchSchema = z.object({
+  stage: z.enum(LEAD_STAGE_FILTERS).optional().catch(undefined),
+  page: z.number().int().optional().catch(undefined),
+});

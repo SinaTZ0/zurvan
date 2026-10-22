@@ -6,8 +6,10 @@ import type { toDogInput } from "~/routes/account_dog_form/schema";
 
 /*===== Save Dog =====*/
 /**
- * Creates a dog, or updates it when `dogId` is given. Either way the dogs' cached queries are dropped, so the list and
- * the dog's page show the saved values.
+ * Creates a dog, or updates it when `dogId` is given. Either way the dogs' cached queries are fetched again before the
+ * mutation settles, so the list and the dog's page the form goes on to show the saved values from their first frame.
+ * `refetchType: "all"` because neither page is on screen yet: an inactive query would only be marked stale, and a
+ * loader takes stale data from the cache as it is.
  */
 export function useSaveDog({ dogId }: { dogId: string | null }) {
   const queryClient = useQueryClient();
@@ -15,6 +17,6 @@ export function useSaveDog({ dogId }: { dogId: string | null }) {
   return useMutation({
     mutationFn: (input: ReturnType<typeof toDogInput>): Promise<Dog> =>
       dogId ? client.dog.update({ id: dogId, ...input }) : client.dog.create(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: orpc.dog.key() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: orpc.dog.key(), refetchType: "all" }),
   });
 }

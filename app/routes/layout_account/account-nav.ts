@@ -2,18 +2,22 @@ import { BookOpen, PawPrint, ReceiptText, ShoppingBag, Store, UsersRound, type L
 
 import { ACCOUNT_LINKS } from "~/lib/account-links";
 import { CART_PATH, PURCHASES_PATH } from "~/orpc/checkout/constants";
+import type { StaticRoutePath } from "~/lib/route-path";
 
 /*===== Account Navigation =====*/
 // The account area's sections, shared by the desktop nav and the phone tab bar. Only built pages are listed; add each
 // one here when its page exists (docs/storefront-design.md, "Account Shell"). Both roles get the floating tab bar on
 // phones, so the person menu no longer lists the sections.
 
+/** A page without params: what the header, the tab bar and the footer can link to. */
+export type DeskPath = StaticRoutePath;
+
 /** One section in a desk's header and tab bar. */
 export type DeskNavItem = {
   label: string;
   /** A shorter name for the tab bar, where the label would crowd its neighbours. */
   short?: string;
-  to: string;
+  to: DeskPath;
   icon: LucideIcon;
   /** Active only on this exact URL: a desk's landing page would otherwise stay underlined on every page below it. */
   end?: boolean;
@@ -24,7 +28,7 @@ export type DeskNavItem = {
 };
 
 /** The link at the end of the header and the last tab: back out of the desk into the store. */
-export type DeskExitLink = { label: string; to: string; icon: LucideIcon };
+export type DeskExitLink = { label: string; to: DeskPath; icon: LucideIcon };
 
 // The customer's pages (Dashboard, Cart, Purchases) come from the shared list, so the storefront's person menu and
 // this shell always name and order them the same; the icons are the shell's own. The Cart's count is added at render

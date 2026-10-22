@@ -83,7 +83,8 @@ export function PaymentLine({
       {/*------ Words ------*/}
       <div className="min-w-0">
         <Link
-          to={`/account/dogs/${item.dog.id}`}
+          to="/account/dogs/$dogId"
+          params={{ dogId: item.dog.id }}
           className="inline-block min-h-6 rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline"
         >
           <bdi>{item.dog.name}</bdi>

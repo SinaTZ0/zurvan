@@ -1,9 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocation } from "@tanstack/react-router";
 import { cn } from "cn";
 import { KeyRoundIcon, LogOutIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useLocation } from "react-router";
 
 import { PasswordInput } from "~/components/password-input";
 import { Button } from "~/components/ui/button";
@@ -60,7 +60,8 @@ export function PasswordCard({
   const saved = useFlash();
   const savePassword = useSavePassword();
   const signOut = useSignOut({ redirectTo: `/account/profile${PASSWORD_CARD_HASH}` });
-  const { hash } = useLocation();
+  // The router's hash comes without its `#`.
+  const hash = useLocation({ select: (location) => location.hash });
   const {
     register,
     handleSubmit,
@@ -75,7 +76,7 @@ export function PasswordCard({
   });
 
   // Arriving from «forgot my password»: the person came here to type the new one, so the field is ready.
-  const arrivedForNewPassword = hash === PASSWORD_CARD_HASH;
+  const arrivedForNewPassword = hash === PASSWORD_CARD_ID;
   useEffect(() => {
     if (arrivedForNewPassword) setFocus("newPassword");
   }, [arrivedForNewPassword, setFocus]);
