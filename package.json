@@ -92,5 +92,9 @@
     "typescript": "^5.9.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.3"
+  },
+  "allowScripts": {
+    "esbuild": true,
+    "@swc/core": true
   }
 }
