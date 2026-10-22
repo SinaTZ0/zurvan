@@ -435,12 +435,13 @@ user) refreshing its list without a reload, video upload and playback. A throwaw
 banner (the `?payment=` param then leaves the URL), the purchase listed. The Docker image (210 MB) runs the same build:
 pages, brotli assets with immutable caching, and a dog photo upload through `sharp`.
 
-**Open (owner's call): a customer blocked mid-session.** Blocking signs the account out (its sessions are revoked), a
-full page load lands on `/auth`, and every procedure refuses it. But the guard reads the session through the query
-cache, so in a tab that's already open a client-side navigation to a page whose data is cached still renders it (the
-person's own data, already in the browser) until something asks the server. React Router asked on every navigation.
-Options: ask on every guarded navigation and preload (`staleTime: 0` for the guard's read; one small request each, as
-before); ask at most every 30 s; or keep it and send the tab to `/auth` when a procedure answers `UNAUTHORIZED`.
+**A customer blocked mid-session (decided 2026-10-22: leave on refusal).** Blocking revokes the account's sessions,
+a full page load lands on `/auth`, and every procedure refuses it. The guard reads the session through the query cache,
+so an open tab doesn't notice at once; the first API call that answers `UNAUTHORIZED` (a query or a mutation) asks for
+the session again and, if it's gone, runs the page's guards again, which send the tab to `/auth?redirectTo=<page>`
+(`leaveOnRefusal` in `app/router.tsx`). Checked: a throwaway customer blocked on `/account` is sent to sign in on the
+next refetch. Until then, cached pages (their own data, already in the browser) still open. `certificate.verify` keeps
+the default 5 minutes (decided the same day).
 
 Not merged; that's the owner's call.
 

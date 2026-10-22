@@ -1,7 +1,9 @@
-import { QueryClient } from "@tanstack/react-query";
+import { ORPCError } from "@orpc/client";
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
+import { refreshSession } from "~/lib/session-guard";
 import { routeTree } from "~/routeTree.gen";
 
 /*===== Route Static Data =====*/
@@ -28,7 +30,29 @@ export function getRouter() {
     // The freshness policy (docs/tanstack-start/tanstack-start-migration-plan.md, decision 2): 5 minutes for changes
     // someone else makes; a visitor's own changes arrive through key invalidation.
     defaultOptions: { queries: { staleTime: 5 * 60_000 } },
+    queryCache: new QueryCache({ onError: (error) => leaveOnRefusal(error) }),
+    mutationCache: new MutationCache({ onError: (error) => leaveOnRefusal(error) }),
   });
+
+  /*------ Signed Out Elsewhere ------*/
+  // Guards read the session through the query cache, so a tab that is already open doesn't notice at once when the
+  // session ends elsewhere (signed out in another tab, expired, or blocked by the Admin, which revokes it). The first
+  // API call that answers `UNAUTHORIZED` asks for the session again; if it's really gone, the current page's guards
+  // run again and send the person to sign in, with the page as `redirectTo`. Browser only: on the server the guard
+  // has just read the session itself.
+  let leaving: Promise<void> | null = null;
+  function leaveOnRefusal(error: unknown) {
+    if (typeof window === "undefined" || leaving) return;
+    if (!(error instanceof ORPCError) || error.code !== "UNAUTHORIZED") return;
+
+    leaving = refreshSession(queryClient)
+      // Still signed in (a refusal for another reason): leave the page as it is, or its loaders would ask again.
+      .then((session) => (session.status === "active" ? undefined : router.invalidate()))
+      .catch(() => undefined)
+      .finally(() => {
+        leaving = null;
+      });
+  }
 
   const router = createRouter({
     routeTree,
