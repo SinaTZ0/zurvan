@@ -58,7 +58,8 @@ const TEACH: Record<
     points: ["آمادگی برای آزمون‌های BH، IGP ۱ تا ۳، FH و WUSV.", "تمرین منظم ردیابی، اطاعت و محافظت تا روز مسابقه."],
     pose: "teach-medal",
     rise: 0.98,
-    says: "صاف بشینم؟ داور داره نگاه می‌کنه!",
+    // The longest line: on one line it runs past the plate's edge, so it breaks after the question.
+    says: "صاف بشینم؟\nداور داره نگاه می‌کنه!",
   },
   "مشاوره‌ی تخصصی قبل و بعد از آموزش": {
     points: [
@@ -312,7 +313,7 @@ export function StoryTeach() {
                   d="M0 6 Q200 46 400 6"
                   fill="none"
                   strokeWidth={1.5}
-                  className="stroke-[color-mix(in_srgb,varforeground_22%,varbackground)]"
+                  className="stroke-[color-mix(in_srgb,var(--foreground)_22%,var(--background))]"
                 />
                 {PENNANTS.map((d, index) => (
                   <path
@@ -321,8 +322,8 @@ export function StoryTeach() {
                     className={cn(
                       "lively-pennant",
                       index % 3 === 1
-                        ? "fill-[color-mix(in_srgb,varprimary_60%,varbackground)]"
-                        : "fill-[color-mix(in_srgb,varforeground_14%,varbackground)]",
+                        ? "fill-[color-mix(in_srgb,var(--primary)_60%,var(--background))]"
+                        : "fill-[color-mix(in_srgb,var(--foreground)_14%,var(--background))]",
                     )}
                   />
                 ))}
@@ -334,17 +335,17 @@ export function StoryTeach() {
               >
                 <path
                   d="M0 30 C50 10 100 12 150 26 S260 4 320 20 S380 22 400 14 V100 H0 Z"
-                  className="fill-[color-mix(in_srgb,varforeground_5%,varbackground)]"
+                  className="fill-[color-mix(in_srgb,var(--foreground)_7%,var(--background))]"
                 />
                 <path
                   d="M0 58 C70 36 120 40 180 54 S290 30 345 44 S390 46 400 40 V100 H0 Z"
-                  className="fill-[color-mix(in_srgb,varforeground_9%,varbackground)]"
+                  className="fill-[color-mix(in_srgb,var(--foreground)_12%,var(--background))]"
                 />
               </svg>
-              <MascotCut name="hedge" className="lively-sway absolute bottom-[3%] -left-[6%] hidden w-[44%] lg:block" />
+              <MascotCut name="hedge" className="lively-sway absolute -bottom-[2%] -left-[6%] hidden w-[44%] lg:block" />
               <MascotCut
                 name="hedge"
-                className="lively-sway-2 absolute -right-[6%] bottom-[3%] hidden w-[40%] -scale-x-100 lg:block"
+                className="lively-sway-2 absolute -right-[6%] -bottom-[2%] hidden w-[40%] -scale-x-100 lg:block"
               />
               <MascotCut
                 name="ground"
@@ -396,7 +397,7 @@ export function StoryTeach() {
                             item.bubbleAt ?? "bottom-[86%] left-[64%]",
                           )}
                         >
-                          <ChalkBubble tail="left" className="lively-float xl:px-5 xl:py-3 xl:text-xl">
+                          <ChalkBubble tail="left" className="lively-float whitespace-pre-line xl:px-5 xl:py-3 xl:text-xl">
                             {item.says}
                           </ChalkBubble>
                         </motion.div>
@@ -409,7 +410,7 @@ export function StoryTeach() {
                       {...bubble}
                       className="absolute top-[4%] right-3 origin-bottom-left md:right-auto md:left-[46%] lg:hidden"
                     >
-                      <ChalkBubble tail="left" className="lively-float max-w-[11rem] md:max-w-none">
+                      <ChalkBubble tail="left" className="lively-float max-w-[11rem] whitespace-pre-line md:max-w-none">
                         {item.says}
                       </ChalkBubble>
                     </motion.div>

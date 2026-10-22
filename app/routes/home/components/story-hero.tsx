@@ -92,7 +92,7 @@ function TrainerName() {
         <path
           d="M118 4.5C88 8 52 9 3 6.5C30 10.5 62 12 92 11"
           pathLength={1}
-          stroke="varprimary"
+          stroke="var(--primary)"
           strokeWidth={3.2}
           strokeLinecap="round"
           strokeLinejoin="round"
