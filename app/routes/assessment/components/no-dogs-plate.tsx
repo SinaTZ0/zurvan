@@ -5,7 +5,7 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { NEW_DOG_PATH } from "~/routes/assessment/components/dog-picker";
+import { NEW_DOG_LINK } from "~/routes/assessment/components/dog-picker";
 import { PLATE } from "~/routes/assessment/components/form-plate";
 import { TapedPrint } from "~/routes/assessment/components/taped-print";
 
@@ -28,7 +28,7 @@ export function NoDogsPlate() {
             ارزیابی برای یه سگ مشخصه؛ اسم و نژادش رو بنویس تا {HEAD_TRAINER.firstName} بشناسدش. بعدش برمی‌گردی همین‌جا.
           </p>
           <Link
-            to={NEW_DOG_PATH}
+            {...NEW_DOG_LINK}
             className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
           >
             <PlusIcon aria-hidden />

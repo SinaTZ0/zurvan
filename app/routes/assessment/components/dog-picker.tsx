@@ -1,3 +1,4 @@
+import { linkOptions } from "@tanstack/react-router";
 import { cn } from "cn";
 import { BadgeCheckIcon, CheckIcon, PhoneCallIcon, PlusIcon } from "lucide-react";
 import type { UseFormRegisterReturn } from "react-hook-form";
@@ -23,7 +24,7 @@ export type DogChoice = {
 };
 
 /** The way to add a dog and come straight back here with it picked (`?dog=`). */
-export const NEW_DOG_PATH = "/account/dogs/new?redirectTo=/assessment";
+export const NEW_DOG_LINK = linkOptions({ to: "/account/dogs/new", search: { redirectTo: "/assessment" } });
 
 /*===== Dog Picker =====*/
 /**
@@ -132,7 +133,7 @@ export function DogPicker({
       {/*------ Errors and the way to add a dog ------*/}
       <RisingError id={errorId} message={error} />
       <Link
-        to={NEW_DOG_PATH}
+        {...NEW_DOG_LINK}
         className="mt-4 inline-flex items-center gap-1.5 rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
       >
         <PlusIcon aria-hidden className="size-4" />

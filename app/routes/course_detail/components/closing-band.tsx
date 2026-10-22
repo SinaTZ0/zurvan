@@ -65,7 +65,8 @@ export function ClosingBand() {
             نزدیک می‌بیند و می‌گوید از کجا شروع کنید.
           </p>
           <Link
-            to="/help#what-is-evaluation"
+            to="/help"
+            hash="what-is-evaluation"
             className="mt-5 inline-block rounded-sm font-bold text-primary underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             ارزیابی چطوریه؟

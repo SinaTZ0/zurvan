@@ -1,10 +1,13 @@
+import { useQueryClient, useSuspenseQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import { isRouteErrorResponse, useRevalidator } from "react-router";
+import { z } from "zod";
 
-import { requireSession } from "~/lib/session-guard.server";
+import { requireSession } from "~/lib/session-guard";
+import { orpc } from "~/orpc/client";
+import type { Dog } from "~/orpc/dog/contract";
 import type { Evaluation } from "~/orpc/evaluation/contract";
-import { createServerClient } from "~/orpc/server-client.server";
+import { dogsQuery, evaluationsQuery } from "~/routes/assessment/queries";
 import { COLUMN } from "~/routes/assessment/column";
 import { AssessmentError } from "~/routes/assessment/components/assessment-error";
 import { ChalkDefs } from "~/routes/assessment/components/chalk-defs";
@@ -19,25 +22,34 @@ import { RequestForm } from "~/routes/assessment/components/request-form";
 import { RequestReceipt } from "~/routes/assessment/components/request-receipt";
 import { GUIDE, type GuideMood } from "~/routes/assessment/guide";
 
-import type { Route } from "./+types/assessment";
+/*===== Search =====*/
+// «معرفی سگ تازه» sends the owner back with the new dog's id (`?dog=`). A bad value is dropped rather than failing the
+// page.
+const assessmentSearchSchema = z.object({ dog: z.string().optional().catch(undefined) });
 
-/*===== Guard =====*/
-// A dog owner asks for the evaluation. Signed out goes to sign in and back here; partners and the Admin go to their own
-// home (docs/app-spec.md, Roles).
-export const middleware: Route.MiddlewareFunction[] = [requireSession({ roles: ["customer"] })];
+/*===== Route =====*/
+export const Route = createFileRoute("/_public/assessment")({
+  // A dog owner asks for the evaluation. Signed out goes to sign in and back here; partners and the Admin go to their
+  // own home (docs/app-spec.md, Roles).
+  beforeLoad: ({ context, location }) =>
+    requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
+  validateSearch: assessmentSearchSchema,
+  loader: async ({ context: { queryClient } }) => {
+    await Promise.all([queryClient.ensureQueryData(dogsQuery()), queryClient.ensureQueryData(evaluationsQuery())]);
+  },
+  head: () => ({ meta: [{ title: "ارزیابی رایگان | آموزش K9" }] }),
+  component: EvaluationRequestPage,
+  notFoundComponent: () => <AssessmentError notFound />,
+  errorComponent: () => <AssessmentError notFound={false} />,
+});
 
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [{ title: "ارزیابی رایگان | آموزش K9" }];
-
-/*===== Loader =====*/
-export async function loader({ request }: Route.LoaderArgs) {
-  const client = createServerClient(request);
-  const [dogs, evaluations] = await Promise.all([client.dog.list(), client.evaluation.listMine({})]);
-
-  /*------ Who Can Ask ------*/
-  // F3: a dog with a waiting or an evaluated request can't ask again; one whose requests were all rejected or withdrawn
-  // can. The dog's own flag counts too: it is also set for a dog the Admin marked evaluated.
-  const choices: DogChoice[] = dogs.map((dog) => {
+/*===== Who Can Ask =====*/
+/**
+ * F3: a dog with a waiting or an evaluated request can't ask again; one whose requests were all rejected or withdrawn
+ * can. The dog's own flag counts too: it is also set for a dog the Admin marked evaluated.
+ */
+function toChoices({ dogs, evaluations }: { dogs: readonly Dog[]; evaluations: readonly Evaluation[] }): DogChoice[] {
+  return dogs.map((dog) => {
     const own = evaluations.filter((evaluation) => evaluation.dog.id === dog.id);
     const state = own.some((evaluation) => evaluation.status === "requested")
       ? "pending"
@@ -46,13 +58,6 @@ export async function loader({ request }: Route.LoaderArgs) {
         : "requestable";
     return { id: dog.id, name: dog.name, breed: dog.breed, photo: dog.photo, state };
   });
-
-  /*------ ?dog= ------*/
-  // «معرفی سگ تازه» sends the owner back with the new dog's id. Only used when that dog is theirs and can ask.
-  const asked = new URL(request.url).searchParams.get("dog");
-  const preselectedDogId = choices.find((dog) => dog.id === asked && dog.state === "requestable")?.id ?? null;
-
-  return { dogs: choices, preselectedDogId };
 }
 
 /*===== Timing =====*/
@@ -70,9 +75,17 @@ const LEAVE_MS = 260;
  * Without a dog to ask for there is no form: a plate says why, with one way on (no dogs: introduce one; none left: the
  * Dashboard).
  */
-export default function EvaluationRequestPage({ loaderData }: Route.ComponentProps) {
-  const { dogs, preselectedDogId } = loaderData;
-  const revalidator = useRevalidator();
+function EvaluationRequestPage() {
+  const [{ data: ownDogs }, { data: evaluations }] = useSuspenseQueries({
+    queries: [dogsQuery(), evaluationsQuery()],
+  });
+  const dogs = toChoices({ dogs: ownDogs, evaluations });
+  const queryClient = useQueryClient();
+
+  /*------ ?dog= ------*/
+  // Only used when that dog is theirs and can ask.
+  const { dog: asked } = Route.useSearch();
+  const preselectedDogId = dogs.find((dog) => dog.id === asked && dog.state === "requestable")?.id ?? null;
 
   const [guide, setGuide] = useState<{ mood: GuideMood; phonePlate1Failed: boolean }>({
     mood: "pick",
@@ -89,11 +102,20 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
     requestable.find((dog) => dog.id === preselectedDogId)?.id ?? (requestable.length === 1 ? requestable[0]!.id : "");
 
   /*------ Events ------*/
-  // The dogs' states changed on the server (this one now has a request), so reload them for «another dog». The plates
-  // fade out first, then the receipt rises in their place (at once for reduced motion).
+  // The dogs' states changed on the server (this one now has a request), so read them again: for «another dog» here, and
+  // for every page that shows a dog's status.
+  const refreshDogs = useCallback(
+    () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: orpc.evaluation.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.dog.key() }),
+      ]),
+    [queryClient],
+  );
+  // The plates fade out first, then the receipt rises in their place (at once for reduced motion).
   const handleSent = useCallback(
     (evaluation: Evaluation) => {
-      void revalidator.revalidate();
+      void refreshDogs();
       const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       setLeaving(true);
       window.setTimeout(
@@ -104,14 +126,14 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
         still ? 0 : LEAVE_MS,
       );
     },
-    [revalidator],
+    [refreshDogs],
   );
   const handleAnotherDog = useCallback(() => {
     setSent(null);
     setGuide({ mood: "pick", phonePlate1Failed: false });
     setFormKey((key) => key + 1);
   }, []);
-  const handleNotRequestable = useCallback(() => void revalidator.revalidate(), [revalidator]);
+  const handleNotRequestable = useCallback(() => void refreshDogs(), [refreshDogs]);
 
   /*------ What Stands in the Form's Place ------*/
   const noDogs = dogs.length === 0;
@@ -196,11 +218,3 @@ export default function EvaluationRequestPage({ loaderData }: Route.ComponentPro
     </div>
   );
 }
-
-/*===== Error Boundary =====*/
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  return <AssessmentError notFound={isRouteErrorResponse(error) && error.status === 404} />;
-}
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/_public/assessment")({});

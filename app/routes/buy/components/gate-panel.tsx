@@ -34,7 +34,7 @@ export function GatePanel({ gate, arrive }: { gate: Gate; arrive: boolean }) {
         باز شدن همین‌جا با قیمتشون میان.
       </p>
       <Link
-        to={gate.way.to}
+        {...gate.way.link}
         className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
       >
         {gate.way.label}

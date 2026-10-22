@@ -1,18 +1,12 @@
+import { useLocation, useNavigate, useRouter, useSearch } from "@tanstack/react-router";
 import { SearchIcon, XIcon } from "lucide-react";
-import { debounce, useQueryStates } from "nuqs";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { Form, useLocation, useNavigate } from "react-router";
 
 import { cn } from "cn";
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "~/components/ui/input-group";
-import {
-  CATALOGUE_PATH,
-  catalogueSearchParams,
-  MAX_QUERY_LENGTH,
-  TYPING_DELAY_MS,
-} from "~/lib/catalogue-search-params";
+import { CATALOGUE_PATH, MAX_QUERY_LENGTH, TYPING_DELAY_MS } from "~/lib/catalogue-search-params";
 
 const PANEL_ID = "header-search";
 const TOGGLE_ID = "header-search-toggle";
@@ -34,32 +28,64 @@ const INPUT_ID = "header-search-input";
  * The header calls this once and places the two halves: the toggle in its row of controls, the bar under the row.
  */
 export function useHeaderSearch() {
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const navigate = useNavigate();
+  const router = useRouter();
   const onCatalogue = pathname === CATALOGUE_PATH;
+  // The header sits in the shell, so the catalogue's search is read only when the catalogue is the page.
+  const catalogueSearch = useSearch({ from: "/_public/courses", shouldThrow: false });
+  const urlQuery = catalogueSearch?.q ?? "";
 
   /*------ State ------*/
   // Opening is remembered per page, so moving to another page closes the bar without an effect. On the catalogue a
   // search in the URL keeps it open.
-  const [params, setParams] = useQueryStates(catalogueSearchParams);
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
 
-  const open = openedOn === pathname || (onCatalogue && params.q !== "");
-  const value = onCatalogue ? params.q : draft;
+  /*------ Typing on the Catalogue ------*/
+  // What was typed on the catalogue and hasn't reached the URL yet (the URL follows after a pause). Once the URL has
+  // caught up, or the visitor has left the catalogue, the URL speaks again (state adjusted during render).
+  const [typed, setTyped] = useState<string | null>(null);
+  if (typed !== null && (!onCatalogue || typed === urlQuery)) setTyped(null);
+  const catalogueQuery = typed ?? urlQuery;
+
+  const typingTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(typingTimer.current), []);
+
+  /** Writes the catalogue's search into its URL, back to the first page. The list filters as the URL changes. */
+  function applyQuery(query: string) {
+    clearTimeout(typingTimer.current);
+    // A pause that ends after the visitor has left the catalogue must not pull them back to it.
+    if (router.state.location.pathname !== CATALOGUE_PATH) return;
+    void navigate({
+      to: "/courses",
+      search: (prev) => ({ ...prev, q: query || undefined, page: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  }
+
+  const open = openedOn === pathname || (onCatalogue && catalogueQuery !== "");
+  const value = onCatalogue ? catalogueQuery : draft;
 
   /*------ Actions ------*/
   function close() {
     setOpenedOn(null);
-    if (onCatalogue && params.q !== "") void setParams({ q: null, page: null });
+    if (onCatalogue && catalogueQuery !== "") {
+      setTyped("");
+      applyQuery("");
+    }
     document.getElementById(TOGGLE_ID)?.focus();
   }
 
   function change(next: string) {
     // Emptying the field on the catalogue drops `q`, which alone would close a bar the page opened for a search.
     setOpenedOn(pathname);
-    if (onCatalogue) void setParams({ q: next || null, page: null }, { limitUrlUpdates: debounce(TYPING_DELAY_MS) });
-    else setDraft(next);
+    if (onCatalogue) {
+      setTyped(next);
+      clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => applyQuery(next), TYPING_DELAY_MS);
+    } else setDraft(next);
   }
 
   function toggle() {
@@ -74,17 +100,18 @@ export function useHeaderSearch() {
     event.preventDefault();
     const query = value.trim();
     if (onCatalogue) {
-      void setParams({ q: query || null, page: null });
+      setTyped(query);
+      applyQuery(query);
       return;
     }
     setDraft("");
-    void navigate(query ? `${CATALOGUE_PATH}?q=${encodeURIComponent(query)}` : CATALOGUE_PATH);
+    void navigate({ to: "/courses", search: query ? { q: query } : {} });
   }
 
   return {
     open,
     value,
-    family: onCatalogue ? params.family : null,
+    family: onCatalogue ? (catalogueSearch?.family ?? null) : null,
     toggle,
     close,
     change,
@@ -143,7 +170,7 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
     >
       {/* The padding sits inside the clipped row, so it collapses too; the inline padding keeps the focus ring whole. */}
       <div className="-mx-1 min-h-0 overflow-hidden px-1">
-        <Form
+        <form
           method="get"
           action={CATALOGUE_PATH}
           onSubmit={search.submit}
@@ -194,7 +221,7 @@ export function HeaderSearchBar({ search }: { search: HeaderSearchState }) {
           </InputGroup>
           {/* The family stays when searching on the catalogue; this carries it for the no-JavaScript submit. */}
           {search.family && <input type="hidden" name="family" value={search.family} />}
-        </Form>
+        </form>
       </div>
     </search>
   );

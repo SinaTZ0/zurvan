@@ -55,7 +55,8 @@ export function ContentsRail() {
           {SECTIONS.map(({ id, label }) => (
             <li key={id}>
               <Link
-                to={`#${id}`}
+                to="/privacy"
+                hash={id}
                 className="block rounded-sm py-1.5 font-bold text-muted-foreground transition-colors hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
               >
                 {label}

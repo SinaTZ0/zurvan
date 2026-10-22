@@ -18,7 +18,8 @@ export function TrustNote() {
         <p className="text-xs leading-relaxed text-pretty text-muted-foreground">
           برای ورود و پیامک‌های آموزش سگت. اگه همکاری تو رو آورده باشه، فقط می‌بینه که ثبت‌نام و خرید کردی.{" "}
           <Link
-            to="/privacy#who-sees"
+            to="/privacy"
+            hash="who-sees"
             className="rounded-sm font-bold text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             کی چی رو می‌بینه

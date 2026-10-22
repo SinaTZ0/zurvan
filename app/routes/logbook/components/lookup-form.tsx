@@ -1,11 +1,11 @@
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { CircleAlertIcon, Loader2Icon } from "lucide-react";
 import { useRef, useState } from "react";
-import { useNavigate, useNavigation } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { logbookPath, normalizeFileNumber } from "~/lib/dog-file";
+import { normalizeFileNumber } from "~/lib/dog-file";
 
 /*===== Lookup Form =====*/
 /**
@@ -19,8 +19,7 @@ import { logbookPath, normalizeFileNumber } from "~/lib/dog-file";
  */
 export function LookupForm() {
   const navigate = useNavigate();
-  const navigation = useNavigation();
-  const pending = navigation.state !== "idle";
+  const pending = useRouterState({ select: (state) => state.status === "pending" });
 
   const [value, setValue] = useState("");
   const [invalid, setInvalid] = useState(false);
@@ -47,7 +46,7 @@ export function LookupForm() {
       }
       return;
     }
-    void navigate(logbookPath(fileNumber));
+    void navigate({ to: "/logbook/{-$fileNumber}", params: { fileNumber } });
   }
 
   return (

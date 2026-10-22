@@ -80,7 +80,7 @@ export function PhoneActionBar({
             </span>
           </p>
           {needsTheList ? (
-            <Link to="#buy-card" className={buttonVariants({ variant: "solid", className: "shrink-0" })}>
+            <Link to="." hash="buy-card" className={buttonVariants({ variant: "solid", className: "shrink-0" })}>
               {buy.action.kind === "pick" ? "انتخاب سگ" : "دلیلش را ببین"}
             </Link>
           ) : (

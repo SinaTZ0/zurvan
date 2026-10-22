@@ -1,3 +1,4 @@
+import { linkOptions } from "@tanstack/react-router";
 import { cn } from "cn";
 import { PlusIcon } from "lucide-react";
 
@@ -8,9 +9,9 @@ import { MediaImage } from "~/components/media-image";
 import { describeDog } from "~/lib/dog-format";
 import type { Dog } from "~/orpc/dog/contract";
 
-/*===== Paths =====*/
+/*===== Links =====*/
 /** The way to add a dog and come straight back here (`redirectTo`). */
-export const NEW_DOG_PATH = `/account/dogs/new?redirectTo=${encodeURIComponent("/buy")}`;
+export const NEW_DOG_LINK = linkOptions({ to: "/account/dogs/new", search: { redirectTo: "/buy" } });
 
 /*===== Tape =====*/
 // A strip of translucent tape with torn ends across the print's top (the Dashboard's print); gold on the picked one.
@@ -24,8 +25,8 @@ const MOVE =
 /*===== Dog Picker =====*/
 /**
  * «سگ‌های من»: the customer's dogs lined up as taped prints, each a link to `/buy?dog=<id>`, so the choice is in the
- * address (Back and a shared link both work) and the server fetches that dog's verdicts. The scroll stays where it is
- * (`preventScrollReset`). The last print is a dashed blank, «سگ دیگه», to add a dog and come back.
+ * address (Back and a shared link both work) and the loader fetches that dog's verdicts. The scroll stays where it is
+ * (`resetScroll={false}`). The last print is a dashed blank, «سگ دیگه», to add a dog and come back.
  *
  * Before a pick the prints hang a little crooked. Picked, one straightens, lifts and gets the gold tape and ring
  * (`aria-current`); the others step back and tilt away. `pickedId` is the dog being opened (the pending navigation's,
@@ -60,7 +61,7 @@ export function DogPicker({
           {/*------ Another Dog ------*/}
           <li className="w-24 shrink-0 snap-start lg:w-32">
             <Link
-              to={NEW_DOG_PATH}
+              {...NEW_DOG_LINK}
               className="group/add block rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               <span
@@ -116,9 +117,10 @@ function PrintLink({ dog, index, pickedId }: { dog: Dog; index: number; pickedId
 
   return (
     <Link
-      to={`/buy?dog=${encodeURIComponent(dog.id)}`}
+      to="/buy"
+      search={{ dog: dog.id }}
       aria-current={picked ? "true" : undefined}
-      preventScrollReset
+      resetScroll={false}
       className="group/print block rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
     >
       {/*------ Print ------*/}

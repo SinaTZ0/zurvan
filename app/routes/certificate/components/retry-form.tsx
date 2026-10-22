@@ -1,10 +1,9 @@
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
-import { useNavigate, useNavigation } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { certificatePath } from "~/lib/certificate";
 import { numberToCheck } from "~/routes/certificate/retry-number";
 
 /*===== Retry Form =====*/
@@ -16,15 +15,16 @@ import { numberToCheck } from "~/routes/certificate/retry-number";
  */
 export function RetryForm() {
   const navigate = useNavigate();
-  const navigation = useNavigation();
   const [typed, setTyped] = useState("");
-  const pending = navigation.state !== "idle" && navigation.location?.pathname.startsWith("/certificate/") === true;
+  const pending = useRouterState({
+    select: (state) => state.status === "pending" && state.location.pathname.startsWith("/certificate/"),
+  });
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const number = numberToCheck(typed);
     if (!number || pending) return;
-    void navigate(certificatePath(number));
+    void navigate({ to: "/certificate/$number", params: { number } });
   }
 
   return (

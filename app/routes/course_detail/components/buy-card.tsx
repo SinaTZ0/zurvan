@@ -63,7 +63,7 @@ export function BuyCard({
               <p className="text-center text-sm text-muted-foreground">
                 سگت هنوز ارزیابی نشده؟{" "}
                 <Link
-                  to={buy.quieter.to}
+                  {...buy.quieter.link}
                   className="rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   {buy.quieter.label}
@@ -83,7 +83,8 @@ export function BuyCard({
             <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
               بعد از پرداخت، {HEAD_TRAINER.firstName} زنگ می‌زنه و با هم هماهنگ می‌کنیم.
               <Link
-                to="/help#how-buying-works"
+                to="/help"
+                hash="how-buying-works"
                 className="mt-1 block w-fit rounded-sm font-bold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 خرید چطوری کار می‌کنه؟
@@ -191,7 +192,7 @@ export function BuyButton({
   switch (action.kind) {
     case "link":
       return (
-        <Link to={action.to} className={buttonVariants({ variant: "solid", size, className })}>
+        <Link {...action.link} className={buttonVariants({ variant: "solid", size, className })}>
           {action.label}
         </Link>
       );

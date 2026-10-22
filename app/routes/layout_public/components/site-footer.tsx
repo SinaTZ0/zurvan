@@ -1,5 +1,7 @@
 import { ArrowUpLeft, MapPin, Phone, UserRound } from "lucide-react";
 
+import { linkOptions } from "@tanstack/react-router";
+
 import { Link } from "~/components/link";
 import { CENTER_DESCRIPTOR, CENTER_LINKS, CENTER_PHONE, CENTER_SERVICE_AREA } from "~/lib/contact";
 import { toPersianDigits } from "~/lib/digits";
@@ -13,22 +15,26 @@ import { SOCIAL_ICONS } from "~/components/social-icons";
 // link groups, and how to reach the center, over a copyright line. Gold only marks the contact icons, as everywhere
 // on this page. On the home page the closing scene's dog stands on the band's top edge.
 const FOOTER_GROUPS = [
-  { title: "دوره‌ها", links: [{ label: "همه‌ی دوره‌ها", to: "/courses" }] },
+  { title: "دوره‌ها", links: [{ label: "همه‌ی دوره‌ها", link: linkOptions({ to: "/courses" }) }] },
   {
     title: "ارتباط با زروان",
     links: [
-      { label: `درباره‌ی ${HEAD_TRAINER.name}`, to: "/about" },
-      { label: "تماس با ما", to: "/contact" },
-      { label: "همکاری با زروان", to: "/join/partner" },
+      { label: `درباره‌ی ${HEAD_TRAINER.name}`, link: linkOptions({ to: "/about" }) },
+      { label: "تماس با ما", link: linkOptions({ to: "/contact" }) },
+      { label: "همکاری با زروان", link: linkOptions({ to: "/join/partner" }) },
     ],
   },
   {
     title: "راهنما",
     links: [
-      { label: "سؤال‌های پرتکرار", to: "/help" },
-      { label: "لاگ‌بوک سگ‌ها", to: "/logbook" },
+      { label: "سؤال‌های پرتکرار", link: linkOptions({ to: "/help" }) },
+      // The lookup, with no file number (an omitted param would keep the one on a dog's record page).
+      {
+        label: "لاگ‌بوک سگ‌ها",
+        link: linkOptions({ to: "/logbook/{-$fileNumber}", params: { fileNumber: undefined } }),
+      },
       // Only once the owner has approved the wording.
-      ...(SITE_RULES ? [{ label: "قوانین", to: "/rules" }] : []),
+      ...(SITE_RULES ? [{ label: "قوانین", link: linkOptions({ to: "/rules" }) }] : []),
     ],
   },
 ];
@@ -82,10 +88,10 @@ export function SiteFooter() {
             <nav key={group.title} aria-label={group.title}>
               <h2 className="font-display text-base font-bold text-foreground">{group.title}</h2>
               <ul className="mt-4 flex flex-col gap-3">
-                {group.links.map((link) => (
+                {group.links.map(({ label, link }) => (
                   <li key={link.to}>
-                    <Link to={link.to} className={FOOTER_LINK}>
-                      {link.label}
+                    <Link {...link} className={FOOTER_LINK}>
+                      {label}
                     </Link>
                   </li>
                 ))}

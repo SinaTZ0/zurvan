@@ -13,7 +13,8 @@ import { RecordStage } from "~/routes/logbook/components/record-stage";
  * What a stranger sees at a dog's record: that it is private, and nothing else. The same words and the same picture for
  * a record that is private, one that doesn't exist and a number that isn't one, so the page can't be used to find out
  * which numbers are real (nothing here is derived from the number except the sign-in link). The owner's way in is
- * signing in; the Admin's is the same.
+ * signing in; the Admin's is the same. `signInRedirectTo` is where the sign-in page returns to (this record), or null
+ * when there is no sign-in link to show.
  *
  * Words at the start, with a small gold lock disc beside the h1; at the end a padlocked garden gate in its hedge and
  * the dog sitting in front of it hugging the closed folder. The gate is mirrored so its padlock is on the side away
@@ -22,7 +23,7 @@ import { RecordStage } from "~/routes/logbook/components/record-stage";
  * The page's load moment (`lb-*`): the gate rattles once on its latch and the lock disc shakes with it, then the dog's
  * bubble pops from its tail. Off for reduced motion, which shows the finished stage.
  */
-export function PrivateRecord({ signInPath }: { signInPath: string | null }) {
+export function PrivateRecord({ signInRedirectTo }: { signInRedirectTo: string | null }) {
   return (
     <section aria-labelledby="logbook-title" className="pt-section-sm pb-32 sm:pb-36">
       <div className={`${COLUMN} grid gap-y-8 lg:grid-cols-12 lg:gap-x-12`}>
@@ -47,12 +48,20 @@ export function PrivateRecord({ signInPath }: { signInPath: string | null }) {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            {signInPath && (
-              <Link to={signInPath} className={buttonVariants({ variant: "solid", size: "lg", className: "sm:px-10" })}>
+            {signInRedirectTo && (
+              <Link
+                to="/auth"
+                search={{ redirectTo: signInRedirectTo }}
+                className={buttonVariants({ variant: "solid", size: "lg", className: "sm:px-10" })}
+              >
                 ورود
               </Link>
             )}
-            <Link to="/logbook" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            <Link
+              to="/logbook/{-$fileNumber}"
+              params={{ fileNumber: undefined }}
+              className={buttonVariants({ variant: "outline", size: "lg" })}
+            >
               یه شماره‌ی دیگه بنویس
             </Link>
           </div>

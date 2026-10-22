@@ -1,7 +1,7 @@
 import { useLenis } from "lenis/react";
 import { BookOpen, ClipboardCheck, Ellipsis, House, Phone } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "@tanstack/react-router";
 
 import { cn } from "cn";
 
@@ -26,7 +26,7 @@ const ICON = "size-[1.375rem] group-aria-[current=page]:text-primary";
 /** The phone's tab bar, below `lg`: home, courses, the evaluation, contact and a sheet with the rest. */
 export function TabBar({ viewer }: { viewer: Viewer | null }) {
   const lenis = useLenis();
-  const { pathname } = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const [more, setMore] = useState(false);
 
   /*------ Home: on the home page the tab takes the visitor back to its top ------*/

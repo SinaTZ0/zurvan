@@ -1,31 +1,20 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useParams } from "react-router";
 
-import { createServerClient } from "~/orpc/server-client.server";
+import { orpc } from "~/orpc/client";
 import { CertificateAsk } from "~/routes/certificate/components/certificate-ask";
 import { CertificateHero } from "~/routes/certificate/components/certificate-hero";
 
-import type { Route } from "./+types/certificate";
-
-/*===== Meta =====*/
-export const meta: Route.MetaFunction = () => [
-  { title: "بررسی گواهی | زروان" },
-  { name: "robots", content: "noindex" },
-];
-
-/*===== Headers =====*/
-// A certificate can be revoked, so a cached «valid» would be a lie: no cache keeps this answer.
-export const headers: Route.HeadersFunction = ({ parentHeaders }) => {
-  const result = new Headers(parentHeaders);
-  result.set("Cache-Control", "no-store");
-  return result;
-};
-
-/*===== Loader =====*/
-/** Public. The API answers valid, revoked or unknown for any text, so there is nothing to refuse here. */
-export async function loader({ request, params }: Route.LoaderArgs) {
-  return { verification: await createServerClient(request).certificate.verify({ number: params.number }) };
-}
+/*===== Route =====*/
+// Public. The API answers valid, revoked or unknown for any text, so there is nothing to refuse here.
+export const Route = createFileRoute("/_public/certificate/$number")({
+  loader: ({ context: { queryClient }, params }) =>
+    queryClient.ensureQueryData(orpc.certificate.verify.queryOptions({ input: { number: params.number } })),
+  head: () => ({ meta: [{ title: "بررسی گواهی | زروان" }, { name: "robots", content: "noindex" }] }),
+  // A certificate can be revoked, so a cached «valid» would be a lie: no cache keeps this answer.
+  headers: () => ({ "Cache-Control": "no-store" }),
+  component: CertificatePage,
+});
 
 /*===== Page =====*/
 /**
@@ -36,18 +25,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
  * keyed by the number in the address: the unknown state's retry form navigates to another number, and the new answer
  * mounts afresh so its words rise in and its scene plays again.
  */
-export default function CertificatePage({ loaderData }: Route.ComponentProps) {
-  const { number } = useParams();
+function CertificatePage() {
+  const { number } = Route.useParams();
+  const { data: verification } = useSuspenseQuery(orpc.certificate.verify.queryOptions({ input: { number } }));
 
   return (
     <>
-      <CertificateHero key={number} verification={loaderData.verification} />
+      <CertificateHero key={number} verification={verification} />
       <div className="site-container pt-section-sm pb-4 lg:pb-6">
         <CertificateAsk />
       </div>
     </>
   );
 }
-
-// Placeholder until B5 converts this page.
-export const Route = createFileRoute("/_public/certificate/$number")({});
