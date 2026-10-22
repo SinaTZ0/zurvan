@@ -1,3 +1,5 @@
+import { type LinkOptions, linkOptions } from "@tanstack/react-router";
+
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Dog } from "~/orpc/dog/contract";
 import type { Enrollment } from "~/orpc/enrollment/contract";
@@ -18,7 +20,7 @@ export type DogStatus = {
   /** The badge to show beside the name; null for a dog nobody has evaluated or answered yet. */
   badge: EvaluationStatus | null;
   /** The page's one main action for this dog; null while it only waits for the Admin. */
-  action: { label: string; to: string } | null;
+  action: { label: string; link: LinkOptions } | null;
   /** The request waiting for the Admin's answer, so «پس گرفتن درخواست» knows which one. */
   waitingEvaluation: Evaluation | null;
   /** The Admin's reason, for a dog whose latest request was rejected. */
@@ -41,8 +43,11 @@ export function getDogStatus({
   const own = evaluations.filter((evaluation) => evaluation.dog.id === dog.id);
   const waitingEvaluation = own.find((evaluation) => evaluation.status === "requested") ?? null;
   const trainer = HEAD_TRAINER.firstName;
-  const coursesAction = { label: "دوره‌ها رو ببین", to: "/courses" };
-  const evaluationAction = (label: string) => ({ label, to: `/assessment?dog=${dog.id}` });
+  const coursesAction = { label: "دوره‌ها رو ببین", link: linkOptions({ to: "/courses" }) };
+  const evaluationAction = (label: string) => ({
+    label,
+    link: linkOptions({ to: "/assessment", search: { dog: dog.id } }),
+  });
 
   /*------ Evaluated ------*/
   // The dog's own flag first: it is also set for a dog the Admin marked evaluated with no request.
