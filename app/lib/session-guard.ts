@@ -18,8 +18,8 @@ import type { SessionUser } from "~/orpc/session/contract";
  * - A role outside `roles`: redirect to that role's own home.
  *
  * It runs on the server for the first request and in the browser on navigations and preloads, so the answer is read
- * through the query cache: a preload doesn't ask again. Signing in and out drop that cached answer
- * (`forgetSession`). The UI guard is never the only check: oRPC procedures check the role again
+ * through the query cache: a preload doesn't ask again. Signing in and out refresh that cached answer
+ * (`refreshSession`). The UI guard is never the only check: oRPC procedures check the role again
  * (`requireRoleMiddleware`).
  *
  * @throws A redirect, as above.
@@ -44,9 +44,10 @@ export async function requireSession({
 
 /*===== Session Cache =====*/
 /**
- * Drops the cached session answer, so the next guard or header asks the server. Call it whenever the session changes
- * in this tab: after signing in, after signing out, after giving a name.
+ * Asks the server for the session again and keeps the answer, so the next guard, and the header that greets the person,
+ * see the change. Call it whenever the session changes in this tab (signing in or out, giving a name) and before
+ * navigating on: the cached answer would otherwise stand for up to the default `staleTime`.
  */
-export function forgetSession(queryClient: QueryClient) {
-  queryClient.removeQueries({ queryKey: orpc.session.get.key() });
+export function refreshSession(queryClient: QueryClient) {
+  return queryClient.fetchQuery({ ...orpc.session.get.queryOptions(), staleTime: 0 });
 }
