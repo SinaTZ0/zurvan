@@ -48,6 +48,8 @@ export function PageMotion() {
           animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) both, lively-float 3.4s ease-in-out .5s infinite alternate;
         }
         .pl-quiet { transform-origin: 2.25rem 100%; animation: pl-hush .26s ease-in both; }
+        /* English: the writing dog's bubble opens to the left, its tail on the right. */
+        [dir="ltr"] :is(.pl-say, .pl-quiet) { transform-origin: calc(100% - 2.25rem) 100%; }
         .pl-empty-pop {
           transform-origin: calc(100% - 2.25rem) 100%;
           animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) .8s both, lively-float 3.4s ease-in-out 1.2s infinite alternate;

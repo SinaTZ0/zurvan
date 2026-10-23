@@ -8,6 +8,7 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Payment } from "~/orpc/checkout/contract";
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from "~/orpc/enrollment/constants";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 import { TapedPrint } from "./taped-print";
 
@@ -39,7 +40,7 @@ function EnrollmentLine({
   return (
     <p className="mt-2.5 flex max-w-lg items-start gap-2 rounded-2xl border border-primary/45 bg-primary/[0.06] px-3 py-2 text-sm text-pretty">
       <InfoIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
-      <span>پرداخت شد، اما دوره‌ای براش ثبت نشد. {HEAD_TRAINER.firstName} موضوع رو می‌بینه و باهات تماس می‌گیره.</span>
+      <span>{m.account_purchases_line_no_enrollment({ trainer: HEAD_TRAINER.firstName })}</span>
     </p>
   );
 }

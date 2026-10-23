@@ -5,12 +5,12 @@ import { MascotCut } from "~/components/mascot-cut";
 import { PaymentStatusBadge } from "~/components/payment-status-badge";
 import { formatToman } from "~/lib/course-format";
 import { describeBalance, describeDeposit } from "~/lib/deposit-format";
-import { formatNumberFa } from "~/lib/digits";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatNumber, formatTimestamp } from "~/lib/locale-format";
 import { describeWhenFree } from "~/lib/when-free-format";
 import type { Payment } from "~/orpc/checkout/contract";
 import type { Media } from "~/orpc/media/contract";
 import type { MyRefund } from "~/orpc/refund/contract";
+import { m } from "~/paraglide/messages";
 
 import { tomanDigits } from "../money";
 import { PaymentLine } from "./payment-line";
@@ -23,6 +23,11 @@ const NOTCH = "pointer-events-none absolute size-5 rounded-full bg-background pa
 
 // The slips that arrive with the page (the first screen and a little more); later ones rise in as they scroll in.
 const ARRIVING = 4;
+
+/** A phrase that never breaks across lines (it used to sit in a `whitespace-nowrap` span). */
+function unbroken(text: string) {
+  return text.replaceAll(" ", "\u00a0");
+}
 
 /*===== Payment Slip =====*/
 /**
@@ -95,7 +100,7 @@ export function PaymentSlip({
         {/*------ Date and Status ------*/}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           <h3 id={titleId} className="font-sans text-base font-extrabold">
-            {formatJalaliTimestamp(moment)}
+            {formatTimestamp(moment)}
           </h3>
           <PaymentStatusBadge status={payment.status} />
         </div>
@@ -111,7 +116,7 @@ export function PaymentSlip({
             >
               {tomanDigits(payment.amount)}
             </span>{" "}
-            <span className="text-sm font-bold text-muted-foreground">تومان</span>
+            <span className="text-sm font-bold text-muted-foreground">{m.account_purchases_slip_unit()}</span>
           </p>
           {/* The seal (or its empty ring) stamped at the stub's corner, beside the amount it vouches for. */}
           <SealMark paid={paid} motion={sealMotion} className="-my-2 w-16 lg:w-[4.75rem]" />
@@ -120,24 +125,28 @@ export function PaymentSlip({
         {/*------ Deposit ------*/}
         {/* A deposit says what it is a share of and what is left, which is settled when the lessons are arranged. */}
         {deposit && (
-          // Each part holds its amount together: a line may break between them, never inside «… تومان».
+          // Each part holds its amount together (its spaces made non-breaking): a line may break between them, never
+          // inside «… تومان».
           <p className="-mt-1 text-sm leading-relaxed text-pretty text-muted-foreground">
-            <span className="whitespace-nowrap">{deposit}؛</span>{" "}
-            <span className="whitespace-nowrap">{describeBalance(payment)}</span> رو موقع هماهنگی می‌دی.
+            {m.account_purchases_slip_deposit_line({
+              deposit: unbroken(deposit),
+              balance: unbroken(describeBalance(payment) ?? ""),
+            })}
           </p>
         )}
 
         {/*------ When I'm Free ------*/}
         {whenFree && (
           <p className="text-sm text-pretty text-muted-foreground">
-            <span className="font-bold text-foreground">وقت‌های آزاد برای هماهنگی:</span> {whenFree}
+            <span className="font-bold text-foreground">{m.account_purchases_slip_free_times()}</span> {whenFree}
           </p>
         )}
 
         {/*------ Failure ------*/}
         {failed && (
           <p className="text-sm text-pretty text-muted-foreground">
-            <span className="font-bold text-foreground">چرا نشد:</span> {payment.failureReason ?? "پرداخت کامل نشد"}
+            <span className="font-bold text-foreground">{m.account_purchases_slip_failed_why()}</span>{" "}
+            {payment.failureReason ?? m.account_purchases_slip_failed_fallback()}
           </p>
         )}
 
@@ -146,7 +155,7 @@ export function PaymentSlip({
           <dl className="grid text-sm">
             {payment.referenceId && (
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 border-t border-dashed border-foreground/15 py-2">
-                <dt className="text-muted-foreground">شماره‌ی پیگیری</dt>
+                <dt className="text-muted-foreground">{m.account_purchases_slip_reference()}</dt>
                 <dd dir="ltr" className="font-bold tabular-nums">
                   {payment.referenceId}
                 </dd>
@@ -154,7 +163,7 @@ export function PaymentSlip({
             )}
             {payment.cardNumberMasked && (
               <div className="flex flex-wrap items-baseline justify-between gap-x-3 border-t border-dashed border-foreground/15 py-2">
-                <dt className="text-muted-foreground">کارت</dt>
+                <dt className="text-muted-foreground">{m.account_purchases_slip_card()}</dt>
                 <dd dir="ltr" className="font-bold tabular-nums">
                   {payment.cardNumberMasked}
                 </dd>
@@ -187,7 +196,12 @@ export function PaymentSlip({
             hole under them. */}
         <p className="mt-6 flex items-baseline justify-between gap-4 border-t-[3px] border-double border-foreground/20 pt-4">
           <span className="text-sm font-bold text-muted-foreground">
-            جمع {formatNumberFa(payment.items.length)} دوره
+            {m.account_purchases_slip_total({
+              courses:
+                payment.items.length === 1
+                  ? m.account_purchases_courses_one({ count: formatNumber(payment.items.length) })
+                  : m.account_purchases_courses_other({ count: formatNumber(payment.items.length) }),
+            })}
           </span>
           <span className={cn("text-lg font-bold whitespace-nowrap", failed && "text-muted-foreground")}>
             {formatToman(payment.totalAmount)}

@@ -5,8 +5,9 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 import { COLUMN } from "../column";
 
@@ -36,14 +37,12 @@ export function PurchasesHero({ tally }: { tally: Tally }) {
         <div className="order-2 lg:order-1 lg:col-span-7 lg:flex lg:flex-col lg:justify-center lg:py-6">
           <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
             <ReceiptTextIcon aria-hidden strokeWidth={2} className="size-4" />
-            خریدها
+            {m.account_purchases_hero_chip()}
           </p>
           <h1 id="purchases-title" className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>
-            خریدهام
+            {m.account_purchases_hero_title()}
           </h1>
-          <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">
-            هر پرداختت اینجا ثبته: برای کدوم سگ، چه دوره‌ای و الان در چه حاله.
-          </p>
+          <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">{m.account_purchases_hero_line()}</p>
           <TallyPlate tally={tally} />
         </div>
 
@@ -62,9 +61,9 @@ export function PurchasesHero({ tally }: { tally: Tally }) {
  */
 function TallyPlate({ tally }: { tally: Tally }) {
   const cells = [
-    { label: "پرداخت", value: tally.payments },
-    { label: "دوره‌ی خریده‌شده", value: tally.courses },
-    { label: "دوره‌ی در حال آموزش", value: tally.training },
+    { label: m.account_purchases_tally_payments(), value: tally.payments },
+    { label: m.account_purchases_tally_courses(), value: tally.courses },
+    { label: m.account_purchases_tally_training(), value: tally.training },
   ];
 
   return (
@@ -87,10 +86,10 @@ function TallyPlate({ tally }: { tally: Tally }) {
               {value === 0 ? (
                 <>
                   <span aria-hidden>—</span>
-                  <span className="sr-only">صفر</span>
+                  <span className="sr-only">{m.account_purchases_tally_zero_sr()}</span>
                 </>
               ) : (
-                formatNumberFa(value)
+                formatNumber(value)
               )}
             </dd>
           </div>
@@ -155,7 +154,7 @@ function HeroStage({ empty }: { empty: boolean }) {
           tail="right"
           className="ap-pop absolute right-[calc(0.5rem+var(--dog-w)*0.25-2.25rem)] bottom-[calc(var(--dog-w)*0.86+0.6rem)] max-w-[15rem] text-pretty lg:right-[calc(0.75rem+var(--dog-w)*0.25-2.25rem)] lg:max-w-[16rem]"
         >
-          {empty ? "دفترم هنوز سفیده!" : "همه‌ی خریدهات رو اینجا نوشتم!"}
+          {empty ? m.account_purchases_hero_bubble_empty() : m.account_purchases_hero_bubble()}
         </ChalkBubble>
       </div>
     </div>

@@ -12,7 +12,7 @@ English, never more.
 | --------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | زروان (the wordmark, the center)        | **Zurvann**                          | Double "n" (owner's choice, 2026-10-22). The header and footer wordmark, page titles (`Zurvann \| …`), "Partner with Zurvann", "Reach Zurvann". |
 | مجموعه تربیتی و رفتارشناسی سگ زروان     | **Dog training and behavior center** | The descriptor under the wordmark (`shared_contact_descriptor`). The name is already beside it, so it isn't repeated.                           |
-| آموزش K9 (Persian page titles, SMS)     | not used                             | The English pages say Zurvann everywhere; «K9» stays on the emblem only.                                                                        |
+| آموزش K9 (retired 2026-10-23)           | not used                             | The old name; the Persian site now says زروان too. «K9» stays on the emblem only.                                                               |
 | طلا راستی / طلا                         | **Tala Rasti** / **Tala**            | The head trainer, the owner, the only trainer. **She/her.** Never "our trainers", "a verified trainer", "the team".                             |
 | زروان (the mascot, «سلام، من زروانم!»)  | **Zurvann**                          | The cartoon Belgian Malinois shares the center's name. **He/him.**                                                                              |
 | فندق (the running dog chasing his ball) | (not named on the page)              | The internal name of the runner; the page never says it.                                                                                        |
@@ -26,9 +26,11 @@ English, never more.
 person to train their dog. Plain, warm, concrete. No marketing gloss ("world-class", "passionate", "unleash"), no
 promises of results, and never "every dog takes CGC / BMC".
 
-**American English.** behavior, center, color, program. Sentence case for headings and buttons ("Where do we start?",
-"Request a free evaluation"); course titles are names and keep their Title Case ("House Dog", "Companion Dog 2").
-Contractions are welcome everywhere except legal text (privacy).
+**American English.** behavior, center, color, program, canceled. Sentence case for headings and buttons ("Where do
+we start?", "Request a free evaluation"); course titles are names and keep their Title Case ("House Dog", "Companion
+Dog 2"). Contractions are welcome everywhere except legal text (privacy); the privacy page's bubbles are the dog's and
+keep theirs. A button or label named inside a sentence goes in curly quotes: press “Add to cart”. Placeholders give
+examples with "e.g." ("e.g. 12.5").
 
 **The visitor is "you".** The Persian's informal «تو» becomes a friendly "you"; there is no formal/informal split in
 English. The visitor's dog is **"your dog"**, and **"it"** when a pronoun can't be avoided (the mascot is the only
@@ -37,7 +39,8 @@ English. The visitor's dog is **"your dog"**, and **"it"** when a pronoun can't 
 **The dog speaks** (speech bubbles and the headlines that are his: Home's «چی می‌تونم یاد بگیرم؟»): first person,
 short, spoken, a little playful, one or two short sentences. He describes how things work and how he feels; he never
 gives orders and never promises. Keep the joke of the Persian, not its words. Bubbles are set in the chalk hand
-(Marhey's Latin): keep them short, since the hand runs wide.
+(Marhey's Latin): keep them short, since the hand runs wide. The customer's dog, in his voice («رفیقم»), is **"my
+buddy"**, never "my friend".
 
 **Body copy and buttons are plain.** Paragraphs, answers (Help), legal text, form labels and buttons are plain
 English, not the dog's voice. A button says what happens: "Request a free evaluation", "View course", "See this
@@ -75,6 +78,8 @@ The course pages' dogs (`shared_course_mascot_*`) and the buy card's verdicts (`
 | درخواست ارزیابی                            | evaluation request                                     | "Ask for a free evaluation" as a step title.                                                                                                  |
 | ارزیابی شده / منتظر ارزیابی / ارزیابی نشده | evaluated / waiting for evaluation / not evaluated yet |                                                                                                                                               |
 | ارزیابی رد شد                              | the evaluation was declined                            |                                                                                                                                               |
+| رایگانه و تعهدی نداره                      | it's free and there's no commitment                    | Never "obligation".                                                                                                                           |
+| معرفی سگ / معرفی سگ تازه                   | Add a dog / Add a new dog (buttons)                    | A heading may say "Introduce your dog".                                                                                                       |
 | دوره / دوره‌ها                             | course / Courses                                       | Never "class" or "program" for a course.                                                                                                      |
 | خرید دوره                                  | Buy a course                                           | Links to `/buy`.                                                                                                                              |
 | پیش‌نیاز                                   | prerequisite                                           | In the dog's voice: "One more step and I can take this one".                                                                                  |
@@ -83,13 +88,15 @@ The course pages' dogs (`shared_course_mascot_*`) and the buy card's verdicts (`
 | ثبت‌نام (an account)                       | sign up                                                | «ورود یا ثبت‌نام» → "Sign in or sign up".                                                                                                     |
 | ورود / خروج                                | Sign in / Sign out                                     | Never "log in".                                                                                                                               |
 | حساب / حساب من                             | account / My account                                   |                                                                                                                                               |
-| سبد                                        | cart                                                   | "Cart", "Cart, 3 items". Never "basket".                                                                                                      |
+| سبد                                        | cart                                                   | "Cart", "Items in cart: 3" (the link's label). Never "basket".                                                                                |
 | پرداخت                                     | payment; "Pay" (button)                                |                                                                                                                                               |
 | درگاه پرداخت                               | the bank's payment gateway                             |                                                                                                                                               |
 | کد پیگیری                                  | reference number                                       |                                                                                                                                               |
 | بازپرداخت                                  | refund                                                 | Only as a fact (Tala returns the money outside the site); never a policy.                                                                     |
 | تماس می‌گیره / زنگ می‌زنه                  | calls you                                              | "Tala calls you".                                                                                                                             |
-| جلسه                                       | session                                                | "About 8 sessions" (`shared_course_sessions_*`).                                                                                              |
+| جلسه                                       | session                                                | "About 8 sessions" (`shared_course_sessions_*`). Never "lesson".                                                                              |
+| کلاس / نوع کلاس (private, group, …)        | the sessions / the format                              | "You arrange the format and the session times". Never "class" except "a group class".                                                         |
+| پیامک / کد پیامکی                          | text message, "a text" / text code                     | "We'll text the sign-in code". Never "SMS" on the page.                                                                                       |
 | تمرین                                      | practice; exercise (a logbook entry)                   |                                                                                                                                               |
 | مربی / مربی ارشد                           | trainer / head trainer                                 |                                                                                                                                               |
 | مشتری                                      | customer                                               |                                                                                                                                               |
@@ -182,8 +189,8 @@ Added in Phase 4a. The labels are already in `messages/shared` (`shared_…_stat
 | پرداخت (button)                                                | Pay                                                               |                                                                      |
 | در انتظار پرداخت / پرداخت شد / ناموفق (a payment)              | Awaiting payment / Paid / Failed                                  |                                                                      |
 | پیش‌پرداخت ٪۵۰ از … · بقیه …                                   | 50% deposit of … · the remaining …                                | `describeDeposit`, `describeBalance`.                                |
-| ثبت‌نام (in a course): در حال آموزش / تمام شد / لغو شد         | enrollment: In training / Completed / Cancelled                   |                                                                      |
-| بازپرداخت: در انتظار پرداخت / پرداخت شد / لغو شد               | refund: Awaiting payment / Paid / Cancelled                       | A recorded fact; the money moves by bank transfer, outside the site. |
+| ثبت‌نام (in a course): در حال آموزش / تمام شد / لغو شد         | enrollment: In training / Completed / Canceled                    |                                                                      |
+| بازپرداخت: در انتظار پرداخت / پرداخت شد / لغو شد               | refund: Awaiting payment / Paid / Canceled                        | A recorded fact; the money moves by bank transfer, outside the site. |
 | منتظر ثبت‌نام / ثبت‌نام کرد / خرید کرد / از دست رفت (a lead)   | Waiting to sign up / Signed up / Bought / Lost                    | A lead is a customer's number the partner entered.                   |
 | کمیسیون: پرداخت شد / پرداخت نشده                               | commission: Paid / Unpaid                                         | One per customer, at their first purchase.                           |
 | اسم · شماره‌ی ورود · رمز عبور · رمز عبور تازه · تکرار رمز عبور | name · mobile number · password · new password · confirm password | "Show password" / "Hide password".                                   |

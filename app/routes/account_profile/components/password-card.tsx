@@ -11,8 +11,9 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui
 import { Spinner } from "~/components/ui/spinner";
 import { toast } from "~/components/ui/toast";
 import { useSignOut } from "~/hooks/use-sign-out";
-import { toPersianDigits } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { PASSWORD_MIN_LENGTH } from "~/lib/user-constants";
+import { m } from "~/paraglide/messages";
 import type { CardVoiceProps } from "~/routes/account_profile/card-voice-props";
 import { CardBubble } from "~/routes/account_profile/components/card-bubble";
 import { CardHead } from "~/routes/account_profile/components/card-head";
@@ -90,7 +91,7 @@ export function PasswordCard({
         onSuccess: () => {
           setIsSet(true);
           reset();
-          toast.add({ title: "رمز عبورت ذخیره شد.", type: "success" });
+          toast.add({ title: m.account_profile_password_saved_toast(), type: "success" });
           saved.flash();
           onSaved();
         },
@@ -107,7 +108,7 @@ export function PasswordCard({
     <section id={PASSWORD_CARD_ID} aria-labelledby="profile-password-title" className="scroll-mt-24">
       <CardHead
         id="profile-password-title"
-        title="رمز عبور"
+        title={m.account_profile_password_title()}
         figureClassName="me-[5.5rem] sm:me-[6.75rem]"
         figure={
           <EdgeDog
@@ -116,7 +117,7 @@ export function PasswordCard({
             className="w-[5.25rem] sm:w-[6.5rem]"
             scenery={{ name: "door", className: "right-[70%] w-[118%] translate-y-[2%]" }}
           >
-            <CardBubble {...voice} className="bottom-[66%] left-[98%]" />
+            <CardBubble {...voice} className="bottom-[66%] left-[98%] ltr:right-[98%] ltr:left-auto" />
           </EdgeDog>
         }
       />
@@ -127,15 +128,15 @@ export function PasswordCard({
           key={isSet ? "set" : "none"}
           className={cn("text-pretty text-muted-foreground", isSet !== hasPassword && "answer-in")}
         >
-          {isSet
-            ? "با شماره و رمز عبور هم می‌تونی وارد شی. رمزت یادت رفت؟ با کد پیامکی وارد شو و همین‌جا رمز تازه بذار."
-            : "رمز بذار تا بدون منتظر موندن برای پیامک وارد شی. ورود با کد پیامکی هم همیشه سر جاشه."}
+          {isSet ? m.account_profile_password_line_set() : m.account_profile_password_line_none()}
         </p>
 
         <form method="post" onSubmit={onSubmit} noValidate className="mt-6">
           <div className="flex flex-col gap-6" onFocus={onEnter}>
             <Field data-invalid={!!errors.newPassword}>
-              <FieldLabel htmlFor="profile-new-password">{isSet ? "رمز عبور تازه" : "رمز عبور"}</FieldLabel>
+              <FieldLabel htmlFor="profile-new-password">
+                {isSet ? m.account_profile_password_new_label() : m.account_profile_password_label()}
+              </FieldLabel>
               <PasswordInput
                 id="profile-new-password"
                 autoComplete="new-password"
@@ -143,14 +144,13 @@ export function PasswordCard({
                 {...register("newPassword", { onChange: () => clearErrors("root") })}
               />
               <FieldDescription>
-                دست‌کم {toPersianDigits(String(PASSWORD_MIN_LENGTH))} نویسه. شماره‌ی موبایلت یا رمزهای خیلی ساده قبول
-                نمی‌شه.
+                {m.account_profile_password_description({ min: formatNumber(PASSWORD_MIN_LENGTH) })}
               </FieldDescription>
               <FieldError key={errors.newPassword?.message} errors={[errors.newPassword]} className="answer-in" />
             </Field>
 
             <Field data-invalid={!!errors.confirmPassword}>
-              <FieldLabel htmlFor="profile-confirm-password">تکرار رمز عبور</FieldLabel>
+              <FieldLabel htmlFor="profile-confirm-password">{m.account_profile_password_confirm_label()}</FieldLabel>
               <PasswordInput
                 id="profile-confirm-password"
                 autoComplete="new-password"
@@ -177,12 +177,12 @@ export function PasswordCard({
                 onClick={() => signOut.mutate()}
               >
                 {signOut.isPending ? <Spinner data-icon="inline-start" /> : <LogOutIcon aria-hidden />}
-                خروج و ورود دوباره
+                {m.account_profile_password_sign_in_again()}
               </Button>
             )}
 
             <SaveButton
-              label={isSet ? "تغییر رمز" : "ذخیره‌ی رمز"}
+              label={isSet ? m.account_profile_password_change() : m.account_profile_password_save()}
               icon={<KeyRoundIcon />}
               isPending={savePassword.isPending}
               isSaved={saved.on}

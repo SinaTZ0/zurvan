@@ -103,7 +103,7 @@ export async function markPaid({ db, id }: { db: DatabaseOrTransaction; id: stri
   await notify({
     phoneNumber: partnerUser?.phoneNumber,
     kind: "commission-paid",
-    body: `آموزش K9: پورسانت ${formatNumberFa(Math.round(existing.commission.amount / 10))} تومانی شما پرداخت شد.`,
+    body: `زروان: پورسانت ${formatNumberFa(Math.round(existing.commission.amount / 10))} تومانی شما پرداخت شد.`,
   });
 
   const updated = (await findCommissions({ db })).find((row) => row.commission.id === id);

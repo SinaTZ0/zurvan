@@ -74,7 +74,7 @@ export const Route = createFileRoute("/admin/users")({
       queryClient.ensureQueryData(dogsQuery()),
       queryClient.ensureQueryData(partnersQuery()),
     ]),
-  head: () => ({ meta: [{ title: "کاربران | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "کاربران | مدیریت زروان" }] }),
   component: AdminUsersPage,
   notFoundComponent: () => <UsersError notFound />,
   errorComponent: () => <UsersError notFound={false} />,

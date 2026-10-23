@@ -3,8 +3,9 @@ import { CircleAlertIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
 import { Button } from "~/components/ui/button";
-import { formatToman } from "~/lib/course-format";
+import { formatToman, latinNameAddsToTitle } from "~/lib/course-format";
 import type { ReviewedItem } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 import { getUnavailableVerdict, isPayable } from "~/routes/account_cart/cart-groups";
 import { removeKey } from "~/routes/account_cart/hooks/use-cart-removal";
 
@@ -39,9 +40,13 @@ export function CartItemRow({
             {/*------ Course ------*/}
             <div className="min-w-0 pt-1">
               <h3 className={cn("font-bold text-pretty", !payable && "text-muted-foreground")}>{title}</h3>
-              <p dir="ltr" className="mt-0.5 text-end text-sm text-pretty text-muted-foreground">
-                {item.course?.latinName ?? item.courseSlug}
-              </p>
+              {/* `w-fit` sits the Latin name at the reading start (the title's side) in either language; inside its own
+                  LTR box `text-end` would push it right on the English page too. */}
+              {latinNameAddsToTitle({ title, latinName: item.course?.latinName ?? item.courseSlug }) && (
+                <p dir="ltr" className="mt-0.5 w-fit text-sm text-pretty text-muted-foreground">
+                  {item.course?.latinName ?? item.courseSlug}
+                </p>
+              )}
             </div>
 
             {/*------ Price and Remove ------*/}
@@ -50,7 +55,7 @@ export function CartItemRow({
                 <PriceTag>{formatToman(item.price)}</PriceTag>
               ) : (
                 <p className="pt-1.5 text-sm font-bold whitespace-nowrap text-muted-foreground">
-                  فعلاً قابل پرداخت نیست
+                  {m.account_cart_row_unavailable()}
                 </p>
               )}
               <Button
@@ -58,11 +63,15 @@ export function CartItemRow({
                 variant="ghost"
                 size="sm"
                 data-cart-remove={leaving ? undefined : removeKey(item)}
-                aria-label={item.dog ? `برداشتن ${title} برای ${item.dog.name}` : `برداشتن مورد ${item.courseSlug}`}
+                aria-label={
+                  item.dog
+                    ? m.account_cart_row_remove_aria({ title, dog: item.dog.name })
+                    : m.account_cart_row_remove_orphan_aria({ slug: item.courseSlug })
+                }
                 onClick={() => onRemove(item)}
                 className="min-h-11 text-muted-foreground"
               >
-                برداشتن
+                {m.account_cart_row_remove()}
               </Button>
             </div>
           </div>
@@ -100,8 +109,9 @@ export function CartItemRow({
 /*===== Price Tag =====*/
 /**
  * The price on a small chalk tag (Course Detail's tag, smaller and unpinned): an outline stretched to the words by an SVG
- * (`non-scaling-stroke` keeps the ink even), its point and punched hole on the right, the reading start in RTL, so it
- * points at the course it prices. The amount is plain gold text, never wrapped.
+ * (`non-scaling-stroke` keeps the ink even), its point and punched hole at the reading start (right in Persian; the
+ * outline is mirrored and the hole moved with `ltr:` and `start-` on the English page), so it points at the course it
+ * prices. The amount is plain gold text, never wrapped.
  */
 function PriceTag({ children }: { children: React.ReactNode }) {
   return (
@@ -110,7 +120,7 @@ function PriceTag({ children }: { children: React.ReactNode }) {
         aria-hidden
         viewBox="0 0 160 40"
         preserveAspectRatio="none"
-        className="absolute inset-0 size-full overflow-visible text-foreground/70"
+        className="absolute inset-0 size-full overflow-visible text-foreground/70 ltr:-scale-x-100"
       >
         <path
           d="M6 1.5H140L158.5 20L140 38.5H6Q1.5 38.5 1.5 34V6Q1.5 1.5 6 1.5Z"
@@ -123,7 +133,7 @@ function PriceTag({ children }: { children: React.ReactNode }) {
       </svg>
       <span
         aria-hidden
-        className="absolute top-1/2 right-3 size-2 -translate-y-1/2 rounded-full border-[1.5px] border-foreground/70 bg-sunken"
+        className="absolute start-3 top-1/2 size-2 -translate-y-1/2 rounded-full border-[1.5px] border-foreground/70 bg-sunken"
       />
       <span className="relative">{children}</span>
     </p>
@@ -138,5 +148,5 @@ function PriceTag({ children }: { children: React.ReactNode }) {
  */
 function getRowTitle(item: ReviewedItem) {
   if (item.course) return item.course.title;
-  return item.dog ? "این دوره دیگه وجود نداره" : "این مورد دیگه در دسترس نیست";
+  return item.dog ? m.account_cart_row_title_gone() : m.account_cart_row_title_unavailable();
 }

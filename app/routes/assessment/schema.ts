@@ -6,8 +6,8 @@ import { EVALUATION_PERIODS, EVALUATION_WEEKDAYS } from "~/orpc/evaluation/const
 import { m } from "~/paraglide/messages";
 
 /*===== Evaluation Request Form =====*/
-// Written for the person filling it in: the earliest date is three selects (day, month, year in the page's calendar: Jalali or Gregorian) that become one
-// Gregorian ISO date, and the days and times are lists of chips. The server checks everything again
+// Written for the person filling it in: the earliest date is three selects (day, month, year in the page's calendar:
+// Jalali or Gregorian) that become one Gregorian ISO date, and the days and times are lists of chips. The server checks everything again
 // (`app/orpc/evaluation/validation.ts`); the two are kept separate on purpose (docs/frontend-guideline.md, "Forms").
 // Photos and videos are uploaded by the media field before the form is sent, so the form only holds their ids.
 

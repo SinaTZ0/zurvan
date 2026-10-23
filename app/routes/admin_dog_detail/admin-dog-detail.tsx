@@ -66,7 +66,7 @@ export const Route = createFileRoute("/admin/dogs/$dogId")({
     );
     return { name: dog.name };
   },
-  head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.name ?? "سگ"} | مدیریت آموزش K9` }] }),
+  head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.name ?? "سگ"} | مدیریت زروان` }] }),
   component: AdminDogDetailPage,
   notFoundComponent: () => <DogDetailError notFound />,
   errorComponent: () => <DogDetailError notFound={false} />,

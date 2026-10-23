@@ -36,32 +36,36 @@ export function EdgeDog({
 }) {
   return (
     <div className={cn("relative translate-y-[3%]", className)}>
-      {/* A pool of warm light where he stands. */}
-      <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
+      {/* The English pages put the figure at the row's right end: the picture is mirrored there so he faces the words
+          and his scenery stays outside, in the room the row leaves for it. The bubble (`children`) stays unmirrored. */}
+      <div className="relative ltr:-scale-x-100">
+        {/* A pool of warm light where he stands. */}
+        <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
 
-      {/*------ Behind Him ------*/}
-      {scenery ? (
-        <MascotCut name={scenery.name} className={cn("absolute bottom-0", scenery.className)} />
-      ) : (
+        {/*------ Behind Him ------*/}
+        {scenery ? (
+          <MascotCut name={scenery.name} className={cn("absolute bottom-0", scenery.className)} />
+        ) : (
+          <MascotCut
+            name="plants"
+            className={cn(
+              "lively-sway-2 absolute bottom-0 -scale-x-100",
+              wide ? "right-[90%] w-[17%]" : "right-[82%] w-[30%]",
+            )}
+          />
+        )}
+
+        {/*------ In Front ------*/}
         <MascotCut
           name="plants"
-          className={cn(
-            "lively-sway-2 absolute bottom-0 -scale-x-100",
-            wide ? "right-[90%] w-[17%]" : "right-[82%] w-[30%]",
-          )}
+          className={cn("lively-sway absolute bottom-0", wide ? "left-[88%] w-[24%]" : "left-[66%] w-[44%]")}
         />
-      )}
 
-      {/*------ In Front ------*/}
-      <MascotCut
-        name="plants"
-        className={cn("lively-sway absolute bottom-0", wide ? "left-[88%] w-[24%]" : "left-[66%] w-[44%]")}
-      />
-
-      {/*------ The Dog ------*/}
-      {/* The rise on the wrapper, the idle loop on the picture, so one never cancels the other. */}
-      <div className="pf-rise relative">
-        <MascotCut name={name} className={cn(idle, "block w-full")} />
+        {/*------ The Dog ------*/}
+        {/* The rise on the wrapper, the idle loop on the picture, so one never cancels the other. */}
+        <div className="pf-rise relative">
+          <MascotCut name={name} className={cn(idle, "block w-full")} />
+        </div>
       </div>
 
       {children}

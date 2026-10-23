@@ -3,6 +3,7 @@ import type { UseFormSetError } from "react-hook-form";
 
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { errorDataSchema } from "~/orpc/errors";
+import { m } from "~/paraglide/messages";
 import { type DogFormInput, SERVER_FIELD_TO_FORM } from "~/routes/account_dog_form/schema";
 
 /*===== Form Fields =====*/
@@ -54,24 +55,27 @@ export function applyServerError({
       // Only reachable when the dog was evaluated after this form opened, so the fields were still editable. The page
       // is stale, and the locked version shows after a refresh.
       setError("root", {
-        message: `همین حالا ارزیابی ${HEAD_TRAINER.firstName} ثبت شد و تاریخ تولد و نژاد قفل شدن. صفحه رو تازه کن تا فرم رو قفل‌شده ببینی، بعد دوباره ذخیره کن.`,
+        message: m.account_dog_form_err_stale_lock({ trainer: HEAD_TRAINER.firstName }),
       });
     }
     return targets;
   }
   if (code === "UNAUTHORIZED") {
-    setError("root", { message: "از حسابت خارج شدی. صفحه رو تازه کن و دوباره وارد شو." });
+    setError("root", { message: m.account_dog_form_err_unauthorized() });
     return [];
   }
   if (code === "NOT_FOUND") {
-    setError("root", { message: "این سگ دیگه توی حسابت نیست." });
+    setError("root", { message: m.account_dog_form_err_not_found() });
     return [];
   }
   if (code === "INTERNAL_SERVER_ERROR") {
     const errorId = error instanceof ORPCError && typeof error.data?.errorId === "string" ? error.data.errorId : null;
-    setError("root", { message: `ذخیره نشد. دوباره امتحان کن.${errorId ? ` کد پیگیری: ${errorId}` : ""}` });
+    const failed = m.account_dog_form_err_internal();
+    setError("root", {
+      message: errorId ? `${failed} ${m.account_dog_form_err_internal_ref({ id: errorId })}` : failed,
+    });
     return [];
   }
-  setError("root", { message: "ذخیره نشد. اینترنتت رو چک کن و دوباره امتحان کن." });
+  setError("root", { message: m.account_dog_form_err_network() });
   return [];
 }

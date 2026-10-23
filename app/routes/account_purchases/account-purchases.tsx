@@ -1,11 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import type { Payment } from "~/orpc/checkout/contract";
 import { orpc } from "~/orpc/client";
 import type { Dog } from "~/orpc/dog/contract";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 import { COLUMN } from "./column";
 import { NextCourseBand } from "./components/next-course-band";
@@ -28,7 +30,12 @@ export const Route = createFileRoute("/account/purchases")({
       queryClient.ensureQueryData(orpc.dog.list.queryOptions()),
     ]);
   },
-  head: () => ({ meta: [{ title: "خریدها | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/purchases",
+      title: m.account_purchases_meta_title(),
+      description: m.account_purchases_meta_description(),
+    }),
   // The page ends on its brick band, which runs straight into the footer: the account shell drops `main`'s bottom
   // padding for it.
   staticData: { flushFooter: true },

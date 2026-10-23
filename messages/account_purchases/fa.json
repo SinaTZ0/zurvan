@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "account_purchases_meta_title": "خریدها | آموزش K9",
+  "account_purchases_meta_title": "خریدها | زروان",
+  "account_purchases_meta_description": "هر پرداختت، دوره‌هایی که خریدی و الان در چه حالن.",
   "account_purchases_hero_chip": "خریدها",
   "account_purchases_hero_title": "خریدهام",
   "account_purchases_hero_line": "هر پرداختت اینجا ثبته: برای کدوم سگ، چه دوره‌ای و الان در چه حاله.",

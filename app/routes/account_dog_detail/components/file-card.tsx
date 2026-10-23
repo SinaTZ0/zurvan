@@ -62,8 +62,8 @@ export function FileCard({
       <SectionHead id="dog-file-title" title={m.account_dog_detail_file_title({ dogName })}>
         <EdgeDog name="tag" className="w-[4.5rem] sm:w-[5rem]">
           <ChalkBubble
-            tail="left"
-            className="lively-reveal-pop absolute bottom-[93%] left-[38%] max-w-[11rem] text-pretty"
+            tail="end"
+            className="lively-reveal-pop absolute end-[38%] bottom-[93%] max-w-[11rem] text-pretty"
           >
             {m.account_dog_detail_file_bubble()}
           </ChalkBubble>

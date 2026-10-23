@@ -41,7 +41,7 @@ function refocus({ slug, direction }: { slug: string; direction: MoveDirection }
 // so nothing is filtered, paged or kept in the URL.
 export const Route = createFileRoute("/admin/courses")({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.course.admin.list.queryOptions()),
-  head: () => ({ meta: [{ title: "دوره‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "دوره‌ها | مدیریت زروان" }] }),
   component: AdminCoursesPage,
   notFoundComponent: () => <CoursesError notFound />,
   errorComponent: () => <CoursesError notFound={false} />,

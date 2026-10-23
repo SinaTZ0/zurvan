@@ -10,7 +10,8 @@ import { DISPLAY_HEADING } from "~/lib/display-heading";
  * stands on its edge.
  *
  * From `lg` both columns' rows are at least as tall as the taller dog, so the two plates' top edges line up across the
- * page. `figureClassName` makes room at the end for the scenery that stands behind him, past his own box.
+ * page. `figureClassName` makes room for the scenery that stands behind him, past his own box: on his left (physical, as
+ * the picture is; he faces right in both languages), which is the row's end in Persian and towards the heading in English.
  */
 export function PlateHead({
   id,

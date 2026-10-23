@@ -5,6 +5,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import type { Gate } from "~/routes/buy/buy-lists";
 import { StagePanel } from "~/routes/buy/components/stage-panel";
+import { m } from "~/paraglide/messages";
 
 /*===== Gate Panel =====*/
 /**
@@ -16,13 +17,13 @@ export function GatePanel({ gate, arrive }: { gate: Gate; arrive: boolean }) {
   return (
     <StagePanel
       titleId="gate-title"
-      title="قدم اول: ارزیابی رایگان"
+      title={m.buy_gate_title()}
       arrive={arrive}
       scene={{
         box: [19, 25],
         scenery: { name: "gate", width: [10.5, 15], left: [0, 0] },
         dog: { name: "padlock", height: [8, 12], left: [9.75, 13.5], head: 0.66 },
-        bubble: `اول باید ${HEAD_TRAINER.firstName} ببینتش!`,
+        bubble: m.buy_gate_bubble({ trainer: HEAD_TRAINER.firstName }),
       }}
     >
       <p className="mt-4 flex max-w-lg items-start gap-2.5 text-pretty text-destructive">
@@ -30,8 +31,7 @@ export function GatePanel({ gate, arrive }: { gate: Gate; arrive: boolean }) {
         <span>{gate.message}</span>
       </p>
       <p className="mt-3 max-w-lg text-pretty text-muted-foreground">
-        ارزیابی رایگانه؛ {HEAD_TRAINER.firstName} باهات تماس می‌گیره و سگت رو از نزدیک می‌بینه. بعدش دوره‌هایی که براش
-        باز شدن همین‌جا با قیمتشون میان.
+        {m.buy_gate_text({ trainer: HEAD_TRAINER.firstName })}
       </p>
       <Link
         {...gate.way.link}

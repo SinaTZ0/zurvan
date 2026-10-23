@@ -8,10 +8,11 @@ import { DogTag } from "~/components/dog-tag";
 import { MediaImage } from "~/components/media-image";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { orpc } from "~/orpc/client";
 import { MEDIA_ACCEPTED_TYPES, MEDIA_MAX_BYTES } from "~/orpc/media/constants";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 const MAX_MB = MEDIA_MAX_BYTES / (1024 * 1024);
 
@@ -80,7 +81,7 @@ export function PhotoPicker({
     if (!file || uploading) return;
     setProblem(null);
     if (file.size > MEDIA_MAX_BYTES) {
-      setProblem(`این عکس بزرگ‌تر از ${formatNumberFa(MAX_MB)} مگابایته. یه عکس کوچیک‌تر انتخاب کن.`);
+      setProblem(m.account_dog_form_photo_too_big({ max: formatNumber(MAX_MB) }));
       return;
     }
     setLocalPreview(URL.createObjectURL(file));
@@ -93,7 +94,7 @@ export function PhotoPicker({
             isDefinedError(uploadError) && uploadError.code === "INVALID_INPUT"
               ? uploadError.data.fields.file
               : undefined;
-          setProblem(fieldMessage ?? "عکس بارگذاری نشد. دوباره امتحان کن.");
+          setProblem(fieldMessage ?? m.account_dog_form_photo_failed());
         },
         onSettled: () => setLocalPreview(null),
       },
@@ -104,7 +105,7 @@ export function PhotoPicker({
   const labelId = `${inputId}-label`;
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
-  const formats = `JPG یا PNG، تا ${formatNumberFa(MAX_MB)} مگابایت`;
+  const formats = m.account_dog_form_photo_formats({ max: formatNumber(MAX_MB) });
 
   return (
     <div className="contents">
@@ -145,7 +146,12 @@ export function PhotoPicker({
                 {localPreview ? (
                   <img src={localPreview} alt="" className="size-full object-cover opacity-50" />
                 ) : media ? (
-                  <MediaImage media={media} variant="card" alt="عکس فعلی سگ" className="size-full object-cover" />
+                  <MediaImage
+                    media={media}
+                    variant="card"
+                    alt={m.account_dog_form_photo_current_alt()}
+                    className="size-full object-cover"
+                  />
                 ) : (
                   <>
                     {/*------ Empty Print (phone) ------*/}
@@ -162,7 +168,7 @@ export function PhotoPicker({
                       <DogTag name={tagName} microchipNumber={microchipNumber} size="lg" stampKey={tagName} />
                       <span className="inline-flex h-10 items-center gap-2 rounded-full border border-primary/70 px-4 text-sm font-bold text-primary transition-colors group-hover/print:bg-primary/10">
                         <CameraIcon aria-hidden strokeWidth={1.75} className="size-4" />
-                        افزودن عکس
+                        {m.account_dog_form_photo_add()}
                       </span>
                     </span>
                   </>
@@ -170,7 +176,10 @@ export function PhotoPicker({
 
                 {uploading && (
                   <span className="absolute inset-0 grid place-items-center">
-                    <Spinner aria-label="در حال بارگذاری" className="size-7 text-foreground" />
+                    <Spinner
+                      aria-label={m.account_dog_form_photo_uploading_aria()}
+                      className="size-7 text-foreground"
+                    />
                   </span>
                 )}
               </span>
@@ -181,7 +190,7 @@ export function PhotoPicker({
         </div>
 
         <span id={labelId} className="sr-only">
-          عکس سگ (اختیاری)
+          {m.account_dog_form_photo_input_label()}
         </span>
         <input
           id={inputId}
@@ -205,10 +214,10 @@ export function PhotoPicker({
         {/* Read aloud with the input; shown only while uploading (the empty desktop print has its own pill). */}
         <p id={hintId} className={cn("text-xs text-pretty text-muted-foreground lg:text-sm", !uploading && "sr-only")}>
           {uploading
-            ? "در حال بارگذاری…"
+            ? m.account_dog_form_photo_uploading()
             : media
-              ? "یه عکس تازه انتخاب کن یا روی عکس رهاش کن."
-              : `یه عکس واضح از خودش، ${formats}.`}
+              ? m.account_dog_form_photo_hint_replace()
+              : m.account_dog_form_photo_hint_empty({ formats })}
         </p>
 
         {!uploading && (
@@ -223,11 +232,17 @@ export function PhotoPicker({
               )}
             >
               <CameraIcon aria-hidden strokeWidth={1.75} />
-              {media ? "تغییر عکس" : "افزودن عکس"}
+              {media ? m.account_dog_form_photo_change() : m.account_dog_form_photo_add()}
             </label>
             {media && (
-              <Button type="button" variant="ghost" size="sm" className="text-destructive" onClick={() => onChange(null)}>
-                حذف عکس
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive"
+                onClick={() => onChange(null)}
+              >
+                {m.account_dog_form_photo_remove()}
               </Button>
             )}
           </div>

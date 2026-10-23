@@ -4,11 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CartItem } from "~/orpc/checkout/contract";
 import { client, orpc } from "~/orpc/client";
 import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
-
-/*===== Messages =====*/
-const CHANGED_MESSAGE = "وضعیت بعضی موردها عوض شده؛ سبد رو دوباره بررسی کردیم. چیزی پرداخت نشد.";
-const FAILED_MESSAGE = "پرداخت شروع نشد. دوباره امتحان کن.";
-const RULES_MESSAGE = "اول قوانین سایت رو بپذیر؛ بعد پرداخت.";
+import { m } from "~/paraglide/messages";
 
 /*===== Cart Pay =====*/
 /**
@@ -56,10 +52,10 @@ export function useCartPay() {
   const code = pay.error instanceof ORPCError ? pay.error.code : null;
   const message = pay.error
     ? code === "NOT_ELIGIBLE"
-      ? CHANGED_MESSAGE
+      ? m.account_cart_pay_changed()
       : code === "RULES_NOT_ACCEPTED"
-        ? RULES_MESSAGE
-        : FAILED_MESSAGE
+        ? m.account_cart_pay_rules()
+        : m.account_cart_pay_failed()
     : undefined;
 
   return {

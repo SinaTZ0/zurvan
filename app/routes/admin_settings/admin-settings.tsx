@@ -27,7 +27,7 @@ const INK_OUTLINE =
 // time of its last change. No URL state.
 export const Route = createFileRoute("/admin/settings")({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.setting.admin.get.queryOptions()),
-  head: () => ({ meta: [{ title: "تنظیمات | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "تنظیمات | مدیریت زروان" }] }),
   component: AdminSettings,
   notFoundComponent: () => <SettingsError notFound />,
   errorComponent: () => <SettingsError notFound={false} />,

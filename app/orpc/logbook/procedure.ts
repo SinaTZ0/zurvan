@@ -31,7 +31,12 @@ export const listLogbookProcedure = base.logbook.list
   .use(requireRoleMiddleware("customer"))
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await listDogLogbook({ db: context.db, ownerId: context.user.id, dogId: input.dogId });
+    const result = await listDogLogbook({
+      db: context.db,
+      ownerId: context.user.id,
+      dogId: input.dogId,
+      locale: context.locale,
+    });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.entries;
   });

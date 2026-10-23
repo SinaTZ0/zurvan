@@ -9,20 +9,27 @@ import { RulesTick } from "~/components/rules-tick";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
 import { formatToman } from "~/lib/course-format";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 import { PLATE } from "~/routes/account_cart/column";
+import { countCourses, countDogs } from "~/routes/account_cart/counts";
 import { PlateHead } from "~/routes/account_cart/components/plate-head";
 import { useChanged } from "~/routes/account_cart/hooks/use-changed";
 
 /*===== Toman =====*/
 /**
- * The amount without its unit, for the big gold numerals with «تومان» in body text beside them. Taken from
- * `formatToman` so the Rial → Toman conversion stays in one place.
+ * The amount without its unit, for the big gold numerals with «تومان» ("Toman") in body text beside them. Taken from
+ * `formatToman` so the Rial → Toman conversion stays in one place; the unit stripped is the page language's.
  */
 function tomanNumber(rial: number) {
-  return formatToman(rial).replace(/\s*تومان$/, "");
+  return formatToman(rial).replace(m.account_cart_counter_unit(), "").trim();
+}
+
+/** An amount that never breaks across lines inside a sentence (it used to sit in a `whitespace-nowrap` span). */
+function unbroken(text: string) {
+  return text.replaceAll(" ", "\u00a0");
 }
 
 /*===== Cart Counter =====*/
@@ -88,7 +95,7 @@ export function CartCounter({
         figureClassName="me-16 lg:me-20"
         heading={
           <h2 id="cart-summary-title" className={cn(DISPLAY_HEADING, "text-2xl lg:text-3xl")}>
-            جمع سبد
+            {m.account_cart_counter_title()}
           </h2>
         }
       >
@@ -100,12 +107,14 @@ export function CartCounter({
         {/*------ What Is Counted ------*/}
         <p className="text-muted-foreground">
           {nothingToPay
-            ? "هیچ‌کدوم از موردهای سبدت الان قابل پرداخت نیست."
-            : `${formatNumberFa(courseCount)} دوره برای ${formatNumberFa(dogCount)} سگ`}
+            ? m.account_cart_counter_none()
+            : m.account_cart_counter_counted({ courses: countCourses(courseCount), dogs: countDogs(dogCount) })}
         </p>
 
         {/*------ Total ------*/}
-        {deposit && <p className="mt-3 text-sm font-bold text-muted-foreground">پیش‌پرداخت الان</p>}
+        {deposit && (
+          <p className="mt-3 text-sm font-bold text-muted-foreground">{m.account_cart_counter_deposit_now()}</p>
+        )}
         <p
           aria-busy={refreshing}
           className={cn(
@@ -117,7 +126,7 @@ export function CartCounter({
           {/* Nothing to pay is a calm dash: a Persian zero is a dot, which reads as nothing at all. */}
           {nothingToPay ? (
             <span className="font-display text-4xl leading-none font-black text-muted-foreground sm:text-5xl">
-              —<span className="sr-only">۰ تومان</span>
+              —<span className="sr-only">{m.account_cart_counter_zero_sr()}</span>
             </span>
           ) : (
             <>
@@ -130,7 +139,7 @@ export function CartCounter({
               >
                 {tomanNumber(shown)}
               </span>
-              <span className="font-bold whitespace-nowrap">تومان</span>
+              <span className="font-bold whitespace-nowrap">{m.account_cart_counter_unit()}</span>
             </>
           )}
         </p>
@@ -138,20 +147,24 @@ export function CartCounter({
         {/* With a deposit the big number is what is charged now; the full price and what is left are said under it. */}
         {deposit && (
           <p className="mt-3 text-sm leading-relaxed text-pretty text-muted-foreground">
-            پیش‌پرداخت ٪{formatNumberFa(depositPercent)} از{" "}
-            <span className="whitespace-nowrap">{formatToman(total)}</span>؛{" "}
-            <span className="whitespace-nowrap">{formatToman(total - dueNow)}</span> رو موقع هماهنگی با{" "}
-            {HEAD_TRAINER.firstName} می‌دی.
+            {m.account_cart_counter_deposit_note({
+              percent: formatNumber(depositPercent),
+              total: unbroken(formatToman(total)),
+              left: unbroken(formatToman(total - dueNow)),
+              trainer: HEAD_TRAINER.firstName,
+            })}
           </p>
         )}
         {unavailableCount > 0 && (
           <p className="mt-3 text-sm text-pretty text-muted-foreground">
-            {formatNumberFa(unavailableCount)} مورد توی این جمع حساب نشده، چون الان قابل پرداخت نیست.
+            {unavailableCount === 1
+              ? m.account_cart_counter_unavailable_one({ count: formatNumber(unavailableCount) })
+              : m.account_cart_counter_unavailable_other({ count: formatNumber(unavailableCount) })}
           </p>
         )}
 
         <p className="mt-5 border-t border-dashed border-foreground/20 pt-5 text-sm leading-relaxed text-pretty text-muted-foreground">
-          بعد از پرداخت، {HEAD_TRAINER.firstName} زنگ می‌زنه و با هم هماهنگ می‌کنیم.
+          {m.account_cart_counter_after_pay({ trainer: HEAD_TRAINER.firstName })}
         </p>
 
         {/*------ Actions ------*/}
@@ -171,19 +184,23 @@ export function CartCounter({
           >
             {/* `busy` also covers the rules check still loading; only a payment on its way says it is going to the gateway. */}
             {paying && <Spinner aria-hidden />}
-            {paying ? "در حال رفتن به درگاه…" : nothingToPay ? "چیزی برای پرداخت نیست" : "پرداخت"}
+            {paying
+              ? m.account_cart_counter_going()
+              : nothingToPay
+                ? m.account_cart_counter_nothing()
+                : m.account_cart_counter_pay()}
           </Button>
           {nothingToPay && (
             <p id="cart-nothing-reason" className="text-center text-sm text-pretty text-muted-foreground">
-              دلیل هر مورد زیر خودش توی ساک نوشته شده.
+              {m.account_cart_counter_nothing_reason()}
             </p>
           )}
           <p className="flex items-start justify-center gap-2 text-center text-xs leading-relaxed text-pretty text-muted-foreground">
             <LockIcon aria-hidden strokeWidth={2} className="mt-0.5 size-3.5 shrink-0" />
-            پرداخت از درگاه بانکی انجام می‌شه؛ شماره‌ی کارتت به ما نمی‌رسه.
+            {m.account_cart_counter_secure()}
           </p>
           <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg", className: "mt-1 w-full" })}>
-            افزودن دوره‌ی دیگر
+            {m.account_cart_counter_add_another()}
           </Link>
         </div>
       </div>
@@ -196,12 +213,15 @@ export function CartCounter({
  * The figure on the counter's edge (physical sides: he faces right, the till stands behind him on the left). Two dogs in
  * one place, crossfading: lying nose-down over his coins, or, while paying, sitting with the gold card in his mouth.
  * Both stay mounted so the change is a fade, not a snap; the card dog is a little taller and stands up past the box.
+ *
+ * On the English pages the figure is at the row's right end, so the picture is mirrored (`ltr:-scale-x-100`) to keep
+ * the till outside, away from the heading; the bubble's box mirrors back so its words read.
  */
 function CounterDog({ paying }: { paying: boolean }) {
   const fade = "transition-opacity duration-500 ease-out motion-reduce:transition-none";
 
   return (
-    <div className="relative w-[8.5rem] translate-y-[3%] lg:w-[9.5rem]">
+    <div className="relative w-[8.5rem] translate-y-[3%] lg:w-[9.5rem] ltr:-scale-x-100">
       <div className="absolute -inset-x-1/2 -top-1/2 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_65%,rgb(255_194_26/0.08),transparent)]" />
 
       {/*------ The Till ------*/}
@@ -221,13 +241,17 @@ function CounterDog({ paying }: { paying: boolean }) {
           <MascotCut name="card" className="lively-breathe block w-full" />
           {paying && (
             // Physical: beside his head on his right, between him and the heading (above him is the hero's path on a
-            // laptop); the tail (left, 1.75rem in) aims down at his muzzle.
-            <ChalkBubble
-              tail="left"
-              className="answer-pop absolute bottom-[62%] left-[70%] w-max max-w-none [--answer-delay:0.25s] [--pop-origin:1.75rem_100%]"
-            >
-              کارتو آوردم!
-            </ChalkBubble>
+            // laptop); the tail (left, 1.75rem in) aims down at his muzzle. The box carries the place; in English it
+            // flips back inside the mirrored figure, so the words read and the tail (`end`, the right there) still
+            // points at him.
+            <div className="absolute bottom-[62%] left-[70%] w-max ltr:-scale-x-100">
+              <ChalkBubble
+                tail="end"
+                className="answer-pop max-w-none [--answer-delay:0.25s] [--pop-origin:1.75rem_100%] ltr:[--pop-origin:calc(100%-1.75rem)_100%]"
+              >
+                {m.account_cart_counter_card_bubble()}
+              </ChalkBubble>
+            </div>
           )}
         </div>
       </div>

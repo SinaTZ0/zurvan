@@ -66,15 +66,19 @@ export async function listDogLogbook({
   db,
   ownerId,
   dogId,
+  locale = "fa",
 }: {
   db: DatabaseOrTransaction;
   ownerId: string;
   dogId: string;
+  /** The language of the courses' names (the dog's page has an English one). */
+  locale?: Locale;
 }): Promise<ListResult> {
   if (!isDogId(dogId)) return { kind: "not-found" };
   const found = await findDogOwner({ db, dogId });
   if (!found || found.ownerId !== ownerId) return { kind: "not-found" };
-  return { kind: "success", entries: (await findEntriesByDog({ db, dogId })).map(toLogbookEntry) };
+  const rows = await findEntriesByDog({ db, dogId });
+  return { kind: "success", entries: rows.map((row) => toLogbookEntry(row, { locale })) };
 }
 
 /** A dog's diary for the Admin. */
@@ -87,7 +91,7 @@ export async function adminListDogLogbook({
 }): Promise<ListResult> {
   if (!isDogId(dogId)) return { kind: "not-found" };
   if (!(await findDogOwner({ db, dogId }))) return { kind: "not-found" };
-  return { kind: "success", entries: (await findEntriesByDog({ db, dogId })).map(toLogbookEntry) };
+  return { kind: "success", entries: (await findEntriesByDog({ db, dogId })).map((row) => toLogbookEntry(row)) };
 }
 
 /*===== Writing =====*/

@@ -87,7 +87,7 @@ export function AddLeadForm({
       <PlateHead
         id="lead-form-title"
         title={m.account_partner_leads_form_title()}
-        figureClassName={blocked ? "me-[3.5rem] sm:me-[4.25rem]" : "me-[2.5rem] sm:me-[3rem]"}
+        figureClassName={blocked ? "ml-[3.5rem] sm:ml-[4.25rem]" : "ml-[2.5rem] sm:ml-[3rem]"}
         figure={
           blocked ? (
             <EdgeDog
@@ -169,7 +169,8 @@ export function AddLeadForm({
 /**
  * The writing dog's chalk bubble, beside his head towards the heading (above its line). It pops from its tail on every new line (keyed by
  * the take) and fades out with his last words when he goes quiet; before he first speaks there is none. The tail is on
- * the bubble's bottom left (physical: he faces right), dipping towards his muzzle.
+ * the bubble's bottom left (physical: he faces right), dipping towards his muzzle; in English the heading is on his left,
+ * so the bubble opens leftwards with its tail on its bottom right, over his head (his muzzle is at the column's edge).
  *
  * Decoration only: the form says everything in plain words.
  */
@@ -178,11 +179,14 @@ function WriteBubble({ voice }: { voice: WriteVoice }) {
   const speaking = voice.line !== null;
 
   return (
-    <div aria-hidden className="pointer-events-none absolute bottom-[78%] left-[86%] z-10">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute bottom-[78%] z-10 ltr:right-[calc(40%-2.25rem)] rtl:left-[86%]"
+    >
       <ChalkBubble
         // A new key replays the pop; while quiet the key stays, so the fade-out runs once.
         key={speaking ? `say-${voice.take}` : "quiet"}
-        tail="left"
+        tail="end"
         className={cn("max-w-none whitespace-nowrap", speaking ? "pl-say" : "pl-quiet")}
       >
         {lineText(voice.line ?? voice.last)}

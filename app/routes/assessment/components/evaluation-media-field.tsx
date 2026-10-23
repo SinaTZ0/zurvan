@@ -6,7 +6,8 @@ import { MediaImage } from "~/components/media-image";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
 import { Spinner } from "~/components/ui/spinner";
-import { formatNumberFa } from "~/lib/digits";
+import { isEnglish } from "~/lib/i18n";
+import { formatNumber } from "~/lib/locale-format";
 import {
   EVALUATION_MAX_PHOTOS,
   EVALUATION_MAX_VIDEOS,
@@ -16,6 +17,7 @@ import {
 import type { EvaluationVideo } from "~/orpc/evaluation/contract";
 import { MEDIA_ACCEPTED_TYPES, MEDIA_MAX_BYTES } from "~/orpc/media/constants";
 import type { Media } from "~/orpc/media/contract";
+import { m } from "~/paraglide/messages";
 
 import { RisingError } from "~/routes/assessment/components/rising-error";
 import { usePhotoUpload } from "~/routes/assessment/hooks/use-photo-upload";
@@ -30,12 +32,15 @@ const PRINT_TILTS = ["-rotate-2", "rotate-[1.5deg]", "-rotate-1", "rotate-2"] as
 const BYTES_PER_MB = 1024 * 1024;
 const ACCEPT = `${MEDIA_ACCEPTED_TYPES},${EVALUATION_VIDEO_ACCEPTED_TYPES}`;
 
-const sizeFormat = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 });
-
-/** «۱۲٫۴ مگابایت», or kilobytes for small files. */
+/**
+ * «۱۲٫۴ مگابایت» («12.4 MB»), or kilobytes for small files, in the page's language. Not `formatFileSize`: that one
+ * drops the decimal from 10 MB up, and a video's row has always shown it.
+ */
 function formatSize(bytes: number): string {
-  if (bytes < BYTES_PER_MB) return `${sizeFormat.format(Math.max(1, Math.round(bytes / 1024)))} کیلوبایت`;
-  return `${sizeFormat.format(bytes / BYTES_PER_MB)} مگابایت`;
+  const sizeFormat = new Intl.NumberFormat(isEnglish() ? "en-US" : "fa-IR", { maximumFractionDigits: 1 });
+  if (bytes < BYTES_PER_MB)
+    return m.shared_file_size_kb({ size: sizeFormat.format(Math.max(1, Math.round(bytes / 1024))) });
+  return m.shared_file_size_mb({ size: sizeFormat.format(bytes / BYTES_PER_MB) });
 }
 
 /*===== Items =====*/
@@ -193,12 +198,12 @@ export function EvaluationMediaField({
       const refuse = (error: string) => added.push({ ...base, status: "error", error });
 
       if (kind === "other") {
-        refuse("این نوع فایل پشتیبانی نمی‌شه.");
+        refuse(m.assessment_media_unsupported());
       } else if (kind === "photo") {
         if (photos >= EVALUATION_MAX_PHOTOS) {
-          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس می‌شه.`);
+          refuse(m.assessment_media_max_photos({ count: formatNumber(EVALUATION_MAX_PHOTOS) }));
         } else if (file.size > MEDIA_MAX_BYTES) {
-          refuse(`این عکس بزرگ‌تر از ${formatNumberFa(MEDIA_MAX_BYTES / BYTES_PER_MB)} مگابایته.`);
+          refuse(m.assessment_media_photo_too_big({ size: formatNumber(MEDIA_MAX_BYTES / BYTES_PER_MB) }));
         } else {
           photos += 1;
           const preview = URL.createObjectURL(file);
@@ -217,9 +222,9 @@ export function EvaluationMediaField({
         }
       } else {
         if (videos >= EVALUATION_MAX_VIDEOS) {
-          refuse(`حداکثر ${formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم می‌شه.`);
+          refuse(m.assessment_media_max_videos({ count: formatNumber(EVALUATION_MAX_VIDEOS) }));
         } else if (file.size > EVALUATION_VIDEO_MAX_BYTES) {
-          refuse(`این فیلم بزرگ‌تر از ${formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایته.`);
+          refuse(m.assessment_media_video_too_big({ size: formatNumber(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB) }));
         } else {
           videos += 1;
           added.push({ ...base, status: "uploading" });
@@ -263,8 +268,11 @@ export function EvaluationMediaField({
       {/*===== Limits =====*/}
       {/* The plate around the field carries its heading («عکس و فیلم», اختیاری) and what the files are for. */}
       <p id={hintId} className="text-sm text-pretty text-muted-foreground">
-        تا {formatNumberFa(EVALUATION_MAX_PHOTOS)} عکس (JPG یا PNG)، تا {formatNumberFa(EVALUATION_MAX_VIDEOS)} فیلم؛ هر
-        فیلم تا {formatNumberFa(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB)} مگابایت، mp4 یا mov.
+        {m.assessment_media_hint({
+          photos: formatNumber(EVALUATION_MAX_PHOTOS),
+          videos: formatNumber(EVALUATION_MAX_VIDEOS),
+          size: formatNumber(EVALUATION_VIDEO_MAX_BYTES / BYTES_PER_MB),
+        })}
       </p>
 
       {/*===== Drop Zone =====*/}
@@ -294,7 +302,7 @@ export function EvaluationMediaField({
             <CameraIcon aria-hidden strokeWidth={1.5} className="size-8" />
             <VideoIcon aria-hidden strokeWidth={1.5} className="size-8" />
           </span>
-          <span className="text-sm font-bold">عکس و فیلم رو اینجا بنداز یا انتخاب کن</span>
+          <span className="text-sm font-bold">{m.assessment_media_drop()}</span>
           <input
             id={inputId}
             type="file"
@@ -323,14 +331,14 @@ export function EvaluationMediaField({
                     <MediaImage
                       media={item.media}
                       variant="thumb"
-                      alt={`عکس ${formatNumberFa(index + 1)}`}
+                      alt={m.assessment_media_photo_alt({ number: formatNumber(index + 1) })}
                       className="size-full"
                     />
                   ) : (
                     <>
                       {item.preview && <img src={item.preview} alt="" className="size-full object-cover opacity-50" />}
                       <span className="absolute inset-0 grid place-items-center">
-                        <Spinner aria-label="در حال بارگذاری" className="size-6 text-foreground" />
+                        <Spinner aria-label={m.assessment_media_uploading()} className="size-6 text-foreground" />
                       </span>
                     </>
                   )}
@@ -338,7 +346,7 @@ export function EvaluationMediaField({
               </div>
               <span aria-hidden className={TAPE} />
               <RemoveButton
-                label={`حذف عکس ${formatNumberFa(index + 1)}`}
+                label={m.assessment_media_remove_photo({ number: formatNumber(index + 1) })}
                 onClick={() => remove(item)}
                 className="absolute -end-2 -top-2"
               />
@@ -366,24 +374,26 @@ export function EvaluationMediaField({
                 {item.status === "done" ? (
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
                     <CircleCheckIcon aria-hidden className="size-4 text-primary" />
-                    بارگذاری شد
+                    {m.assessment_media_uploaded()}
                   </span>
                 ) : (
                   <div className="flex items-center gap-2">
                     {/* No width transition: only transform and opacity are animated in this app. */}
                     <Progress
                       value={item.progress}
-                      aria-label={`بارگذاری ${item.name}`}
+                      aria-label={m.assessment_media_progress_label({ name: item.name })}
                       className="flex-1 [&_[data-slot=progress-indicator]]:transition-none"
                     />
                     <span className="w-16 shrink-0 text-end text-xs text-muted-foreground">
                       {/* The bytes are all sent at 100% but the server is still storing the file. */}
-                      {item.progress >= 100 ? "در حال ذخیره…" : `${formatNumberFa(item.progress)}٪`}
+                      {item.progress >= 100
+                        ? m.assessment_media_saving()
+                        : m.assessment_media_percent({ percent: formatNumber(item.progress) })}
                     </span>
                   </div>
                 )}
               </div>
-              <RemoveButton label={`حذف ${item.name}`} onClick={() => remove(item)} />
+              <RemoveButton label={m.assessment_media_remove_named({ name: item.name })} onClick={() => remove(item)} />
             </li>
           ))}
         </ul>
@@ -408,9 +418,9 @@ export function EvaluationMediaField({
               variant="ghost"
               size="xs"
               onClick={() => remove(item)}
-              aria-label={`حذف ${item.name}`}
+              aria-label={m.assessment_media_remove_named({ name: item.name })}
             >
-              حذف
+              {m.assessment_media_remove()}
             </Button>
           </li>
         ))}

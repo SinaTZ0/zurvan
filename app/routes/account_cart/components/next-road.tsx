@@ -1,22 +1,21 @@
 import { cn } from "cn";
 
-import { formatNumberFa } from "~/lib/digits";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
+import { m } from "~/paraglide/messages";
 
 /*===== Steps =====*/
 // What happens after a paid cart, only from the FAQ («بعد از پرداخت چی می‌شه؟», «خرید چطوری کار می‌کنه؟», «دوره کی تموم
 // می‌شه؟»; app-spec F5–F6): the call, the training as arranged on it, and the course marked done.
-const STEPS = [
-  {
-    label: `${HEAD_TRAINER.firstName} زنگ می‌زنه`,
-    line: "وقت آموزش رو پشت تلفن با هم هماهنگ می‌کنیم.",
-  },
-  { label: "آموزش", line: "همون‌جا که توی تماس قرار می‌ذاریم؛ پیش تو یا توی مرکز." },
-  {
-    label: "تموم شد",
-    line: `${HEAD_TRAINER.firstName} دوره رو تمام‌شده ثبت می‌کنه و دوره‌های بعدی سگت باز می‌شن.`,
-  },
-] as const;
+// A function, read while rendering: the trainer's name and the words follow the page's language.
+function getSteps() {
+  const trainer = HEAD_TRAINER.firstName;
+  return [
+    { label: m.account_cart_road_call_label({ trainer }), line: m.account_cart_road_call_line() },
+    { label: m.account_cart_road_training_label(), line: m.account_cart_road_training_line() },
+    { label: m.account_cart_road_done_label(), line: m.account_cart_road_done_line({ trainer }) },
+  ];
+}
 
 /*===== Next Road =====*/
 /**
@@ -26,10 +25,12 @@ const STEPS = [
  * the other).
  */
 export function NextRoad() {
+  const steps = getSteps();
+
   return (
     <ol className="grid gap-y-6 sm:grid-cols-3 sm:gap-y-0">
-      {STEPS.map((step, index) => {
-        const last = index === STEPS.length - 1;
+      {steps.map((step, index) => {
+        const last = index === steps.length - 1;
         const lit = index === 0;
         return (
           <li
@@ -61,7 +62,7 @@ export function NextRoad() {
               )}
             >
               {lit && <span className="ct-halo absolute -inset-0.5 rounded-full border-2 border-primary/50" />}
-              {formatNumberFa(index + 1)}
+              {formatNumber(index + 1)}
             </span>
 
             {/*------ Words ------*/}

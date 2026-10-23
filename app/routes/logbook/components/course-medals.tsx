@@ -1,3 +1,4 @@
+import { latinNameAddsToTitle } from "~/lib/course-format";
 import { CheckIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
@@ -46,9 +47,11 @@ export function CourseMedals({ courses }: { courses: PublicRecord["courses"] }) 
                 </span>
                 <div className="min-w-0">
                   <p className="font-extrabold text-pretty">{entry.title}</p>
-                  <p dir="ltr" className="mt-0.5 text-start text-sm text-muted-foreground">
-                    {entry.latinName}
-                  </p>
+                  {latinNameAddsToTitle(entry) && (
+                    <p dir="ltr" className="mt-0.5 text-start text-sm text-muted-foreground">
+                      {entry.latinName}
+                    </p>
+                  )}
                   <p className="mt-1 text-sm text-muted-foreground">
                     {m.logbook_courses_finished({ date: formatTimestamp(entry.completedAt) })}
                   </p>

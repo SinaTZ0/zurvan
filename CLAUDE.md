@@ -2,14 +2,13 @@
 
 These instructions apply to the entire repository unless overridden by a more specific `AGENTS.md` in a subdirectory.
 
-This is a TanStack Start v1 application (TanStack Router, TanStack Query, oRPC; served by Nitro). The application's user-facing content is in Persian. The move from React Router v8 is described in `docs/tanstack-start/`.
+This is a TanStack Start v1 application (TanStack Router, TanStack Query, oRPC; served by Nitro). The application's user-facing content is in Persian, and every page except the Admin also has an English version under `/en` (Paraglide JS; see [docs/i18n/english-version-plan.md](docs/i18n/english-version-plan.md)). The move from React Router v8 is described in `docs/tanstack-start/`.
 
 ## Naming
 
-- The brand is **K9 Training** in Latin script and **آموزش K9** in Persian text. Use these in user-facing text and docs. The old logo set "K9" in the stencil face (`font-stencil`); the wordmark is now «زروان» (see the next bullet).
-- On 2026-10-18 the owner asked for the header and footer to show **زروان** with the descriptor «مجموعه تربیتی و رفتارشناسی سگ زروان»; the gold emblem and its size stay. `BrandLogo` and the footer do that. Page titles, SMS texts, the auth page and other copy still say آموزش K9 until the owner decides whether to rename them everywhere.
-- On 2026-10-22 the owner chose **Zurvann** (double "n") as the wordmark and page-title name of the English site (`/en`, public pages only; see [docs/i18n/english-version-plan.md](docs/i18n/english-version-plan.md)). The Persian site is unchanged.
-- The brand was previously Zurvann / زروان. Internal identifiers still use `zurvan` (the npm package, the Docker Compose project and database name, the theme storage key, the GitHub repo) and `zurvann` (the media bucket). Leave them as they are; renaming the database, Compose project or bucket would lose existing data.
+- The brand is **زروان** in Persian text and **Zurvann** (double "n") in Latin script; use these in user-facing text and docs. The owner settled it on 2026-10-23: page titles, copy and SMS texts say زروان, the English site (`/en`, see [docs/i18n/english-version-plan.md](docs/i18n/english-version-plan.md)) says Zurvann. The old name «آموزش K9» / "K9 Training" is retired; «K9» stays only on the gold emblem and the dog tag (`font-stencil`).
+- The header and footer show «زروان» with the descriptor «مجموعه تربیتی و رفتارشناسی سگ زروان» and the gold emblem at its size (the owner, 2026-10-18); `BrandLogo` and the footer do that.
+- Internal identifiers use `zurvan` (the npm package, the Docker Compose project and database name, the theme storage key, the GitHub repo) and `zurvann` (the media bucket). Leave them as they are; renaming the database, Compose project or bucket would lose existing data.
 
 ## Product Scope
 
@@ -68,6 +67,10 @@ app/routes/
 ## Code Conventions
 
 Preserve established local conventions unless a rule below explicitly says otherwise.
+
+### User-Facing Text
+
+Never write user-facing text inline. Every string a page shows is a message in `messages/<slice>/fa.json` and `en.json` (`m.<slice>_…()`), written in Persian first, with the English in the voice and terms of [docs/i18n/english-glossary.md](docs/i18n/english-glossary.md). The Admin (`admin_*` slices) and SMS texts stay Persian only. How to add a string is in [docs/frontend-guideline.md](docs/frontend-guideline.md).
 
 ### Imports
 

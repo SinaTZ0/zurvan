@@ -3,6 +3,7 @@ import { DogPhoto } from "~/components/dog-photo";
 import { MascotCut } from "~/components/mascot-cut";
 import type { DogStatus } from "~/lib/dog-status";
 import type { Dog } from "~/orpc/dog/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Tape =====*/
 // A strip of translucent tape with torn ends (the home page's taped print).
@@ -70,8 +71,8 @@ export function DogPortrait({ dog, status }: { dog: Dog; status: DogStatus }) {
         </ChalkBubble>
         {status.rejectionReason && (
           <p className="max-w-xs rounded-2xl border border-border bg-card paper-grain px-4 py-2.5 text-sm text-pretty">
-            <span className="font-bold text-muted-foreground">دلیل: </span>
-            {status.rejectionReason}
+            <span className="font-bold text-muted-foreground">{m.account_dog_detail_reason()} </span>
+            <bdi>{status.rejectionReason}</bdi>
           </p>
         )}
       </div>

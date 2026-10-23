@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "account_dog_detail_meta_title": "{name} | آموزش K9",
-  "account_dog_detail_meta_title_fallback": "سگ من | آموزش K9",
+  "account_dog_detail_meta_title": "{name} | زروان",
+  "account_dog_detail_meta_title_fallback": "سگ من | زروان",
   "account_dog_detail_meta_description": "پرونده‌ی {name}: دوره‌ها، گواهی‌ها، لاگ‌بوک و ارزیابی.",
   "account_dog_detail_hero_not_evaluated": "ارزیابی نشده",
   "account_dog_detail_hero_file": "پرونده‌ی",

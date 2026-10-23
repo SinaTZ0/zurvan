@@ -1,6 +1,7 @@
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { ReviewedItem } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 import { PLATE } from "~/routes/account_cart/column";
 import { CartItemRow } from "~/routes/account_cart/components/cart-item-row";
 import { useFolding } from "~/routes/account_cart/hooks/use-folding";
@@ -36,10 +37,10 @@ export function OrphanPlate({
           <div className="flex items-end justify-between gap-4">
             <div className="min-w-0">
               <h2 id="cart-orphans-title" className={`${DISPLAY_HEADING} text-2xl text-balance`}>
-                این موردها دیگه در دسترس نیستن
+                {m.account_cart_orphan_title()}
               </h2>
               <p className="mt-1.5 max-w-md text-sm text-pretty text-muted-foreground">
-                دوره‌شون برداشته شده یا سگشون توی این حساب نیست. فقط می‌شه از سبد پاکشون کرد.
+                {m.account_cart_orphan_line()}
               </p>
             </div>
             {/* Physical sides: he noses rightwards, a bush in front of him, a pool of warm light under him. */}

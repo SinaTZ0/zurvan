@@ -46,7 +46,7 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
       <PlateHead
         id="partner-funnel-title"
         title={m.account_partner_funnel_title()}
-        figureClassName="me-[3.75rem] sm:me-[5rem]"
+        figureClassName="ml-[3.75rem] sm:ml-[5rem]"
         figure={
           <EdgeDog
             name="look-back"
@@ -56,8 +56,8 @@ export function FunnelPlate({ funnel }: { funnel: PartnerFunnel }) {
           >
             {seen && (
               <ChalkBubble
-                tail="left"
-                className="pd-say absolute bottom-[86%] left-[calc(62%-2.25rem)] max-w-none whitespace-nowrap"
+                tail="end"
+                className="pd-say absolute bottom-[86%] max-w-none whitespace-nowrap ltr:right-[calc(38%-2.25rem)] rtl:left-[calc(62%-2.25rem)]"
               >
                 {m.account_partner_funnel_bubble()}
               </ChalkBubble>

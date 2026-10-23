@@ -5,6 +5,8 @@ import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { getDogStatus } from "~/lib/dog-status";
 import { orNotFound } from "~/lib/not-found";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
+import { pageHead } from "~/lib/seo";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_dog_detail/column";
 import { BuddyCorner } from "~/routes/account_dog_detail/components/buddy-corner";
 import { CertificatesSection } from "~/routes/account_dog_detail/components/certificates-section";
@@ -19,8 +21,6 @@ import { MedalsBand } from "~/routes/account_dog_detail/components/medals-band";
 import { PageMotion } from "~/routes/account_dog_detail/components/page-motion";
 import { PublicRecordCard } from "~/routes/account_dog_detail/components/public-record-card";
 import { dogDetailQueries } from "~/routes/account_dog_detail/queries";
-import { m } from "~/paraglide/messages";
-import { pageHead } from "~/lib/seo";
 
 /*===== Route =====*/
 // The account shell guards the route. The API answers NOT_FOUND for another owner's dog too, so a made-up id and
@@ -44,9 +44,12 @@ export const Route = createFileRoute("/account/dogs/$dogId")({
     pageHead({
       path: `/account/dogs/${params.dogId}`,
       title: loaderData
-        ? m.account_dog_detail_meta_title({ name: `\u2068${loaderData.name}\u2069` })
+        ? m.account_dog_detail_meta_title({ name: loaderData.name })
         : m.account_dog_detail_meta_title_fallback(),
-      description: m.account_dog_detail_meta_description({ name: loaderData?.name ?? "" }),
+      // Without loader data the page is its error or not-found screen, so the description says that instead.
+      description: loaderData
+        ? m.account_dog_detail_meta_description({ name: loaderData.name })
+        : m.account_dog_detail_error_notfound_text(),
     }),
   // The page ends on the medals' brick band, which runs into the footer, so the shell drops its bottom padding.
   staticData: { flushFooter: true },

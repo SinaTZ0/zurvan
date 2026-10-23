@@ -2,6 +2,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { buttonVariants } from "~/components/ui/button";
+import { m } from "~/paraglide/messages";
 import { StagePlate } from "~/routes/account_cart/components/stage-plate";
 
 /*===== Empty Cart =====*/
@@ -13,7 +14,7 @@ export function EmptyCart() {
   return (
     <StagePlate
       titleId="cart-empty-title"
-      title="سبدت خالیه"
+      title={m.account_cart_empty_title()}
       stage={
         // Physical sides: he faces right, his nose in the cart in front of him.
         <div className="absolute bottom-[0.9rem] left-1/2 w-[17rem] -translate-x-1/2 lg:bottom-[1.2rem] lg:w-[24rem]">
@@ -32,20 +33,18 @@ export function EmptyCart() {
             tail="right"
             className="answer-pop absolute right-[calc(47%-2.25rem)] bottom-[calc(100%+0.5rem)] max-w-[12rem] text-pretty [--answer-delay:0.5s] [--pop-origin:calc(100%-2.25rem)_100%] lg:max-w-[18rem]"
           >
-            چیزی توی سبدم نیست! یه دوره برام پیدا کن
+            {m.account_cart_empty_bubble()}
           </ChalkBubble>
         </div>
       }
     >
-      <p className="mt-3 max-w-lg text-lead text-pretty text-muted-foreground">
-        از صفحه‌ی هر دوره سگت رو انتخاب کن و «افزودن به سبد» رو بزن، یا از سگت شروع کن.
-      </p>
+      <p className="mt-3 max-w-lg text-lead text-pretty text-muted-foreground">{m.account_cart_empty_line()}</p>
       <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link to="/courses" className={buttonVariants({ variant: "solid", size: "lg", className: "sm:min-w-48" })}>
-          دوره‌ها رو ببین
+          {m.account_cart_empty_courses()}
         </Link>
         <Link to="/buy" className={buttonVariants({ variant: "outline", size: "lg" })}>
-          خرید از روی سگ
+          {m.account_cart_empty_buy()}
         </Link>
       </div>
     </StagePlate>

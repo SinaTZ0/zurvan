@@ -62,6 +62,7 @@
   "shared_dog_age_months": "{count} months old",
   "shared_dog_age_year_one": "{count} year old",
   "shared_dog_age_years": "{count} years old",
+  "shared_dog_age_year_and_month_one": "{years} year and {months} month old",
   "shared_dog_age_year_and_months": "{years} year and {months} months old",
   "shared_dog_age_approximate": "About {age}",
   "shared_role_admin": "Admin and head trainer",
@@ -123,10 +124,10 @@
   "shared_vaccination_unknown": "I don't know",
   "shared_enrollment_status_active": "In training",
   "shared_enrollment_status_completed": "Completed",
-  "shared_enrollment_status_cancelled": "Cancelled",
+  "shared_enrollment_status_cancelled": "Canceled",
   "shared_refund_status_pending": "Awaiting payment",
   "shared_refund_status_paid": "Paid",
-  "shared_refund_status_cancelled": "Cancelled",
+  "shared_refund_status_cancelled": "Canceled",
   "shared_dog_photo_none": "{name}, no photo",
   "shared_password_show": "Show password",
   "shared_password_hide": "Hide password",
@@ -164,5 +165,5 @@
   "shared_demo_note_clinic": "Partner clinic",
   "shared_demo_note_two_dogs": "Customer with two dogs",
   "shared_demo_note_new": "New customer, no dogs",
-  "shared_demo_note_evaluation_today": "Customer with an evaluation today"
+  "shared_demo_note_evaluation_today": "Customer, evaluation today"
 }

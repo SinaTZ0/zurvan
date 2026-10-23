@@ -9,6 +9,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { COLUMN, STRIP_FADE } from "~/routes/buy/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== Buy Error =====*/
 /**
@@ -32,17 +33,15 @@ export function BuyError({ notFound }: { notFound: boolean }) {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="buy-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          {notFound ? "این صفحه پیدا نشد" : "صفحه‌ی خرید باز نشد"}
+          {notFound ? m.buy_error_not_found() : m.buy_error_failed()}
         </h1>
-        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          یه مشکلی پیش اومد. دوباره امتحان کن یا از صفحه‌ی دوره‌ها شروع کن.
-        </p>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.buy_error_text()}</p>
         <div className="mt-8 flex flex-wrap gap-3">
           <a href={href} className={buttonVariants({ variant: "solid", size: "lg" })}>
-            دوباره امتحان کن
+            {m.buy_error_retry()}
           </a>
           <Link to="/courses" className={buttonVariants({ variant: "outline", size: "lg" })}>
-            دوره‌ها
+            {m.buy_error_courses()}
           </Link>
         </div>
       </div>
@@ -61,7 +60,7 @@ export function BuyError({ notFound }: { notFound: boolean }) {
             tail="right"
             className="absolute right-[calc(30%-2.25rem)] bottom-[calc(100%+0.4rem)] text-pretty"
           >
-            ببخشید!
+            {m.buy_error_bubble()}
           </ChalkBubble>
         </div>
       </div>

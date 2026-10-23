@@ -4,10 +4,11 @@ import { CheckIcon, HourglassIcon } from "lucide-react";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { BRICK } from "~/lib/brick";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { formatNumber } from "~/lib/locale-format";
 import type { Dog } from "~/orpc/dog/contract";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_dog_detail/column";
 import { useInView } from "~/routes/account_dog_detail/components/use-in-view";
 
@@ -89,7 +90,7 @@ export function MedalsBand({
               tail="right"
               className="lively-reveal-pop absolute right-[44%] bottom-[94%] max-w-[12rem] text-pretty md:max-w-[14rem]"
             >
-              رفیقم {dogName} اینا رو گرفته!
+              {m.account_dog_detail_medals_bubble({ dogName })}
             </ChalkBubble>
           </div>
         )}
@@ -98,7 +99,7 @@ export function MedalsBand({
       <div className={COLUMN}>
         {/*===== Heading =====*/}
         <h2 id="medals-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          مدال‌های {dogName}
+          {m.account_dog_detail_medals_title({ dogName })}
         </h2>
         <p className="mt-2 max-w-xl text-pretty text-muted-foreground">
           {describeRail({ passed: courses.length, coming: coming.length })}
@@ -122,7 +123,10 @@ export function MedalsBand({
               </ul>
             </>
           ) : (
-            <ul aria-label={`دوره‌های ${dogName}`} className="flex flex-wrap gap-x-4 gap-y-10 sm:gap-x-8 lg:gap-x-10">
+            <ul
+              aria-label={m.account_dog_detail_medals_list({ dogName })}
+              className="flex flex-wrap gap-x-4 gap-y-10 sm:gap-x-8 lg:gap-x-10"
+            >
               {courses.map((course, index) => (
                 <Medal key={course.slug} course={course} index={index} />
               ))}
@@ -140,10 +144,15 @@ export function MedalsBand({
 /*===== Rail Line =====*/
 /** The line under the heading: what is won and what is on its way, in that order. */
 function describeRail({ passed, coming }: { passed: number; coming: number }): string {
-  if (passed === 0 && coming === 0) return "هنوز مدالی نگرفته؛ اولین دوره که تموم بشه، مدالش اینجا آویزون می‌شه.";
-  if (passed === 0) return "هنوز مدالی نگرفته؛ دوره‌هایی که در راهن، تموم که بشن مدالشون اینجا آویزون می‌شه.";
-  const won = `${formatNumberFa(passed)} دوره رو تموم کرده`;
-  return coming === 0 ? `${won}.` : `${won}؛ ${formatNumberFa(coming)} تا هم در راهه.`;
+  if (passed === 0 && coming === 0) return m.account_dog_detail_rail_none();
+  if (passed === 0) return m.account_dog_detail_rail_coming();
+  // The plural follows the passed count (Persian has one form, so both of its messages read the same).
+  const counts = { passed: formatNumber(passed), coming: formatNumber(coming) };
+  if (coming === 0)
+    return passed === 1 ? m.account_dog_detail_rail_won_one(counts) : m.account_dog_detail_rail_won_other(counts);
+  return passed === 1
+    ? m.account_dog_detail_rail_won_coming_one(counts)
+    : m.account_dog_detail_rail_won_coming_other(counts);
 }
 
 /*===== Rail Piece =====*/
@@ -190,7 +199,9 @@ function Medal({ course, index }: { course: Dog["passedCourses"][number]; index:
       <div className="mt-4 w-full rounded-2xl border border-border/50 bg-jet paper-grain px-3 py-2.5 text-center shadow-[0_12px_24px_-14px_rgb(0_0_0/0.9)]">
         <p className="text-sm font-extrabold text-pretty">{course.title}</p>
         {course.source === "admin" && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{HEAD_TRAINER.firstName} ثبت کرده</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {m.account_dog_detail_medal_by_admin({ trainer: HEAD_TRAINER.firstName })}
+          </p>
         )}
       </div>
     </li>
@@ -235,7 +246,7 @@ function ComingMedal({ title, index }: { title: string; index: number }) {
       {/*------ Label ------*/}
       <div className="mt-4 w-full rounded-2xl border border-dashed border-foreground/20 bg-jet/70 paper-grain px-3 py-2.5 text-center">
         <p className="text-sm font-extrabold text-pretty text-foreground/85">{title}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">در راه</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{m.account_dog_detail_medal_coming()}</p>
       </div>
     </li>
   );

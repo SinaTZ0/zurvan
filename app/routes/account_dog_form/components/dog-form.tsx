@@ -39,11 +39,11 @@ import {
 import { type DogFormSection, firstFieldOf, firstSectionOf } from "~/routes/account_dog_form/sections";
 import { applyServerError } from "~/routes/account_dog_form/server-errors";
 
-/*===== The Guide's Words =====*/
+/*===== The Guides =====*/
 // The center's dog looks after each plate and says what it is for, in his first person, about his buddy («رفیقم»).
 // Every line is also said in plain words by the plate's description, so the bubbles are for the eyes only. The words
-// live in messages and are read while rendering, so they follow the page's language.
-/*===== The Guides =====*/
+// live in messages and are read while rendering (`plateVoice`), so they follow the page's language.
+//
 // Each plate's dog and the scenery that means something there: the name card by the hall stand where his leash will
 // hang (the padlock once the identity is locked), the scale by the first-aid box, listening by the desk where the head
 // trainer reads the notes. Widths stay under about 1.3x each cut-out's natural width.
@@ -337,7 +337,9 @@ export function DogForm({
                 dir="ltr"
                 inputMode="numeric"
                 autoComplete="off"
-                className="text-end tabular-nums"
+                // Digits run left to right in both languages; on the Persian page they still sit at the start (right).
+                // `rtl:` matches through the page's `dir`, not the input's own `dir="ltr"`, so English keeps the left.
+                className="tabular-nums rtl:text-right"
                 aria-invalid={!!errors.microchipNumber}
                 {...register("microchipNumber")}
               />
@@ -422,9 +424,7 @@ export function DogForm({
             </div>
 
             {busy && (
-              <output className="answer-in block text-sm text-muted-foreground">
-                {m.account_dog_form_busy()}
-              </output>
+              <output className="answer-in block text-sm text-muted-foreground">{m.account_dog_form_busy()}</output>
             )}
 
             {/*------ The Path ------*/}

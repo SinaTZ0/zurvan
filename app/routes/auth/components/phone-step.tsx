@@ -12,6 +12,7 @@ import { describeAuthError } from "~/routes/auth/auth-errors";
 import { DemoAccounts } from "~/routes/auth/components/demo-accounts";
 import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type PhoneInput, type PhoneValues, phoneSchema } from "~/routes/auth/schema";
+import { m } from "~/paraglide/messages";
 
 /*===== Phone Step =====*/
 /**
@@ -69,7 +70,7 @@ export function PhoneStep({
         <StepAlert message={errors.root?.message} />
 
         <Field data-invalid={!!errors.phoneNumber}>
-          <FieldLabel htmlFor="sign-in-phone">شماره موبایل</FieldLabel>
+          <FieldLabel htmlFor="sign-in-phone">{m.auth_phone_label()}</FieldLabel>
           <InputGroup>
             {/* A gold chip, not a bare grey glyph: the number sits at the far (LTR) end, so a lone thin icon read as a
                 stray mark. It lights up with the field. */}
@@ -84,20 +85,20 @@ export function PhoneStep({
               dir="ltr"
               inputMode="tel"
               autoComplete="tel-national"
-              placeholder="0912 345 6789"
+              placeholder={m.auth_phone_placeholder()}
               aria-invalid={!!errors.phoneNumber}
               aria-describedby="sign-in-phone-note"
               className="text-start text-lg tracking-wide sm:text-xl"
               {...register("phoneNumber")}
             />
           </InputGroup>
-          <FieldDescription id="sign-in-phone-note">کد ورود رو به همین شماره پیامک می‌کنیم.</FieldDescription>
+          <FieldDescription id="sign-in-phone-note">{m.auth_phone_note()}</FieldDescription>
           <FieldError errors={[errors.phoneNumber]} className="answer-in" />
         </Field>
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
-          کد ورود رو بفرست
+          {m.auth_phone_send()}
         </Button>
         <Button
           type="button"
@@ -107,7 +108,7 @@ export function PhoneStep({
           disabled={isSubmitting}
           onClick={choosePassword}
         >
-          ورود با رمز عبور
+          {m.auth_phone_use_password()}
         </Button>
 
         {showcase && (

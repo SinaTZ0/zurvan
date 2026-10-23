@@ -10,6 +10,7 @@ import { CodeStep } from "~/routes/auth/components/code-step";
 import { NameStep } from "~/routes/auth/components/name-step";
 import { PasswordStep } from "~/routes/auth/components/password-step";
 import { PhoneStep } from "~/routes/auth/components/phone-step";
+import { m } from "~/paraglide/messages";
 
 type Step =
   | { name: "phone" }
@@ -18,12 +19,13 @@ type Step =
   | { name: "code"; phoneNumber: string; sentAt: number; forgot: boolean }
   | { name: "name" };
 
-// The dog asks, so the questions are in its voice; the instructions under each stay plain.
-const STEP_TITLES: Record<AuthStepName, string> = {
-  phone: "شماره‌ی موبایلت چنده؟",
-  password: "رمز عبورت چیه؟",
-  code: "کد پیامک رو بگو",
-  name: "اسمت چیه؟",
+// The dog asks, so the questions are in its voice; the instructions under each stay plain. Functions, so each title is
+// worded in the page's language when it renders.
+const STEP_TITLES: Record<AuthStepName, () => string> = {
+  phone: () => m.auth_step_phone_title(),
+  password: () => m.auth_step_password_title(),
+  code: () => m.auth_step_code_title(),
+  name: () => m.auth_step_name_title(),
 };
 
 /*===== Sign-in Flow =====*/
@@ -87,7 +89,7 @@ export function SignInFlow({
     >
       <div key={step.name} className={cn("flex flex-col gap-5", hasMoved && "answer-in")}>
         <h2 id="sign-in-step-title" className={`${DISPLAY_HEADING} text-2xl text-balance`}>
-          {STEP_TITLES[step.name]}
+          {STEP_TITLES[step.name]()}
         </h2>
 
         {step.name === "phone" && (

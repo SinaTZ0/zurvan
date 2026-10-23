@@ -9,6 +9,7 @@ import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { PURCHASES_PATH } from "~/orpc/checkout/constants";
+import { m } from "~/paraglide/messages";
 import { FADED_ENDS, PLATE } from "~/routes/account_cart/column";
 import { NextRoad } from "~/routes/account_cart/components/next-road";
 
@@ -32,7 +33,7 @@ export function PaymentBanner({ result }: { result: "paid" | "failed" }) {
 function PaidBanner() {
   return (
     <section
-      aria-label="نتیجه‌ی پرداخت"
+      aria-label={m.account_cart_banner_aria()}
       className={cn(
         PLATE,
         "relative overflow-hidden border-primary/25 px-5 pt-5 pb-8 sm:px-8 lg:px-10 lg:pb-10",
@@ -62,7 +63,7 @@ function PaidBanner() {
               tail="right"
               className="answer-pop absolute right-[calc(15%-2.25rem)] bottom-[102%] text-pretty [--answer-delay:0.95s] [--pop-origin:calc(100%-2.25rem)_100%]"
             >
-              یاهو! پرداخت شد
+              {m.account_cart_banner_paid_bubble()}
             </ChalkBubble>
           </div>
         </div>
@@ -70,17 +71,17 @@ function PaidBanner() {
         {/*===== Words =====*/}
         <div className="lg:order-1 lg:col-span-7 lg:self-center lg:py-8">
           <output className={cn(DISPLAY_HEADING, "block max-w-xl text-3xl text-balance lg:text-4xl")}>
-            پرداخت انجام شد؛ برای هماهنگی باهات تماس می‌گیریم.
+            {m.account_cart_banner_paid_line()}
           </output>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
               to={PURCHASES_PATH}
               className={buttonVariants({ variant: "solid", size: "lg", className: "sm:min-w-48" })}
             >
-              دیدن خریدها
+              {m.account_cart_banner_paid_purchases()}
             </Link>
             <Link to="/account" className={buttonVariants({ variant: "outline", size: "lg" })}>
-              سگ‌های من
+              {m.account_cart_banner_paid_dogs()}
             </Link>
           </div>
         </div>
@@ -88,7 +89,7 @@ function PaidBanner() {
 
       {/*===== What Happens Next =====*/}
       <div className="mt-8 border-t border-dashed border-foreground/20 pt-8">
-        <h2 className="mb-6 text-xl font-extrabold">بعدش چی می‌شه؟</h2>
+        <h2 className="mb-6 text-xl font-extrabold">{m.account_cart_banner_next_title()}</h2>
         <NextRoad />
       </div>
     </section>
@@ -98,7 +99,10 @@ function PaidBanner() {
 /*===== Failed =====*/
 function FailedBanner() {
   return (
-    <section aria-label="نتیجه‌ی پرداخت" className={cn(PLATE, "overflow-hidden px-5 pt-5 sm:px-8 lg:px-10")}>
+    <section
+      aria-label={m.account_cart_banner_aria()}
+      className={cn(PLATE, "overflow-hidden px-5 pt-5 sm:px-8 lg:px-10")}
+    >
       <div className="grid gap-y-3 sm:grid-cols-[minmax(0,1fr)_14rem] sm:items-end sm:gap-x-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         {/*===== The Sorry Dog =====*/}
         {/* Physical sides: his bubble's tail (left, 1.75rem in) on his head; a bush either side. */}
@@ -117,7 +121,7 @@ function FailedBanner() {
               tail="left"
               className="answer-pop absolute bottom-[96%] left-[30%] w-max max-w-[11rem] text-pretty [--answer-delay:0.7s] [--pop-origin:1.75rem_100%] lg:max-w-[16rem]"
             >
-              این‌بار نشد… سبدم سر جاشه
+              {m.account_cart_banner_failed_bubble()}
             </ChalkBubble>
           </div>
         </div>
@@ -125,9 +129,9 @@ function FailedBanner() {
         {/*===== Words =====*/}
         <div className="pb-6 sm:order-1 sm:self-center sm:py-6">
           <output className={cn(DISPLAY_HEADING, "block max-w-lg text-2xl text-balance lg:text-3xl")}>
-            پرداخت انجام نشد و سبدت همون‌طور مونده.
+            {m.account_cart_banner_failed_line()}
           </output>
-          <p className="mt-2 text-pretty text-muted-foreground">هر وقت خواستی دوباره «پرداخت» رو بزن.</p>
+          <p className="mt-2 text-pretty text-muted-foreground">{m.account_cart_banner_failed_hint()}</p>
         </div>
       </div>
     </section>

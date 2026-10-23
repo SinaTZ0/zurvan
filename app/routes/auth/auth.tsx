@@ -3,18 +3,22 @@ import { useState } from "react";
 import { z } from "zod";
 
 import { BrandLogo } from "~/components/brand-logo";
+import { LanguageSwitch } from "~/components/language-switch";
 import { Link } from "~/components/link";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { localizedPath } from "~/lib/i18n";
 import { pageHead } from "~/lib/seo";
-import { m } from "~/paraglide/messages";
 import { SITE_RULES } from "~/lib/site-rules";
-import { LanguageSwitch } from "~/components/language-switch";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import type { AuthStepName } from "~/routes/auth/auth-scenes";
 import { AuthStage } from "~/routes/auth/components/auth-stage";
 import { SignInFlow } from "~/routes/auth/components/sign-in-flow";
 import { TrustNote } from "~/routes/auth/components/trust-note";
+
+/** The language switch's look in both its places: a quiet link, like the account shell's. */
+const SWITCH_LINK =
+  "rounded px-1 py-1 text-sm text-foreground/70 transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
 
 /** Where people land after signing in when nothing asked for a page. The account area sends each role on from there. */
 const DEFAULT_REDIRECT = "/account";
@@ -51,8 +55,7 @@ export const Route = createFileRoute("/auth")({
       rulesPublished: SITE_RULES !== null,
     };
   },
-  head: () =>
-    pageHead({ path: "/auth", title: m.auth_meta_title(), description: m.auth_meta_description() }),
+  head: () => pageHead({ path: "/auth", title: m.auth_meta_title(), description: m.auth_meta_description() }),
   component: AuthPage,
 });
 
@@ -70,7 +73,11 @@ function safeRedirect(value: string | undefined) {
  * Outside the storefront shell (no header, footer or tab bar). Desktop: one full-viewport band split in two; in RTL the
  * first column is the right one, so the form comes first in the DOM and sits on the start side, and the stage is the
  * left half. Phones: the stage is a band on top (moved first by `order`, so the form keeps the first place in the tab
- * order) with the logo laid over its start corner, and the plate follows.
+ * order) with the logo laid over its start corner (in English, above the welcome), and the plate follows.
+ *
+ * The language switch (outside any shell, so the page draws its own): on desktop at the end of the logo's row, on phones
+ * after the trust note, where the shells' footers have it. A partner's QR code lands a visitor here first, so someone who
+ * can't read the page must find theirs.
  */
 function AuthPage() {
   const { showcase, needsName, rulesPublished } = Route.useLoaderData();
@@ -86,14 +93,20 @@ function AuthPage() {
       <div className="z-10 [scrollbar-width:none] px-4 pt-6 pb-12 sm:px-6 lg:h-svh lg:overflow-y-auto lg:px-10 lg:pt-8 [&::-webkit-scrollbar]:hidden">
         <div className="mx-auto flex w-full max-w-md flex-col lg:min-h-full">
           {/*------ Logo ------*/}
-          {/* Phones: laid over the stage band's top start corner. Desktop: first in the column, scrolling with it. */}
-          <Link
-            to="/"
-            aria-label={m.auth_logo_label()}
-            className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static lg:mb-10"
-          >
-            <BrandLogo />
-          </Link>
+          {/* Phones: laid over the stage band's top start corner (the row is empty there, its logo out of flow); in
+              English it stays in the flow above the welcome instead, since the drawn scene keeps its sides and the
+              dog's bubble fills the top left, and the Latin wordmark is wider. Desktop: first in the column, scrolling
+              with it, with the language switch at the row's end. */}
+          <div className="lg:mb-10 lg:flex lg:items-center lg:justify-between lg:gap-4">
+            <Link
+              to="/"
+              aria-label={m.auth_logo_label()}
+              className="absolute start-4 top-5 z-20 self-start rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:start-6 lg:static ltr:max-lg:static ltr:max-lg:inline-flex"
+            >
+              <BrandLogo />
+            </Link>
+            <LanguageSwitch className={`hidden lg:inline-flex ${SWITCH_LINK}`} />
+          </div>
 
           <div className="flex flex-col max-lg:pt-7 lg:my-auto">
             {/*------ Welcome ------*/}
@@ -119,6 +132,9 @@ function AuthPage() {
             <div className="mt-7">
               <TrustNote />
             </div>
+
+            {/*------ Language (phones) ------*/}
+            <LanguageSwitch className={`mt-8 self-center lg:hidden ${SWITCH_LINK}`} />
           </div>
         </div>
       </div>

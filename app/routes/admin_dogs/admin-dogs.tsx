@@ -55,7 +55,7 @@ export const Route = createFileRoute("/admin/dogs")({
   validateSearch: adminDogsSearchSchema,
   loader: ({ context: { queryClient } }) =>
     Promise.all([queryClient.ensureQueryData(dogsQuery()), queryClient.ensureQueryData(requestsQuery())]),
-  head: () => ({ meta: [{ title: "سگ‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "سگ‌ها | مدیریت زروان" }] }),
   component: AdminDogsPage,
   notFoundComponent: () => <DogsError notFound />,
   errorComponent: () => <DogsError notFound={false} />,

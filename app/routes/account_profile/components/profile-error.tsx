@@ -6,6 +6,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/account_profile/column";
 
 /*===== Profile Error =====*/
@@ -27,13 +28,13 @@ export function ProfileError() {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="profile-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          تنظیمات حساب باز نشد
+          {m.account_profile_page_error_title()}
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.
+          {m.account_profile_page_error_line()}
         </p>
         <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-8" })}>
-          برگرد به صفحه‌ی اصلی
+          {m.account_profile_page_error_home()}
         </Link>
       </div>
 

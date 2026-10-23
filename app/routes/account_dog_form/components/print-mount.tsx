@@ -114,7 +114,7 @@ export function PrintMount({
           (top right), aimed up into the print. Keyed by the line, so a new name or the saving line pops again. */}
       <div
         aria-hidden
-        className="relative z-10 col-span-2 row-start-3 flex items-start justify-start empty:hidden max-lg:mt-4 lg:col-span-1 lg:col-start-1 lg:row-start-2 lg:-mt-7 lg:-ms-2"
+        className="relative z-10 col-span-2 row-start-3 flex items-start justify-start empty:hidden max-lg:mt-4 lg:col-span-1 lg:col-start-1 lg:row-start-2 lg:-ms-2 lg:-mt-7"
       >
         {bubbleLine && (
           <ChalkBubble
@@ -133,19 +133,19 @@ export function PrintMount({
         aria-hidden
         className="relative mt-6 hidden border-t border-dashed border-foreground/20 pt-5 lg:col-span-2 lg:row-start-4 lg:block"
       >
-        <p className="text-sm font-bold text-primary">{m.account_dog_form_trainer_reads({ trainer: HEAD_TRAINER.firstName })}</p>
+        <p className="text-sm font-bold text-primary">
+          {m.account_dog_form_trainer_reads({ trainer: HEAD_TRAINER.firstName })}
+        </p>
         {notes.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-2 text-sm text-pretty">
             {notes.map((note) => (
-              <li key={note} className="line-clamp-2 border-s-2 border-primary/50 ps-3">
+              <li key={note} dir="auto" className="line-clamp-2 border-s-2 border-primary/50 ps-3">
                 {note}
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-sm text-pretty text-muted-foreground">
-            {m.account_dog_form_notes_empty()}
-          </p>
+          <p className="mt-2 text-sm text-pretty text-muted-foreground">{m.account_dog_form_notes_empty()}</p>
         )}
       </div>
 

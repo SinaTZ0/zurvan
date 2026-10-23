@@ -22,7 +22,11 @@ import { m } from "~/paraglide/messages";
  */
 export function DogProfile({ dog }: { dog: Dog }) {
   const rows: { label: string; value: React.ReactNode; locked?: boolean }[] = [
-    { label: m.account_dog_detail_profile_breed(), value: dog.breed ?? m.account_dog_detail_profile_not_set(), locked: dog.isEvaluated },
+    {
+      label: m.account_dog_detail_profile_breed(),
+      value: dog.breed ?? m.account_dog_detail_profile_not_set(),
+      locked: dog.isEvaluated,
+    },
     { label: m.account_dog_detail_profile_sex(), value: DOG_SEX_LABELS[dog.sex] },
     {
       label: m.account_dog_detail_profile_birth(),
@@ -37,7 +41,10 @@ export function DogProfile({ dog }: { dog: Dog }) {
       locked: dog.isEvaluated,
     },
     { label: m.account_dog_detail_profile_weight(), value: describeWeight(dog.weightKg) },
-    { label: m.account_dog_detail_profile_neutered(), value: dog.isNeutered ? m.account_dog_detail_yes() : m.account_dog_detail_no() },
+    {
+      label: m.account_dog_detail_profile_neutered(),
+      value: dog.isNeutered ? m.account_dog_detail_yes() : m.account_dog_detail_no(),
+    },
     { label: m.account_dog_detail_profile_vaccines(), value: VACCINATION_STATUS_LABELS[dog.vaccinationStatus] },
     {
       label: m.account_dog_detail_profile_microchip(),
@@ -55,7 +62,7 @@ export function DogProfile({ dog }: { dog: Dog }) {
   const notes = [
     { label: m.account_dog_detail_profile_behavior(), text: dog.behaviorNotes?.trim() },
     { label: m.account_dog_detail_profile_health(), text: dog.medicalNotes?.trim() },
-  ].filter((note): note is { label: string; text: string } => Boolean(note.text));
+  ].flatMap(({ label, text }) => (text ? [{ label, text }] : []));
 
   return (
     <section aria-labelledby="profile-title">
@@ -90,7 +97,10 @@ export function DogProfile({ dog }: { dog: Dog }) {
             {notes.map((note) => (
               <div key={note.label} className="flex flex-col gap-1 py-3">
                 <dt className="text-sm text-muted-foreground">{note.label}</dt>
-                <dd className="text-pretty whitespace-pre-line">{note.text}</dd>
+                {/* The owner's own words, in whichever language they typed them. */}
+                <dd dir="auto" className="text-pretty whitespace-pre-line">
+                  {note.text}
+                </dd>
               </div>
             ))}
           </dl>

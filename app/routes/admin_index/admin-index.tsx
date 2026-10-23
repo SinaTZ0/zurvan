@@ -27,7 +27,7 @@ export const Route = createFileRoute("/admin/")({
     await queryClient.ensureQueryData(orpc.dashboard.admin.overview.queryOptions());
     return { today: describeTodayInTehran() };
   },
-  head: () => ({ meta: [{ title: "نمای کلی | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "نمای کلی | مدیریت زروان" }] }),
   component: AdminIndexPage,
   notFoundComponent: () => <OverviewError notFound />,
   errorComponent: () => <OverviewError notFound={false} />,

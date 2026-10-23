@@ -9,7 +9,8 @@ import { DISPLAY_HEADING } from "~/lib/display-heading";
  * on the row's bottom edge, never runs under him; his bubble sits beside his head, above the heading's line. The caller
  * puts the plate right after this row with no margin, so he stands on its edge.
  *
- * `figureClassName` makes room at the end for the scenery that stands behind him, past his own box.
+ * `figureClassName` makes room for the scenery that stands behind him, past his own box: on his left (physical, as the
+ * picture is; he faces right in both languages), which is the row's end in Persian and towards the heading in English.
  */
 export function PlateHead({
   id,

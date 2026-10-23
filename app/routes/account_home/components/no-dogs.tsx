@@ -72,13 +72,15 @@ export function NoDogs() {
           />
 
           {/*------ The Dog With the Empty Frame ------*/}
-          {/* Between the kennel and the bed. His head is 73% across the picture: the bubble's tail is aimed there. */}
+          {/* Between the kennel and the bed. His head is 73% across the picture: the bubble's tail is aimed there. In
+              English the bubble opens to the left (the words are on that side, and a longer line would run off the
+              stage on the right), its right edge as far from the box's right as its left edge is from the head. */}
           <div className="absolute bottom-0 left-[8.5rem] h-(--dog-h) translate-y-[3%] lg:left-[12.5rem]">
             <MascotCut name="frame" className="lively-breathe block h-full w-auto" />
           </div>
           <ChalkBubble
-            tail="left"
-            className="lively-reveal-pop absolute bottom-[calc(var(--dog-h)+0.4rem)] left-[calc(8.5rem+0.73*var(--dog-h)*281/375-2.25rem)] max-w-[12rem] text-pretty lg:left-[calc(12.5rem+0.73*var(--dog-h)*281/375-2.25rem)] lg:max-w-[15rem]"
+            tail="end"
+            className="lively-reveal-pop absolute bottom-[calc(var(--dog-h)+0.4rem)] max-w-[12rem] text-pretty lg:max-w-[15rem] ltr:right-[calc(10.25rem-0.73*var(--dog-h)*281/375)] ltr:lg:right-[calc(14.25rem-0.73*var(--dog-h)*281/375)] rtl:left-[calc(8.5rem+0.73*var(--dog-h)*281/375-2.25rem)] rtl:lg:left-[calc(12.5rem+0.73*var(--dog-h)*281/375-2.25rem)]"
           >
             {m.account_home_no_dogs_bubble()}
           </ChalkBubble>

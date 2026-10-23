@@ -5,6 +5,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== No Purchases =====*/
 /**
@@ -24,16 +25,14 @@ export function NoPurchases() {
       {/*===== Words =====*/}
       <div className="order-2 p-6 sm:p-8 lg:order-1 lg:col-span-6 lg:flex lg:flex-col lg:justify-center lg:p-12">
         <h2 id="no-purchases-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-          هنوز خریدی نداری
+          {m.account_purchases_none_title()}
         </h2>
-        <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">
-          بعد از اولین پرداخت، اینجا می‌بینی چی خریدی و برای کدوم سگ.
-        </p>
+        <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">{m.account_purchases_none_line()}</p>
         <Link
           to="/courses"
           className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7 w-full sm:w-fit sm:min-w-48" })}
         >
-          دوره‌ها رو ببین
+          {m.account_purchases_none_courses()}
         </Link>
       </div>
 
@@ -73,7 +72,7 @@ export function NoPurchases() {
             tail="right"
             className="ap-empty-pop absolute right-[calc(0.25rem+var(--dog-w)*0.4-2.25rem)] bottom-[calc(var(--dog-w)*0.8+0.5rem)] max-w-[12rem] text-pretty lg:right-[calc(0.5rem+var(--dog-w)*0.4-2.25rem)] lg:max-w-[15rem]"
           >
-            هنوز چیزی نخریدم
+            {m.account_purchases_none_bubble()}
           </ChalkBubble>
         </div>
       </div>

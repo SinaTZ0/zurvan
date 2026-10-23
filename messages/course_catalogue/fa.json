@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "course_catalogue_meta_title": "دوره‌ها | آموزش K9",
-  "course_catalogue_meta_description": "همه‌ی دوره‌های آموزش K9 را ببین و بگرد؛ هر دوره بعد از دوره‌ی قبلش باز می‌شود.",
+  "course_catalogue_meta_title": "دوره‌ها | زروان",
+  "course_catalogue_meta_description": "همه‌ی دوره‌های زروان را ببین و بگرد؛ هر دوره بعد از دوره‌ی قبلش باز می‌شود.",
   "course_catalogue_error_title": "فهرست دوره‌ها باز نشد",
   "course_catalogue_error_text": "مشکلی پیش آمد و دوره‌ها نرسیدند. دوباره امتحان کن یا چند دقیقه‌ی دیگر سر بزن.",
   "course_catalogue_error_retry": "دوباره امتحان کن",

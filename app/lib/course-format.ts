@@ -25,7 +25,9 @@ export function describeAge(course: Facts): string {
 export function describeSessions(course: Facts): string {
   if (course.sessionCount === null) return m.shared_course_after_evaluation();
   const count = formatNumber(course.sessionCount);
-  return course.sessionCount === 1 ? m.shared_course_sessions_one({ count }) : m.shared_course_sessions_other({ count });
+  return course.sessionCount === 1
+    ? m.shared_course_sessions_one({ count })
+    : m.shared_course_sessions_other({ count });
 }
 
 /** "منزل", "بیرون", "اکثراً بیرون", or "بعد از ارزیابی". */
@@ -57,6 +59,16 @@ export function formatTomanShort(rial: number): string {
   if (toman >= 1_000_000 && toman % 100_000 === 0) {
     return m.shared_money_million_toman({ amount: formatNumber(toman / 1_000_000) });
   }
-  if (toman >= 1_000 && toman % 1_000 === 0) return m.shared_money_thousand_toman({ amount: formatNumber(toman / 1_000) });
+  if (toman >= 1_000 && toman % 1_000 === 0)
+    return m.shared_money_thousand_toman({ amount: formatNumber(toman / 1_000) });
   return formatToman(rial);
+}
+
+/*===== Latin Name =====*/
+/**
+ * Whether a course's Latin name adds anything under its title. On the English site the title is often the Latin name
+ * already («Companion Dog 2» over «Companion dog 2»), and showing it twice reads as a bug; a Persian title always differs.
+ */
+export function latinNameAddsToTitle({ title, latinName }: { title: string; latinName: string }): boolean {
+  return latinName.trim().toLowerCase() !== title.trim().toLowerCase();
 }

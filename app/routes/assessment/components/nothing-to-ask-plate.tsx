@@ -24,9 +24,7 @@ export function NothingToAskPlate({ dogs }: { dogs: readonly DogChoice[] }) {
       <h2 id="nothing-title" className={cn(DISPLAY_HEADING, "text-h2 text-balance")}>
         {m.assessment_nothing_title()}
       </h2>
-      <p className="mt-3 max-w-lg text-pretty text-muted-foreground">
-        {m.assessment_nothing_description({ trainer })}
-      </p>
+      <p className="mt-3 max-w-lg text-pretty text-muted-foreground">{m.assessment_nothing_description({ trainer })}</p>
 
       {/*------ The Dogs ------*/}
       <ul className="mt-8 flex flex-wrap gap-x-7 gap-y-6">

@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "course_detail_meta_title": "{title} | آموزش K9",
-  "course_detail_meta_not_found": "دوره پیدا نشد | آموزش K9",
+  "course_detail_meta_title": "{title} | زروان",
+  "course_detail_meta_not_found": "دوره پیدا نشد | زروان",
   "course_detail_error_missing_title": "این دوره پیدا نشد",
   "course_detail_error_broken_title": "صفحه‌ی این دوره باز نشد",
   "course_detail_error_missing_text": "شاید نشانی‌اش عوض شده باشد. همه‌ی دوره‌ها را ببین، یا با ارزیابی رایگان شروع کن تا دوره‌ی مناسب سگت را با هم پیدا کنیم.",

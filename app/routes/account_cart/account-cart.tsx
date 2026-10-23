@@ -3,12 +3,15 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
 import type { EvaluationPeriod, EvaluationWeekday } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 import { groupByDog, selectCartItems, summarize } from "~/routes/account_cart/cart-groups";
 import { COLUMN } from "~/routes/account_cart/column";
+import { countCourses, countDogs } from "~/routes/account_cart/counts";
 import { CartCounter } from "~/routes/account_cart/components/cart-counter";
 import { CartError } from "~/routes/account_cart/components/cart-error";
 import { CartHero } from "~/routes/account_cart/components/cart-hero";
@@ -39,7 +42,12 @@ export const Route = createFileRoute("/account/cart")({
   beforeLoad: ({ context, location }) =>
     requireSession({ queryClient: context.queryClient, location, roles: ["customer"] }),
   validateSearch: cartSearchSchema,
-  head: () => ({ meta: [{ title: "سبد من | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/cart",
+      title: m.account_cart_meta_title(),
+      description: m.account_cart_meta_description(),
+    }),
   component: AccountCartPage,
   notFoundComponent: () => <CartPageError notFound />,
   errorComponent: () => <CartPageError notFound={false} />,
@@ -103,20 +111,23 @@ function AccountCartPage() {
   const empty = ready && items.length === 0;
 
   /*------ The Hero's Words ------*/
+  const itemCount = { count: formatNumber(items.length) };
   const countLine =
     groups.length > 0
-      ? `${formatNumberFa(reviewed.length)} دوره برای ${formatNumberFa(groups.length)} سگ توی سبدته؛ قیمت‌ها قیمت امروزن.`
-      : `${formatNumberFa(items.length)} مورد توی سبدته.`;
+      ? m.account_cart_hero_count_courses({ courses: countCourses(reviewed.length), dogs: countDogs(groups.length) })
+      : items.length === 1
+        ? m.account_cart_hero_count_items_one(itemCount)
+        : m.account_cart_hero_count_items_other(itemCount);
   const hero =
     payment === "paid"
-      ? { line: "دوره‌هایی که خریدی خودشون از سبد رفتن.", bubble: null }
+      ? { line: m.account_cart_hero_line_paid(), bubble: null }
       : loading
-        ? { line: "قیمت‌ها و وضعیت هر مورد رو همین الان می‌خونیم.", bubble: null }
+        ? { line: m.account_cart_hero_line_loading(), bubble: null }
         : empty
-          ? { line: "هنوز چیزی برنداشتی.", bubble: "سبدم خالیه! بریم یه دوره پیدا کنیم؟" }
+          ? { line: m.account_cart_hero_line_empty(), bubble: m.account_cart_hero_bubble_empty() }
           : failedToRead
             ? { line: countLine, bubble: null }
-            : { line: countLine, bubble: "سبدت رو آوردم!" };
+            : { line: countLine, bubble: m.account_cart_hero_bubble_ready() };
 
   return (
     <div className="overflow-x-clip">

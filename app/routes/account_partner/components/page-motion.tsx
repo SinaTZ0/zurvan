@@ -36,6 +36,8 @@ export function PageMotion() {
           transform-origin: 2.25rem 100%;
           animation: answer-pop .38s cubic-bezier(.3,1.45,.5,1) .75s both, lively-float 3.4s ease-in-out 1.15s infinite alternate;
         }
+        /* English: the plates' bubbles open to the left, their tail on the right. */
+        [dir="ltr"] .pd-say { transform-origin: calc(100% - 2.25rem) 100%; }
 
         /*------ Armed: what will arrive waits out of sight ------*/
         [data-view="armed"] .pd-edge { transform: translateY(100%); clip-path: inset(-40% -40% 103% -40%); }

@@ -1,6 +1,7 @@
 import { DEMO_ACCOUNTS } from "~/lib/demo-accounts";
-import { toPersianDigits } from "~/lib/digits";
+import { formatDigits } from "~/lib/locale-format";
 import { SHOWCASE_SIGN_IN_CODE, USER_ROLE_LABELS } from "~/lib/user-constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Demo Accounts =====*/
 /**
@@ -16,10 +17,10 @@ export function DemoAccounts({ onPick }: { onPick: (phoneNumber: string) => void
       className="rounded-3xl border border-dashed border-primary/35 bg-sunken paper-grain p-4"
     >
       <h2 id="demo-accounts-title" className="text-sm font-bold">
-        حساب‌های نمایشی
+        {m.auth_demo_title()}
       </h2>
       <p className="mt-1 text-xs text-pretty text-muted-foreground">
-        یکی رو انتخاب کن؛ کد ورود همه‌شون {toPersianDigits(SHOWCASE_SIGN_IN_CODE)} هست.
+        {m.auth_demo_note({ code: formatDigits(SHOWCASE_SIGN_IN_CODE) })}
       </p>
       <ul className="mt-3 divide-y divide-foreground/10">
         {DEMO_ACCOUNTS.map((account) => (

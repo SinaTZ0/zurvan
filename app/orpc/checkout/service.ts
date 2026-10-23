@@ -595,14 +595,14 @@ async function notifyPaid({
     phoneNumber: row?.customer.phoneNumber,
     kind: "payment-paid",
     body:
-      `آموزش K9: پرداخت انجام شد${what ? ` (${what})` : ""}؛ برای هماهنگی با شما تماس می‌گیریم.` +
+      `زروان: پرداخت انجام شد${what ? ` (${what})` : ""}؛ برای هماهنگی با شما تماس می‌گیریم.` +
       (notEnrolled > 0 ? " برای بخشی از خرید ثبت‌نام انجام نشد؛ با شما تماس می‌گیریم." : ""),
   });
   await notify({
     phoneNumber: await findAdminPhoneNumber({ db }),
     kind: "payment-paid-admin",
     body:
-      `آموزش K9: خرید تازه از ${row?.customer.name ?? "یک مشتری"}${what ? `: ${what}` : ""}. با او تماس بگیر.` +
+      `زروان: خرید تازه از ${row?.customer.name ?? "یک مشتری"}${what ? `: ${what}` : ""}. با او تماس بگیر.` +
       (notEnrolled > 0 ? ` ${notEnrolled} مورد پرداخت شد ولی ثبت‌نام نشد.` : ""),
   });
 }

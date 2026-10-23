@@ -26,13 +26,13 @@
   "logbook_who_others_line": "They only see that the record is private: no dog's name, nothing else.",
   "logbook_public_separator": ", ",
   "logbook_public_made_public": "The dog's owner made this record public.",
-  "logbook_public_bubble": "This is my friend {name}'s record!",
+  "logbook_public_bubble": "This is my buddy {name}'s record!",
   "logbook_courses_title": "Finished courses",
   "logbook_courses_empty": "It hasn't finished any courses yet.",
   "logbook_courses_finished": "Finished {date}",
   "logbook_certs_title": "Certificates",
   "logbook_certs_issued": "Issued {date}",
-  "logbook_diary_title": "From the practice logbook",
+  "logbook_diary_title": "From the training logbook",
   "logbook_diary_exercises": "Exercises",
   "logbook_diary_summary": "Summary: "
 }

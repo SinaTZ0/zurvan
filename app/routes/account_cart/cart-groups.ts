@@ -1,6 +1,7 @@
-import { formatNumberFa } from "~/lib/digits";
 import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
+import { formatNumber } from "~/lib/locale-format";
 import type { CartItem, ReviewedItem } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /** The dog a group is about. */
@@ -78,19 +79,20 @@ export function summarize(items: readonly ReviewedItem[]) {
 }
 
 /*===== Verdicts =====*/
-/** The server had nothing to say about an item that still can't be paid (its course isn't sold): say so ourselves. */
-const NOT_FOR_SALE_PROBLEM = {
-  kind: "not-for-sale",
-  message: "این دوره فعلاً فروخته نمی‌شه.",
-  courseSlug: null,
-} as const;
+/**
+ * The server had nothing to say about an item that still can't be paid (its course isn't sold): say so ourselves. A
+ * function, so the sentence is read in the page's language when the verdict is built, not when the module loads.
+ */
+function notForSaleProblem() {
+  return { kind: "not-for-sale", message: m.account_cart_not_for_sale(), courseSlug: null } as const;
+}
 
 /** The dog's first-person line and the reasons for an item that can't be paid, with the way out of each. */
 export function getUnavailableVerdict(item: ReviewedItem): DogVerdict {
   return getDogVerdict({
     dogId: item.dogId,
     eligible: false,
-    problems: item.problems.length > 0 ? item.problems : [NOT_FOR_SALE_PROBLEM],
+    problems: item.problems.length > 0 ? item.problems : [notForSaleProblem()],
   });
 }
 
@@ -100,8 +102,8 @@ export function getUnavailableVerdict(item: ReviewedItem): DogVerdict {
  */
 export function getGroupLine(group: DogGroup): string {
   const [only] = group.payable;
-  if (group.payable.length === 1 && only) return `می‌خوام «${only.course.title}» رو شروع کنم!`;
-  if (group.payable.length > 1) return `${formatNumberFa(group.payable.length)} دوره‌ی تازه! کلی چیز یاد می‌گیرم`;
+  if (group.payable.length === 1 && only) return m.account_cart_group_line_one({ course: only.course.title });
+  if (group.payable.length > 1) return m.account_cart_group_line_many({ count: formatNumber(group.payable.length) });
 
   const [first] = group.items;
   return first ? getUnavailableVerdict(first).line : "";

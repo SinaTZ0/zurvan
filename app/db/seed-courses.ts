@@ -59,7 +59,7 @@ export const SEED_COURSES: SeedCourse[] = [
     en: {
       title: "House Dog",
       summary:
-        "The rules of life at home: its place and toilet training, manners with guests and at the door, staying alone and staying calm. All of it in your own home.",
+        "The rules of life at home: its own place and toilet training, manners with guests and at the door, staying alone and staying calm. All of it in your own home.",
       highlights: [
         "Greets guests politely, without jumping on them",
         "Door rules: doesn't rush the door or slip out",
@@ -148,7 +148,7 @@ export const SEED_COURSES: SeedCourse[] = [
         "Heel: about turn, left turn, right turn, come",
         "Looking at the handler instead of at things and noises",
       ],
-      coverAlt: "A Labrador on a loose leash, walking calmly along a busy city pavement",
+      coverAlt: "A Labrador on a loose leash, walking calmly along a busy city sidewalk",
     },
     cover: {
       src: "/photo/home/course-cgc.webp",

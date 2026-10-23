@@ -1,3 +1,4 @@
+import { latinNameAddsToTitle } from "~/lib/course-format";
 import { CheckIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
@@ -50,9 +51,11 @@ export function ValidCard({
       <dl className="relative divide-y divide-dashed divide-primary/20">
         <Fact label={m.certificate_valid_course()} className="pe-20 pt-0 sm:pe-28">
           <dd className="font-display text-xl font-extrabold text-pretty sm:text-2xl">{course.title}</dd>
-          <dd dir="ltr" className="mt-0.5 w-fit text-start text-sm text-muted-foreground">
-            {course.latinName}
-          </dd>
+          {latinNameAddsToTitle(course) && (
+            <dd dir="ltr" className="mt-0.5 w-fit text-start text-sm text-muted-foreground">
+              {course.latinName}
+            </dd>
+          )}
         </Fact>
         {dogName && (
           <Fact label={m.certificate_valid_dog()}>

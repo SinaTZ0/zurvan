@@ -1,6 +1,7 @@
 import { ShieldCheckIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
+import { m } from "~/paraglide/messages";
 
 /*===== Trust Note =====*/
 /**
@@ -14,15 +15,15 @@ export function TrustNote() {
     <aside className="flex items-start gap-3 px-1">
       <ShieldCheckIcon className="mt-1 size-5 shrink-0 text-primary" strokeWidth={1.7} aria-hidden />
       <div className="flex flex-col gap-0.5">
-        <p className="text-sm font-bold">شمارتو فقط برای کار با خودت نگه می‌داریم.</p>
+        <p className="text-sm font-bold">{m.auth_trust_title()}</p>
         <p className="text-xs leading-relaxed text-pretty text-muted-foreground">
-          برای ورود و پیامک‌های آموزش سگت. اگه همکاری تو رو آورده باشه، فقط می‌بینه که ثبت‌نام و خرید کردی.{" "}
+          {m.auth_trust_body()}{" "}
           <Link
             to="/privacy"
             hash="who-sees"
             className="rounded-sm font-bold text-foreground underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
           >
-            کی چی رو می‌بینه
+            {m.auth_trust_link()}
           </Link>
         </p>
       </div>

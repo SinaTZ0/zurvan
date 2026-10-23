@@ -1,4 +1,4 @@
-# K9 Training — App Specification
+# Zurvann — App Specification
 
 The source of truth for how the app works. The course catalog's content comes from [zurvan-courses.md](zurvan-courses.md); the shape of a dog profile and of a course's settings is still being worked out with the owner (see [F2](#f2-dog-profiles) and [F8](#f8-course-catalogue)).
 
@@ -10,11 +10,11 @@ The source of truth for how the app works. The course catalog's content comes fr
 
 ## The Business
 
-**K9 Training** (آموزش K9) is a head trainer's private practice. He is the owner and the app's **Admin**. He is also the center's only trainer: the site introduces him alone (the two placeholder colleagues' cards are switched off since 2026-10-18 at the owner's request, but kept in the repo). Training is mostly private (one dog), at the client's place or at the center; the owner also plans group classes at the center and offers boarding by prior arrangement with a partner pension, but the app has no seats, schedule or booking for any of that.
+**Zurvann** (زروان) is a head trainer's private practice. She is the owner and the app's **Admin**. She is also the center's only trainer: the site introduces her alone (the two placeholder colleagues' cards are switched off since 2026-10-18 at the owner's request, but kept in the repo). Training is mostly private (one dog), at the client's place or at the center; the owner also plans group classes at the center and offers boarding by prior arrangement with a partner pension, but the app has no seats, schedule or booking for any of that.
 
-The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where he gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over he marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on a customer's first purchase.
+The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where she gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over she marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on a customer's first purchase.
 
-**The app doesn't run the business.** Lesson times, sessions and everything in between are handled by the Admin in real life, by phone. The app records what was requested, bought and finished, and shows him the general picture. There is no calendar, no lesson tracking, no trainer earnings, no refund policies, no deadlines and no automatic expiries. A refund the Admin decides is recorded ([F5](#f5-cart-and-checkout)); the money itself moves outside the app.
+**The app doesn't run the business.** Lesson times, sessions and everything in between are handled by the Admin in real life, by phone. The app records what was requested, bought and finished, and shows her the general picture. There is no calendar, no lesson tracking, no trainer earnings, no refund policies, no deadlines and no automatic expiries. A refund the Admin decides is recorded ([F5](#f5-cart-and-checkout)); the money itself moves outside the app.
 
 ## Roles
 
@@ -43,7 +43,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 
 - Sign in with a phone number and an SMS code. Already built: 5-digit code, valid for 2 minutes, resend after 60 seconds, invalidated after 5 wrong attempts, rate-limited per phone and per IP.
 - One role per phone number. Only customers self-register; the Admin creates partner accounts.
-- Blocked users can't sign in: the Admin blocks and unblocks from the Users page, which signs the user out everywhere at once. He can't block himself or any admin. Blocking a partner closes his sign-in only; his link and commissions are switched off by deactivating him ([F7](#f7-partners)).
+- Blocked users can't sign in: the Admin blocks and unblocks from the Users page, which signs the user out everywhere at once. She can't block herself or any admin. Blocking a partner closes his sign-in only; his link and commissions are switched off by deactivating him ([F7](#f7-partners)).
 - Each user edits their name. Partners also enter their Sheba number, so the Admin knows where to send commissions ([F7](#f7-partners)).
 - **Password (optional).** After signing in, a customer or partner can set a password in Profile Settings and then sign in with their number and that password; the code stays, and is also how a forgotten password is fixed (sign in with a code, then set a new one there; the card asks for no "current password"). A password can be set or replaced only within 30 minutes of signing in, and doing so signs the other devices out. It is stored only as a hash. A wrong password, an unknown number and a number that never set one all read the same, 5 wrong passwords in 15 minutes pause password sign-in for that number (the code still works), and password sign-in is rate-limited per IP. While the sign-in code is the public showcase code, this adds convenience, not security.
 
@@ -62,7 +62,7 @@ The exact fields are **pending the owner**. Until then the app keeps what exists
 **Passed courses.** A dog's profile lists the courses it has **passed**. A course gets there in two ways:
 
 - **Completed on the site:** the Admin marks an enrollment of it done ([F6](#f6-enrollments)).
-- **Marked by the Admin**, when he knows the dog already has it, e.g. it was trained before the site existed. He can unmark these too.
+- **Marked by the Admin**, when she knows the dog already has it, e.g. it was trained before the site existed. She can unmark these too.
 
 Both count the same for prerequisites ([F4](#f4-eligibility)). Only the Admin edits the passed courses; the customer sees them.
 
@@ -93,7 +93,7 @@ The free first meeting with a dog: an **assessment**, a test of where the dog st
 **Edge cases:**
 
 - **Who can request an evaluation:** only a dog with no evaluation, or whose evaluations all ended `rejected` or `withdrawn`. A dog with a `requested` or `evaluated` one can't request another.
-- **A dog the Admin already knows** (trained before the site existed): from its profile, he marks it evaluated directly, with no request. It is recorded as an evaluation in `evaluated`.
+- **A dog the Admin already knows** (trained before the site existed): from its profile, she marks it evaluated directly, with no request. It is recorded as an evaluation in `evaluated`.
 
 **Pages:** Evaluation Request · Dashboard (customer: open requests) · Dog Detail · Evaluations (Admin) · Dog Detail (Admin)
 
@@ -137,7 +137,7 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 Prices are fixed by the course. Discounts and changing a price for one customer are not in this version.
 
-**Refunds.** The money is always sent back **outside the app** (a bank transfer), but the decision is recorded in the app, with its state, amount, transfer reference and who did it. On a **paid** payment the Admin presses «ثبت بازپرداخت»: an amount in Toman (shown and stored as Rial), optionally for one of the payment's courses, and a reason of his own. The refund starts `pending`; once he has sent the money he presses «پرداخت شد» and writes the transfer's **reference** (required), which is kept and sent to the customer in an SMS; a refund decided by mistake is **cancelled** before it is paid. Each refund is answered once and nothing is deleted. **The refunds that stand (pending or paid) can never add up to more than the payment charged** (with a deposit, what was charged, not the full price), checked under a lock on the payment so two refunds made at the same moment can't both fit. Every step writes a line in the **audit trail** (`audit_event`: who, what, when and the few facts worth keeping; the certificates' issue and revocation are written there too). The customer sees each refund on the Purchases page with its amount, state and reference, never the Admin's reason, and never one that was cancelled. A refund does not by itself cancel an enrollment, and the app states no refund policy: what is refunded, and when, is the Admin's decision (`docs/overnight/03-DECISIONS-NEEDED.md`).
+**Refunds.** The money is always sent back **outside the app** (a bank transfer), but the decision is recorded in the app, with its state, amount, transfer reference and who did it. On a **paid** payment the Admin presses «ثبت بازپرداخت»: an amount in Toman (shown and stored as Rial), optionally for one of the payment's courses, and a reason of her own. The refund starts `pending`; once he has sent the money he presses «پرداخت شد» and writes the transfer's **reference** (required), which is kept and sent to the customer in an SMS; a refund decided by mistake is **cancelled** before it is paid. Each refund is answered once and nothing is deleted. **The refunds that stand (pending or paid) can never add up to more than the payment charged** (with a deposit, what was charged, not the full price), checked under a lock on the payment so two refunds made at the same moment can't both fit. Every step writes a line in the **audit trail** (`audit_event`: who, what, when and the few facts worth keeping; the certificates' issue and revocation are written there too). The customer sees each refund on the Purchases page with its amount, state and reference, never the Admin's reason, and never one that was cancelled. A refund does not by itself cancel an enrollment, and the app states no refund policy: what is refunded, and when, is the Admin's decision (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
 **The deposit.** The Admin's setting «پیش‌پرداخت» is the share of the price taken when the customer pays: **100 (the whole price) until the owner approves a deposit** (the owner mentioned 50%). With a deposit set, the cart shows the amount due now as the big number and says «پیش‌پرداخت ٪۵۰ از …؛ … را موقع هماهنگی می‌دهی»; the gateway is charged the deposit **rounded up to the Rial** and no more; each payment item and the enrollment keep the **full price**; the payment records the full price, the amount charged and the percent it was made with, and keeps that percent when the setting changes later. The Purchases page and the Admin's payments say what was taken and what is left. The balance is settled **outside the app**, when the lessons are arranged: the app shows how much is left and does not collect it. A failed deposit payment enrolls nothing, as any failed payment. The partner's commission stays on the price of what was bought, as before (not on the deposit).
 
@@ -169,7 +169,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 **Edge cases:**
 
-- **The Admin can't take the customer** (fully booked, or the dog isn't a fit after all): he cancels the enrollment. Refunds aren't in this version, so the money goes back outside the app and isn't recorded.
+- **The Admin can't take the customer** (fully booked, or the dog isn't a fit after all): she cancels the enrollment. Refunds aren't in this version, so the money goes back outside the app and isn't recorded.
 - **The course changes in the catalogue after the purchase:** existing enrollments keep the price paid.
 
 **Pages:** Dashboard (customer) · Dog Detail · Enrollments (Admin) · Dog Detail (Admin)
@@ -208,7 +208,7 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 **Who:** the public browses; the Admin manages the catalogue.
 
-- The catalogue and its course pages sell the head trainer and his courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)), and the catalogue's header has a «خرید دوره» button that starts the purchase from the dog.
+- The catalogue and its course pages sell the head trainer and her courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)), and the catalogue's header has a «خرید دوره» button that starts the purchase from the dog.
 - Only the Admin creates and edits courses. Every course in this version has a **fixed price**, an age range and prerequisites. Its lesson count and lesson length are **shown to customers** as a description («حدوداً ۵ جلسه»); the app doesn't track lessons.
 - The full set of course settings is **pending the owner**, like dog profiles.
 - Archived courses can't be bought, but their active enrollments continue, and a completed one still counts as a prerequisite. Archiving and restoring are reversible switches. A course is never deleted, and its link name (slug) never changes after it is created.
@@ -255,13 +255,13 @@ Stored in the database so the Admin can change them without a release. Each is r
 
 ### F11. Admin Dashboard
 
-**Who:** the Admin, every time he opens the app.
+**Who:** the Admin, every time she opens the app.
 
 A plain **overview** of what's going on, not accounting. Each number links to the list behind it, already filtered.
 
 | Block           | Shows                                                                                                                                                                      |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Waiting for him | Evaluation requests to answer; the latest purchases, to call; items **paid, not enrolled** ([F5](#f5-cart-and-checkout))                                                   |
+| Waiting for her | Evaluation requests to answer; the latest purchases, to call; items **paid, not enrolled** ([F5](#f5-cart-and-checkout))                                                   |
 | Enrollments     | Active, completed, cancelled                                                                                                                                               |
 | Money           | Sales this month and in total (what was taken, a deposit counted as the deposit; refunds are recorded on the Payments page, not subtracted here); commissions not yet paid |
 | Courses         | Each course: how many bought, active, completed                                                                                                                            |
@@ -331,7 +331,7 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 **No photos or videos in the diary yet.** Dog and evaluation photos are served to anyone with their unguessable link, and an evaluation video is streamed only after a check of who asks; an image added to a diary would be as public as its link, which is not private. Media waits for the owner's decision on public records and a private route for diary images (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
-**The course certificate.** When the Admin has marked an enrollment **completed** ([F6](#f6-enrollments)), he can **issue its certificate** from the dog's admin page («گواهی‌ها»): one per enrollment, with a public number `ZC-` and ten random hexadecimal characters made by the database. Nothing issues one by itself, and an enrollment that is active or cancelled can't have one. The owner sees it on the dog's page with the link and the QR code that verify it. A certificate is never deleted: if it was issued by mistake the Admin **revokes** it with a reason (his own, kept private); the row stays and nothing can issue it anew. What a certificate says, who signs it and whether it needs anything beyond «completed» are the owner's to define (`docs/overnight/03-DECISIONS-NEEDED.md`); until then there is a record and a check, **no printable certificate design**.
+**The course certificate.** When the Admin has marked an enrollment **completed** ([F6](#f6-enrollments)), she can **issue its certificate** from the dog's admin page («گواهی‌ها»): one per enrollment, with a public number `ZC-` and ten random hexadecimal characters made by the database. Nothing issues one by itself, and an enrollment that is active or cancelled can't have one. The owner sees it on the dog's page with the link and the QR code that verify it. A certificate is never deleted: if it was issued by mistake the Admin **revokes** it with a reason (his own, kept private); the row stays and nothing can issue it anew. What a certificate says, who signs it and whether it needs anything beyond «completed» are the owner's to define (`docs/overnight/03-DECISIONS-NEEDED.md`); until then there is a record and a check, **no printable certificate design**.
 
 `/certificate/<number>` is public and says only: valid (the course, the day, the head trainer, the number), revoked (the number and when; not the course, not the reason), or not found (the same for a number that isn't any certificate's and for text that isn't a number). It never shows the owner, and the dog's name only if its owner has made the dog's record public, which cannot be done yet. It is never cached, since a cached «valid» would outlive a revocation, and never indexed.
 
@@ -346,6 +346,15 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 **Pages:** Dog Record (`/logbook`, `/logbook/:fileNumber`) · Certificate Check (`/certificate/:number`) · Dog Detail (the file card, the diary, the certificates) · Dog Detail (Admin) (the file card, the diary, the session form, issuing and revoking certificates)
 
 ---
+
+### F15. English Version
+
+- Every page except the Admin has an English version under `/en/...`; Persian stays unprefixed and is the base and binding language (the English privacy text says so). The Admin and `/rules` (until its wording is approved) are Persian only; their `/en` addresses redirect to the Persian ones.
+- The visitor's language is kept through sign-in, the payment gateway's return and every redirect after them. Sentences from the server (form errors, eligibility reasons, upload refusals) come in the page's language.
+- Course text has English columns the Admin fills in the course form; a course without English shows its Persian text.
+- English pages use Latin digits, Gregorian dates (typed and shown) and prices as «1,200,000 Toman».
+- SMS texts stay Persian, even for a customer who signed in on the English site.
+- How it is built: [i18n/english-version-plan.md](i18n/english-version-plan.md); the English voice and terms: [i18n/english-glossary.md](i18n/english-glossary.md).
 
 ## Pages
 
@@ -419,7 +428,7 @@ Not in this version.
 1. **Staff trainers**, with lessons assigned to them, their share of each course, and payouts.
 2. **A calendar and lesson tracking**: planning lessons, confirming them with the customer, and showing progress («۳ از ۸ جلسه»).
 3. **Cancellations and refunds**: refund policies per course (refunds themselves are recorded now, see F5).
-4. **The Admin selling by hand**: enrolling a dog himself, at his own price, for a customer who pays him directly.
+4. **The Admin selling by hand**: enrolling a dog herself, at her own price, for a customer who pays her directly.
 5. **Discount codes.**
 6. **Notes on a dog** that build up its history, visible to the customer or private to the Admin.
 7. **Courses without a price** (working and sport dogs). Until then the home page mentions them and customers contact the Admin to enroll.

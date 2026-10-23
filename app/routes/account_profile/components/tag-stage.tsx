@@ -3,6 +3,7 @@ import { cn } from "cn";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
+import { m } from "~/paraglide/messages";
 import { ProfileTag } from "~/routes/account_profile/components/profile-tag";
 
 /*===== Tag Stage =====*/
@@ -39,7 +40,7 @@ export function TagStage({
 }) {
   return (
     <aside
-      aria-label="کارت من"
+      aria-label={m.account_profile_tag_aria()}
       className={cn(
         "relative isolate h-[16rem] overflow-hidden rounded-4xl border border-foreground/10 bg-sunken paper-grain [--ground:0.9rem] [--peg:1.4rem] [--stand:13rem] lg:h-[clamp(25rem,calc(100svh-11rem),34rem)] lg:[--ground:1.2rem] lg:[--peg:1.6rem] lg:[--stand:18rem]",
         className,

@@ -11,14 +11,15 @@ import type { FamilyGroup } from "~/routes/course_catalogue/family-groups";
 
 /*===== Layouts =====*/
 // The header has two shapes. Stacked, it is a row across the top of the family's panel: a small dog on a short piece
-// of path at the start, the name and its line beside him. As a stage, it is the panel's start column, as tall as the
-// cards: the name at the top, the path along the bottom and the dog standing on it. The panel picks the breakpoint at
-// which it becomes a stage, or `none` to stay a row (see `ResultsGrid`); each class set is written out whole for
-// Tailwind to find.
+// of path at the start, the name and its line beside him. As a stage, it is the panel's start column, at least as tall
+// as the cards, laid out top to bottom in flow: the name and its line, then the sky (which keeps room for his bubble),
+// then the path with the dog standing on it. In flow, a long line (a narrow column, or English) pushes the stage
+// taller instead of running under the moon and the bubble. The panel picks the breakpoint at which it becomes a stage,
+// or `none` to stay a row (see `ResultsGrid`); each class set is written out whole for Tailwind to find.
 const STAGE_FROM = {
   sm: {
     root: "sm:relative sm:min-h-80 sm:flex-col sm:items-stretch sm:gap-0 sm:p-6",
-    art: "sm:absolute sm:inset-x-0 sm:bottom-0 sm:h-56 sm:w-auto",
+    art: "sm:-mx-6 sm:-mb-6 sm:h-56 sm:w-auto",
     ground: "sm:h-12",
     dog: "sm:bottom-[1.7rem] sm:h-44",
     scene: "sm:bottom-[1.7rem]",
@@ -28,7 +29,7 @@ const STAGE_FROM = {
   },
   lg: {
     root: "lg:relative lg:min-h-80 lg:flex-col lg:items-stretch lg:gap-0 lg:p-6",
-    art: "lg:absolute lg:inset-x-0 lg:bottom-0 lg:h-56 lg:w-auto",
+    art: "lg:-mx-6 lg:-mb-6 lg:h-56 lg:w-auto",
     ground: "lg:h-12",
     dog: "lg:bottom-[1.7rem] lg:h-44",
     scene: "lg:bottom-[1.7rem]",
@@ -62,8 +63,13 @@ export function FamilyGroupHeader({
 
   return (
     <div className={cn("flex items-end gap-4 px-4 pt-4 sm:px-6 sm:pt-5", stage.root)}>
-      {/* The sky fills the stage between the family's name and the dog's bubble. */}
-      <NightSky className={cn("inset-x-6 top-28 bottom-60 hidden", stage.sky)} />
+      {/*------ The Sky ------*/}
+      {/* It fills the stage between the family's line and the art. Its bottom 6rem (more for the big dog) is the
+          bubble's, so the moon and the stars stay above it; when the cards leave no extra height the sky is clipped
+          away and only the bubble's room is left. */}
+      <div aria-hidden className={cn("relative hidden min-h-24 flex-1", bigDog && "lg:min-h-[10.5rem]", stage.sky)}>
+        <NightSky className={cn("inset-x-0 top-2 bottom-24 overflow-hidden", bigDog && "lg:bottom-[10.5rem]")} />
+      </div>
 
       {/*------ The Dog on His Path ------*/}
       <div aria-hidden className={cn("relative h-24 w-28 shrink-0 sm:h-32 sm:w-40", stage.art)}>

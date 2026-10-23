@@ -7,11 +7,14 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "~/components/ui/field
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "~/components/ui/input-otp";
 import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
-import { toLatinDigits, toPersianDigits } from "~/lib/digits";
+import { toLatinDigits } from "~/lib/digits";
+import { formatDigits, formatNumber } from "~/lib/locale-format";
 import { SHOWCASE_SIGN_IN_CODE, SIGN_IN_CODE_LENGTH, SIGN_IN_CODE_RESEND_SECONDS } from "~/lib/user-constants";
 import { describeAuthError } from "~/routes/auth/auth-errors";
 import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type CodeValues, codeSchema } from "~/routes/auth/schema";
+import { WithMark } from "~/routes/auth/components/with-mark";
+import { m } from "~/paraglide/messages";
 
 /** Persian keyboards type Persian or Arabic-Indic digits; the field takes them and stores ASCII. */
 const DIGIT_PATTERN = "^[0-9۰-۹٠-٩]+$";
@@ -91,17 +94,17 @@ export function CodeStep({
       <FieldGroup>
         {/*------ Where It Went ------*/}
         <p className="text-sm text-pretty text-muted-foreground">
-          کد {toPersianDigits(String(SIGN_IN_CODE_LENGTH))} رقمی رو به{" "}
-          <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
-            {phoneNumber}
-          </bdi>{" "}
-          پیامک کردیم.{" "}
+          <WithMark text={(mark) => m.auth_code_sent({ count: formatNumber(SIGN_IN_CODE_LENGTH), phone: mark })}>
+            <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
+              {phoneNumber}
+            </bdi>
+          </WithMark>{" "}
           <button
             type="button"
             onClick={onEditPhone}
             className="rounded-sm font-bold text-primary underline-offset-4 hover:underline"
           >
-            ویرایش شماره
+            {m.auth_edit_phone()}
           </button>
         </p>
 
@@ -109,7 +112,7 @@ export function CodeStep({
 
         {/*------ Code ------*/}
         <Field data-invalid={!!errors.code}>
-          <FieldLabel htmlFor="sign-in-code">کد ورود</FieldLabel>
+          <FieldLabel htmlFor="sign-in-code">{m.auth_code_label()}</FieldLabel>
           <Controller
             control={control}
             name="code"
@@ -151,32 +154,32 @@ export function CodeStep({
             as typing the last digit would. */}
         {showcase && (
           <p className="rounded-2xl border border-dashed border-primary/35 bg-sunken paper-grain px-3 py-2.5 text-center text-sm text-muted-foreground">
-            نسخه‌ی نمایشی: کد ورود همیشه{" "}
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => {
-                setValue("code", SHOWCASE_SIGN_IN_CODE);
-                void onSubmit();
-              }}
-              className="rounded-sm font-bold text-primary underline decoration-dashed underline-offset-4 hover:decoration-solid focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50"
-            >
-              {toPersianDigits(SHOWCASE_SIGN_IN_CODE)}
-            </button>{" "}
-            هست؛ بزن روش تا پر بشه.
+            <WithMark text={(mark) => m.auth_code_demo({ code: mark })}>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setValue("code", SHOWCASE_SIGN_IN_CODE);
+                  void onSubmit();
+                }}
+                className="rounded-sm font-bold text-primary underline decoration-dashed underline-offset-4 hover:decoration-solid focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:opacity-50"
+              >
+                {formatDigits(SHOWCASE_SIGN_IN_CODE)}
+              </button>
+            </WithMark>
           </p>
         )}
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
-          ورود
+          {m.auth_sign_in()}
         </Button>
 
         {/*------ Resend ------*/}
         <p className="text-center text-sm text-muted-foreground">
-          کدی نرسید؟{" "}
+          {m.auth_code_no_code()}{" "}
           {secondsLeft > 0 ? (
-            <span className="tabular-nums">ارسال دوباره تا {formatCountdown(secondsLeft)}</span>
+            <span className="tabular-nums">{m.auth_code_resend_wait({ time: formatCountdown(secondsLeft) })}</span>
           ) : (
             <button
               type="button"
@@ -184,7 +187,7 @@ export function CodeStep({
               disabled={isResending}
               className="rounded-sm font-bold text-primary underline-offset-4 hover:underline disabled:opacity-50"
             >
-              کد رو دوباره بفرست
+              {m.auth_code_resend()}
             </button>
           )}
         </p>
@@ -208,7 +211,7 @@ function useSecondsLeft(until: number) {
   return Math.max(0, Math.ceil((until - now) / 1000));
 }
 
-/** `45` → "۰:۴۵". */
+/** `45` → "۰:۴۵" in Persian, "0:45" in English. */
 function formatCountdown(seconds: number) {
-  return toPersianDigits(`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`);
+  return formatDigits(`${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`);
 }

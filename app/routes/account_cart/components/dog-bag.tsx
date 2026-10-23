@@ -2,9 +2,10 @@ import { cn } from "cn";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
 import type { MascotCutName } from "~/components/mascot-cut";
-import { formatNumberFa } from "~/lib/digits";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { formatNumber } from "~/lib/locale-format";
 import type { ReviewedItem } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 import { getGroupLine, type DogGroup } from "~/routes/account_cart/cart-groups";
 import { PLATE } from "~/routes/account_cart/column";
 import { CartItemRow } from "~/routes/account_cart/components/cart-item-row";
@@ -99,18 +100,23 @@ export function DogBag({
               <h2 id={titleId} className={cn(DISPLAY_HEADING, "text-3xl text-primary lg:text-4xl")}>
                 <bdi>{dog.name}</bdi>
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{formatNumberFa(group.items.length)} دوره توی ساکش</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {group.items.length === 1
+                  ? m.account_cart_bag_count_one({ count: formatNumber(group.items.length) })
+                  : m.account_cart_bag_count_other({ count: formatNumber(group.items.length) })}
+              </p>
             </>
           }
         >
           <EdgeDog name={edge.name} scenery={edge.scenery} className={edge.width}>
             {mascotSpeaks && (
-              // Physical: over his head, opening towards the words; the tail (left, 1.75rem in) aims down at him.
+              // Physical: over his head, opening towards the words; the tail (1.75rem in from the end nearest him, left
+              // in Persian) aims down at him. The English figure is mirrored, so the bubble opens to the left there.
               <ChalkBubble
-                tail="left"
-                className="answer-pop absolute bottom-[96%] left-[30%] max-w-[11rem] text-pretty [--answer-delay:0.8s] [--pop-origin:1.75rem_100%] lg:max-w-[14rem]"
+                tail="end"
+                className="answer-pop absolute bottom-[96%] left-[30%] max-w-[11rem] text-pretty [--answer-delay:0.8s] [--pop-origin:1.75rem_100%] lg:max-w-[14rem] ltr:right-[30%] ltr:left-auto ltr:[--pop-origin:calc(100%-1.75rem)_100%]"
               >
-                دارم ساکش رو می‌بندم!
+                {m.account_cart_bag_bubble()}
               </ChalkBubble>
             )}
           </EdgeDog>

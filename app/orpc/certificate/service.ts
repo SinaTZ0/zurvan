@@ -35,15 +35,19 @@ export async function listMyCertificates({
   db,
   ownerId,
   dogId,
+  locale = "fa",
 }: {
   db: DatabaseOrTransaction;
   ownerId: string;
   dogId: string;
+  /** The language of the courses' names (the dog's page has an English one). */
+  locale?: Locale;
 }): Promise<ListResult> {
   if (!isDogId(dogId)) return { kind: "not-found" };
   const found = await findDogOwner({ db, dogId });
   if (!found || found.ownerId !== ownerId) return { kind: "not-found" };
-  return { kind: "success", certificates: (await findCertificatesByDog({ db, dogId })).map(toCertificate) };
+  const rows = await findCertificatesByDog({ db, dogId });
+  return { kind: "success", certificates: rows.map((row) => toCertificate(row, { locale })) };
 }
 
 /** A dog's certificates for the Admin. */
@@ -55,7 +59,10 @@ export async function adminListCertificates({
   dogId: string;
 }): Promise<ListResult> {
   if (!isDogId(dogId) || !(await findDogOwner({ db, dogId }))) return { kind: "not-found" };
-  return { kind: "success", certificates: (await findCertificatesByDog({ db, dogId })).map(toCertificate) };
+  return {
+    kind: "success",
+    certificates: (await findCertificatesByDog({ db, dogId })).map((row) => toCertificate(row)),
+  };
 }
 
 /*===== Issuing and Revoking =====*/

@@ -5,7 +5,13 @@ import { GroundStrip } from "~/components/ground-strip";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
-import { describeAge, describePlace, describePrerequisites, describeSessions } from "~/lib/course-format";
+import {
+  describeAge,
+  describePlace,
+  describePrerequisites,
+  describeSessions,
+  latinNameAddsToTitle,
+} from "~/lib/course-format";
 import { courseScene } from "~/lib/course-scenes";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
@@ -74,8 +80,7 @@ export function CourseHero({ course, children }: { course: Course; children: Rea
           <h1 id="course-title" className={cn(DISPLAY_HEADING, "mt-5 text-h1 text-balance")}>
             {course.title}
           </h1>
-          {/* On the English site the title is often the Latin name already; showing it twice reads as a bug. */}
-          {course.latinName.trim().toLowerCase() !== course.title.trim().toLowerCase() ? (
+          {latinNameAddsToTitle(course) ? (
             <p className="mt-2 text-lg font-bold text-muted-foreground">
               <bdi>{course.latinName}</bdi>
             </p>

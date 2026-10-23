@@ -155,7 +155,9 @@ function Reason({ dog }: { dog: DogChoice }) {
       {dog.state === "pending" ? (
         <>
           <PhoneCallIcon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
-          <span className="font-bold text-muted-foreground">{m.assessment_picker_waiting({ trainer: HEAD_TRAINER.firstName })}</span>
+          <span className="font-bold text-muted-foreground">
+            {m.assessment_picker_waiting({ trainer: HEAD_TRAINER.firstName })}
+          </span>
         </>
       ) : (
         <>

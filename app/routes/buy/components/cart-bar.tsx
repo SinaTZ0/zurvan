@@ -6,9 +6,10 @@ import { cartCountAtom } from "~/atoms/cart";
 import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { useHydrated } from "~/hooks/use-hydrated";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { CART_PATH } from "~/orpc/checkout/constants";
 import { useChanged } from "~/routes/buy/hooks/use-changed";
+import { m } from "~/paraglide/messages";
 
 /*===== Cart Bar =====*/
 /**
@@ -44,12 +45,14 @@ export function CartBar() {
               changed && "answer-pop",
             )}
           >
-            {formatNumberFa(count)}
+            {formatNumber(count)}
           </span>
         </span>
-        <p className="text-sm font-bold whitespace-nowrap">{formatNumberFa(count)} مورد توی سبدته</p>
+        <p className="text-sm font-bold whitespace-nowrap">
+          {(count === 1 ? m.buy_cart_bar_count_one : m.buy_cart_bar_count_other)({ count: formatNumber(count) })}
+        </p>
         <Link to={CART_PATH} className={buttonVariants({ size: "sm", className: "shrink-0" })}>
-          دیدن سبد و پرداخت
+          {m.buy_cart_bar_view()}
         </Link>
       </div>
     </div>

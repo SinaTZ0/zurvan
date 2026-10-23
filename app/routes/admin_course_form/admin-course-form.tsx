@@ -22,7 +22,7 @@ export const courseQuery = (slug: string) => orpc.course.admin.get.queryOptions(
 /*===== Head =====*/
 /** The tab's title: the course being edited, or «دوره‌ی تازه» (also while there is no course to name). */
 export function courseFormTitle(courseTitle: string | undefined) {
-  return `${courseTitle ? `ویرایش ${courseTitle}` : "دوره‌ی تازه"} | مدیریت آموزش K9`;
+  return `${courseTitle ? `ویرایش ${courseTitle}` : "دوره‌ی تازه"} | مدیریت زروان`;
 }
 
 /*===== Admin Course Form =====*/

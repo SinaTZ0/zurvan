@@ -184,7 +184,7 @@ export function DogPanel({
               <span>{m.account_home_panel_history({ dogName: `\u2068${dog.name}\u2069` })}</span>
               <ArrowLeftIcon
                 aria-hidden
-                className="size-4 motion-safe:transition-transform ltr:-scale-x-100 motion-safe:group-hover/history:rtl:-translate-x-0.5 motion-safe:group-hover/history:ltr:translate-x-0.5"
+                className="size-4 motion-safe:transition-transform ltr:-scale-x-100 motion-safe:group-hover/history:ltr:translate-x-0.5 motion-safe:group-hover/history:rtl:-translate-x-0.5"
               />
             </Link>
           </div>

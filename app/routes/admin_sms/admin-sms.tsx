@@ -56,7 +56,7 @@ export const Route = createFileRoute("/admin/sms")({
       throw redirect({ to: "/admin/sms", search: { kind, page: current === 1 ? undefined : current } });
     }
   },
-  head: () => ({ meta: [{ title: "پیامک‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "پیامک‌ها | مدیریت زروان" }] }),
   component: AdminSmsPage,
   notFoundComponent: () => <SmsError notFound />,
   errorComponent: () => <SmsError notFound={false} />,

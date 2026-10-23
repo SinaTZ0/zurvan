@@ -58,7 +58,7 @@ export const Route = createFileRoute("/admin/partners")({
       queryClient.ensureQueryData(commissionsQuery()),
       queryClient.ensureQueryData(siteQuery()),
     ]),
-  head: () => ({ meta: [{ title: "همکاران | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "همکاران | مدیریت زروان" }] }),
   component: AdminPartnersPage,
   notFoundComponent: () => <PartnersError notFound />,
   errorComponent: () => <PartnersError notFound={false} />,

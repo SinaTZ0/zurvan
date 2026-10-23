@@ -123,10 +123,7 @@ function TallyPlate({ tally }: { tally: Tally }) {
     <div className="w-full overflow-hidden rounded-3xl border border-border bg-card paper-grain shadow-sm sm:w-auto">
       <dl className="-ms-px grid grid-cols-3">
         {cells.map(({ key, label, value }, index) => (
-          <div
-            key={key}
-            className="flex flex-col-reverse items-center gap-1 border-s border-border px-3 py-4 sm:px-6"
-          >
+          <div key={key} className="flex flex-col-reverse items-center gap-1 border-s border-border px-3 py-4 sm:px-6">
             <dt className="text-center text-xs leading-snug font-bold text-balance text-muted-foreground sm:text-sm">
               {label}
             </dt>

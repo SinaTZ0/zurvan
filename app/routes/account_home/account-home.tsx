@@ -94,9 +94,7 @@ function HomeError({ notFound }: { notFound: boolean }) {
           <h1 id="account-home-error-title" className={`${DISPLAY_HEADING} text-h1 text-balance`}>
             {notFound ? m.account_home_error_not_found() : m.account_home_error_failed()}
           </h1>
-          <p className="mt-4 text-lead text-pretty text-muted-foreground">
-            {m.account_home_error_description()}
-          </p>
+          <p className="mt-4 text-lead text-pretty text-muted-foreground">{m.account_home_error_description()}</p>
           <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-7" })}>
             {m.account_home_error_home()}
           </Link>

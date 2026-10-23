@@ -44,7 +44,7 @@ The owner decided 1–5 on 2026-10-22; 6 is settled in Phase 1.
    says that the Persian version is binding.
 3. **The English wordmark (decided): Zurvann**, with the double "n". The English header and footer show «Zurvann» with
    an English descriptor (worded in the glossary), and the English pages' titles use Zurvann. The Persian site keeps
-   «زروان» and آموزش K9 as they are.
+   «زروان» (and, since 2026-10-23, no longer آموزش K9).
 4. **Links to pages that are still Persian (decided).** «ورود», «ارزیابی رایگان» and «خرید دوره» lead to sign-in and
    signed-in pages: on the English site they open the Persian page, and the link carries a small "in Persian" note.
 5. **English course content (decided).** Written by the agents in Phase 1 (step 9), from
@@ -341,6 +341,21 @@ listed last and in `.tmp-claude/i18n-phase4a/handoff.md`).
   fits at 390 in English ("Social Dog", "9,000,000 Toman", "Sign in and add to cart") with no change.
 - **Glossary (step 7):** "Signed-in pages" in `english-glossary.md`.
 
+### Phase 4b Notes
+
+All five batches finished on 2026-10-23, after a restart: the first run (five agents, five dev servers and five
+browsers at once) ran the machine out of memory. The rerun used three agents sharing one dev server.
+
+- Every customer and partner page reads in English under `/en`; the only Persian left on them is user data (names,
+  breeds, notes), which is wrapped in `<bdi>` or `dir="auto"`.
+- On the English pages the edge-standing mascots mirror with the page and their bubbles open towards the text
+  (`tail="end"` and `ltr:` placement); `ChalkBubble`'s `tail` takes `start`/`end` as well as `left`/`right`.
+- The owner's certificate and logbook lists (`certificate.listMine`, `logbook.list`) now name the course in the page's
+  language; the Admin's lists stay Persian.
+- `npm run i18n:compile` (typecheck, postinstall) writes `--output-structure locale-modules`, the layout the dev
+  server uses, so a typecheck beside a running dev server no longer breaks it. `npm run build` still writes one
+  module per message (for tree-shaking), so restart a running dev server after a build.
+
 ## Phase 3: Review and Finish
 
 **Who:** the coordinator, with an Opus 5.5 copy reviewer and a Haiku agent reading the screenshots.
@@ -353,6 +368,22 @@ listed last and in `.tmp-claude/i18n-phase4a/handoff.md`).
   English voice and faces), frontend-guideline.md (how to add a string: never inline, always a message), and a row in
   app-spec.md for the English version.
 - One commit per batch, when the user says to commit.
+
+### Phase 3 Notes
+
+Done on 2026-10-23.
+
+- **Copy review:** one read of all the English (83 keys and 2 course texts changed, the glossary updated: "my buddy",
+  "Add a dog", "sessions" never "lessons", "text message" never "SMS", American "Canceled").
+- **Screens:** every page in English at 390 and 1440 (`lang`, `dir`, no horizontal scroll, no leftover Persian
+  outside user data). Fixed from it: the dog form's month select on English phones, a demo-account note cut short,
+  and a course's Latin name repeating its English title (`latinNameAddsToTitle`, `~/lib/course-format`).
+- **Checks:** lint, typecheck, the production build and the Playwright smoke tests pass.
+- **Settled by the owner the same day:** Tala is she/her; the brand is «زروان» on the Persian site too (titles, copy
+  and SMS texts; «آموزش K9» is retired); the agents' Persian meta descriptions stand.
+- **Also fixed:** `/courses`' family stages now lay out in flow, so a long family line no longer runs under the moon
+  and the bubble (both languages); «کمیسیون» became «پورسانت» everywhere; the empty cart's second bubble says
+  something new; Help's buying outro no longer repeats the step before it.
 
 ## Later
 

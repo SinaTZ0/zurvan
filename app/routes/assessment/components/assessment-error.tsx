@@ -32,9 +32,7 @@ export function AssessmentError({ notFound }: { notFound: boolean }) {
         <h1 id="assessment-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
           {notFound ? m.assessment_error_not_found() : m.assessment_error_failed()}
         </h1>
-        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          {m.assessment_error_description()}
-        </p>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.assessment_error_description()}</p>
         <Link to="/" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-8" })}>
           {m.assessment_error_home()}
         </Link>

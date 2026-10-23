@@ -61,7 +61,7 @@ const MAX_STAGGERED = 5;
 export const Route = createFileRoute("/admin/evaluations")({
   validateSearch: adminEvaluationsSearchSchema,
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(adminEvaluationsQueryOptions()),
-  head: () => ({ meta: [{ title: "ارزیابی‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "ارزیابی‌ها | مدیریت زروان" }] }),
   component: AdminEvaluationsPage,
   notFoundComponent: () => <EvaluationsError notFound />,
   errorComponent: () => <EvaluationsError notFound={false} />,

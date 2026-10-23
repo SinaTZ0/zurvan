@@ -20,7 +20,13 @@ export function NoDogsPlate() {
   return (
     <section aria-labelledby="no-dogs-title" className={cn(PLATE, "answer-in p-6 sm:p-8")}>
       <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:gap-8">
-        <TapedPrint name={m.assessment_no_dogs_tag()} photo={null} size="md" tilt="-rotate-3" className="self-start sm:self-center" />
+        <TapedPrint
+          name={m.assessment_no_dogs_tag()}
+          photo={null}
+          size="md"
+          tilt="-rotate-3"
+          className="self-start sm:self-center"
+        />
         <div className="min-w-0">
           <h2 id="no-dogs-title" className={cn(DISPLAY_HEADING, "text-h2 text-balance")}>
             {m.assessment_no_dogs_title()}

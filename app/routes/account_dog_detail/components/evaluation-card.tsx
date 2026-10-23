@@ -37,18 +37,24 @@ export function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
 
       {/*------ What Was Asked ------*/}
       {evaluation.createdByAdmin ? (
-        <p className="text-pretty text-muted-foreground">{m.account_dog_detail_evaluation_by_admin({ trainer: HEAD_TRAINER.firstName })}</p>
+        <p className="text-pretty text-muted-foreground">
+          {m.account_dog_detail_evaluation_by_admin({ trainer: HEAD_TRAINER.firstName })}
+        </p>
       ) : (
         asked && (
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
             <Detail term={m.account_dog_detail_evaluation_earliest()} detail={formatDate(evaluation.earliestDate!)} />
             <Detail
               term={m.account_dog_detail_evaluation_days()}
-              detail={evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join(m.shared_when_free_joiner())}
+              detail={evaluation.availableDays
+                .map((day) => EVALUATION_WEEKDAY_LABELS[day])
+                .join(m.shared_when_free_joiner())}
             />
             <Detail
               term={m.account_dog_detail_evaluation_periods()}
-              detail={evaluation.availablePeriods.map((period) => EVALUATION_PERIOD_LABELS[period]).join(m.shared_when_free_joiner())}
+              detail={evaluation.availablePeriods
+                .map((period) => EVALUATION_PERIOD_LABELS[period])
+                .join(m.shared_when_free_joiner())}
             />
           </dl>
         )
@@ -57,7 +63,8 @@ export function EvaluationCard({ evaluation }: { evaluation: Evaluation }) {
       {evaluation.status === "rejected" && evaluation.rejectionReason && (
         <p className="text-pretty text-muted-foreground">
           <span className="font-bold text-foreground">{m.account_dog_detail_reason()} </span>
-          {evaluation.rejectionReason}
+          {/* The Admin writes in Persian: isolated, so its punctuation stays put on the English page. */}
+          <bdi>{evaluation.rejectionReason}</bdi>
         </p>
       )}
 

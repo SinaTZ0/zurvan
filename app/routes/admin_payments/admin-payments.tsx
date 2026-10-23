@@ -36,7 +36,7 @@ export const Route = createFileRoute("/admin/payments")({
   validateSearch: paymentsSearchSchema,
   loader: ({ context: { queryClient } }) =>
     Promise.all([queryClient.ensureQueryData(paymentsQuery()), queryClient.ensureQueryData(refundsQuery())]),
-  head: () => ({ meta: [{ title: "پرداخت‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "پرداخت‌ها | مدیریت زروان" }] }),
   component: AdminPaymentsPage,
   notFoundComponent: () => <PaymentsError notFound />,
   errorComponent: () => <PaymentsError notFound={false} />,

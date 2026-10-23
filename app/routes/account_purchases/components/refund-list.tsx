@@ -2,10 +2,11 @@ import { cn } from "cn";
 import { Undo2Icon } from "lucide-react";
 
 import { formatToman } from "~/lib/course-format";
-import { formatJalaliTimestamp } from "~/lib/jalali";
+import { formatTimestamp } from "~/lib/locale-format";
 import type { Payment } from "~/orpc/checkout/contract";
 import { REFUND_STATUS_LABELS } from "~/orpc/refund/constants";
 import type { MyRefund } from "~/orpc/refund/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Refund List =====*/
 /**
@@ -19,7 +20,7 @@ export function RefundList({ refunds, items }: { refunds: readonly MyRefund[]; i
     <div className="mt-6 rounded-2xl border border-dashed border-foreground/25 bg-background/50 p-4 sm:p-5">
       <p className="flex items-center gap-2 font-bold">
         <Undo2Icon aria-hidden className="size-4 text-primary" />
-        بازپرداخت
+        {m.account_purchases_refund_title()}
       </p>
       <ul className="mt-3 flex flex-col gap-3">
         {refunds.map((refund) => {
@@ -40,13 +41,15 @@ export function RefundList({ refunds, items }: { refunds: readonly MyRefund[]; i
               >
                 {REFUND_STATUS_LABELS[refund.status]}
               </span>
-              {course && <span className="text-muted-foreground">برای {course}</span>}
+              {course && <span className="text-muted-foreground">{m.account_purchases_refund_for({ course })}</span>}
               {refund.paidAt && (
-                <span className="text-muted-foreground">واریز {formatJalaliTimestamp(refund.paidAt)}</span>
+                <span className="text-muted-foreground">
+                  {m.account_purchases_refund_paid_on({ date: formatTimestamp(refund.paidAt) })}
+                </span>
               )}
               {refund.reference && (
                 <span className="text-muted-foreground">
-                  کد پیگیری{" "}
+                  {m.account_purchases_refund_reference()}{" "}
                   <bdi dir="ltr" className="font-bold text-foreground">
                     {refund.reference}
                   </bdi>

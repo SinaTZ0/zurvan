@@ -33,9 +33,10 @@ export function CardBubble({
       <ChalkBubble
         // A new key replays the pop; while quiet the key stays, so the fade-out runs once.
         key={speaking ? `say-${take}` : "quiet"}
-        tail="left"
+        // `end`: the left in Persian, the right in English, where the mirrored dog stands beside it.
+        tail="end"
         className={cn(
-          "max-w-[11rem] text-pretty sm:max-w-[15rem]",
+          "max-w-[11rem] text-pretty sm:max-w-[15rem] ltr:origin-[calc(100%-1.75rem)_100%]!",
           speaking ? cn("pf-say", take === 0 && "pf-say-first") : "pf-quiet",
         )}
       >

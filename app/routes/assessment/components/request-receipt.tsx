@@ -58,7 +58,10 @@ export function RequestReceipt({
   const join = m.assessment_receipt_join();
   const rows = [
     { term: m.assessment_receipt_dog(), detail: dog.name },
-    { term: m.assessment_receipt_earliest(), detail: evaluation.earliestDate ? formatDate(evaluation.earliestDate) : "—" },
+    {
+      term: m.assessment_receipt_earliest(),
+      detail: evaluation.earliestDate ? formatDate(evaluation.earliestDate) : "—",
+    },
     {
       term: m.assessment_receipt_days(),
       detail: evaluation.availableDays.map((day) => EVALUATION_WEEKDAY_LABELS[day]).join(join),

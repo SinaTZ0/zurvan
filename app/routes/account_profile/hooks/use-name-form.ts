@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { toast } from "~/components/ui/toast";
+import { m } from "~/paraglide/messages";
 import { useSaveName } from "~/routes/account_profile/hooks/use-save-name";
 import { type NameFormValues, nameFormSchema } from "~/routes/account_profile/schema";
 
@@ -44,7 +45,7 @@ export function useNameForm({
       onSuccess: () => {
         setSaved(submitted);
         form.reset(submitted);
-        toast.add({ title: "ذخیره شد.", type: "success" });
+        toast.add({ title: m.account_profile_saved_toast(), type: "success" });
         onSaved();
       },
       onError: (error) => {

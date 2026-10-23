@@ -10,7 +10,9 @@ import { authClient } from "~/lib/auth-client";
 import { describeAuthError } from "~/routes/auth/auth-errors";
 import type { VerifiedUser } from "~/routes/auth/components/code-step";
 import { StepAlert } from "~/routes/auth/components/step-alert";
+import { WithMark } from "~/routes/auth/components/with-mark";
 import { type PasswordValues, passwordSchema } from "~/routes/auth/schema";
+import { m } from "~/paraglide/messages";
 
 /*===== Password Step =====*/
 /**
@@ -81,17 +83,17 @@ export function PasswordStep({
       <FieldGroup>
         {/*------ Whose Password ------*/}
         <p className="text-sm text-pretty text-muted-foreground">
-          با شماره‌ی{" "}
-          <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
-            {phoneNumber}
-          </bdi>{" "}
-          وارد می‌شی.{" "}
+          <WithMark text={(mark) => m.auth_password_using({ phone: mark })}>
+            <bdi dir="ltr" className="font-bold text-foreground tabular-nums">
+              {phoneNumber}
+            </bdi>
+          </WithMark>{" "}
           <button
             type="button"
             onClick={onEditPhone}
             className="rounded-sm font-bold text-primary underline-offset-4 hover:underline"
           >
-            ویرایش شماره
+            {m.auth_edit_phone()}
           </button>
         </p>
 
@@ -99,7 +101,7 @@ export function PasswordStep({
 
         {/*------ Password ------*/}
         <Field data-invalid={!!errors.password}>
-          <FieldLabel htmlFor="sign-in-password">رمز عبور</FieldLabel>
+          <FieldLabel htmlFor="sign-in-password">{m.auth_password_label()}</FieldLabel>
           <PasswordInput
             id="sign-in-password"
             autoComplete="current-password"
@@ -112,7 +114,7 @@ export function PasswordStep({
 
         <Button type="submit" size="lg" className="w-full" disabled={isBusy}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
-          ورود
+          {m.auth_sign_in()}
         </Button>
 
         {/*------ Other Ways ------*/}
@@ -126,7 +128,7 @@ export function PasswordStep({
             onClick={() => sendCodeInstead({ forgot: false })}
           >
             {isSendingCode && <Spinner data-icon="inline-start" />}
-            با کد پیامکی وارد شو
+            {m.auth_password_via_code()}
           </Button>
           <button
             type="button"
@@ -134,7 +136,7 @@ export function PasswordStep({
             onClick={() => sendCodeInstead({ forgot: true })}
             className="self-center rounded-sm text-sm font-bold text-primary underline-offset-4 hover:underline disabled:opacity-50"
           >
-            رمزمو فراموش کردم
+            {m.auth_password_forgot()}
           </button>
         </div>
       </FieldGroup>

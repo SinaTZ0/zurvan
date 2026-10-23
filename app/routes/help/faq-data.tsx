@@ -170,7 +170,7 @@ export function getFaqGroups(): FaqGroupData[] {
                 <li>{m.help_q_how_buying_works_s3()}</li>
                 <li>{m.help_q_how_buying_works_s4({ trainer })}</li>
               </ol>
-              <p className="mt-4">{m.help_q_how_buying_works_outro({ name: HEAD_TRAINER.name })}</p>
+              <p className="mt-4">{m.help_q_how_buying_works_outro()}</p>
             </>
           ),
         },

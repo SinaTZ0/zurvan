@@ -172,7 +172,9 @@ function ActiveList({ enrollments }: { enrollments: readonly Enrollment[] }) {
       {enrollments.map((enrollment) => (
         <li key={enrollment.id} className="flex flex-col text-sm leading-snug">
           <span className="font-bold text-foreground">{enrollment.course.title}</span>
-          <span className="text-xs text-muted-foreground">{m.account_home_road_since({ when: formatTimestamp(enrollment.createdAt) })}</span>
+          <span className="text-xs text-muted-foreground">
+            {m.account_home_road_since({ when: formatTimestamp(enrollment.createdAt) })}
+          </span>
         </li>
       ))}
     </ul>

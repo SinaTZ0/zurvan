@@ -108,8 +108,8 @@ export async function finishEnrollment({
     kind: status === "completed" ? "enrollment-completed" : "enrollment-cancelled",
     body:
       status === "completed"
-        ? `آموزش K9: ${label} تمام شد. به ${after.dog.name} تبریک می‌گوییم!`
-        : `آموزش K9: ${label} لغو شد. برای جزئیات با شما تماس می‌گیریم.`,
+        ? `زروان: ${label} تمام شد. به ${after.dog.name} تبریک می‌گوییم!`
+        : `زروان: ${label} لغو شد. برای جزئیات با شما تماس می‌گیریم.`,
   });
   return { kind: "success", enrollment: toAdminEnrollment(after) };
 }

@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 
 import { removeCartItemAtom } from "~/atoms/cart";
 import type { CartItem } from "~/orpc/checkout/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Removal =====*/
 /** The value of a row's `data-cart-remove` attribute: how the page finds a button again after a render. */
@@ -43,6 +44,6 @@ export function useCartRemoval() {
     remove,
     // A live region only speaks when its text changes, and two removals in a row say the same words: a trailing
     // full stop on every second one makes them differ.
-    message: removals === 0 ? "" : removals % 2 === 1 ? "برداشته شد" : "برداشته شد.",
+    message: removals === 0 ? "" : removals % 2 === 1 ? m.account_cart_removed_odd() : m.account_cart_removed_even(),
   };
 }

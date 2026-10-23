@@ -42,10 +42,10 @@ export function describeDogAge(dog: AgeFacts, today?: string, locale: Locale = g
   const years = Math.floor(months / 12);
   const rest = months % 12;
   if (years < 2 && rest > 0 && !dog.birthDateApproximate) {
-    return m.shared_dog_age_year_and_months(
-      { years: formatNumber(years, locale), months: formatNumber(rest, locale) },
-      options,
-    );
+    const parts = { years: formatNumber(years, locale), months: formatNumber(rest, locale) };
+    return rest === 1
+      ? m.shared_dog_age_year_and_month_one(parts, options)
+      : m.shared_dog_age_year_and_months(parts, options);
   }
   const count = formatNumber(years, locale);
   return approximate(

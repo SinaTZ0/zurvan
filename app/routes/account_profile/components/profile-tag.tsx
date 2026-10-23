@@ -1,5 +1,7 @@
 import { LockIcon } from "lucide-react";
 
+import { m } from "~/paraglide/messages";
+
 /*===== Profile Tag =====*/
 /**
  * The person's own tag, as it hangs on the hall stand: a dark engraved plate with a gold hairline, a punched hole at
@@ -59,7 +61,9 @@ export function ProfileTag({
         <div className="relative mt-3 flex items-center gap-2.5 rounded-2xl border border-foreground/10 bg-sunken px-3 py-2 lg:mt-4 lg:px-4 lg:py-2.5">
           <LockIcon aria-hidden strokeWidth={1.8} className="size-4 shrink-0 text-primary/80 lg:size-5" />
           <div className="flex min-w-0 flex-1 items-baseline justify-between gap-2 lg:flex-col lg:items-start lg:gap-0.5">
-            <p className="text-[0.7rem] whitespace-nowrap text-muted-foreground lg:text-xs">شماره‌ی ورود</p>
+            <p className="text-[0.7rem] whitespace-nowrap text-muted-foreground lg:text-xs">
+              {m.account_profile_tag_phone_label()}
+            </p>
             <p dir="ltr" className="text-sm font-bold tabular-nums lg:text-base lg:tracking-wide">
               {phoneNumber}
             </p>

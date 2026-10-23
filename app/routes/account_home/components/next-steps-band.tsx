@@ -41,9 +41,7 @@ export function NextStepsBand() {
           <h2 id="next-steps-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
             {m.account_home_next_title()}
           </h2>
-          <p className="mt-2 text-pretty text-muted-foreground">
-            {m.account_home_next_lead()}
-          </p>
+          <p className="mt-2 text-pretty text-muted-foreground">{m.account_home_next_lead()}</p>
         </div>
 
         <div aria-hidden className="relative me-2 w-20 shrink-0 translate-y-[3%] sm:me-6 sm:w-24 lg:me-12 lg:w-28">

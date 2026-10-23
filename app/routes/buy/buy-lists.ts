@@ -1,9 +1,10 @@
 import { getDogVerdict, type DogVerdictProblem } from "~/lib/dog-verdict";
 import type { IneligibilityKind } from "~/lib/eligibility";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatNumberFa } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import type { MyDogCourse } from "~/orpc/checkout/contract";
 import type { Course } from "~/orpc/course/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
 /** One reason a course can't be bought now, with its kind (for the tone) and the way out (`getDogVerdict`'s). */
@@ -77,16 +78,16 @@ export function splitCourses({
   const firstBlocked = later.find((entry) => entry.course.price !== null && entry.reasons.length > 0);
   const line =
     canTake.length > 0
-      ? `${formatNumberFa(canTake.length)} تا دوره می‌تونم بردارم!`
+      ? (canTake.length === 1 ? m.buy_line_can_one : m.buy_line_can_other)({ count: formatNumber(canTake.length) })
       : gate
-        ? `اول باید ${HEAD_TRAINER.firstName} منو ببینه`
+        ? m.buy_line_gate({ trainer: HEAD_TRAINER.firstName })
         : firstBlocked
           ? getDogVerdict({
               dogId,
               eligible: false,
               problems: firstBlocked.reasons.map(({ kind, message }) => ({ kind, message, courseSlug: null })),
             }).line
-          : "فعلاً دوره‌ای برام باز نیست";
+          : m.buy_line_none();
 
   return { canTake, later: rows, gate, line };
 }

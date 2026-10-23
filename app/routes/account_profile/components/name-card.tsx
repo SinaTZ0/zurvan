@@ -4,6 +4,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import type { CardVoiceProps } from "~/routes/account_profile/card-voice-props";
 import { CardBubble } from "~/routes/account_profile/components/card-bubble";
 import { CardHead } from "~/routes/account_profile/components/card-head";
@@ -46,23 +47,25 @@ export function NameCard({
     <section aria-labelledby="profile-name-title">
       <CardHead
         id="profile-name-title"
-        title="اسمت"
+        title={m.account_profile_name_title()}
         figure={
           <EdgeDog name="badge" className="w-[5.25rem] sm:w-28">
-            <CardBubble {...voice} className="bottom-[64%] left-[96%] sm:bottom-[58%]" />
+            <CardBubble {...voice} className="bottom-[64%] left-[96%] sm:bottom-[58%] ltr:right-[96%] ltr:left-auto" />
           </EdgeDog>
         }
       />
 
       <div className={PLATE}>
-        <p className="text-pretty text-muted-foreground">{HEAD_TRAINER.firstName} با همین اسم صدات می‌کنه.</p>
+        <p className="text-pretty text-muted-foreground">
+          {m.account_profile_name_line({ trainer: HEAD_TRAINER.firstName })}
+        </p>
 
         <form method="post" onSubmit={onSubmit} noValidate className="mt-6">
           {/* The listener sits on this wrapper, not the form or section: focus events bubble up to it from the fields,
               and the a11y lint rejects a handler on a landmark. */}
           <div className="flex flex-col gap-6" onFocus={onEnter}>
             <Field data-invalid={!!errors.firstName}>
-              <FieldLabel htmlFor="profile-first-name">نام</FieldLabel>
+              <FieldLabel htmlFor="profile-first-name">{m.account_profile_name_first_label()}</FieldLabel>
               <Input
                 id="profile-first-name"
                 autoComplete="given-name"
@@ -73,7 +76,7 @@ export function NameCard({
             </Field>
 
             <Field data-invalid={!!errors.lastName}>
-              <FieldLabel htmlFor="profile-last-name">نام خانوادگی</FieldLabel>
+              <FieldLabel htmlFor="profile-last-name">{m.account_profile_name_last_label()}</FieldLabel>
               <Input
                 id="profile-last-name"
                 autoComplete="family-name"
@@ -86,7 +89,7 @@ export function NameCard({
             <RisingAlert message={errors.root?.message} />
 
             <SaveButton
-              label="ذخیره"
+              label={m.account_profile_save()}
               icon={<PenLineIcon />}
               isPending={isPending}
               isSaved={isSaved}

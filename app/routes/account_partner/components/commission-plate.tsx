@@ -53,7 +53,7 @@ export function CommissionPlate({
       <PlateHead
         id="partner-commission-title"
         title={m.account_partner_commission_title()}
-        figureClassName="me-[3.75rem] sm:me-[5.5rem]"
+        figureClassName="ml-[3.75rem] sm:ml-[5.5rem]"
         figure={
           <EdgeDog
             name="coins"
@@ -62,8 +62,8 @@ export function CommissionPlate({
           >
             {seen && (
               <ChalkBubble
-                tail="left"
-                className="pd-say absolute bottom-[96%] left-[calc(76%-2.25rem)] max-w-none whitespace-nowrap"
+                tail="end"
+                className="pd-say absolute bottom-[96%] max-w-none whitespace-nowrap ltr:right-[calc(24%-2.25rem)] rtl:left-[calc(76%-2.25rem)]"
               >
                 {m.account_partner_commission_bubble()}
               </ChalkBubble>

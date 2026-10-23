@@ -7,6 +7,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN, FADED_ENDS, WARM_LIGHT } from "~/routes/account_cart/column";
 
 /*===== Cart Page Error =====*/
@@ -27,13 +28,11 @@ export function CartPageError({ notFound }: { notFound: boolean }) {
       {/*===== Words =====*/}
       <div className="order-2 lg:order-1 lg:col-span-6">
         <h1 id="account-cart-error-title" className={cn(DISPLAY_HEADING, "text-h1 text-balance")}>
-          {notFound ? "این صفحه پیدا نشد" : "سبدت باز نشد"}
+          {notFound ? m.account_cart_page_error_not_found() : m.account_cart_page_error_title()}
         </h1>
-        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.
-        </p>
+        <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">{m.account_cart_page_error_line()}</p>
         <Link to="/account" className={buttonVariants({ variant: "solid", size: "lg", className: "mt-8" })}>
-          سگ‌های من
+          {m.account_cart_page_error_dogs()}
         </Link>
       </div>
 
@@ -56,7 +55,7 @@ export function CartPageError({ notFound }: { notFound: boolean }) {
             tail="left"
             className="answer-pop absolute bottom-[98%] left-[52%] w-max text-pretty [--answer-delay:0.3s] [--pop-origin:1.75rem_100%]"
           >
-            ببخشید!
+            {m.account_cart_page_error_bubble()}
           </ChalkBubble>
         </div>
       </div>

@@ -2,7 +2,9 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { orNotFound } from "~/lib/not-found";
+import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import { ProfileError } from "~/routes/account_profile/components/profile-error";
 import { ProfileSettings } from "~/routes/account_profile/components/profile-settings";
 
@@ -18,7 +20,12 @@ export const Route = createFileRoute("/account/profile")({
       queryClient.ensureQueryData(orpc.password.status.queryOptions()),
     ]);
   },
-  head: () => ({ meta: [{ title: "تنظیمات حساب | آموزش K9" }] }),
+  head: () =>
+    pageHead({
+      path: "/account/profile",
+      title: m.account_profile_meta_title(),
+      description: m.account_profile_meta_description(),
+    }),
   component: AccountProfilePage,
   // Inside the account shell, so the header and its way back stay on screen. A missing partner row gets the same look.
   notFoundComponent: ProfileError,

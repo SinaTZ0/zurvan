@@ -44,9 +44,10 @@ export function StagePanel({
       </div>
 
       {/*===== Scene =====*/}
+      {/* English bubbles take two lines on phones (the chalk hand runs wide), so the sky is taller there. */}
       <SceneStage
         spec={scene}
-        className="order-1 h-[13.5rem] sm:h-[15rem] lg:order-2 lg:col-span-5 lg:h-auto lg:min-h-[20rem]"
+        className="order-1 h-[13.5rem] sm:h-[15rem] lg:order-2 lg:col-span-5 lg:h-auto lg:min-h-[20rem] ltr:max-sm:h-[15rem]"
       />
     </section>
   );

@@ -44,7 +44,9 @@ export function EvaluationsSection({ evaluations, status }: { evaluations: Evalu
         <div className={cn(PLATE, "flex flex-wrap items-center justify-between gap-4 p-5 sm:p-6")}>
           <div>
             <p className="font-bold">{m.account_dog_detail_evaluations_empty_title()}</p>
-            <p className="mt-1 text-sm text-pretty text-muted-foreground">{m.account_dog_detail_evaluations_empty_text()}</p>
+            <p className="mt-1 text-sm text-pretty text-muted-foreground">
+              {m.account_dog_detail_evaluations_empty_text()}
+            </p>
           </div>
           {status.action && (
             <Link {...status.action.link} className={buttonVariants({ variant: "solid" })}>

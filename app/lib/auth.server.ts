@@ -107,7 +107,7 @@ function createAuth(baseURL: string) {
           sendSms({
             phoneNumber: phone,
             kind: "sign-in-code",
-            body: `کد ورود شما به آموزش K9: ${SHOWCASE_SIGN_IN_CODE}\nاین کد را به کسی ندهید.`,
+            body: `کد ورود شما به زروان: ${SHOWCASE_SIGN_IN_CODE}\nاین کد را به کسی ندهید.`,
           }),
         // Replaces the plugin's own check, which would compare against the random code. A code must still have been
         // requested and not expired, so the 2-minute validity holds; wrong attempts aren't counted, since the code is

@@ -3,6 +3,7 @@ import { CheckIcon } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { m } from "~/paraglide/messages";
 
 /*===== Save Button =====*/
 /**
@@ -41,7 +42,7 @@ export function SaveButton({
         <Spinner className={cn(turn, "size-5", shown !== "pending" && "scale-50 opacity-0")} />
         <CheckIcon strokeWidth={2.6} className={cn(turn, shown !== "saved" && "scale-50 -rotate-90 opacity-0")} />
       </span>
-      {isPending ? "در حال ذخیره…" : isSaved ? "ثبت شد" : label}
+      {isPending ? m.account_profile_save_pending() : isSaved ? m.account_profile_save_done() : label}
     </Button>
   );
 }

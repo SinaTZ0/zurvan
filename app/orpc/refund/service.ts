@@ -191,7 +191,7 @@ export async function adminMarkRefundPaid({
   await notify({
     phoneNumber: await findPaymentCustomerPhone({ db, paymentId: done.paymentId }),
     kind: "refund-paid",
-    body: `آموزش K9: ${formatToman(done.amount)} از پرداختت برگردانده شد (کد پیگیری: ${parsed.data}).`,
+    body: `زروان: ${formatToman(done.amount)} از پرداختت برگردانده شد (کد پیگیری: ${parsed.data}).`,
   });
   return { kind: "success", refund: toRefund(done) };
 }

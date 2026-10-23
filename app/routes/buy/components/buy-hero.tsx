@@ -8,7 +8,9 @@ import { NightSky } from "~/components/night-sky";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { Dog } from "~/orpc/dog/contract";
 import { DogPicker } from "~/routes/buy/components/dog-picker";
+import { WithMark } from "~/routes/buy/components/with-mark";
 import { COLUMN, STRIP_FADE } from "~/routes/buy/plate";
+import { m } from "~/paraglide/messages";
 
 /*===== Buy Hero =====*/
 /**
@@ -39,17 +41,15 @@ export function BuyHero({
 }) {
   const title = dogName ? (
     <>
-      دوره‌ها برای <bdi className="text-primary">{dogName}</bdi>
+      <WithMark text={(mark) => m.buy_hero_title_dog({ dog: mark })}>
+        <bdi className="text-primary">{dogName}</bdi>
+      </WithMark>
     </>
   ) : (
-    "برای کدوم سگ؟"
+    m.buy_hero_title_pick()
   );
   const stallLine =
-    dogs.length === 0
-      ? "اول رفیقتو بیار!"
-      : dogName
-        ? `${dogName}؟ بریم ببینیم چی بهش می‌خوره!`
-        : "برای کی دوره می‌خوای؟";
+    dogs.length === 0 ? m.buy_stall_no_dogs() : dogName ? m.buy_stall_picked({ dog: dogName }) : m.buy_stall_pick();
 
   return (
     <section aria-labelledby="buy-title" className="relative pt-4 lg:pt-section-sm">
@@ -64,7 +64,7 @@ export function BuyHero({
         >
           <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
             <ShoppingBagIcon aria-hidden strokeWidth={2} className="size-4" />
-            خرید دوره
+            {m.buy_hero_chip()}
           </p>
           <h1
             key={dogName ?? "none"}
@@ -73,9 +73,7 @@ export function BuyHero({
           >
             {title}
           </h1>
-          <p className="mt-3 max-w-lg text-lead text-pretty text-muted-foreground">
-            برای هر دوره همین‌جا می‌بینی الان می‌تونه برداره یا اول چی لازمه.
-          </p>
+          <p className="mt-3 max-w-lg text-lead text-pretty text-muted-foreground">{m.buy_hero_line()}</p>
 
           {dogs.length > 0 && <DogPicker dogs={dogs} pickedId={pickedId} bubble={pickBubble} />}
         </div>
@@ -138,7 +136,8 @@ function StallStage({ line, changed, short }: { line: string; changed: boolean; 
         </div>
 
         {/*------ Bubble ------*/}
-        <div className="absolute right-[calc(var(--box)-var(--dog-l)-var(--dog-h)*280/371*0.75-2.25rem)] bottom-[calc(var(--dog-h)+0.4rem)] flex w-[15rem] justify-start lg:w-[17rem]">
+        {/* Hung by its right edge over his head; a short line keeps to that edge in English too (`ltr:justify-end`). */}
+        <div className="absolute right-[calc(var(--box)-var(--dog-l)-var(--dog-h)*280/371*0.75-2.25rem)] bottom-[calc(var(--dog-h)+0.4rem)] flex w-[15rem] justify-start lg:w-[17rem] ltr:justify-end">
           <ChalkBubble
             key={line}
             tail="right"

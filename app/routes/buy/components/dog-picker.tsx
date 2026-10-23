@@ -8,6 +8,7 @@ import { Link } from "~/components/link";
 import { MediaImage } from "~/components/media-image";
 import { describeDog } from "~/lib/dog-format";
 import type { Dog } from "~/orpc/dog/contract";
+import { m } from "~/paraglide/messages";
 
 /*===== Links =====*/
 /** The way to add a dog and come straight back here (`redirectTo`). */
@@ -49,7 +50,7 @@ export function DogPicker({
   const bubbleIndex = bubble ? dogs.findIndex((dog) => dog.id === bubble.dogId) : -1;
 
   return (
-    <nav aria-label="سگ‌های من" className="mt-6 lg:mt-8">
+    <nav aria-label={m.buy_picker_label()} className="mt-6 lg:mt-8">
       <div className="-mx-4 snap-x snap-mandatory [scrollbar-width:thin] overflow-x-auto overscroll-x-contain px-5 pt-16 pb-3 lg:mx-0 lg:px-0">
         <ul className="relative flex w-max gap-4 [--step:7rem] lg:gap-6 lg:[--step:9.5rem]">
           {dogs.map((dog, index) => (
@@ -74,27 +75,27 @@ export function DogPicker({
                 <PlusIcon aria-hidden className="size-7" strokeWidth={1.8} />
               </span>
               <span className="mt-3 block text-sm font-bold text-muted-foreground group-hover/add:text-foreground">
-                سگ دیگه
+                {m.buy_picker_another()}
               </span>
             </Link>
           </li>
 
           {/*------ The Picked Dog Answers ------*/}
-          {/* Physical: the row starts at the right in RTL, so print n starts n steps in from the right; the tail
-              (1.75rem in from the bubble's right edge) lands over the print. It pops from the tail when a dog is
-              picked, and after the hero's bubble on load. */}
+          {/* The row starts on the start side, so print n starts n steps in from it; the tail (1.75rem in from the
+              bubble's start edge) lands over the print. It pops from the tail when a dog is picked, and after the
+              hero's bubble on load. The pop's origin is a physical point, so English has its own. */}
           {bubble && bubbleIndex >= 0 && (
             <div
               aria-hidden
-              className="pointer-events-none absolute right-[calc(var(--i)*var(--step))] bottom-full mb-3 flex w-[calc(100%-var(--i)*var(--step))] justify-start"
+              className="pointer-events-none absolute start-[calc(var(--i)*var(--step))] bottom-full mb-3 flex w-[calc(100%-var(--i)*var(--step))] justify-start"
               // A custom property per index: the placement is one class for every print.
               style={{ "--i": bubbleIndex } as React.CSSProperties}
             >
               <ChalkBubble
                 key={`${bubble.dogId}-${bubble.line}`}
-                tail="right"
+                tail="start"
                 className={cn(
-                  "max-w-[min(16rem,100%)] text-pretty [--pop-origin:calc(100%-1.75rem)_100%]",
+                  "max-w-[min(16rem,100%)] text-pretty [--pop-origin:calc(100%-1.75rem)_100%] ltr:[--pop-origin:1.75rem_100%]",
                   bubble.changed ? "answer-pop" : "by-print-pop",
                 )}
               >

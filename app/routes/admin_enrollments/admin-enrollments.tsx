@@ -53,7 +53,7 @@ export const Route = createFileRoute("/admin/enrollments")({
   validateSearch: adminEnrollmentsSearchSchema,
   loader: ({ context: { queryClient } }) =>
     queryClient.ensureQueryData(orpc.enrollment.admin.list.queryOptions({ input: {} })),
-  head: () => ({ meta: [{ title: "ثبت‌نام‌ها | مدیریت آموزش K9" }] }),
+  head: () => ({ meta: [{ title: "ثبت‌نام‌ها | مدیریت زروان" }] }),
   component: AdminEnrollmentsPage,
   notFoundComponent: () => <EnrollmentsError notFound />,
   errorComponent: () => <EnrollmentsError notFound={false} />,

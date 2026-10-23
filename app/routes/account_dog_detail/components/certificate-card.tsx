@@ -65,7 +65,9 @@ export function CertificateCard({ certificate, link, qr }: { certificate: Certif
               </span>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">{m.account_dog_detail_certificate_issued({ date: formatTimestamp(certificate.issuedAt) })}</p>
+          <p className="text-sm text-muted-foreground">
+            {m.account_dog_detail_certificate_issued({ date: formatTimestamp(certificate.issuedAt) })}
+          </p>
           <p dir="ltr" className="w-fit text-start font-mono font-bold tracking-wider text-primary">
             {certificate.number}
           </p>

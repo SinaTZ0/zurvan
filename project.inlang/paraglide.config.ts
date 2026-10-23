@@ -2,6 +2,10 @@
 // Read by both the Vite plugin (`vite.config.ts`) and the CLI (`npm run i18n:compile`, which typecheck and postinstall
 // run), so the dev server, the build and a fresh clone compile the messages the same way. See
 // docs/i18n/english-version-plan.md, "Phase 1 notes".
+//
+// The output structure is not set here: the Vite plugin writes one module per locale in dev and one per message in a
+// build (for tree-shaking). The CLI passes `--output-structure locale-modules` (package.json) so a typecheck run beside
+// a dev server writes the same files the server imports, instead of deleting `messages/fa.js` from under it.
 export default {
   // Generated, never committed (gitignored): `~/paraglide/messages` and `~/paraglide/runtime`.
   outdir: "./app/paraglide",

@@ -7,6 +7,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "~/components/ui
 import { InputGroup, InputGroupAddon, InputGroupInput } from "~/components/ui/input-group";
 import { toast } from "~/components/ui/toast";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
+import { m } from "~/paraglide/messages";
 import type { CardVoiceProps } from "~/routes/account_profile/card-voice-props";
 import { CardBubble } from "~/routes/account_profile/components/card-bubble";
 import { CardHead } from "~/routes/account_profile/components/card-head";
@@ -27,7 +28,7 @@ import { applyShebaServerError } from "~/routes/account_profile/server-errors";
 
 /*===== Sheba Card =====*/
 /**
- * «واریز کمیسیون», a partner's only: the Sheba the head trainer pays the commission to, saved on its own (it is a
+ * «واریز پورسانت», a partner's only: the Sheba the head trainer pays the commission to, saved on its own (it is a
  * different API from the name). A partner who hasn't written one yet gets a gold-bordered notice saying what that costs
  * them; it folds away once a Sheba is saved.
  *
@@ -77,7 +78,7 @@ export function ShebaCard({
       onSuccess: (profile) => {
         setSaved(profile.shebaNumber);
         reset({ shebaNumber: formatShebaForField(profile.shebaNumber) });
-        toast.add({ title: "ذخیره شد.", type: "success" });
+        toast.add({ title: m.account_profile_saved_toast(), type: "success" });
         justSaved.flash();
         onSaved();
       },
@@ -92,7 +93,7 @@ export function ShebaCard({
     <section aria-labelledby="profile-sheba-title">
       <CardHead
         id="profile-sheba-title"
-        title="واریز کمیسیون"
+        title={m.account_profile_sheba_title()}
         figureClassName="me-[3.5rem] sm:me-[5.5rem]"
         figure={
           <EdgeDog
@@ -101,14 +102,14 @@ export function ShebaCard({
             className="w-[6.25rem] sm:w-[9rem]"
             scenery={{ name: "safe", className: "right-[80%] w-[66%] translate-y-[3%]" }}
           >
-            <CardBubble {...voice} className="bottom-[80%] left-[94%] sm:bottom-[62%]" />
+            <CardBubble {...voice} className="bottom-[80%] left-[94%] sm:bottom-[62%] ltr:right-[94%] ltr:left-auto" />
           </EdgeDog>
         }
       />
 
       <div className={PLATE}>
         <p className="text-pretty text-muted-foreground">
-          {HEAD_TRAINER.firstName} کمیسیون‌هات رو به همین شبا واریز می‌کنه.
+          {m.account_profile_sheba_line({ trainer: HEAD_TRAINER.firstName })}
         </p>
 
         {/*------ No Sheba Yet ------*/}
@@ -117,7 +118,7 @@ export function ShebaCard({
           <div className="min-h-0 overflow-hidden">
             <p className="answer-in mt-5 flex items-start gap-3 rounded-2xl border border-primary/60 bg-primary/[0.06] px-4 py-3 text-pretty [--answer-delay:0.5s]">
               <PiggyBankIcon aria-hidden strokeWidth={1.8} className="mt-0.5 size-5 shrink-0 text-primary" />
-              هنوز شبایی ننوشتی؛ برای گرفتن پورسانت، شماره‌ی شبا لازمه.
+              {m.account_profile_sheba_notice()}
             </p>
           </div>
         </div>
@@ -125,7 +126,7 @@ export function ShebaCard({
         <form method="post" onSubmit={onSubmit} noValidate className="mt-6">
           <div className="flex flex-col gap-6" onFocus={onEnter}>
             <Field data-invalid={!!errors.shebaNumber}>
-              <FieldLabel htmlFor="profile-sheba">شماره‌ی شبا</FieldLabel>
+              <FieldLabel htmlFor="profile-sheba">{m.account_profile_sheba_label()}</FieldLabel>
               {/* Latin digits and letters read left to right, so the group is LTR with «IR» at its left edge. */}
               <InputGroup dir="ltr">
                 <InputGroupAddon className="font-bold text-foreground">IR</InputGroupAddon>
@@ -139,14 +140,14 @@ export function ShebaCard({
                   {...register("shebaNumber")}
                 />
               </InputGroup>
-              <FieldDescription>۲۴ رقمِ بعد از IR؛ با فاصله یا بی‌فاصله، رقم فارسی هم قبوله.</FieldDescription>
+              <FieldDescription>{m.account_profile_sheba_description()}</FieldDescription>
               <FieldError key={errors.shebaNumber?.message} errors={[errors.shebaNumber]} className="answer-in" />
             </Field>
 
             <RisingAlert message={errors.root?.message} />
 
             <SaveButton
-              label="ذخیره"
+              label={m.account_profile_save()}
               icon={<LandmarkIcon />}
               isPending={saveSheba.isPending}
               isSaved={justSaved.on}

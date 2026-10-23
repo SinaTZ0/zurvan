@@ -1,6 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "account_cart_meta_title": "سبد من | آموزش K9",
+  "account_cart_meta_title": "سبد من | زروان",
+  "account_cart_meta_description": "دوره‌هایی که برای سگ‌هات برداشتی، جمعشون و پرداخت.",
   "account_cart_hero_chip": "سبد",
   "account_cart_hero_title": "سبد من",
   "account_cart_hero_count_courses": "{courses} برای {dogs} توی سبدته؛ قیمت‌ها قیمت امروزن.",
@@ -53,7 +54,7 @@
   "account_cart_road_done_label": "تموم شد",
   "account_cart_road_done_line": "{trainer} دوره رو تمام‌شده ثبت می‌کنه و دوره‌های بعدی سگت باز می‌شن.",
   "account_cart_empty_title": "سبدت خالیه",
-  "account_cart_empty_bubble": "چیزی توی سبدم نیست! یه دوره برام پیدا کن",
+  "account_cart_empty_bubble": "بو کشیدم؛ واقعاً هیچی توش نیست!",
   "account_cart_empty_line": "از صفحه‌ی هر دوره سگت رو انتخاب کن و «افزودن به سبد» رو بزن، یا از سگت شروع کن.",
   "account_cart_empty_courses": "دوره‌ها رو ببین",
   "account_cart_empty_buy": "خرید از روی سگ",

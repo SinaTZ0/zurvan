@@ -68,7 +68,12 @@ export function WhenFreeFields({
       >
         <legend className="mb-2 text-sm font-bold">{m.assessment_when_earliest()}</legend>
         <div className="grid max-w-md grid-cols-[5rem_minmax(0,1fr)_6rem] gap-2">
-          <NativeSelect aria-label={m.assessment_when_day()} aria-invalid={!!dateError} className="w-full" {...dayRegistration}>
+          <NativeSelect
+            aria-label={m.assessment_when_day()}
+            aria-invalid={!!dateError}
+            className="w-full"
+            {...dayRegistration}
+          >
             {Array.from({ length: dayCount }, (_, index) => (
               <NativeSelectOption key={index + 1} value={index + 1}>
                 {calendar.dayLabel(index + 1)}

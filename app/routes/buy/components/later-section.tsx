@@ -2,10 +2,11 @@ import { cn } from "cn";
 import { CircleAlertIcon, InfoIcon } from "lucide-react";
 
 import { Link } from "~/components/link";
-import { formatTomanShort } from "~/lib/course-format";
+import { formatTomanShort, latinNameAddsToTitle } from "~/lib/course-format";
 import type { LaterCourse, LaterReason } from "~/routes/buy/buy-lists";
 import { EdgeDog } from "~/routes/buy/components/edge-dog";
 import { EdgeSection } from "~/routes/buy/components/edge-section";
+import { m } from "~/paraglide/messages";
 
 /*===== Later Section =====*/
 /**
@@ -33,12 +34,8 @@ export function LaterSection({
   return (
     <EdgeSection
       titleId="later-title"
-      title="بعداً باز می‌شن"
-      description={
-        gated
-          ? "بعد از ارزیابی، همین‌جا می‌بینی کدوم‌ها براش باز شدن."
-          : "برای هر کدوم نوشتیم اول چی لازمه و از کجا می‌شه رسید."
-      }
+      title={m.buy_later_title()}
+      description={gated ? m.buy_later_after_evaluation() : m.buy_later_description()}
       arrive={arrive}
       delay={delay}
       dog={
@@ -89,16 +86,18 @@ function LaterRow({ row }: { row: LaterCourse }) {
               </Link>
             </h3>
             <span className="shrink-0 text-sm font-bold whitespace-nowrap text-muted-foreground tabular-nums">
-              {course.price === null ? "بعد از ارزیابی" : formatTomanShort(course.price)}
+              {course.price === null ? m.buy_later_no_price() : formatTomanShort(course.price)}
             </span>
           </div>
-          <p dir="ltr" className="w-fit text-xs text-muted-foreground">
-            {course.latinName}
-          </p>
+          {latinNameAddsToTitle(course) && (
+            <p dir="ltr" className="w-fit text-xs text-muted-foreground">
+              {course.latinName}
+            </p>
+          )}
 
           {/*------ Reasons ------*/}
           {course.price === null ? (
-            <NoPriceNote slug={course.slug} message={reasons[0]?.message ?? "این دوره فعلاً فروخته نمی‌شه."} />
+            <NoPriceNote slug={course.slug} message={reasons[0]?.message ?? m.buy_later_not_sold()} />
           ) : (
             reasons.length > 0 && (
               <ul className="mt-2 flex flex-col gap-1.5 text-sm">
@@ -163,7 +162,7 @@ function NoPriceNote({ slug, message }: { slug: string; message: string }) {
           params={{ slug }}
           className="rounded-sm font-bold whitespace-nowrap text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          ببین چطور می‌شه
+          {m.buy_later_see_how()}
         </Link>
       </span>
     </p>

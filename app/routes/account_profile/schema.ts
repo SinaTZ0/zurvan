@@ -1,23 +1,31 @@
 import { z } from "zod";
 
-import { toLatinDigits, toPersianDigits } from "~/lib/digits";
+import { toLatinDigits } from "~/lib/digits";
+import { formatNumber } from "~/lib/locale-format";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "~/lib/user-constants";
+import { m } from "~/paraglide/messages";
 
 /*===== Name =====*/
-// Same rules as the sign-in name step, written for this page: this slice does not import from the auth slice.
-const namePart = (missing: string) => z.string().trim().min(2, missing).max(40, "حداکثر ۴۰ حرف.");
+// Same rules as the sign-in name step, written for this page: this slice does not import from the auth slice. Every
+// message is a function, read when the check fails, so it is in the page's language (never fixed at import).
+const NAME_MAX_LENGTH = 40;
+const namePart = (missing: () => string) =>
+  z
+    .string()
+    .trim()
+    .min(2, { error: missing })
+    .max(NAME_MAX_LENGTH, {
+      error: () => m.account_profile_schema_name_too_long({ max: formatNumber(NAME_MAX_LENGTH) }),
+    });
 
 export const nameFormSchema = z.object({
-  firstName: namePart("اسمت رو بنویس."),
-  lastName: namePart("نام خانوادگی‌ت رو بنویس."),
+  firstName: namePart(() => m.account_profile_schema_first_name_missing()),
+  lastName: namePart(() => m.account_profile_schema_last_name_missing()),
 });
 
 export type NameFormValues = z.infer<typeof nameFormSchema>;
 
 /*===== Sheba =====*/
-const SHEBA_FORMAT_MESSAGE = "شماره‌ی شبا باید با IR شروع بشه و ۲۴ رقم بعدش داشته باشه.";
-const SHEBA_CHECKSUM_MESSAGE = "این شماره‌ی شبا درست نیست؛ دوباره نگاش کن.";
-
 /**
  * The 24 digits after «IR» from whatever was typed: Persian or Arabic digits, spaces (and dashes, and the zero-width
  * joiners Persian keyboards leave behind) ignored, «IR» in any case optional since the field shows it already. Returns
@@ -47,11 +55,11 @@ export const shebaFormSchema = z.object({
   shebaNumber: z.string().transform((value, ctx) => {
     const digits = extractShebaDigits(value);
     if (!digits) {
-      ctx.addIssue({ code: "custom", message: SHEBA_FORMAT_MESSAGE });
+      ctx.addIssue({ code: "custom", message: m.account_profile_schema_sheba_format() });
       return z.NEVER;
     }
     if (!hasValidShebaChecksum(digits)) {
-      ctx.addIssue({ code: "custom", message: SHEBA_CHECKSUM_MESSAGE });
+      ctx.addIssue({ code: "custom", message: m.account_profile_schema_sheba_checksum() });
       return z.NEVER;
     }
     return `IR${digits}`;
@@ -75,16 +83,18 @@ export const passwordFormSchema = z
   .object({
     newPassword: z
       .string()
-      .min(1, "رمز عبور رو بنویس.")
+      .min(1, { error: () => m.account_profile_schema_password_required() })
       .refine((value) => Array.from(value).length >= PASSWORD_MIN_LENGTH, {
-        message: `رمز عبور باید دست‌کم ${toPersianDigits(String(PASSWORD_MIN_LENGTH))} نویسه باشه.`,
+        error: () => m.account_profile_schema_password_min({ min: formatNumber(PASSWORD_MIN_LENGTH) }),
       })
-      .max(PASSWORD_MAX_LENGTH, `رمز عبور حداکثر ${toPersianDigits(String(PASSWORD_MAX_LENGTH))} نویسه می‌تونه باشه.`),
-    confirmPassword: z.string().min(1, "رمز عبور رو یه بار دیگه بنویس."),
+      .max(PASSWORD_MAX_LENGTH, {
+        error: () => m.account_profile_schema_password_max({ max: formatNumber(PASSWORD_MAX_LENGTH) }),
+      }),
+    confirmPassword: z.string().min(1, { error: () => m.account_profile_schema_confirm_required() }),
   })
   .refine((values) => values.newPassword === values.confirmPassword, {
     path: ["confirmPassword"],
-    message: "دو تا رمز عبور یکی نیستن.",
+    error: () => m.account_profile_schema_confirm_mismatch(),
   });
 
 export type PasswordFormValues = z.infer<typeof passwordFormSchema>;

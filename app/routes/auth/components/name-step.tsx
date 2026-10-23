@@ -12,6 +12,7 @@ import { client } from "~/orpc/client";
 import { describeAuthError } from "~/routes/auth/auth-errors";
 import { StepAlert } from "~/routes/auth/components/step-alert";
 import { type NameValues, nameSchema } from "~/routes/auth/schema";
+import { m } from "~/paraglide/messages";
 
 /*===== Name Step =====*/
 /**
@@ -59,7 +60,7 @@ export function NameStep({
       try {
         await client.consent.acceptSiteRules();
       } catch {
-        setError("root", { message: "قوانین ثبت نشد. دوباره امتحان کن." });
+        setError("root", { message: m.auth_name_rules_failed() });
         return;
       }
     }
@@ -69,14 +70,12 @@ export function NameStep({
   return (
     <form method="post" onSubmit={onSubmit} noValidate>
       <FieldGroup>
-        <p className="text-sm text-pretty text-muted-foreground">
-          حسابت ساخته شد. اسمتو بنویس تا مربی بدونه با کی کار می‌کنه.
-        </p>
+        <p className="text-sm text-pretty text-muted-foreground">{m.auth_name_intro()}</p>
 
         <StepAlert message={errors.root?.message} />
 
         <Field data-invalid={!!errors.firstName}>
-          <FieldLabel htmlFor="sign-in-first-name">نام</FieldLabel>
+          <FieldLabel htmlFor="sign-in-first-name">{m.auth_name_first()}</FieldLabel>
           <Input
             id="sign-in-first-name"
             autoComplete="given-name"
@@ -87,7 +86,7 @@ export function NameStep({
         </Field>
 
         <Field data-invalid={!!errors.lastName}>
-          <FieldLabel htmlFor="sign-in-last-name">نام خانوادگی</FieldLabel>
+          <FieldLabel htmlFor="sign-in-last-name">{m.auth_name_last()}</FieldLabel>
           <Input
             id="sign-in-last-name"
             autoComplete="family-name"
@@ -110,7 +109,7 @@ export function NameStep({
             />
             {rulesMissing && !rulesTicked && (
               <p role="alert" className="answer-in text-sm text-destructive">
-                برای ادامه باید قوانین رو بپذیری.
+                {m.auth_name_rules_missing()}
               </p>
             )}
           </div>
@@ -118,7 +117,7 @@ export function NameStep({
 
         <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
           {isSubmitting && <Spinner data-icon="inline-start" />}
-          ادامه
+          {m.auth_name_continue()}
         </Button>
       </FieldGroup>
     </form>

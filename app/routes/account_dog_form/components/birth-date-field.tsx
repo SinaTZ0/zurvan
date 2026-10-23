@@ -52,7 +52,10 @@ export function BirthDateField({
 
       {/*------ Exact Date ------*/}
       {mode === "exact" ? (
-        <div className="grid grid-cols-[5rem_minmax(0,1fr)_6rem] gap-2">
+        // English's "Day" runs wider than «روز» beside the select's chevron, and on a phone "September" needs the room
+        // too: there the three selects take less inner padding (the chevron still clears the text) and the month takes
+        // what the day and year columns give up.
+        <div className="grid grid-cols-[5rem_minmax(0,1fr)_6rem] gap-2 ltr:grid-cols-[5.75rem_minmax(0,1fr)_6rem] ltr:max-sm:grid-cols-[4.75rem_minmax(0,1fr)_5.25rem] ltr:max-sm:[&_select]:ps-3 ltr:max-sm:[&_select]:pe-8">
           <DateSelect label={m.account_dog_form_birth_day()} registration={register("birthDay")} invalid={!!error}>
             {Array.from({ length: dayCount }, (_, index) => (
               <NativeSelectOption key={index + 1} value={index + 1}>
@@ -77,9 +80,16 @@ export function BirthDateField({
         </div>
       ) : (
         /*------ Age ------*/
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted-foreground">{m.account_dog_form_birth_about()}</span>
-          <DateSelect label={m.account_dog_form_age_years_label()} registration={register("ageYears")} invalid={!!error} className="w-24">
+        // "11 months" needs about 8rem with the chevron, so on English phones «حدوداً» ("About") takes its own row and
+        // the two selects share the next one; from `sm` they sit in the row as in Persian.
+        <div className="flex flex-wrap items-center gap-2 text-sm ltr:max-sm:grid ltr:max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+          <span className="text-muted-foreground ltr:max-sm:col-span-3">{m.account_dog_form_birth_about()}</span>
+          <DateSelect
+            label={m.account_dog_form_age_years_label()}
+            registration={register("ageYears")}
+            invalid={!!error}
+            className="w-24 ltr:w-full ltr:sm:w-36"
+          >
             {AGE_YEAR_OPTIONS.map((option) => (
               <NativeSelectOption key={option} value={option}>
                 {ageYearsLabel(option)}
@@ -87,7 +97,12 @@ export function BirthDateField({
             ))}
           </DateSelect>
           <span className="text-muted-foreground">{m.account_dog_form_birth_and()}</span>
-          <DateSelect label={m.account_dog_form_age_months_label()} registration={register("ageMonths")} invalid={!!error} className="w-24">
+          <DateSelect
+            label={m.account_dog_form_age_months_label()}
+            registration={register("ageMonths")}
+            invalid={!!error}
+            className="w-24 ltr:w-full ltr:sm:w-36"
+          >
             {AGE_MONTH_OPTIONS.map((option) => (
               <NativeSelectOption key={option} value={option}>
                 {ageMonthsLabel(option)}

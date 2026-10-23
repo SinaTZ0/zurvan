@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "auth_meta_title": "ورود به آموزش K9",
-  "auth_meta_description": "با شماره موبایلت وارد آموزش K9 شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت.",
+  "auth_meta_title": "ورود به زروان",
+  "auth_meta_description": "با شماره موبایلت وارد زروان شو، برای رزرو ارزیابی و دنبال کردن آموزش سگت.",
   "auth_logo_label": "زروان، صفحه‌ی اصلی",
   "auth_welcome_lead": "وارد شو،",
   "auth_welcome_accent": "منتظرتم",
@@ -54,7 +54,7 @@
   "auth_error_too_many_attempts": "چند بار کد اشتباه وارد شد. کد تازه بگیر.",
   "auth_error_resend_too_soon": "کد قبلی تازه فرستاده شده. یک دقیقه صبر کن و دوباره بخواه.",
   "auth_error_too_many_codes": "برای این شماره در یک ساعت گذشته کد زیادی فرستاده شده. کمی بعد دوباره امتحان کن.",
-  "auth_error_blocked": "این حساب مسدود شده. برای پیگیری با آموزش K9 تماس بگیر.",
+  "auth_error_blocked": "این حساب مسدود شده. برای پیگیری با زروان تماس بگیر.",
   "auth_error_sign_in_paused": "چند بار رمز اشتباه وارد شد. چند دقیقه صبر کن، یا با کد پیامکی وارد شو.",
   "auth_error_too_many_requests": "تعداد درخواست‌ها زیاد بود. کمی صبر کن و دوباره امتحان کن.",
   "auth_error_wrong_credentials": "شماره یا رمز عبور درست نیست. اگه رمز نذاشتی، با کد پیامکی وارد شو.",

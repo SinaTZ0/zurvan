@@ -26,10 +26,11 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
     <section aria-labelledby="logbook-title">
       {/* «لاگ‌بوک» is the owner's word for the dog's file (2026-10-19): it is named first so it can be found by it. */}
       <SectionHead id="logbook-title" title={m.account_dog_detail_logbook_title()}>
-        {/* On phones the lectern needs the room the corner's margin would take. */}
+        {/* On phones the lectern needs the room the corner's margin would take. It stands on the outer side (logical
+            `start-[80%]`), so on the English page too it keeps clear of the heading. */}
         <div className={cn("relative", empty && "me-8 sm:me-0")}>
           {empty && (
-            <MascotCut name="lectern" className="absolute right-[80%] bottom-0 w-16 translate-y-[3%] sm:w-24" />
+            <MascotCut name="lectern" className="absolute start-[80%] bottom-0 w-16 translate-y-[3%] sm:w-24" />
           )}
           <EdgeDog name="write" wide className="w-28 sm:w-36" />
         </div>
@@ -87,7 +88,10 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
                     </h3>
                     {entry.course && <span className="text-sm text-muted-foreground">{entry.course.title}</span>}
                   </div>
-                  <p className="text-pretty whitespace-pre-line">{entry.notes}</p>
+                  {/* The Admin's own words (Persian): `dir="auto"` and `<bdi>` keep their direction on the English page. */}
+                  <p dir="auto" className="text-pretty whitespace-pre-line">
+                    {entry.notes}
+                  </p>
                   {entry.exercises.length > 0 && (
                     <ul aria-label={m.account_dog_detail_logbook_exercises()} className="flex flex-wrap gap-2">
                       {entry.exercises.map((exercise) => (
@@ -100,7 +104,7 @@ export function LogbookSection({ entries }: { entries: LogbookEntry[] }) {
                   {entry.progress && (
                     <p className="text-sm text-pretty text-muted-foreground">
                       <span className="font-bold text-foreground">{m.account_dog_detail_logbook_summary()} </span>
-                      {entry.progress}
+                      <bdi>{entry.progress}</bdi>
                     </p>
                   )}
                 </div>

@@ -1,6 +1,7 @@
 import { CircleAlertIcon, PlusIcon } from "lucide-react";
 
 import { StagePanel } from "~/routes/buy/components/stage-panel";
+import { m } from "~/paraglide/messages";
 
 /*===== Pick First Panel =====*/
 /**
@@ -11,17 +12,15 @@ export function PickFirstPanel() {
   return (
     <StagePanel
       titleId="pick-first-title"
-      title="دوره‌ها اینجا میان"
+      title={m.buy_pick_first_title()}
       scene={{
         box: [19, 25],
         scenery: { name: "chalkboard", width: [8.5, 12.5], left: [1, 1.5] },
         dog: { name: "point-up", height: [8.5, 12.5], left: [9.5, 13.25], head: 0.56 },
-        bubble: "یکی رو انتخاب کن!",
+        bubble: m.buy_pick_first_bubble(),
       }}
     >
-      <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">
-        اول یکی از سگ‌هات رو انتخاب کن؛ دوره‌هایی که می‌تونه برداره اینجا میاد.
-      </p>
+      <p className="mt-3 max-w-md text-lead text-pretty text-muted-foreground">{m.buy_pick_first_text()}</p>
 
       {/*------ How the Lists Read ------*/}
       <ul className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -30,8 +29,8 @@ export function PickFirstPanel() {
             <PlusIcon aria-hidden strokeWidth={2.4} className="size-4" />
           </span>
           <span className="text-sm text-pretty">
-            <span className="block font-bold">الان می‌تونه</span>
-            <span className="text-muted-foreground">با قیمتش؛ یه دکمه و می‌ره توی سبد.</span>
+            <span className="block font-bold">{m.buy_pick_first_can_title()}</span>
+            <span className="text-muted-foreground">{m.buy_pick_first_can_text()}</span>
           </span>
         </li>
         <li className="flex items-start gap-3 rounded-2xl border border-foreground/15 bg-card paper-grain p-4">
@@ -39,8 +38,8 @@ export function PickFirstPanel() {
             <CircleAlertIcon aria-hidden strokeWidth={2} className="size-4" />
           </span>
           <span className="text-sm text-pretty">
-            <span className="block font-bold">بعداً باز می‌شن</span>
-            <span className="text-muted-foreground">با دلیلش و راهی که بهش می‌رسه.</span>
+            <span className="block font-bold">{m.buy_pick_first_later_title()}</span>
+            <span className="text-muted-foreground">{m.buy_pick_first_later_text()}</span>
           </span>
         </li>
       </ul>

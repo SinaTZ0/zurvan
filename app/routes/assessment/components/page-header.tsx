@@ -27,9 +27,7 @@ export function PageHeader({ step, walkedFrom, sent }: { step: RoadStep; walkedF
           {sent ? m.assessment_header_title_sent() : m.assessment_header_title()}
         </h1>
         <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">
-          {sent
-            ? m.assessment_header_lead_sent({ trainer })
-            : m.assessment_header_lead({ trainer })}
+          {sent ? m.assessment_header_lead_sent({ trainer }) : m.assessment_header_lead({ trainer })}
         </p>
       </div>
 

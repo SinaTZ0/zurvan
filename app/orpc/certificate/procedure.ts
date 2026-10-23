@@ -16,7 +16,12 @@ export const listMyCertificatesProcedure = base.certificate.listMine
   .use(requireRoleMiddleware("customer"))
   .use(provideDbMiddleware)
   .handler(async ({ context, input, errors }) => {
-    const result = await listMyCertificates({ db: context.db, ownerId: context.user.id, dogId: input.dogId });
+    const result = await listMyCertificates({
+      db: context.db,
+      ownerId: context.user.id,
+      dogId: input.dogId,
+      locale: context.locale,
+    });
     if (result.kind === "not-found") throw errors.NOT_FOUND({ data: { errors: [], fields: {} } });
     return result.certificates.map((certificate) => ({
       ...certificate,
@@ -27,9 +32,7 @@ export const listMyCertificatesProcedure = base.certificate.listMine
 /*===== Public =====*/
 export const verifyCertificateProcedure = base.certificate.verify
   .use(provideDbMiddleware)
-  .handler(({ context, input }) =>
-    verifyCertificate({ db: context.db, number: input.number, locale: context.locale }),
-  );
+  .handler(({ context, input }) => verifyCertificate({ db: context.db, number: input.number, locale: context.locale }));
 
 /*===== Admin =====*/
 export const adminListCertificatesProcedure = base.certificate.admin.list

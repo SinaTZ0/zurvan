@@ -3,9 +3,9 @@ import { m } from "~/paraglide/messages";
 import { getLocale } from "~/paraglide/runtime";
 
 /*===== Head Trainer =====*/
-// The center is his practice: he founded it, runs the evaluations and is the app's only Admin and only trainer (the
+// The center is her practice: she founded it, runs the evaluations and is the app's only Admin and only trainer (the
 // owner confirmed it; the two placeholder colleagues' cards were removed with the old home page and are in git
-// history). The storefront, the footer and the auth page speak about him, so his details live in one place.
+// history). The storefront, the footer and the auth page speak about her, so her details live in one place.
 //
 // Name, experience and credentials supplied on the owner's business card. The photos are edits (2026-10-22) of the two
 // the owner sent on 2026-10-19: the same face, but a trainer's everyday clothes and a daylight training field in place

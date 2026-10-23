@@ -15,7 +15,9 @@ import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
  * only scenery, so it is dimmed by hand.
  *
  * Physical sides on purpose: every dog faces right (the start side in RTL), so the scenery stands behind him (left) and
- * the bush in front of him (right).
+ * the bush in front of him (right). On the English pages the figure stands at the row's right end, so the whole picture
+ * is mirrored (`ltr:-scale-x-100`): he faces the words and his scenery stays outside, in the room the row leaves for it.
+ * His bubble (`children`) is outside the mirror, so its words read; the caller places it for each direction.
  */
 export function EdgeDog({
   name,
@@ -37,22 +39,24 @@ export function EdgeDog({
 }) {
   return (
     <div className={cn("relative translate-y-[3%]", className)}>
-      <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
-      {scenery && (
-        <div className="absolute right-[78%] bottom-0 translate-y-[3%]" style={{ width: scenery.width }}>
-          <MascotCut
-            name={scenery.name}
-            className={cn("block w-full", scenery.name === "chalkboard" && "scenery-dim")}
-          />
-          <MascotCut
-            name="plants"
-            className="lively-sway-2 absolute right-[80%] bottom-0 w-[38%] translate-y-[4%] -scale-x-100"
-          />
+      <div className="relative ltr:-scale-x-100">
+        <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
+        {scenery && (
+          <div className="absolute right-[78%] bottom-0 translate-y-[3%]" style={{ width: scenery.width }}>
+            <MascotCut
+              name={scenery.name}
+              className={cn("block w-full", scenery.name === "chalkboard" && "scenery-dim")}
+            />
+            <MascotCut
+              name="plants"
+              className="lively-sway-2 absolute right-[80%] bottom-0 w-[38%] translate-y-[4%] -scale-x-100"
+            />
+          </div>
+        )}
+        <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[74%] w-[38%]" />
+        <div className={cn("relative", motionClassName)}>
+          <MascotCut name={name} className={cn(idle, "block w-full")} />
         </div>
-      )}
-      <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[74%] w-[38%]" />
-      <div className={cn("relative", motionClassName)}>
-        <MascotCut name={name} className={cn(idle, "block w-full")} />
       </div>
       {children}
     </div>

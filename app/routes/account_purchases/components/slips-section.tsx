@@ -4,6 +4,7 @@ import { DISPLAY_HEADING } from "~/lib/display-heading";
 import type { Payment } from "~/orpc/checkout/contract";
 import type { Media } from "~/orpc/media/contract";
 import type { MyRefund } from "~/orpc/refund/contract";
+import { m } from "~/paraglide/messages";
 
 import { PaymentSlip } from "./payment-slip";
 
@@ -33,28 +34,31 @@ export function SlipsSection({
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0 pb-4">
           <h2 id="slips-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
-            رسیدها
+            {m.account_purchases_slips_title()}
           </h2>
-          <p className="mt-1 text-pretty text-muted-foreground">تازه‌ترین بالاست؛ هر رسید مال یه پرداخته.</p>
+          <p className="mt-1 text-pretty text-muted-foreground">{m.account_purchases_slips_line()}</p>
         </div>
 
         {/* Physical sides: he faces right (towards the heading); the bush in front of him is the bigger one, and the
-            bubble's tail (2.25rem in from its left edge) is aimed at his head, about 66% across him. */}
+            bubble's tail (2.25rem in from its left edge) is aimed at his head, about 66% across him. On the English pages
+            he stands at the right end, so the picture is mirrored and the bubble placed from the right instead. */}
         <div
           aria-hidden
           className="pointer-events-none relative z-10 me-3 w-20 shrink-0 translate-y-[3%] sm:me-8 sm:w-[6.5rem]"
         >
-          <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
-          <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[78%] w-[52%]" />
-          <MascotCut name="plants" className="lively-sway-2 absolute right-[84%] bottom-0 w-[38%] -scale-x-100" />
-          <div className="ap-receipt relative">
-            <MascotCut name="receipt" className="lively-breathe block w-full" />
+          <div className="relative ltr:-scale-x-100">
+            <div className="absolute -inset-x-1/2 -top-1/4 bottom-0 bg-[radial-gradient(ellipse_50%_50%_at_50%_60%,rgb(255_194_26/0.08),transparent)]" />
+            <MascotCut name="plants" className="lively-sway absolute bottom-0 left-[78%] w-[52%]" />
+            <MascotCut name="plants" className="lively-sway-2 absolute right-[84%] bottom-0 w-[38%] -scale-x-100" />
+            <div className="ap-receipt relative">
+              <MascotCut name="receipt" className="lively-breathe block w-full" />
+            </div>
           </div>
           <ChalkBubble
-            tail="left"
-            className="ap-receipt-pop absolute bottom-[calc(100%+0.2rem)] left-[calc(66%-2.25rem)] max-w-none whitespace-nowrap [--pop-origin:2.25rem_100%]"
+            tail="end"
+            className="ap-receipt-pop absolute bottom-[calc(100%+0.2rem)] left-[calc(66%-2.25rem)] max-w-none whitespace-nowrap [--pop-origin:2.25rem_100%] ltr:right-[calc(66%-2.25rem)] ltr:left-auto ltr:origin-[calc(100%-2.25rem)_100%]!"
           >
-            این آخریشه!
+            {m.account_purchases_slips_bubble()}
           </ChalkBubble>
         </div>
       </div>

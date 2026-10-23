@@ -9,7 +9,8 @@ import { formatTomanShort } from "~/lib/course-format";
  * stretched to the tag (`non-scaling-stroke` keeps the ink even), so the tag fits its words whatever the price; the hole
  * is its own circle, which stretching would squash.
  *
- * Physical sides on purpose: the point and the hole are on the tag's right, the reading start in RTL. `swingKey`
+ * Physical sides on purpose: the point and the hole are on the tag's right, the reading start in RTL, and the wide
+ * padding stays on that side in English too, so the amount never runs into the hole. `swingKey`
  * changes when the course goes into the cart: the tag remounts and swings once on its hole (`by-swing`).
  */
 export function PriceTag({
@@ -26,7 +27,7 @@ export function PriceTag({
     <p
       key={swingKey ?? "still"}
       className={cn(
-        "relative flex w-max shrink-0 origin-[calc(100%-1.4rem)_50%] -rotate-[2.5deg] items-center py-2 ps-10 pe-4",
+        "relative flex w-max shrink-0 origin-[calc(100%-1.4rem)_50%] -rotate-[2.5deg] items-center py-2 pr-10 pl-4",
         swingKey !== null && "by-swing",
         className,
       )}

@@ -89,7 +89,7 @@ export function SceneStage({ spec, className }: { spec: SceneSpec; className?: s
 
         {/*------ Bubble ------*/}
         {spec.bubble && (
-          <div className="absolute right-[calc(var(--box)-var(--dog-l)-var(--dog-h)*var(--head)-2.25rem)] bottom-[calc(var(--dog-h)+0.4rem)] flex w-[13rem] justify-start lg:w-[16rem]">
+          <div className="absolute right-[calc(var(--box)-var(--dog-l)-var(--dog-h)*var(--head)-2.25rem)] bottom-[calc(var(--dog-h)+0.4rem)] flex w-[13rem] justify-start lg:w-[16rem] ltr:justify-end">
             <ChalkBubble tail="right" className="lively-reveal-pop text-pretty">
               {spec.bubble}
             </ChalkBubble>

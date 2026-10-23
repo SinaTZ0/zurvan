@@ -8,9 +8,10 @@ import { Link } from "~/components/link";
 import { buttonVariants } from "~/components/ui/button";
 import { toast } from "~/components/ui/toast";
 import { useHydrated } from "~/hooks/use-hydrated";
-import { describeSessions } from "~/lib/course-format";
+import { describeSessions, latinNameAddsToTitle } from "~/lib/course-format";
 import type { Course } from "~/orpc/course/contract";
 import { PriceTag } from "~/routes/buy/components/price-tag";
+import { m } from "~/paraglide/messages";
 
 /*===== Course Buy Card =====*/
 /**
@@ -47,7 +48,7 @@ export function CourseBuyCard({
   function add() {
     if (inCart) return;
     const result = addToCart({ courseSlug: course.slug, dogId });
-    if (result === "full") toast.add({ title: "سبد پره؛ اول یکی از موردهاش رو بردار.", type: "error" });
+    if (result === "full") toast.add({ title: m.buy_card_cart_full(), type: "error" });
     if (result === "added") setAdded((count) => (count ?? 0) + 1);
   }
 
@@ -93,9 +94,11 @@ export function CourseBuyCard({
             {course.title}
           </Link>
         </h3>
-        <p dir="ltr" className="mt-0.5 w-fit text-sm text-muted-foreground">
-          {course.latinName}
-        </p>
+        {latinNameAddsToTitle(course) && (
+          <p dir="ltr" className="mt-0.5 w-fit text-sm text-muted-foreground">
+            {course.latinName}
+          </p>
+        )}
         <p className="mt-1.5 text-sm text-muted-foreground">{describeSessions(course)}</p>
       </div>
 
@@ -125,11 +128,11 @@ export function CourseBuyCard({
             <PlusIcon className={cn(icon, inCart && "scale-50 rotate-90 opacity-0")} />
             <CheckIcon strokeWidth={2.6} className={cn(icon, !inCart && "scale-50 -rotate-90 opacity-0")} />
           </span>
-          {inCart ? "در سبد است" : "افزودن به سبد"}
+          {inCart ? m.buy_card_in_cart() : m.buy_card_add()}
         </button>
 
         {/* Always mounted: a live region has to exist before its text changes to be announced. */}
-        <output className="sr-only">{added !== null && inCart ? `${course.title} به سبد اضافه شد` : ""}</output>
+        <output className="sr-only">{added !== null && inCart ? m.buy_card_added({ title: course.title }) : ""}</output>
       </div>
     </article>
   );

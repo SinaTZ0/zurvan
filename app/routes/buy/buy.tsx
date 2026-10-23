@@ -4,8 +4,10 @@ import { cn } from "cn";
 import { z } from "zod";
 
 import { isShownFamily } from "~/lib/course-families";
+import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
+import { m } from "~/paraglide/messages";
 import type { Dog } from "~/orpc/dog/contract";
 import { splitCourses } from "~/routes/buy/buy-lists";
 import { BuyError } from "~/routes/buy/components/buy-error";
@@ -48,12 +50,7 @@ export const Route = createFileRoute("/_public/buy")({
     const dog = pickDog({ dogs, asked: deps.dog });
     if (dog) await queryClient.ensureQueryData(dogCoursesQuery(dog.id));
   },
-  head: () => ({
-    meta: [
-      { title: "خرید دوره | آموزش K9" },
-      { name: "description", content: "اول سگت رو انتخاب کن؛ برای هر دوره می‌بینی مناسبشه یا اول چی لازمه." },
-    ],
-  }),
+  head: () => pageHead({ path: "/buy", title: m.buy_meta_title(), description: m.buy_meta_description() }),
   // The page lists someone's own dogs and what each can take, so no shared cache may keep it (the public layout sets
   // none).
   headers: () => ({ "Cache-Control": "private, no-store" }),

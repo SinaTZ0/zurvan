@@ -1,7 +1,7 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "account_dog_form_meta_title_new": "معرفی سگ تازه | آموزش K9",
-  "account_dog_form_meta_title_edit": "ویرایش {name} | آموزش K9",
+  "account_dog_form_meta_title_new": "معرفی سگ تازه | زروان",
+  "account_dog_form_meta_title_edit": "ویرایش {name} | زروان",
   "account_dog_form_header_chip_edit": "ویرایش",
   "account_dog_form_header_chip_new": "سگ تازه",
   "account_dog_form_header_title_edit_prefix": "مشخصات",

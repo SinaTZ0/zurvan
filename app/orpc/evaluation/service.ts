@@ -206,7 +206,7 @@ export async function requestEvaluation({
     phoneNumber: await findAdminPhoneNumber({ db }),
     kind: "evaluation-requested",
     // The link opens the request's drawer on the Admin's Evaluations page (F9: SMS links open the drawer directly).
-    body: `آموزش K9: درخواست ارزیابی تازه برای ${view.dog.name}. با مشتری تماس بگیر.\n${env.BETTER_AUTH_URL}/admin/evaluations?evaluation=${view.id}`,
+    body: `زروان: درخواست ارزیابی تازه برای ${view.dog.name}. با مشتری تماس بگیر.\n${env.BETTER_AUTH_URL}/admin/evaluations?evaluation=${view.id}`,
   });
   return { kind: "success", evaluation: view };
 }
@@ -291,7 +291,7 @@ async function notifyEvaluated({ view }: { view: AdminEvaluation }) {
   await notify({
     phoneNumber: view.customer.phoneNumber,
     kind: "evaluation-evaluated",
-    body: `آموزش K9: ${view.dog.name} ارزیابی شد و می‌توانی دوره‌هایش را بخری.`,
+    body: `زروان: ${view.dog.name} ارزیابی شد و می‌توانی دوره‌هایش را بخری.`,
   });
 }
 
@@ -335,7 +335,7 @@ export async function rejectRequest({
   await notify({
     phoneNumber: view.customer.phoneNumber,
     kind: "evaluation-rejected",
-    body: `آموزش K9: درخواست ارزیابی ${view.dog.name} پذیرفته نشد: ${parsed.data.reason}`,
+    body: `زروان: درخواست ارزیابی ${view.dog.name} پذیرفته نشد: ${parsed.data.reason}`,
   });
   return { kind: "success", evaluation: view };
 }

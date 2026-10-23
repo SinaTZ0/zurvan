@@ -1,3 +1,4 @@
+import { latinNameAddsToTitle } from "~/lib/course-format";
 import { cn } from "cn";
 import { CheckIcon, LockKeyholeIcon, MinusIcon } from "lucide-react";
 
@@ -39,8 +40,8 @@ export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: 
       <SectionHead id="enrollments-title" title={m.account_dog_detail_enrollments_title()}>
         <EdgeDog name="clipboard" className="w-[5.25rem] sm:w-24">
           <ChalkBubble
-            tail="left"
-            className="lively-reveal-pop absolute bottom-[92%] left-[42%] max-w-[12rem] text-pretty"
+            tail="end"
+            className="lively-reveal-pop absolute end-[42%] bottom-[92%] max-w-[12rem] text-pretty"
           >
             {m.account_dog_detail_enrollments_bubble()}
           </ChalkBubble>
@@ -94,7 +95,7 @@ export function EnrollmentsSection({ enrollments, isEvaluated }: { enrollments: 
                   <EnrollmentStatusBadge status={enrollment.status} />
                 </div>
                 <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm text-muted-foreground">
-                  <bdi dir="ltr">{enrollment.course.latinName}</bdi>
+                  {latinNameAddsToTitle(enrollment.course) && <bdi dir="ltr">{enrollment.course.latinName}</bdi>}
                   <span>{describeDates(enrollment)}</span>
                 </div>
               </div>

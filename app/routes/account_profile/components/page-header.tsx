@@ -2,6 +2,7 @@ import { cn } from "cn";
 import { SlidersHorizontalIcon } from "lucide-react";
 
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 
 /*===== Page Header =====*/
 /**
@@ -13,11 +14,11 @@ export function PageHeader({ isPartner }: { isPartner: boolean }) {
     <header>
       <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
         <SlidersHorizontalIcon aria-hidden strokeWidth={2} className="size-4" />
-        تنظیمات
+        {m.account_profile_header_chip()}
       </p>
-      <h1 className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>تنظیمات حساب</h1>
+      <h1 className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance")}>{m.account_profile_header_title()}</h1>
       <p className="mt-3 max-w-xl text-lead text-pretty text-muted-foreground">
-        {isPartner ? "اسمت، رمزت و شبای واریز کمیسیونت رو همین‌جا درست کن." : "اسمت و رمزت رو همین‌جا درست کن."}
+        {isPartner ? m.account_profile_header_line_partner() : m.account_profile_header_line_customer()}
       </p>
     </header>
   );

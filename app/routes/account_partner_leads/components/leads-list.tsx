@@ -59,7 +59,7 @@ export function LeadsList({
       <PlateHead
         id="leads-list-title"
         title={m.account_partner_leads_list_title()}
-        figureClassName={nobody ? "me-6 sm:me-10" : "me-[5.5rem] sm:me-[6.25rem]"}
+        figureClassName={nobody ? "me-6 sm:me-10" : "ml-[5.5rem] sm:ml-[6.25rem]"}
         figure={
           nobody ? (
             <EmptyBoard />
@@ -70,11 +70,13 @@ export function LeadsList({
               className="w-[4.5rem] sm:w-[5.25rem]"
               scenery={{ name: "board", className: "right-[70%] w-[150%] translate-y-[3%]" }}
             >
-              {/* Beside his head, towards the heading and above its line; the tail (bottom left) dips towards his muzzle. */}
-              <div className="lively-float absolute bottom-[64%] left-[80%]">
+              {/* Beside his head, towards the heading and above its line; the tail dips towards his muzzle. The heading is on
+                  his left in English, so there the bubble opens leftwards with its tail on its right, over his head (his
+                  muzzle is at the column's edge). */}
+              <div className="lively-float absolute bottom-[64%] ltr:right-[calc(45%-2.25rem)] rtl:left-[80%]">
                 <ChalkBubble
-                  tail="left"
-                  className="pl-view-pop max-w-none whitespace-nowrap [--pop-origin:2.25rem_100%]"
+                  tail="end"
+                  className="pl-view-pop max-w-none whitespace-nowrap [--pop-origin:2.25rem_100%] ltr:[--pop-origin:calc(100%-2.25rem)_100%]"
                 >
                   {m.account_partner_leads_list_bubble()}
                 </ChalkBubble>

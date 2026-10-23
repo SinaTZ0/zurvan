@@ -2,8 +2,12 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { EVALUATION_VIDEOS_PATH } from "~/orpc/evaluation/constants";
 import type { EvaluationVideo } from "~/orpc/evaluation/contract";
+import { LOCALE_HEADER } from "~/orpc/locale";
+import { m } from "~/paraglide/messages";
+import { getLocale } from "~/paraglide/runtime";
 
-const GENERIC_MESSAGE = "ویدیو بارگذاری نشد. دوباره امتحان کن.";
+/** Worded when a refusal happens, so it is in the page's language. */
+const genericMessage = () => m.assessment_video_error_generic();
 
 /** What `POST /api/evaluation-videos` answers on a refusal. */
 type VideoErrorBody = { errors?: string[]; fields?: { file?: string } };
@@ -14,9 +18,9 @@ type VideoErrorBody = { errors?: string[]; fields?: { file?: string } };
  *
  * This is hand-written `XMLHttpRequest` on purpose: it is the one place the app does not use oRPC or `fetch`, because
  * `fetch` cannot report upload progress and a 100 MB video needs a progress bar. The route answers 201 with the
- * `EvaluationVideo`, or `{ errors, fields: { file } }` with a Persian message.
+ * `EvaluationVideo`, or `{ errors, fields: { file } }` with a message in the language of the `x-locale` header.
  *
- * `upload` rejects with an `Error` whose message is Persian and ready to show. Calls run concurrently, each tracked by
+ * `upload` rejects with an `Error` whose message is in the page's language and ready to show. Calls run concurrently, each tracked by
  * the caller's `key` so `cancel` can abort one.
  */
 export function useVideoUpload() {
@@ -39,6 +43,8 @@ export function useVideoUpload() {
         const finish = () => requests.current.delete(key);
 
         request.open("POST", EVALUATION_VIDEOS_PATH);
+        // The route words its refusals in this language; without the header they would be Persian on `/en`.
+        request.setRequestHeader(LOCALE_HEADER, getLocale());
         // Same origin, so the session cookie goes along without further options.
         request.upload.addEventListener("progress", (event) => {
           if (event.lengthComputable) onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
@@ -50,7 +56,7 @@ export function useVideoUpload() {
               resolve(JSON.parse(request.responseText) as EvaluationVideo);
               return;
             } catch {
-              reject(new Error(GENERIC_MESSAGE));
+              reject(new Error(genericMessage()));
               return;
             }
           }
@@ -60,11 +66,11 @@ export function useVideoUpload() {
           } catch {
             // A proxy's HTML error page (413 from nginx, for example) is not ours to show.
           }
-          reject(new Error(body.fields?.file ?? body.errors?.[0] ?? GENERIC_MESSAGE));
+          reject(new Error(body.fields?.file ?? body.errors?.[0] ?? genericMessage()));
         });
         request.addEventListener("error", () => {
           finish();
-          reject(new Error(GENERIC_MESSAGE));
+          reject(new Error(genericMessage()));
         });
         request.addEventListener("abort", () => {
           finish();

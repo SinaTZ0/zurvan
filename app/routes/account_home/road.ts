@@ -53,7 +53,13 @@ export function buildRoad({
 
   /*------ Evaluation ------*/
   const evaluation: RoadStop = evaluated
-    ? { id: "evaluation", label: m.account_home_road_evaluation(), fact: m.account_home_road_evaluated(), tone: "done", mark: "check" }
+    ? {
+        id: "evaluation",
+        label: m.account_home_road_evaluation(),
+        fact: m.account_home_road_evaluated(),
+        tone: "done",
+        mark: "check",
+      }
     : status.kind === "waiting"
       ? atEvaluation(m.account_home_road_waiting({ trainer }))
       : status.kind === "rejected"
@@ -63,7 +69,13 @@ export function buildRoad({
   /*------ Courses ------*/
   // A dog that has passed courses but has none running now hasn't "never bought": it just has no new one yet.
   const courses: RoadStop = !evaluated
-    ? { id: "courses", label: m.account_home_road_courses(), fact: m.account_home_road_after_evaluation(), tone: "locked", mark: "lock" }
+    ? {
+        id: "courses",
+        label: m.account_home_road_courses(),
+        fact: m.account_home_road_after_evaluation(),
+        tone: "locked",
+        mark: "lock",
+      }
     : activeCount > 0
       ? { id: "courses", label: m.account_home_road_courses(), fact: null, tone: "current", mark: "dot" }
       : {
@@ -88,7 +100,13 @@ export function buildRoad({
       courses,
       passed > 0
         ? { id: "passed", label: m.account_home_road_passed(), fact: null, tone: "done", mark: "check" }
-        : { id: "passed", label: m.account_home_road_passed(), fact: m.account_home_road_none_yet(), tone: "ahead", mark: "hollow" },
+        : {
+            id: "passed",
+            label: m.account_home_road_passed(),
+            fact: m.account_home_road_none_yet(),
+            tone: "ahead",
+            mark: "hollow",
+          },
     ],
   };
 }

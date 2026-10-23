@@ -1,7 +1,8 @@
 # Frontend Guideline (TanStack Start)
 
 The frontend is organized by route. Each route slice owns everything that only it uses, and code moves to a shared
-location only when a second consumer needs it. The UI is in Persian and right-to-left.
+location only when a second consumer needs it. The UI is in Persian and right-to-left, with an English version (left to
+right) under `/en` for every page but the Admin.
 
 ## Structure
 
@@ -59,7 +60,7 @@ export const Route = createFileRoute("/_public/courses/$slug")({
     return { title: course.title, summary: course.summary };
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: `${loaderData.title} | آموزش K9` }] : [{ title: "دوره پیدا نشد | آموزش K9" }],
+    meta: loaderData ? [{ title: `${loaderData.title} | زروان` }] : [{ title: "دوره پیدا نشد | زروان" }],
   }),
   staticData: { flushFooter: true },
   component: CourseDetailPage,
@@ -189,14 +190,27 @@ Who made a change decides how it reaches the screen (decision 2 in
   in-memory router (`app/routes/rules/rules.stories.tsx`).
 - Handle every state a user can see: loading, empty, error, and success.
 
-## Persian, RTL, and Accessibility
+## Languages, Direction, and Accessibility
 
-- The document is `lang="fa"` and `dir="rtl"`. All user-facing text is Persian; code identifiers and developer
-  diagnostics stay in English.
+- Persian is the base language, at `/...`, `lang="fa"` and `dir="rtl"`. English is under `/en/...`, `lang="en"` and
+  `dir="ltr"`. The Admin (`/admin`) and `/rules` are Persian only. Code identifiers and developer diagnostics stay in
+  English. The plan and its notes are in [`i18n/english-version-plan.md`](./i18n/english-version-plan.md).
+- **Adding a string.** Never inline text. Add a key to the slice's `messages/<slice>/fa.json` and `en.json` (keys
+  `<slice>_<area>_<what>`; shared pieces use `messages/shared/`, procedures `messages/server/`), then call
+  `m.<key>()` from `~/paraglide/messages`. The English follows
+  [`i18n/english-glossary.md`](./i18n/english-glossary.md). A plural is two keys (`_one` / `_other`) chosen in code.
+  `npm run lint` checks that both files have every key and the same placeholders. A new slice is a new folder plus a
+  `pathPattern` line in `project.inlang/settings.json`.
+- **Call messages while rendering, never at module level** (a constant, a JSX element built at import, a spread of a
+  getter object): that freezes the language the module first loaded in and breaks hydration. Zod messages are
+  `{ error: () => m.…() }`.
 - Use logical directions, never physical ones: Tailwind `ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`, `text-start`
-  instead of `ml-`, `pl-`, `left-`, `text-left`. Mirror directional icons.
-- Format numbers and dates with `Intl` and the `fa-IR` locale. Inputs that accept numbers must accept Persian and
-  Arabic digits.
+  instead of `ml-`, `pl-`, `left-`, `text-left`. Flip forward and back icons with `ltr:-scale-x-100`. An English-only
+  fix uses an `ltr:` variant, so no Persian pixel moves.
+- Format numbers, dates and money with the language-aware helpers (`~/lib/locale-format`, `~/lib/course-format`), and
+  typed dates with `entryCalendar()` (`~/lib/date-entry`: Jalali in Persian, Gregorian in English). Inputs that accept
+  numbers must accept Persian and Arabic digits.
+- Each page's `head()` uses `pageHead` (`~/lib/seo`) for its title, description, canonical and `hreflang` links.
 - Use semantic elements and native controls first. Every input has a label, every action is keyboard-reachable, and
   errors are announced to assistive technology.
 

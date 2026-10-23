@@ -72,7 +72,10 @@ export function FormPlate({
 
       {/*------ The Dog on the Edge (phones) ------*/}
       {dog && (
-        <div aria-hidden className="pointer-events-none absolute end-[4.25rem] bottom-[calc(100%-3px)] ltr:end-auto ltr:left-[4.25rem] z-10 lg:hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute end-[4.25rem] bottom-[calc(100%-3px)] z-10 lg:hidden ltr:end-auto ltr:left-[4.25rem]"
+        >
           <EdgeDog name={dog.name} scenery={dog.scenery} className={dog.width}>
             {speech && (
               // Physical: to his right, beside his head, the tail aimed down at it. In English the dog stands at the physical

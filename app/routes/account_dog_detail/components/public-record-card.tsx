@@ -46,7 +46,10 @@ export function PublicRecordCard({
   const setPublic = useMutation({
     ...orpc.logbook.setPublic.mutationOptions(),
     onSuccess: async (next) => {
-      toast.add({ title: next.isPublic ? m.account_dog_detail_public_toast_on() : m.account_dog_detail_public_toast_off(), type: "success" });
+      toast.add({
+        title: next.isPublic ? m.account_dog_detail_public_toast_on() : m.account_dog_detail_public_toast_off(),
+        type: "success",
+      });
       setAgreed(false);
       // The card's state and the file card's note both come from the dog's public status.
       await queryClient.invalidateQueries({ queryKey: orpc.logbook.key() });
@@ -65,7 +68,9 @@ export function PublicRecordCard({
         <div key="public" className={cn("flex flex-col gap-4", changed && "answer-in")}>
           <p className="text-sm text-pretty text-muted-foreground">
             {m.account_dog_detail_public_now({
-              since: status.since ? ` ${m.account_dog_detail_public_since({ date: formatTimestamp(status.since) })}` : "",
+              since: status.since
+                ? ` ${m.account_dog_detail_public_since({ date: formatTimestamp(status.since) })}`
+                : "",
             })}
           </p>
           <Button

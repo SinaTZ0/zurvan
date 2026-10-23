@@ -62,6 +62,7 @@
   "shared_dog_age_months": "{count} ماهه",
   "shared_dog_age_year_one": "{count} ساله",
   "shared_dog_age_years": "{count} ساله",
+  "shared_dog_age_year_and_month_one": "{years} سال و {months} ماهه",
   "shared_dog_age_year_and_months": "{years} سال و {months} ماهه",
   "shared_dog_age_approximate": "حدوداً {age}",
   "shared_role_admin": "مدیر و مربی ارشد",

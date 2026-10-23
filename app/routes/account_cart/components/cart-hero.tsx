@@ -6,6 +6,7 @@ import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { m } from "~/paraglide/messages";
 import { COLUMN, FADED_ENDS, WARM_LIGHT } from "~/routes/account_cart/column";
 
 /*===== Cart Hero =====*/
@@ -47,10 +48,10 @@ export function CartHero({
           <div className={cn("lg:col-span-7", stage ? "pb-12 lg:pb-16" : "pb-2")}>
             <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/45 px-3.5 py-1 text-sm font-bold text-primary">
               <ShoppingBagIcon aria-hidden strokeWidth={2} className="size-4" />
-              سبد
+              {m.account_cart_hero_chip()}
             </p>
             <h1 id="cart-title" tabIndex={-1} className={cn(DISPLAY_HEADING, "mt-4 text-h1 text-balance outline-none")}>
-              سبد من
+              {m.account_cart_hero_title()}
             </h1>
             <p key={line} className="answer-in mt-3 max-w-lg text-lead text-pretty text-muted-foreground">
               {line}

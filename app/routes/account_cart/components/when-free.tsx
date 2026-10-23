@@ -13,6 +13,7 @@ import {
   type EvaluationPeriod,
   type EvaluationWeekday,
 } from "~/orpc/evaluation/constants";
+import { m } from "~/paraglide/messages";
 import { PLATE } from "~/routes/account_cart/column";
 import { EdgeDog } from "~/routes/account_cart/components/edge-dog";
 import { PlateHead } from "~/routes/account_cart/components/plate-head";
@@ -46,19 +47,22 @@ export function WhenFree({
         figureClassName="me-12 lg:me-16"
         heading={
           <h2 id="cart-when-free-title" className={cn(DISPLAY_HEADING, "text-2xl text-balance lg:text-3xl")}>
-            کی هماهنگ کنیم؟{" "}
-            <span className="font-sans text-sm font-normal whitespace-nowrap text-muted-foreground">(اختیاری)</span>
+            {m.account_cart_free_title()}{" "}
+            <span className="font-sans text-sm font-normal whitespace-nowrap text-muted-foreground">
+              {m.account_cart_free_optional()}
+            </span>
           </h2>
         }
       >
         <EdgeDog name="calendar" scenery={{ name: "clock", width: "62%" }} className="w-[5.25rem] lg:w-[7rem]">
           {speaks && (
-            // Physical: over his head, opening towards the words; the tail (left, 1.75rem in) aims down at him.
+            // Physical: over his head, opening towards the words; the tail (1.75rem in from the end nearest him, left
+            // in Persian) aims down at him. The English figure is mirrored, so the bubble opens to the left there.
             <ChalkBubble
-              tail="left"
-              className="answer-pop absolute bottom-[94%] left-[26%] w-max max-w-[min(13rem,calc(100vw-9rem))] text-pretty [--pop-origin:1.75rem_100%] lg:max-w-[15rem]"
+              tail="end"
+              className="answer-pop absolute bottom-[94%] left-[26%] w-max max-w-[min(13rem,calc(100vw-9rem))] text-pretty [--pop-origin:1.75rem_100%] lg:max-w-[15rem] ltr:right-[26%] ltr:left-auto ltr:[--pop-origin:calc(100%-1.75rem)_100%]"
             >
-              اینجوری {HEAD_TRAINER.firstName} بهتر می‌دونه کی زنگ بزنه.
+              {m.account_cart_free_bubble({ trainer: HEAD_TRAINER.firstName })}
             </ChalkBubble>
           )}
         </EdgeDog>
@@ -73,21 +77,20 @@ export function WhenFree({
         }}
       >
         <p className="max-w-xl text-sm leading-relaxed text-pretty text-muted-foreground">
-          روزها و ساعت‌هایی که معمولاً آزادی رو بزن تا {HEAD_TRAINER.firstName} موقع تماس از همون‌ها شروع کنه. این فقط
-          یه ترجیحه: جایی رزرو نمی‌شه و وقت دقیق موقع تماس مشخص می‌شه.
+          {m.account_cart_free_intro({ trainer: HEAD_TRAINER.firstName })}
         </p>
 
         <div className="mt-6 flex flex-col gap-6">
           <ChipGroup
             name="availableDays"
-            legend="چه روزهایی معمولاً آزادی؟"
+            legend={m.account_cart_free_days_legend()}
             options={EVALUATION_WEEKDAYS.map((value) => ({ value, label: EVALUATION_WEEKDAY_LABELS[value] }))}
             picked={days}
             onChange={onDaysChange}
           />
           <ChipGroup
             name="availablePeriods"
-            legend="چه ساعتی از روز؟"
+            legend={m.account_cart_free_periods_legend()}
             options={EVALUATION_PERIODS.map((value) => ({ value, label: EVALUATION_PERIOD_LABELS[value] }))}
             picked={periods}
             onChange={onPeriodsChange}
