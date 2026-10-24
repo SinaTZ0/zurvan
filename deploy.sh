@@ -16,6 +16,7 @@ On the first run, use --db-push --seed. Later, run without flags to update.
   --ip ADDRESS      Also serve HTTP on this IPv4 address (saved in .env)
   --db-push         Push Drizzle schema; auto-approves potentially destructive SQL
   --seed            Seed catalogue and reset demo accounts' history/photos
+                    (with --db-push: wipe the whole database, push, then seed)
   --seed-catalogue  Seed only the course catalogue (exclusive with --seed)
   --backup          Also save a database dump (automatic before push or seed)
   --no-pull         Deploy the existing checkout without fetching GitHub
@@ -198,6 +199,12 @@ ENV
     log "Saving database backup to $backup_file..."
     "${compose[@]}" exec -T db pg_dump -U zurvan -d zurvan -Fc > "$backup_file.tmp"
     mv -- "$backup_file.tmp" "$backup_file"
+  fi
+  if $db_push && $seed; then
+    # Drizzle Kit's push crashes while reading an existing table with a composite primary key (docs/deploy.md), so it
+    # only works on an empty database. The demo seed rebuilds everything anyway; the dump above keeps the old data.
+    log "Wiping the database so the schema is pushed onto an empty one (the seed rebuilds the demo)..."
+    "${compose[@]}" exec -T db psql -U zurvan -d zurvan -v ON_ERROR_STOP=1 -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
   fi
   if $db_push; then
     log "Pushing schema (--force auto-approves schema changes, including data loss)..."
