@@ -219,16 +219,18 @@ Playwright scripts behind these answers. Everything was checked on a production 
 - **CSS: use a side-effect `import "./app.css"` in the root.** `import appCss from "./app.css?url"` with a `<link>`
   breaks the Nitro build: the server build hashes the file differently from the client build, so the page links a CSS
   file that doesn't exist (404). With the side-effect import, Start adds the `<link>` itself.
-- **Use `@vitejs/plugin-react-swc` (4.3), not `@vitejs/plugin-react`.** `@vitejs/plugin-react` 6 doesn't install:
-  its optional peer `@rolldown/plugin-babel` conflicts with shadcn's Babel 7 (ERESOLVE), and `--legacy-peer-deps`
-  leaves a lockfile `npm ci` rejects. Start's docs allow the SWC plugin, and it worked.
+- **`@vitejs/plugin-react` 6 needs an npm override.** Out of the box it doesn't install: its optional peer
+  `@rolldown/plugin-babel` reaches `@babel/plugin-transform-runtime` 8, whose Babel 8 conflicts with shadcn's Babel 7
+  (ERESOLVE), and `--legacy-peer-deps` leaves a lockfile `npm ci` rejects. The spike used `@vitejs/plugin-react-swc`
+  instead; since 2026-10-24 `package.json` overrides `@babel/plugin-transform-runtime` to `^7.29.0` (none of that chain
+  is installed) and uses `@vitejs/plugin-react`, which Vite 8 recommends when no SWC plugins are used.
 - **`.env` sets `NODE_ENV=development`**, and a local `vite build` then ships React's dev JSX runtime (`jsxDEV`) to
   the browser. The Docker build is unaffected because `.env` isn't copied.
 - **Preloads skip `beforeLoad`'s cache.** The docs say a preload runs `beforeLoad` again every time. The guard reads
   `session.get` through `ensureQueryData`, so a preload costs no request, but the guard's answer is then only as fresh
   as that query.
 - **Storybook filter.** Start adds Vite plugins named `tanstack*`, `nitro:*` and `fullstack:*`; Storybook must drop
-  those and keep `@tailwindcss/vite:*` and `vite:react-swc*`. Not run in the spike.
+  those and keep `@tailwindcss/vite:*` and `vite:react*`. Not run in the spike.
 - **`Link` string paths need translating.** TanStack's `Link` doesn't parse a hash or query out of `to`, and has no
   `className` function. The spike's wrappers split React-Router-style strings (`"/help#x"`, `"#buy-card"`) and cast
   them, which throws away the type checking; decision 6 moves call sites to typed `to` + `params` + `hash` +

@@ -1,7 +1,7 @@
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react-swc";
+import viteReact from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
@@ -15,8 +15,8 @@ export default defineConfig({
     tanstackStart({ srcDirectory: "app", router: { virtualRouteConfig: "./app/routes.ts" } }),
     // The Node server (`node .output/server/index.mjs`). Static assets ship pre-compressed; Caddy compresses the HTML.
     nitro({ compressPublicAssets: true }),
-    // React's plugin must come after Start's. The SWC one: `@vitejs/plugin-react` 6 wants a Babel peer that clashes
-    // with shadcn's.
+    // React's plugin must come after Start's. Version 6 transforms with Oxc, no Babel; its optional Babel peer chain
+    // would pull Babel 8 against shadcn's Babel 7, hence the `@babel/plugin-transform-runtime` override in package.json.
     viteReact(),
   ],
   resolve: {

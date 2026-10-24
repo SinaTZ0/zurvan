@@ -87,7 +87,7 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react-swc": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.2",
     "drizzle-kit": "^0.31.11",
     "oxlint": "^1.87.0",
     "prettier": "^3.9.9",
@@ -100,7 +100,9 @@
     "vitest": "^5.0.3"
   },
   "allowScripts": {
-    "esbuild": true,
-    "@swc/core": true
+    "esbuild": true
+  },
+  "overrides": {
+    "@babel/plugin-transform-runtime": "^7.29.0"
   }
 }
