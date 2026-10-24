@@ -3,6 +3,9 @@ WORKDIR /app
 COPY ./package.json package-lock.json ./
 RUN npm ci
 COPY . .
+# `postinstall` compiles the messages, but `npm ci` runs before the sources are copied, so it skips. The tools image
+# runs the seeds with tsx, and they import `app/paraglide/` (gitignored) through `~/lib/demo-accounts`.
+RUN npm run i18n:compile
 
 FROM development-dependencies-env AS build-env
 RUN npm run build
