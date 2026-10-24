@@ -1,0 +1,51 @@
+{
+  "packageId": "ir.zurvann.app",
+  "host": "k9training.zurvann.ir",
+  "name": "زروان",
+  "launcherName": "زروان",
+  "display": "standalone",
+  "themeColor": "#141414",
+  "themeColorDark": "#141414",
+  "navigationColor": "#141414",
+  "navigationColorDark": "#141414",
+  "navigationDividerColor": "#141414",
+  "navigationDividerColorDark": "#141414",
+  "backgroundColor": "#141414",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://k9training.zurvann.ir/pwa/icon-512.png",
+  "maskableIconUrl": "https://k9training.zurvann.ir/pwa/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "/home/sina/zurvann-keys/zurvann-upload.jks",
+    "alias": "zurvann"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://k9training.zurvann.ir/pwa/manifest.webmanifest",
+  "fallbackType": "webview",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": false,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "minSdkVersion": 24,
+  "orientation": "default",
+  "fingerprints": [
+    {
+      "name": "upload-key",
+      "value": "8F:54:35:C9:B3:1F:8F:B4:0C:45:9F:BC:B1:C8:FA:C0:D7:C4:66:15:E9:24:DA:44:48:0D:B7:0F:B1:15:78:1C"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "navigate-existing",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

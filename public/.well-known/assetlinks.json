@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "ir.zurvann.app",
+        "sha256_cert_fingerprints": ["8F:54:35:C9:B3:1F:8F:B4:0C:45:9F:BC:B1:C8:FA:C0:D7:C4:66:15:E9:24:DA:44:48:0D:B7:0F:B1:15:78:1C"]
+      }
+    }]

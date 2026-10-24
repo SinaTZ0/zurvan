@@ -37,3 +37,16 @@
 
 # Paraglide's compiled messages (`npm run i18n:compile`, or the dev server), from messages/ and project.inlang/
 /app/paraglide/
+
+# The Android app's (TWA) build output and signing keys: the project and twa-manifest.json are committed, the keystore
+# never is (docs/mobile-app.md)
+/mobile/twa/build/
+/mobile/twa/app/build/
+/mobile/twa/.gradle/
+/mobile/twa/local.properties
+*.apk
+*.aab
+*.idsig
+*.keystore
+*.jks
+/mobile/twa/signing.env
