@@ -195,7 +195,11 @@ function BarkingDog() {
     <>
       {/* The wrapper wiggles while the image rises, so the two animations don't fight over one transform. */}
       {/* On the English pages the whole scene is mirrored: the dog turns to face the other way. */}
-      <div className="lively-wiggle lively-pet relative z-10 ltr:-scale-x-100" onPointerEnter={bark} onPointerDown={bark}>
+      <div
+        className="lively-wiggle lively-pet relative z-10 ltr:-scale-x-100"
+        onPointerEnter={bark}
+        onPointerDown={bark}
+      >
         <MascotCut name="paws" eager className={cn("st-rise block w-full", frame && "invisible")} />
         {ready &&
           BARK_FRAMES.map((name) => (
@@ -231,11 +235,18 @@ function BarkingDog() {
 // his width. He stops at 23rem, ~1.3x the cut-out's natural width, so a tall screen gets air rather than a soft dog:
 // the dog and copy are centred in the height, and the card runs down to the section's bottom (clipped there, under
 // the ground), so the spare height is shared between the air above him and the card below.
+//
+// Below lg the whole hero fits the first screen too (the user, 2026-10-24): the section takes the screen less the
+// app bar (4.625rem), and the dog stands the tab bar's height (`--tab-bar-space`) above its bottom, so his paws and the
+// wall's top edge show above the bar. `svh` is the screen with the browser's own bars shown, the smallest it gets, so
+// nothing hides behind an address bar or toolbar on the first load. The copy is tightened and the headline follows
+// the height; the dog takes what is left (`--dog-w`, the height less what the rest needs, times his width per height,
+// fitted on 548px to 1024px tall screens), between a small floor and his old sizes.
 export function StoryHero() {
   return (
     <section
       aria-labelledby="st-hero-title"
-      className="relative overflow-x-clip lg:flex lg:min-h-[calc(100svh-7rem)] lg:flex-col lg:overflow-clip"
+      className="relative flex min-h-[calc(100svh-4.625rem)] flex-col overflow-x-clip lg:min-h-[calc(100svh-7rem)] lg:overflow-clip"
     >
       {/* The one load moment: he rises from behind the card edge, then the bubble pops. Off for reduced motion. */}
       <style>{`
@@ -269,18 +280,19 @@ export function StoryHero() {
         <MascotCut name="plants" eager className="lively-sway w-full" />
       </div>
 
-      <div className="mx-auto grid max-w-6xl items-end gap-x-6 px-4 md:px-8 lg:w-full lg:flex-1 lg:grid-cols-[1.05fr_1fr] lg:items-center">
+      {/* Below lg the copy's row takes the spare height and the copy is centred in it; the dog keeps to the bottom. */}
+      <div className="mx-auto grid w-full max-w-6xl flex-1 grid-rows-[1fr_auto] items-end gap-x-6 px-4 md:px-8 lg:grid-cols-[1.05fr_1fr] lg:grid-rows-none lg:items-center">
         {/*------ Copy ------*/}
         {/* Centred until the copy has a column of its own on lg; hung on the right edge, it left the screen's left half
             empty. */}
-        <div className="pt-7 pb-8 text-center sm:pt-10 lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)] lg:text-start">
+        <div className="self-center pt-5 pb-5 text-center sm:pt-10 sm:pb-8 lg:self-auto lg:pt-[clamp(1rem,4svh,4rem)] lg:pb-[clamp(3.5rem,11svh,6rem)] lg:text-start">
           {/* On lg, the headline follows the height too (with a rem part, so browser zoom still enlarges it), and
               the width on a narrow lg screen, where its column is tight. */}
           <h1
             id="st-hero-title"
             className={cn(
               DISPLAY_HEADING,
-              "text-[2.6rem] sm:text-6xl lg:text-[clamp(2.75rem,calc(0.5rem+min(7.5svh,5.2vw)),4.5rem)]",
+              "text-[clamp(2.1rem,5.4svh,2.6rem)] sm:text-[clamp(2.6rem,5.4svh,3.75rem)] lg:text-[clamp(2.75rem,calc(0.5rem+min(7.5svh,5.2vw)),4.5rem)]",
               // After the sizes: `cn` lets a later font size drop an earlier `leading-*`. Taller than DISPLAY_HEADING's 1.2,
               // so the underline under «طلا» clears the «گ» on the line below.
               "leading-[1.4]",
@@ -295,38 +307,43 @@ export function StoryHero() {
             <span className="sr-only">{m.home_hero_title_words()}</span>
             <TypedWord />
           </h1>
-          <p className="mx-auto mt-5 max-w-sm text-lg leading-8 text-foreground/80 lg:mx-0">
+          <p className="mx-auto mt-3 max-w-sm text-base leading-7 text-foreground/80 sm:mt-5 sm:text-lg sm:leading-8 lg:mx-0">
             {m.home_hero_line_one()}
             <br />
             {m.home_hero_line_two()}
           </p>
-          <EvaluationButton className="mt-7" />
+          <EvaluationButton className="mt-5 sm:mt-7" />
         </div>
 
         {/*------ Mascot on the card edge ------*/}
-        {/* Below lg the dog and his bubble are centred as one group: the bubble overhangs his left side by about
-            6.5rem (7rem from sm), so he moves right by half that. On the English pages the scene is a mirror image:
-            the dog faces the other way, the bubble and the wall swap sides, and he leans on the column's start. */}
-        <div className="relative mx-auto mb-20 w-[13.5rem] translate-x-[3.25rem] sm:w-72 sm:translate-x-14 lg:mr-0 lg:ml-auto lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)] lg:translate-x-0 ltr:-translate-x-[3.25rem] ltr:sm:-translate-x-14 ltr:lg:mr-auto ltr:lg:ml-0 ltr:lg:translate-x-0">
+        {/* Below lg the dog and his bubble are centred as one group: the bubble (9.5rem, 11rem from sm) starts 78% of
+            the way across him, so it overhangs his left side by its width less 22% of his, and he moves right by half
+            that (`--dog-shift`). On the English pages the scene is a mirror image: the dog faces the other way, the
+            bubble and the wall swap sides, and he leans on the column's start. */}
+        <div className="relative mx-auto mb-(--tab-bar-space) w-(--dog-w) translate-x-(--dog-shift) [--dog-shift:calc((9.5rem-var(--dog-w)*0.22)/2)] [--dog-w:clamp(7.5rem,calc((100svh-26rem)*0.48),13.5rem)] sm:[--dog-shift:calc((11rem-var(--dog-w)*0.22)/2)] sm:[--dog-w:clamp(10rem,calc((100svh-30.5rem)*0.48),18rem)] lg:mr-0 lg:mb-20 lg:ml-auto lg:w-[clamp(15rem,calc((100svh-13.5rem)*0.615),23rem)] lg:translate-x-0 ltr:-translate-x-(--dog-shift) ltr:lg:mr-auto ltr:lg:ml-0 ltr:lg:translate-x-0">
           {/* The card is a brick wall he looks over, with the page's grain on the bricks. */}
           <div
             aria-hidden
             style={{ backgroundImage: `var(--grain), ${BRICK}` }}
-            className="absolute top-[87%] -start-[45%] -bottom-20 -end-[100vw] z-0 rounded-ss-[3rem] border-t-2 border-foreground/70 bg-inverse lg:-bottom-[100svh]"
+            className="absolute -start-[45%] -end-[100vw] top-[87%] -bottom-(--tab-bar-space) z-0 rounded-ss-[3rem] border-t-2 border-foreground/70 bg-inverse lg:-bottom-[100svh]"
           />
-          {/* On lg, the bushes are a share of the dog's width (their lg sizes at his 21rem), so they shrink with him. */}
+          {/* The bushes are a share of the dog's width (on lg their sizes at his 21rem), so they shrink with him. */}
           <MascotCut
             name="plants"
             eager
-            className="lively-sway absolute start-[78%] bottom-[10%] z-[5] w-40 sm:w-48 lg:w-[67%]"
+            className="lively-sway absolute start-[78%] bottom-[10%] z-[5] w-[74%] sm:w-[67%]"
           />
           <MascotCut
             name="plants"
             eager
-            className="lively-sway-2 absolute end-[78%] bottom-[8%] z-[5] w-28 -scale-x-100 sm:w-40 lg:w-[52%]"
+            className="lively-sway-2 absolute end-[78%] bottom-[8%] z-[5] w-[52%] -scale-x-100 sm:w-[55%] lg:w-[52%]"
           />
           <BarkingDog />
-          <ChalkBubble tail="start" className="st-pop absolute start-[78%] top-[2%] z-20 w-[9.5rem] sm:w-44 lg:w-52">
+          {/* `max-w-none`: the bubble is wider than a phone's smaller dog, and would otherwise be held to his width. */}
+          <ChalkBubble
+            tail="start"
+            className="st-pop absolute start-[78%] top-[2%] z-20 w-[9.5rem] max-w-none sm:w-44 lg:w-52"
+          >
             {m.home_hero_bubble()}
           </ChalkBubble>
         </div>

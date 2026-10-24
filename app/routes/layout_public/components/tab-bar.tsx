@@ -14,15 +14,15 @@ import type { Viewer } from "~/routes/layout_public/viewer";
 import { m } from "~/paraglide/messages";
 
 /*===== Tab Bar =====*/
-// A floating bar held off the screen's edges, as on a phone app. The evaluation is the gold tile in the middle, the
-// one action every page leads to; it sits flush in the bar rather than raised over it, which read as an ad. The bar
-// is the card's grey with a hairline of ink, so the gold tile is the only bright thing on it. Its height (4.25rem +
-// the 0.75rem gap) is what the footer leaves free at the bottom (`--tab-bar-space`, app.css), so it never covers the
-// page's last words.
+// Snapped to the bottom edge across the full width, as a phone app's tab bar (the user, 2026-10-24; it floated off the
+// edges before). The evaluation is the gold tile in the middle, the one action every page leads to; it sits flush in
+// the bar rather than raised over it, which read as an ad. The bar is the card's grey under a hairline of ink, so the
+// gold tile is the only bright thing on it. It pads itself by the home indicator's inset, so the tabs stay above it;
+// its height plus that inset is what the footer leaves free at the bottom (`--tab-bar-space`, app.css).
 const TAB =
-  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 text-[11px] leading-none text-foreground/70 transition-colors hover:text-foreground aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1 text-[11px] leading-none text-foreground/70 transition-colors hover:text-foreground aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
-const ICON = "size-[1.375rem] group-aria-[current=page]:text-primary";
+const ICON = "size-5 group-aria-[current=page]:text-primary";
 
 /** The phone's tab bar, below `lg`: home, courses, the evaluation, contact and a sheet with the rest. */
 export function TabBar({ viewer }: { viewer: Viewer | null }) {
@@ -38,15 +38,18 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
 
   return (
     <>
-      <div className="group/dock fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md [view-transition-name:tab-dock] lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 [view-transition-name:tab-dock] lg:hidden">
         {/*------ Dock ------*/}
         {/* A page can dock its own strip on top of the bar (Course Detail's buy bar), portalled into this element by
-            its id. While the strip is open it carries `data-dock-open`, and the bar squares its top corners so the two
-            read as one object. The strip sits outside the nav: it isn't part of the site's menu. */}
-        <div id={TAB_BAR_DOCK_ID} />
+            its id. The strip sits outside the nav: it isn't part of the site's menu. */}
+        {/* Raised over the nav, so the bar's upward shadow doesn't darken the strip's bottom edge. */}
+        <div id={TAB_BAR_DOCK_ID} className="relative z-10" />
 
-        <nav aria-label={m.layout_public_main_menu()}>
-          <ul className="flex h-[4.25rem] items-stretch rounded-[1.6rem] border border-foreground/15 bg-card/90 px-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)] backdrop-blur-md transition-[border-radius] group-has-[[data-dock-open]]/dock:rounded-t-none">
+        <nav
+          aria-label={m.layout_public_main_menu()}
+          className="border-t border-foreground/15 bg-card/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md"
+        >
+          <ul className="mx-auto flex h-[3.25rem] max-w-md items-stretch px-1.5">
             <li className="flex flex-1">
               {pathname === "/" ? (
                 <button type="button" aria-current="page" onClick={toTop} className={TAB}>
@@ -68,7 +71,7 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
             </li>
 
             {/*------ The action ------*/}
-            <li className="flex flex-1 py-2">
+            <li className="flex flex-1 py-1.5">
               <NavLink
                 to={NAV_CTA.to}
                 className={cn(
@@ -76,7 +79,7 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
                   "bg-primary font-bold text-primary-foreground hover:bg-primary-hover hover:text-primary-foreground aria-[current=page]:text-primary-foreground",
                 )}
               >
-                <ClipboardCheck aria-hidden className="size-[1.375rem]" strokeWidth={2} />
+                <ClipboardCheck aria-hidden className="size-5" strokeWidth={2} />
                 {m.layout_public_tab_evaluation()}
               </NavLink>
             </li>
@@ -89,7 +92,7 @@ export function TabBar({ viewer }: { viewer: Viewer | null }) {
             </li>
             <li className="flex flex-1">
               <button type="button" aria-haspopup="dialog" onClick={() => setMore(true)} className={TAB}>
-                <Ellipsis aria-hidden className="size-[1.375rem]" strokeWidth={1.8} />
+                <Ellipsis aria-hidden className="size-5" strokeWidth={1.8} />
                 {m.layout_public_tab_more()}
               </button>
             </li>

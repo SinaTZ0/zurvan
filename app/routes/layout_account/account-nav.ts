@@ -7,7 +7,7 @@ import { m } from "~/paraglide/messages";
 
 /*===== Account Navigation =====*/
 // The account area's sections, shared by the desktop nav and the phone tab bar. Only built pages are listed; add each
-// one here when its page exists (docs/storefront-design.md, "Account Shell"). Both roles get the floating tab bar on
+// one here when its page exists (docs/storefront-design.md, "Account Shell"). Both roles get the tab bar on
 // phones, so the person menu no longer lists the sections.
 
 /** A page without params: what the header, the tab bar and the footer can link to. */

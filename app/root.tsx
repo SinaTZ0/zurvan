@@ -23,7 +23,12 @@ import "./app.css";
 // Every page's loader gets the request's QueryClient (`app/router.tsx`) from the router context.
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
-    meta: [{ charSet: "utf-8" }, { name: "viewport", content: "width=device-width, initial-scale=1" }],
+    // `viewport-fit=cover`: without it iOS reports no safe-area insets, and the phone tab bar, snapped to the bottom
+    // edge, would sit under the home indicator.
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+    ],
     links: [
       { rel: "icon", href: "/favicon.ico", sizes: "16x16 32x32 48x48" },
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },

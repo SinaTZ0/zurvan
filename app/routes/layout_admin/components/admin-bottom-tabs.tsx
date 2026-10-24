@@ -13,21 +13,21 @@ import { CurrentMark } from "~/routes/layout_admin/components/current-mark";
 import { useHasNavigated } from "~/routes/layout_admin/hooks/use-has-navigated";
 
 /*===== Constants =====*/
-// The account shell's floating bar (held off the edges, the card's grey with a hairline, icons over 11px labels, the
+// The account shell's bar (snapped to the bottom edge, the card's grey under a hairline, icons over 11px labels, the
 // current tab's icon gold). `aria-current` marks a page's tab; «بیشتر» is a button, so it marks itself with
 // `data-current` when the page is one of those inside its sheet.
 const TAB =
-  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 text-[11px] leading-none text-foreground/70 transition-colors motion-reduce:transition-none hover:text-foreground aria-[current=page]:text-foreground data-[current=true]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1 text-[11px] leading-none text-foreground/70 transition-colors motion-reduce:transition-none hover:text-foreground aria-[current=page]:text-foreground data-[current=true]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 const ICON =
-  "size-[1.375rem] transition-colors duration-300 motion-reduce:transition-none group-aria-[current=page]:text-primary group-data-[current=true]:text-primary";
+  "size-5 transition-colors duration-300 motion-reduce:transition-none group-aria-[current=page]:text-primary group-data-[current=true]:text-primary";
 
 /** A count on a tab's icon: the badge made small and hung on the icon's top corner. */
 const ICON_BADGE = "absolute -end-3 -top-2 ms-0 h-4 min-w-4 px-1 text-[10px]";
 
 /*===== Admin Bottom Tabs =====*/
 /**
- * Phones (below `lg`): the Admin's pages in the account shell's floating tab bar, where a thumb reaches them. It also
+ * Phones (below `lg`): the Admin's pages in the account shell's tab bar, where a thumb reaches them. It also
  * renders a spacer in the page flow so the last row scrolls clear of the bar (`--tab-bar-space`). Up to four pages sit
  * in the bar; with more, the bar keeps the first three and the rest open from «بیشتر», a grained bottom sheet (a `Sheet`:
  * the `Drawer` is not RTL-correct).
@@ -47,9 +47,12 @@ export function AdminBottomTabs({ items }: { items: readonly AdminNavItem[] }) {
   return (
     <>
       <div aria-hidden className="h-[var(--tab-bar-space)] lg:hidden" />
-      <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md [view-transition-name:tab-dock] lg:hidden">
-        <nav aria-label="صفحه‌های مدیریت، منوی پایین">
-          <ul className="flex h-[4.25rem] items-stretch rounded-[1.6rem] border border-foreground/15 bg-card/90 px-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)] backdrop-blur-md">
+      <div className="fixed inset-x-0 bottom-0 z-40 [view-transition-name:tab-dock] lg:hidden">
+        <nav
+          aria-label="صفحه‌های مدیریت، منوی پایین"
+          className="border-t border-foreground/15 bg-card/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md"
+        >
+          <ul className="mx-auto flex h-[3.25rem] max-w-md items-stretch px-1.5">
             {tabs.map((item) => (
               <li key={item.to} className="flex flex-1">
                 <NavLink to={item.to} end={item.end} className={TAB}>

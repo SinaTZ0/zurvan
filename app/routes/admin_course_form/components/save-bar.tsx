@@ -11,7 +11,7 @@ import { INK_OUTLINE } from "~/routes/admin_course_form/surfaces";
 /**
  * The alert for what the server said that belongs to no field (it rises in), then «ذخیره» / «ساخت دوره» and «انصراف».
  *
- * - **Phones and tablets (below `lg`):** a floating plate that sticks above the Admin's floating tab bar, in its look
+ * - **Phones and tablets (below `lg`):** a floating plate that sticks above the Admin's tab bar, in its look
  *   (the card's grey, a hairline, blurred), at `--tab-bar-space` from the bottom: the bar's height, its gap from the
  *   screen's edge and the half-rem between them, so neither covers the other. At the form's end it rests in the flow.
  * - **From `lg`** (the tabs give way to the rail): in the flow after the last plate, under the slip's dashed tear.

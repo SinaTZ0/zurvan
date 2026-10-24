@@ -18,7 +18,7 @@ declare module "@tanstack/react-router" {
      * and account shells).
      */
     flushFooter?: boolean;
-    /** Hides the account's floating tab bar on a focused step, so the step's own action bar has the screen's bottom. */
+    /** Hides the account's tab bar on a focused step, so the step's own action bar has the screen's bottom. */
     hideBottomTabs?: boolean;
   }
 }

@@ -16,7 +16,7 @@ const FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visi
 /**
  * The storefront header's frame (the paper over a hairline, the emblem and wordmark), turned into the account's room:
  * a gold-outlined chip names the room, the sections are the storefront's nav links, then the other language
- * (`LanguageSwitch`, wide only: phones find it in the footer), the way back out and the person menu. Below `lg` it is only the app bar; the sections live in the floating tab bar (`AccountTabBar`), so the
+ * (`LanguageSwitch`, wide only: phones find it in the footer), the way back out and the person menu. Below `lg` it is only the app bar; the sections live in the tab bar (`AccountTabBar`), so the
  * person menu keeps just the settings.
  */
 export function AccountHeader({

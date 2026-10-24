@@ -38,7 +38,7 @@ const LINKS = [
 /**
  * A short grained band instead of the storefront's tall footer: who lives here, the few links people look for, the
  * center's number, and the dog on the old phone standing on a strip of path inside the band. Below `lg` the bottom
- * padding clears the floating tab bar (`--tab-bar-space`).
+ * padding clears the tab bar (`--tab-bar-space`).
  */
 export function AccountFooter() {
   return (

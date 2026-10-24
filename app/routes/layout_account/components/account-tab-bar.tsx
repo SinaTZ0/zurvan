@@ -6,14 +6,14 @@ import { CountBadge } from "~/routes/layout_account/components/count-badge";
 import { m } from "~/paraglide/messages";
 
 /*===== Account Tab Bar =====*/
-// The storefront's floating bar (held off the edges, the card's grey with a hairline, icons over 11px labels, the
+// The storefront's bar (snapped to the bottom edge, the card's grey under a hairline, icons over 11px labels, the
 // current tab's icon gold), with the account's own tabs: the sections and the way back into the store. Its height
-// plus the gap is what the footer leaves free at the bottom (`--tab-bar-space`, app.css).
+// plus the home indicator's inset is what the footer leaves free at the bottom (`--tab-bar-space`, app.css).
 const TAB =
-  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1.5 text-[11px] leading-none text-foreground/70 transition-colors motion-reduce:transition-none hover:text-foreground aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+  "group flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1 text-[11px] leading-none text-foreground/70 transition-colors motion-reduce:transition-none hover:text-foreground aria-[current=page]:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 
 const ICON =
-  "size-[1.375rem] transition-colors duration-300 motion-reduce:transition-none group-aria-[current=page]:text-primary";
+  "size-5 transition-colors duration-300 motion-reduce:transition-none group-aria-[current=page]:text-primary";
 
 /**
  * The phone's tab bar, below `lg`: the sections (with the cart's count) and «دوره‌ها». Nothing on a focused step: a
@@ -36,9 +36,12 @@ export function AccountTabBar({
   const tabs: readonly DeskNavItem[] = [...items, exitLink];
 
   return (
-    <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md [view-transition-name:tab-dock] lg:hidden">
-      <nav aria-label={m.layout_account_tab_bar_label({ room: label })}>
-        <ul className="flex h-[4.25rem] items-stretch rounded-[1.6rem] border border-foreground/15 bg-card/90 px-1.5 shadow-[0_10px_30px_-8px_rgb(0_0_0/0.8)] backdrop-blur-md">
+    <div className="fixed inset-x-0 bottom-0 z-40 [view-transition-name:tab-dock] lg:hidden">
+      <nav
+        aria-label={m.layout_account_tab_bar_label({ room: label })}
+        className="border-t border-foreground/15 bg-card/90 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_-12px_rgb(0_0_0/0.8)] backdrop-blur-md"
+      >
+        <ul className="mx-auto flex h-[3.25rem] max-w-md items-stretch px-1.5">
           {tabs.map((item) => {
             const Icon = item.icon;
             return (

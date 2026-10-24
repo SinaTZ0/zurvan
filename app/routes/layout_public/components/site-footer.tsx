@@ -52,12 +52,12 @@ function footerGroups() {
 const FOOTER_FOCUS = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
 const FOOTER_LINK = `rounded text-foreground/70 transition-colors hover:text-foreground ${FOOTER_FOCUS}`;
 
-/** The storefront footer on every public page; below `lg` it leaves room at the bottom for the floating tab bar. */
+/** The storefront footer on every public page; below `lg` it leaves room at the bottom for the tab bar. */
 export function SiteFooter() {
   return (
     <footer className="border-t border-foreground/10 bg-card paper-grain text-sm text-foreground/85">
-      {/* Below lg the bottom padding clears the floating tab bar. */}
-      <div className="mx-auto max-w-6xl px-4 pt-16 pb-32 md:px-8 md:pt-24 lg:pb-8">
+      {/* Below lg the bottom padding clears the tab bar. */}
+      <div className="mx-auto max-w-6xl px-4 pt-16 pb-[calc(var(--tab-bar-space)+2rem)] md:px-8 md:pt-24 lg:pb-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[1.9fr_repeat(3,minmax(0,1fr))_1.3fr] lg:gap-x-10">
           {/*------ Brand ------*/}
           <div className="col-span-2 md:col-span-3 lg:col-span-1">

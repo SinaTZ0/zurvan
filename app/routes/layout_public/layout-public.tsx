@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_public")({
 
 /*===== Public Layout =====*/
 /**
- * The storefront shell for every public page: header, the page, the footer, and below `lg` the floating tab bar. No
+ * The storefront shell for every public page: header, the page, the footer, and below `lg` the tab bar. No
  * guard. The page sits on the body's grained paper; the tab bar is fixed, and the footer's own bottom padding keeps
  * the page's last words clear of it.
  *

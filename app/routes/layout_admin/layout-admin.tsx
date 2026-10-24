@@ -24,7 +24,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 /*===== Admin Layout =====*/
-/** The Admin's shell at `/admin`: a top bar, a rail on desktop, a floating tab bar on phones, and the page in between. */
+/** The Admin's shell at `/admin`: a top bar, a rail on desktop, a tab bar on phones, and the page in between. */
 function AdminLayout() {
   const { user: guardUser } = Route.useRouteContext();
   // The session query the guard filled, read live, so renaming himself on Users shows in the header at once (every

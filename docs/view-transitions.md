@@ -106,7 +106,7 @@ All of it is in `app.css`, under "Page Transition".
   the old one leaves to the right. Back mirrors it.
 - **A nudge, not a full-width slide.** The old page has faded out before the new one moves in, so the strip the shift
   uncovers at the edge never shows.
-- **Steady chrome.** The phone's floating tab bars (`tab-dock`: the public, account and Admin bars, only one on a page
+- **Steady chrome.** The phone's tab bars (`tab-dock`: the public, account and Admin bars, only one on a page
   at a time) and the Admin's sticky header (`admin-header`) have a `view-transition-name`, so they keep their own
   snapshot and stay put while the page slides under them. The public and account headers scroll with the page and
   have no name: named, they would fly in from wherever the old page had scrolled them.

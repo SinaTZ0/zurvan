@@ -373,9 +373,9 @@
   --inverse-border: rgb(255 194 26 / 0.22);
 
   /*------ Phone tab bar ------*/
-  /* The height the storefront's floating tab bar takes from the bottom of the screen below `lg` (its 4.25rem, its gap
-     from the edge and a little air): anything else fixed to the bottom on phones sits above it. */
-  --tab-bar-space: calc(4.25rem + max(0.75rem, env(safe-area-inset-bottom)) + 0.5rem);
+  /* The height the phone tab bar takes from the bottom of the screen below `lg` (its 3.25rem, the home indicator's
+     inset it pads itself by, and a little air): anything else fixed to the bottom on phones sits above it. */
+  --tab-bar-space: calc(3.25rem + env(safe-area-inset-bottom) + 0.5rem);
 
   /*------ Paper grain ------*/
   /* A tiny tiled SVG noise at 7% opacity, on the body and on bands that paint their own fill (`paper-grain`): cheap, and
@@ -555,7 +555,7 @@ html:active-view-transition-type(back)::view-transition-new(root) {
 }
 
 /*------ Steady Chrome ------*/
-/* The phone's floating tab bar (one per shell, never two at once) and the Admin's sticky header keep their own
+/* The phone's tab bar (one per shell, never two at once) and the Admin's sticky header keep their own
    snapshot, so they stay put while the page under them slides. The public and account headers scroll with the page,
    so they slide with it: a name would fly them in from wherever the old page had scrolled them. */
 ::view-transition-group(tab-dock),

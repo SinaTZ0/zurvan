@@ -22,8 +22,7 @@ import type { BuyCardState } from "~/routes/course_detail/components/use-buy-car
  * It draws the card's own state, so the two can't disagree. The two states that need the dog list (nothing picked,
  * or a dog that can't buy) send the visitor up to the card instead of showing a dead button.
  *
- * While open it carries `data-dock-open`, which squares the tab bar's top corners; its own top corners and surface
- * match the bar's, so the two read as one object. Closed, it collapses to no height (grid rows 0fr), so it takes no space.
+ * Open, it sits on the tab bar's top edge in the bar's own surface, so the two read as one object. Closed, it collapses to no height (grid rows 0fr), so it takes no space.
  */
 export function PhoneActionBar({
   course,
@@ -65,7 +64,6 @@ export function PhoneActionBar({
     <div
       // Hidden bars stay out of the tab order and the accessibility tree.
       inert={!cardPassed}
-      data-dock-open={cardPassed ? "" : undefined}
       className={cn(
         "grid rounded-t-[1.6rem] bg-card/90 backdrop-blur-md",
         "motion-safe:transition-[grid-template-rows] motion-safe:duration-200",

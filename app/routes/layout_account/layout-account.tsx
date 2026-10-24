@@ -20,7 +20,7 @@ export const Route = createFileRoute("/account")({
 /*===== Account Layout =====*/
 /**
  * The signed-in shell for customers and partners at `/account`: the storefront's house with the account's own room.
- * The header and the floating tab bar (below `lg`) are the storefront's look with the desk's sections; the footer is a
+ * The header and the tab bar (below `lg`) are the storefront's look with the desk's sections; the footer is a
  * short grained band with the dog on the phone. The wrapper clips sideways so cut-outs and bubbles may poke past the
  * container.
  *
