@@ -24,6 +24,9 @@ export default {
     { match: "/api/:path(.*)?", exclude: true },
     { match: "/payment/:path(.*)?", exclude: true },
     { match: "/_serverFn/:path(.*)?", exclude: true },
+    // The web app manifest and the offline page: the service worker precaches each language's copy by `?lang=`, since
+    // the worker needs one fixed address per language whatever page it stands in for.
+    { match: "/pwa/:path(.*)?", exclude: true },
   ],
   // `/en`, never `/en/`, for the English home page (and no trailing slash anywhere, as the router writes them).
   trailingSlash: "never",

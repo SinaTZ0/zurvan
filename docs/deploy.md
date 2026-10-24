@@ -112,9 +112,13 @@ Other options:
 
 ## Static image caching
 
-Caddy sets `Cache-Control: public, max-age=86400` on successful photo, brand, demo image, and favicon responses, including conditional `304` responses. Browsers can reuse these images for one day. Error responses keep the app's original cache policy. Vite's development server and the local Docker stack do not use this Caddy configuration.
+Caddy sets `Cache-Control: public, max-age=86400` on successful photo, brand, demo image, favicon, and app icon and font (`/pwa/icon-*`, `/pwa/fonts/*`) responses, including conditional `304` responses. Browsers can reuse these images for one day. Error responses keep the app's original cache policy. Vite's development server and the local Docker stack do not use this Caddy configuration.
 
 Run the normal deployment update to apply the policy. Replacing an image at the same URL can take up to one day to reach returning visitors; use a new filename when an update must appear immediately. To check the deployed header, run `curl -I https://k9training.zurvann.ir/photo/new-design/wave.webp`. In browser DevTools, leave **Disable cache** unchecked when checking reuse; a hard reload can bypass the browser cache.
+
+## The Android app's asset links
+
+`public/.well-known/assetlinks.json` (once it exists) ties the Android app to this domain: if it is missing, or the domain changes, the app shows an address bar. Keep it deployed, and see [mobile-app.md](mobile-app.md) before changing `DOMAIN`. The service worker `/sw.js` is never cached long by Caddy, so a new one reaches browsers on their next visit.
 
 ## Media exposure
 

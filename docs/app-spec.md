@@ -356,6 +356,10 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 - SMS texts stay Persian, even for a customer who signed in on the English site.
 - How it is built: [i18n/english-version-plan.md](i18n/english-version-plan.md); the English voice and terms: [i18n/english-glossary.md](i18n/english-glossary.md).
 
+### Installable App
+
+- The site installs as an app from the browser (a web app manifest; the only way onto an iPhone), and an Android app (a Trusted Web Activity) opens the live site full-screen, shared as a signed APK for now. Neither has features of its own: every deploy updates both. Without network, both show an offline page instead of the browser's error. How it is built: [mobile-app.md](mobile-app.md).
+
 ## Pages
 
 Each page and the features on it: **34 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.

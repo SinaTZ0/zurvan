@@ -40,6 +40,8 @@ import { Route as admin_smsAdminSmsRouteImport } from './routes/admin_sms/admin-
 import { Route as admin_usersAdminUsersRouteImport } from './routes/admin_users/admin-users'
 import { Route as api_evaluation_videosApiEvaluationVideosRouteImport } from './routes/api_evaluation_videos/api-evaluation-videos'
 import { Route as payment_callbackPaymentCallbackRouteImport } from './routes/payment_callback/payment-callback'
+import { Route as pwa_manifestPwaManifestRouteImport } from './routes/pwa_manifest/pwa-manifest'
+import { Route as pwa_offlinePwaOfflineRouteImport } from './routes/pwa_offline/pwa-offline'
 import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
 import { Route as certificateCertificateRouteImport } from './routes/certificate/certificate'
 import { Route as course_detailCourseDetailRouteImport } from './routes/course_detail/course-detail'
@@ -223,6 +225,16 @@ const payment_callbackPaymentCallbackRoute =
     path: '/payment/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const pwa_manifestPwaManifestRoute = pwa_manifestPwaManifestRouteImport.update({
+  id: '/pwa/manifest.webmanifest',
+  path: '/pwa/manifest.webmanifest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const pwa_offlinePwaOfflineRoute = pwa_offlinePwaOfflineRouteImport.update({
+  id: '/pwa/offline',
+  path: '/pwa/offline',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const rpcRpcRoute = rpcRpcRouteImport.update({
   id: '/rpc/$',
   path: '/rpc/$',
@@ -334,6 +346,8 @@ export interface FileRoutesByFullPath {
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
+  '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
+  '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
   '/certificate/$number': typeof certificateCertificateRoute
   '/courses/$slug': typeof course_detailCourseDetailRoute
@@ -378,6 +392,8 @@ export interface FileRoutesByTo {
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
+  '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
+  '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
   '/certificate/$number': typeof certificateCertificateRoute
   '/courses/$slug': typeof course_detailCourseDetailRoute
@@ -426,6 +442,8 @@ export interface FileRoutesById {
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
+  '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
+  '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
   '/_public/certificate/$number': typeof certificateCertificateRoute
   '/_public/courses/$slug': typeof course_detailCourseDetailRoute
@@ -474,6 +492,8 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/evaluation-videos'
     | '/payment/callback'
+    | '/pwa/manifest.webmanifest'
+    | '/pwa/offline'
     | '/rpc/$'
     | '/certificate/$number'
     | '/courses/$slug'
@@ -518,6 +538,8 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/evaluation-videos'
     | '/payment/callback'
+    | '/pwa/manifest.webmanifest'
+    | '/pwa/offline'
     | '/rpc/$'
     | '/certificate/$number'
     | '/courses/$slug'
@@ -565,6 +587,8 @@ export interface FileRouteTypes {
     | '/admin/users'
     | '/api/evaluation-videos'
     | '/payment/callback'
+    | '/pwa/manifest.webmanifest'
+    | '/pwa/offline'
     | '/rpc/$'
     | '/_public/certificate/$number'
     | '/_public/courses/$slug'
@@ -588,6 +612,8 @@ export interface RootRouteChildren {
   authAuthRoute: typeof authAuthRoute
   api_evaluation_videosApiEvaluationVideosRoute: typeof api_evaluation_videosApiEvaluationVideosRoute
   payment_callbackPaymentCallbackRoute: typeof payment_callbackPaymentCallbackRoute
+  pwa_manifestPwaManifestRoute: typeof pwa_manifestPwaManifestRoute
+  pwa_offlinePwaOfflineRoute: typeof pwa_offlinePwaOfflineRoute
   rpcRpcRoute: typeof rpcRpcRoute
   api_authApiAuthRoute: typeof api_authApiAuthRoute
   api_evaluation_videoApiEvaluationVideoRoute: typeof api_evaluation_videoApiEvaluationVideoRoute
@@ -810,6 +836,20 @@ declare module '@tanstack/react-router' {
       path: '/payment/callback'
       fullPath: '/payment/callback'
       preLoaderRoute: typeof payment_callbackPaymentCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pwa/manifest.webmanifest': {
+      id: '/pwa/manifest.webmanifest'
+      path: '/pwa/manifest.webmanifest'
+      fullPath: '/pwa/manifest.webmanifest'
+      preLoaderRoute: typeof pwa_manifestPwaManifestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pwa/offline': {
+      id: '/pwa/offline'
+      path: '/pwa/offline'
+      fullPath: '/pwa/offline'
+      preLoaderRoute: typeof pwa_offlinePwaOfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rpc/$': {
@@ -1036,6 +1076,8 @@ const rootRouteChildren: RootRouteChildren = {
   api_evaluation_videosApiEvaluationVideosRoute:
     api_evaluation_videosApiEvaluationVideosRoute,
   payment_callbackPaymentCallbackRoute: payment_callbackPaymentCallbackRoute,
+  pwa_manifestPwaManifestRoute: pwa_manifestPwaManifestRoute,
+  pwa_offlinePwaOfflineRoute: pwa_offlinePwaOfflineRoute,
   rpcRpcRoute: rpcRpcRoute,
   api_authApiAuthRoute: api_authApiAuthRoute,
   api_evaluation_videoApiEvaluationVideoRoute:

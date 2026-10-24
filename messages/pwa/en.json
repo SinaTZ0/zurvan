@@ -1,0 +1,11 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "pwa_shortcut_courses": "Courses",
+  "pwa_shortcut_evaluation": "Free evaluation",
+  "pwa_shortcut_account": "My account",
+  "pwa_offline_meta_title": "Zurvann | You're offline",
+  "pwa_offline_title": "You're offline",
+  "pwa_offline_bubble": "I didn't chew the cable, I promise! Your internet is down.",
+  "pwa_offline_body": "Once you're back online, the page opens by itself.",
+  "pwa_offline_retry": "Try again"
+}

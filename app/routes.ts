@@ -70,4 +70,7 @@ export const routes = rootRoute("../root.tsx", [
   route("/api/evaluation-videos", "api_evaluation_videos/api-evaluation-videos.ts"),
   route("/api/evaluation-videos/$id", "api_evaluation_video/api-evaluation-video.ts"),
   route("/payment/callback", "payment_callback/payment-callback.ts"),
+  // The installable app (docs/mobile-app.md): its manifest and the page the service worker shows offline.
+  route("/pwa/manifest.webmanifest", "pwa_manifest/pwa-manifest.ts"),
+  route("/pwa/offline", "pwa_offline/pwa-offline.ts"),
 ]);

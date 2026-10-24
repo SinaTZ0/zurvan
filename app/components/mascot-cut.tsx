@@ -160,6 +160,10 @@ export const MASCOT_CUTS = {
   archive: { width: 515, height: 407 },
   suitcase: { width: 497, height: 414 },
   chalkboard: { width: 471, height: 427 },
+  // The offline page's dog, sitting with an unplugged cable in his mouth, cut from
+  // image-reference/generated/offline/offline-3.png. That page is plain HTML the service worker keeps
+  // (`app/routes/pwa_offline/`), so it loads the file by its path, not through `MascotCut`.
+  offline: { width: 304, height: 460 },
 } as const;
 
 export type MascotCutName = keyof typeof MASCOT_CUTS;

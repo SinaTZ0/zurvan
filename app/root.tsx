@@ -7,6 +7,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { Provider as JotaiProvider } from "jotai";
+import { useEffect } from "react";
 
 import { RootErrorPage } from "~/components/root-error-page";
 import { SmoothScroll } from "~/components/smooth-scroll";
@@ -14,6 +15,9 @@ import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { textDirection } from "~/lib/i18n";
+import { PWA_COLOR, PWA_MANIFEST_PATH, pwaHref } from "~/lib/pwa";
+import { registerServiceWorker } from "~/lib/register-service-worker";
+import { m } from "~/paraglide/messages";
 import { getLocale } from "~/paraglide/runtime";
 
 // A side-effect import: Start links it in the head. (`?url` gave the server and client builds different hashes.)
@@ -28,12 +32,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      /*------ Installed App ------*/
+      // docs/mobile-app.md. iOS reads its own tags, not the manifest. Its status bar is plain `black`, not
+      // `black-translucent`: that one draws the page under it, and no header pads itself by the top safe-area inset.
+      { name: "theme-color", content: PWA_COLOR },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: m.shared_brand_name() },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black" },
     ],
     links: [
       { rel: "icon", href: "/favicon.ico", sizes: "16x16 32x32 48x48" },
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
       { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+      { rel: "manifest", href: pwaHref({ path: PWA_MANIFEST_PATH, locale: getLocale() }) },
     ],
   }),
   shellComponent: RootDocument,
@@ -49,6 +61,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   // reloads the page (`app/router.tsx`).
   const locale = getLocale();
   const dir = textDirection(locale);
+
+  useEffect(registerServiceWorker, []);
 
   return (
     // The site has one theme, black and flat gold. `dark` turns on the `dark:` variants the UI components are written with;

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "pwa_shortcut_courses": "دوره‌ها",
+  "pwa_shortcut_evaluation": "ارزیابی رایگان",
+  "pwa_shortcut_account": "حساب من",
+  "pwa_offline_meta_title": "اینترنت قطعه | زروان",
+  "pwa_offline_title": "اینترنتت قطع شده",
+  "pwa_offline_bubble": "سیمو من نجویدم‌ها! اینترنتت قطعه.",
+  "pwa_offline_body": "وقتی دوباره وصل شدی، صفحه خودش باز می‌شه.",
+  "pwa_offline_retry": "دوباره امتحان کن"
+}

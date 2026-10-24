@@ -6,9 +6,11 @@
 
 	# Public images keep stable filenames, so refresh their browser cache daily.
 	# Match successful responses only, and override the app's max-age=0 on write.
+	# Only the app icons and fonts under /pwa: its manifest and offline page are
+	# app routes with their own headers, and /sw.js must never be cached long.
 	@staticImages {
 		method GET HEAD
-		path /photo/* /brand/* /demo/* /favicon.ico /favicon-*.png /apple-touch-icon.png
+		path /photo/* /brand/* /demo/* /favicon.ico /favicon-*.png /apple-touch-icon.png /pwa/icon-* /pwa/fonts/*
 	}
 	header @staticImages Cache-Control "public, max-age=86400" {
 		match status 2xx 304
