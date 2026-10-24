@@ -15,6 +15,7 @@ import { DirectionProvider } from "~/components/ui/direction";
 import { Toaster } from "~/components/ui/toast";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { textDirection } from "~/lib/i18n";
+import { captureInstallPrompt } from "~/lib/install-prompt";
 import { PWA_COLOR, PWA_MANIFEST_PATH, pwaHref } from "~/lib/pwa";
 import { registerServiceWorker } from "~/lib/register-service-worker";
 import { m } from "~/paraglide/messages";
@@ -22,6 +23,10 @@ import { getLocale } from "~/paraglide/runtime";
 
 // A side-effect import: Start links it in the head. (`?url` gave the server and client builds different hashes.)
 import "./app.css";
+
+// Chrome's install event can fire before hydration, so it is caught as soon as the client bundle runs (the banner is
+// `InstallBanner`, in the storefront and account shells).
+captureInstallPrompt();
 
 /*===== Root Route =====*/
 // Every page's loader gets the request's QueryClient (`app/router.tsx`) from the router context.

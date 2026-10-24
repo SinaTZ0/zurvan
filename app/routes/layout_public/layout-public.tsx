@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, useMatches } from "@tanstack/react-router";
 
 import { CartSync } from "~/components/cart-sync";
+import { InstallBanner } from "~/components/install-banner";
 import { orpc } from "~/orpc/client";
 import { SiteFooter } from "~/routes/layout_public/components/site-footer";
 import { SiteHeader } from "~/routes/layout_public/components/site-header";
@@ -40,6 +41,7 @@ function PublicLayout() {
       </main>
       <SiteFooter />
       <TabBar viewer={viewer} />
+      <InstallBanner />
     </div>
   );
 }

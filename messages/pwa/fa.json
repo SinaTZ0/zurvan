@@ -7,5 +7,10 @@
   "pwa_offline_title": "اینترنتت قطع شده",
   "pwa_offline_bubble": "سیمو من نجویدم‌ها! اینترنتت قطعه.",
   "pwa_offline_body": "وقتی دوباره وصل شدی، صفحه خودش باز می‌شه.",
-  "pwa_offline_retry": "دوباره امتحان کن"
+  "pwa_offline_retry": "دوباره امتحان کن",
+  "pwa_install_title": "نصب اپ زروان",
+  "pwa_install_action": "نصب",
+  "pwa_install_close": "بستن",
+  "pwa_install_ios_share": "دکمه‌ی Share رو بزن",
+  "pwa_install_ios_add": "بعد Add to Home Screen رو بزن"
 }

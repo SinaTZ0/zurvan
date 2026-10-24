@@ -7,5 +7,10 @@
   "pwa_offline_title": "You're offline",
   "pwa_offline_bubble": "I didn't chew the cable, I promise! Your internet is down.",
   "pwa_offline_body": "Once you're back online, the page opens by itself.",
-  "pwa_offline_retry": "Try again"
+  "pwa_offline_retry": "Try again",
+  "pwa_install_title": "Install Zurvann",
+  "pwa_install_action": "Install",
+  "pwa_install_close": "Close",
+  "pwa_install_ios_share": "Tap Share",
+  "pwa_install_ios_add": "Then tap Add to Home Screen"
 }

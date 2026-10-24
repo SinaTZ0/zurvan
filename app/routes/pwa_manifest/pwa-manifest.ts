@@ -32,6 +32,11 @@ function manifest(request: Request) {
       { src: "/pwa/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/pwa/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
+    // The Android app (`mobile/twa/`), so the install banner can ask Chrome whether it is already on the phone
+    // (`isAndroidAppInstalled` in `app/lib/install-prompt.ts`). With `prefer_related_applications` off, Chrome still
+    // offers to install the site itself.
+    related_applications: [{ platform: "play", id: "ir.zurvann.app" }],
+    prefer_related_applications: false,
     // The long-press menu on the home-screen icon.
     shortcuts: [
       { name: m.pwa_shortcut_courses({}, { locale }), url: path("/courses") },

@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useMatches } from "@tanstack/react-router";
 
 import { CartSync } from "~/components/cart-sync";
+import { InstallBanner } from "~/components/install-banner";
 import { requireSession } from "~/lib/session-guard";
 import { ACCOUNT_EXIT_LINK, roomLabel as getRoomLabel } from "~/routes/layout_account/account-nav";
 import { AccountFooter } from "~/routes/layout_account/components/account-footer";
@@ -49,6 +50,7 @@ function AccountLayout() {
       </main>
       <AccountFooter />
       <AccountTabBar items={navItems} exitLink={ACCOUNT_EXIT_LINK} label={roomLabel} />
+      <InstallBanner />
     </div>
   );
 }
