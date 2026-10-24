@@ -16,11 +16,12 @@ const SITE_LINK = { label: "دیدن سایت", to: "/" } as const;
  * this is. At the end come «دیدن سایت» (from `lg`; on phones it moves into the menu) and the person menu.
  *
  * Unlike the account's header it runs the full width and stays stuck to the top, because the Admin's lists are long
- * and the rail hangs under it (`top-16`). It paints the paper and its grain, so rows scroll under it unseen.
+ * and the rail hangs under it (`top-16`). It paints the paper and its grain, so rows scroll under it unseen. In the
+ * full-screen Android app it takes the body's top padding (the camera's strip) into itself, so rows don't show there.
  */
 export function AdminHeader({ firstName, phoneNumber }: { firstName: string; phoneNumber: string | null }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-foreground/25 bg-background paper-grain [view-transition-name:admin-header]">
+    <header className="sticky top-0 z-40 -mt-[env(safe-area-inset-top)] border-b pt-[env(safe-area-inset-top)] border-foreground/25 bg-background paper-grain [view-transition-name:admin-header]">
       <div className="flex h-16 items-center gap-3 px-4 md:px-8">
         {/*------ Wordmark and the room ------*/}
         <Link to="/admin" aria-label="زروان، نمای کلی مدیریت" className={`flex items-center gap-2.5 rounded ${FOCUS}`}>

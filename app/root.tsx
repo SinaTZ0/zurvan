@@ -34,7 +34,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       /*------ Installed App ------*/
       // docs/mobile-app.md. iOS reads its own tags, not the manifest. Its status bar is plain `black`, not
-      // `black-translucent`: that one draws the page under it, and no header pads itself by the top safe-area inset.
+      // `black-translucent`, which draws the page under the clock: the body pads itself by the top inset (`app.css`, for
+      // the Android app's camera strip), but that look hasn't been tried on an iPhone.
       { name: "theme-color", content: PWA_COLOR },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: m.shared_brand_name() },

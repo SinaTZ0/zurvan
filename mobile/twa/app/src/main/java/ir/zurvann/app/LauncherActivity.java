@@ -19,6 +19,9 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
+
+import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 
 
 
@@ -50,5 +53,16 @@ public class LauncherActivity
         
 
         return uri;
+    }
+
+    // Zurvann (hand edit; `bubblewrap update` overwrites this file, so put it back after one; see
+    // docs/mobile-app.md). twa-manifest.json's "fullscreen-sticky" hides both system bars, but the library
+    // asks Chrome for the default cutout mode, which keeps the page out of the camera's strip at the top
+    // and leaves an empty band there. "Short edges" draws the page into it; the site pads its top by
+    // env(safe-area-inset-top) so nothing sits under the camera.
+    @Override
+    protected TrustedWebActivityDisplayMode getDisplayMode() {
+        return new TrustedWebActivityDisplayMode.ImmersiveMode(
+                true, WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
     }
 }

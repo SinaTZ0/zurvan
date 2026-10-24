@@ -3,7 +3,7 @@
   "host": "k9training.zurvann.ir",
   "name": "زروان",
   "launcherName": "زروان",
-  "display": "standalone",
+  "display": "fullscreen-sticky",
   "themeColor": "#141414",
   "themeColorDark": "#141414",
   "navigationColor": "#141414",
@@ -20,8 +20,7 @@
     "path": "/home/sina/zurvann-keys/zurvann-upload.jks",
     "alias": "zurvann"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionCode": 3,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://k9training.zurvann.ir/pwa/manifest.webmanifest",
@@ -30,7 +29,7 @@
   "alphaDependencies": {
     "enabled": false
   },
-  "enableSiteSettingsShortcut": false,
+  "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
   "minSdkVersion": 24,
@@ -47,5 +46,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "navigate-existing",
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.2"
 }

@@ -411,9 +411,13 @@
     @apply border-border outline-ring/50;
   }
   /* Vazirmatn at 400 reads thin on screen, so body text (and the inputs that inherit it) defaults to 500 */
+  /* The top padding is the camera's strip in the full-screen Android app (docs/mobile-app.md), the only place the top
+     inset isn't 0: the paper runs under the camera and the page starts below it. A sticky header cancels it and pads
+     itself instead (`AdminHeader`). */
   body {
     @apply bg-background font-medium text-foreground;
     background-image: var(--grain);
+    padding-top: env(safe-area-inset-top);
   }
   html {
     @apply font-sans;
