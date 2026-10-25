@@ -12,6 +12,7 @@ import { ADMIN_PLATE } from "~/lib/admin-plate";
 import { orNotFound } from "~/lib/not-found";
 import { PUBLIC_RECORD_CONSENT } from "~/lib/public-record";
 import { orpc } from "~/orpc/client";
+import { BehaviorProblemsSection } from "~/routes/admin_dog_detail/components/behavior-problems-section";
 import { CertificatesSection } from "~/routes/admin_dog_detail/components/certificates-section";
 import { CourseLadder } from "~/routes/admin_dog_detail/components/course-ladder";
 import { DetailMotion } from "~/routes/admin_dog_detail/components/detail-motion";
@@ -185,6 +186,7 @@ function AdminDogDetailPage() {
           <CourseLadder dog={dog} rungs={rungs} />
           <EnrollmentsSection enrollments={enrollments} />
           <CertificatesSection enrollments={enrollments} certificates={certificates} />
+          <BehaviorProblemsSection problems={dog.behaviorProblems} />
           <LogbookSection
             entries={logbook}
             publicRecordsAvailable={PUBLIC_RECORDS_AVAILABLE}

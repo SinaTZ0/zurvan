@@ -30,6 +30,6 @@ export const Route = createFileRoute("/account/dogs/new")({
 
 /*===== Page =====*/
 function NewDogPage() {
-  const { redirectTo } = Route.useSearch();
-  return <DogFormPage dog={null} redirectTo={redirectTo} />;
+  const { redirectTo, step } = Route.useSearch();
+  return <DogFormPage dog={null} redirectTo={redirectTo} step={step} />;
 }

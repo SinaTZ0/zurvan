@@ -3,7 +3,7 @@ import { ArrowRightIcon, PencilIcon } from "lucide-react";
 import { AdminPageHeader } from "~/components/admin-page-header";
 import { Link } from "~/components/link";
 import { Button } from "~/components/ui/button";
-import { describeDog } from "~/lib/dog-format";
+import { describeBreed, describeDog } from "~/lib/dog-format";
 import type { AdminDog } from "~/orpc/dog/contract";
 import { INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
 
@@ -13,6 +13,8 @@ import { INK_OUTLINE } from "~/routes/admin_dog_detail/surfaces";
  * of the header: «ویرایش مشخصات», which opens the edit sheet. On phones the button goes under the title, full width.
  */
 export function DogHeader({ dog, onEdit }: { dog: AdminDog; onEdit: () => void }) {
+  const breed = describeBreed(dog, "fa");
+
   return (
     <div>
       {/* In RTL the start side is the right, so «back» points right. */}
@@ -29,10 +31,10 @@ export function DogHeader({ dog, onEdit }: { dog: AdminDog; onEdit: () => void }
         summary={
           <>
             {describeDog(dog)}
-            {dog.breed && (
+            {breed && (
               <>
                 {" · "}
-                <bdi>{dog.breed}</bdi>
+                <bdi>{breed}</bdi>
               </>
             )}
           </>

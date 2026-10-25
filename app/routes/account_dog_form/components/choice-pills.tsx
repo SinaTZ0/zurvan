@@ -6,8 +6,9 @@ import { FieldError } from "~/components/ui/field";
 
 /*===== Choice Pills =====*/
 /**
- * A short «pick one» question as a row of pills (نر / ماده, بله / نه). Native radios underneath, so arrow keys, the
- * form library and screen readers work as for any radio group. The selected pill has a gold border, a tint and a
+ * A short «pick one» question as a row of pills (نر / ماده, بله / نه), or «pick any» with `multiple` (the training
+ * goals). Native radios (or checkboxes) underneath, so arrow keys, the form library and screen readers work as for any
+ * radio group or set of checkboxes. The selected pill has a gold border, a tint and a
  * tick, so selection is never told by colour alone; the tick pops in when a pill is picked (`df-tick`, form-motion.tsx)
  * and an error rises in under the row.
  */
@@ -17,28 +18,42 @@ export function ChoicePills({
   options,
   registration,
   error,
+  multiple = false,
   className,
 }: {
   legend: string;
   description?: string;
+  /** Checkboxes instead of radios: several can be picked (the form gets an array). */
+  multiple?: boolean;
   options: readonly { value: string; label: string }[];
   registration: UseFormRegisterReturn;
   error?: FormFieldError;
   className?: string;
 }) {
   const errorId = `${registration.name}-error`;
+  const descriptionId = `${registration.name}-description`;
+  const describedBy = [description && descriptionId, error && errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <fieldset className={cn("flex min-w-0 flex-col gap-2", className)} aria-describedby={error ? errorId : undefined}>
+    <fieldset className={cn("flex min-w-0 flex-col gap-2", className)} aria-describedby={describedBy}>
       <legend className="mb-2 text-sm font-bold">{legend}</legend>
-      {description && <p className="-mt-1 mb-1 text-sm text-pretty text-muted-foreground">{description}</p>}
+      {description && (
+        <p id={descriptionId} className="-mt-1 mb-1 text-sm text-pretty text-muted-foreground">
+          {description}
+        </p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
           // `group/pill` lets the tick follow the radio's checked state in CSS: a radio is only «checked» in the DOM,
           // so React state would lag behind the form library that owns the value.
           <label key={option.value} className="group/pill relative">
-            <input type="radio" value={option.value} className="peer sr-only" {...registration} />
+            <input
+              type={multiple ? "checkbox" : "radio"}
+              value={option.value}
+              className="peer sr-only"
+              {...registration}
+            />
             <span
               className={cn(
                 "flex h-11 cursor-pointer items-center gap-1.5 rounded-full border bg-card px-4 text-sm font-bold text-muted-foreground transition-colors select-none",

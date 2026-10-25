@@ -2,11 +2,17 @@ import { cn } from "cn";
 import { LockKeyholeIcon } from "lucide-react";
 
 import { MascotCut } from "~/components/mascot-cut";
-import { describeDogAge, describeWeight } from "~/lib/dog-format";
+import { describeBreed, describeDogAge, describeWeight } from "~/lib/dog-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatDate } from "~/lib/locale-format";
-import { DOG_SEX_LABELS, VACCINATION_STATUS_LABELS } from "~/orpc/dog/constants";
+import { formatDate, formatNumber } from "~/lib/locale-format";
+import {
+  DOG_BREED_PURITY_LABELS,
+  DOG_SEX_LABELS,
+  DOG_TRAINING_GOAL_LABELS,
+  VACCINATION_STATUS_LABELS,
+} from "~/orpc/dog/constants";
 import type { Dog } from "~/orpc/dog/contract";
+import { RecordPhotos } from "~/routes/account_dog_detail/components/record-photos";
 import { SectionHead } from "~/routes/account_dog_detail/components/section-head";
 import { PLATE } from "~/routes/account_dog_detail/plate";
 import { m } from "~/paraglide/messages";
@@ -15,16 +21,22 @@ import { m } from "~/paraglide/messages";
 /**
  * «مشخصات» (it was the shared `DogProfile`; this page was its only reader): the dog's identity and health as ruled
  * label and value rows on a grained plate, then the owner's behaviour and medical notes when there are any. Once the
- * dog is evaluated, the breed and birth date are locked to the head trainer (F2): a small lock beside each, and the line
+ * dog is evaluated, the breed type, breed and birth date are locked to the head trainer (F2): a small lock beside each, and the line
  * under the rows says who can change them.
  *
  * The dog's bowls (dimmed scenery) stand on the plate's top edge: this is the everyday side of the file.
  */
 export function DogProfile({ dog }: { dog: Dog }) {
-  const rows: { label: string; value: React.ReactNode; locked?: boolean }[] = [
+  const notSet = <span className="font-normal text-muted-foreground">{m.account_dog_detail_profile_not_set()}</span>;
+  const rows: { label: string; value: React.ReactNode; locked?: boolean; dir?: "auto" }[] = [
+    {
+      label: m.account_dog_detail_profile_breed_type(),
+      value: dog.breedPurity ? DOG_BREED_PURITY_LABELS[dog.breedPurity] : notSet,
+      locked: dog.isEvaluated,
+    },
     {
       label: m.account_dog_detail_profile_breed(),
-      value: dog.breed ?? m.account_dog_detail_profile_not_set(),
+      value: describeBreed(dog) ?? notSet,
       locked: dog.isEvaluated,
     },
     { label: m.account_dog_detail_profile_sex(), value: DOG_SEX_LABELS[dog.sex] },
@@ -42,6 +54,18 @@ export function DogProfile({ dog }: { dog: Dog }) {
     },
     { label: m.account_dog_detail_profile_weight(), value: describeWeight(dog.weightKg) },
     {
+      label: m.account_dog_detail_profile_height(),
+      value: dog.heightCm ? m.account_dog_detail_profile_height_value({ height: formatNumber(dog.heightCm) }) : notSet,
+    },
+    { label: m.account_dog_detail_profile_coat(), value: dog.coatColor ?? notSet, dir: "auto" },
+    { label: m.account_dog_detail_profile_markings(), value: dog.markings ?? notSet, dir: "auto" },
+    {
+      label: m.account_dog_detail_profile_goals(),
+      value: dog.trainingGoals.length
+        ? dog.trainingGoals.map((goal) => DOG_TRAINING_GOAL_LABELS[goal]).join("، ")
+        : notSet,
+    },
+    {
       label: m.account_dog_detail_profile_neutered(),
       value: dog.isNeutered ? m.account_dog_detail_yes() : m.account_dog_detail_no(),
     },
@@ -54,14 +78,20 @@ export function DogProfile({ dog }: { dog: Dog }) {
           {dog.microchipNumber}
         </span>
       ) : (
-        <span className="font-normal text-muted-foreground">{m.account_dog_detail_profile_not_set()}</span>
+        notSet
       ),
+    },
+    {
+      label: m.account_dog_detail_profile_chip_date(),
+      value: dog.microchipImplantedOn ? formatDate(dog.microchipImplantedOn) : notSet,
     },
   ];
 
+  const problems = dog.behaviorProblems;
   const notes = [
     { label: m.account_dog_detail_profile_behavior(), text: dog.behaviorNotes?.trim() },
     { label: m.account_dog_detail_profile_health(), text: dog.medicalNotes?.trim() },
+    { label: m.account_dog_detail_profile_vaccine_notes(), text: dog.vaccinationNotes?.trim() },
   ].flatMap(({ label, text }) => (text ? [{ label, text }] : []));
 
   return (
@@ -79,7 +109,9 @@ export function DogProfile({ dog }: { dog: Dog }) {
                 {row.label}
                 {row.locked && <LockKeyholeIcon aria-hidden className="size-3.5 text-primary/70" />}
               </dt>
-              <dd className="min-w-0 text-end font-bold text-pretty">{row.value}</dd>
+              <dd dir={row.dir} className="min-w-0 text-end font-bold text-pretty">
+                {row.value}
+              </dd>
             </div>
           ))}
         </dl>
@@ -92,8 +124,29 @@ export function DogProfile({ dog }: { dog: Dog }) {
         )}
 
         {/*===== Notes =====*/}
-        {notes.length > 0 && (
+        {(notes.length > 0 || problems.length > 0) && (
           <dl className="divide-y divide-dashed divide-foreground/15 border-t border-foreground/15">
+            {/*------ Behavior Problems ------*/}
+            {problems.length > 0 && (
+              <div className="flex flex-col gap-2 py-3">
+                <dt className="text-sm text-muted-foreground">{m.account_dog_detail_profile_problems()}</dt>
+                <dd>
+                  <ul className="flex flex-col gap-1.5">
+                    {problems.map((problem) => (
+                      <li key={problem} className="flex items-start gap-2.5">
+                        <span aria-hidden className="mt-[0.7em] size-1.5 shrink-0 rounded-full bg-primary" />
+                        {/* The owner's own words, in whichever language they typed them. */}
+                        <span dir="auto" className="min-w-0 text-pretty">
+                          {problem}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </dd>
+              </div>
+            )}
+
+            {/*------ Written Notes ------*/}
             {notes.map((note) => (
               <div key={note.label} className="flex flex-col gap-1 py-3">
                 <dt className="text-sm text-muted-foreground">{note.label}</dt>
@@ -105,6 +158,9 @@ export function DogProfile({ dog }: { dog: Dog }) {
             ))}
           </dl>
         )}
+
+        {/*===== Photos =====*/}
+        <RecordPhotos dog={dog} />
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import type { Dog } from "~/orpc/dog/contract";
 import { DogForm } from "~/routes/account_dog_form/components/dog-form";
 import { DogFormError } from "~/routes/account_dog_form/components/dog-form-error";
 import { PageHeader } from "~/routes/account_dog_form/components/page-header";
+import { DOG_FORM_STEP_COUNT } from "~/routes/account_dog_form/sections";
 
 // What the two routes share (`account-dog-new.tsx` at `/account/dogs/new`, `account-dog-edit.tsx` at
 // `/account/dogs/$dogId/edit`). Each route file has its own guard, loader and title; which file rendered the page is
@@ -17,11 +18,15 @@ function isSamePath(value: string) {
 }
 
 /**
- * `?redirectTo=` is where to go after saving (and on «انصراف»), when another page sent the owner here (the assessment
- * page, a course's buy card). Anything but a same-site path is ignored.
+ * - `?redirectTo=` is where to go after saving (and on «انصراف»), when another page sent the owner here (the assessment
+ *   page, a course's buy card). Anything but a same-site path is ignored.
+ * - `?step=` is the new dog's step, 1 to 4 (left out on the first). The edit page shows every plate and ignores it.
+ *   Moving between steps pushes history, so a phone's back button goes back a step; a step whose earlier steps still
+ *   have a red field is sent back to the first of them (`DogForm`).
  */
 export const dogFormSearchSchema = z.object({
   redirectTo: z.string().refine(isSamePath).optional().catch(undefined),
+  step: z.number().int().min(1).max(DOG_FORM_STEP_COUNT).optional().catch(undefined),
 });
 
 /*===== Queries =====*/
@@ -34,10 +39,27 @@ export const editDogQuery = (dogId: string) => orpc.dog.get.queryOptions({ input
 /*===== Dog Form =====*/
 /**
  * F2's form for adding a dog and for editing one: the buddy's file being written. The customer's dog's print fills in
- * beside the form as it is typed, and the center's dog looks after each of its three plates; the form is `DogForm`.
+ * beside the form as it is typed, and the center's dog looks after each of its four plates; a new dog goes through
+ * them one step at a time (`step`), an edit shows them all. The form is `DogForm`.
  */
-export function DogFormPage({ dog, redirectTo }: { dog: Dog | null; redirectTo: string | undefined }) {
-  return <DogForm dog={dog} redirectTo={redirectTo ?? null} header={<PageHeader dog={dog} />} />;
+export function DogFormPage({
+  dog,
+  redirectTo,
+  step,
+}: {
+  dog: Dog | null;
+  redirectTo: string | undefined;
+  /** The new dog's step from the URL (1 when left out); ignored when editing. */
+  step?: number;
+}) {
+  return (
+    <DogForm
+      dog={dog}
+      redirectTo={redirectTo ?? null}
+      step={dog ? null : (step ?? 1)}
+      header={<PageHeader dog={dog} />}
+    />
+  );
 }
 
 /*===== Errors =====*/

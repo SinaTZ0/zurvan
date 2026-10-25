@@ -4,7 +4,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import { CustomerContact } from "~/components/customer-contact";
 import { DogEvaluationStamp, type DogEvaluationState } from "~/components/dog-evaluation-stamp";
 import { Link } from "~/components/link";
-import { describeDog } from "~/lib/dog-format";
+import { describeBreed, describeDog } from "~/lib/dog-format";
 import type { AdminDog } from "~/orpc/dog/contract";
 import { DogPrint } from "~/routes/admin_dogs/components/dog-print";
 import { PassedCourseChips } from "~/routes/admin_dogs/components/passed-course-chips";
@@ -27,6 +27,9 @@ import { REGISTER_COLUMNS, REGISTER_PADDING } from "~/routes/admin_dogs/componen
  * load): it rises in with the shared `answer-in`.
  */
 export function DogRow({ dog, state, rise }: { dog: AdminDog; state: DogEvaluationState; rise: number | null }) {
+  // «پامرانین × شیتزو» for a cross, «میکس، شبیه X» for a mixed dog.
+  const breed = describeBreed(dog, "fa");
+
   return (
     <li
       className={cn(
@@ -55,7 +58,7 @@ export function DogRow({ dog, state, rise }: { dog: AdminDog; state: DogEvaluati
             <bdi>{dog.name}</bdi>
           </Link>
           <p className="mt-0.5 min-w-0 self-start text-xs leading-5 text-pretty text-muted-foreground [grid-area:facts]">
-            {dog.breed ? <bdi>{dog.breed}</bdi> : "نژاد ثبت نشده"}
+            {breed ? <bdi>{breed}</bdi> : "نژاد ثبت نشده"}
             {"، "}
             {describeDog(dog)}
           </p>

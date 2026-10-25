@@ -11,14 +11,27 @@ import { type DogFormInput, SERVER_FIELD_TO_FORM } from "~/routes/account_dog_fo
 const FORM_FIELDS = new Set<string>([
   "photoMediaId",
   "name",
+  "breedPurity",
   "breed",
+  "breedSecondary",
   "sex",
   "isNeutered",
+  "coatColor",
+  "markings",
   "vaccinationStatus",
+  "vaccinationNotes",
   "microchipNumber",
+  "trainingGoals",
+  "behaviorProblems",
   "behaviorNotes",
   "medicalNotes",
+  "vaccinationPhotoIds",
+  "medicalPhotoIds",
+  "tattooPhotoIds",
 ]);
+
+/** The locked fields (F2): an error on one of them means the dog was evaluated after the form opened. */
+const LOCKED_FIELDS = ["birthDate", "breedPurity", "breed", "breedSecondary"];
 
 /*===== Server Errors =====*/
 /**
@@ -41,9 +54,11 @@ export function applyServerError({
 
   if (code === "INVALID_INPUT" && parsed?.success) {
     const targets: (keyof DogFormInput)[] = [];
-    for (const [field, message] of Object.entries(parsed.data.fields)) {
+    for (const [path, message] of Object.entries(parsed.data.fields)) {
+      // A list's item comes keyed by its place (`behaviorProblems.3`); it belongs to the list's field.
+      const field = path.split(".")[0] ?? path;
       const target = SERVER_FIELD_TO_FORM[field] ?? (FORM_FIELDS.has(field) ? (field as keyof DogFormInput) : null);
-      if (target) {
+      if (target && !targets.includes(target)) {
         setError(target, { message });
         targets.push(target);
       }
@@ -51,7 +66,7 @@ export function applyServerError({
     const [general] = parsed.data.errors;
     if (general) {
       setError("root", { message: general });
-    } else if ("birthDate" in parsed.data.fields || "breed" in parsed.data.fields) {
+    } else if (LOCKED_FIELDS.some((field) => field in parsed.data.fields) && isLockedMessage(parsed.data.fields)) {
       // Only reachable when the dog was evaluated after this form opened, so the fields were still editable. The page
       // is stale, and the locked version shows after a refresh.
       setError("root", {
@@ -78,4 +93,13 @@ export function applyServerError({
   }
   setError("root", { message: m.account_dog_form_err_network() });
   return [];
+}
+
+/**
+ * Whether the server refused a locked field for being locked (`server_dog_field_locked`), not for its value: only then
+ * is the page stale. A cross with a missing second breed also errs on `breedSecondary`, and that is a plain field error.
+ */
+function isLockedMessage(fields: Record<string, string>): boolean {
+  const locked = m.server_dog_field_locked();
+  return LOCKED_FIELDS.some((field) => fields[field] === locked);
 }

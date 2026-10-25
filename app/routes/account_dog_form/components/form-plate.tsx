@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut, type MascotCutName } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { plateAnchor } from "~/routes/account_dog_form/components/jump-list";
 import type { DogFormSection } from "~/routes/account_dog_form/sections";
 
 /*===== Guide =====*/
@@ -17,6 +18,8 @@ export type PlateGuide = {
   scenery: MascotCutName;
   /** The scenery's width per breakpoint; it tucks under the dog's back by its negative start margin. */
   sceneryClassName: string;
+  /** For a cut-out the registry leaves bright (the chalkboard), when here it is only scenery. */
+  dimScenery?: boolean;
 };
 
 /*===== Form Plate =====*/
@@ -33,6 +36,8 @@ export type PlateGuide = {
  * over. The bubble is `aria-hidden`: the description under the heading says the same thing in plain words.
  *
  * Focus anywhere inside the plate reports the section (React's `onFocus` bubbles), so the form can hand it the word.
+ * The section is the edit page's jump target (`plateAnchor`), and its heading takes focus (`tabIndex={-1}`) when a
+ * new dog's step shows it, so a screen reader hears where the owner now is.
  */
 export function FormPlate({
   id,
@@ -69,7 +74,7 @@ export function FormPlate({
   if (speaking && (shown.line !== line || shown.key !== speakerKey)) setShown({ line, key: speakerKey });
 
   return (
-    <section aria-labelledby={headingId} className="min-w-0 scroll-mt-28">
+    <section id={plateAnchor(id)} aria-labelledby={headingId} className="min-w-0 scroll-mt-28">
       {/*===== Head =====*/}
       <div className="flex items-end gap-2 sm:gap-5">
         <div className="min-w-0 flex-1 pb-4">
@@ -95,7 +100,12 @@ export function FormPlate({
             </div>
           </div>
 
-          <h2 id={headingId} className={cn(DISPLAY_HEADING, "text-2xl text-balance sm:text-3xl")}>
+          <h2
+            id={headingId}
+            tabIndex={-1}
+            data-plate-heading={id}
+            className={cn(DISPLAY_HEADING, "text-2xl text-balance outline-none sm:text-3xl")}
+          >
             {title}
           </h2>
           <p className="mt-1.5 text-sm text-pretty text-muted-foreground sm:text-base">{description}</p>
@@ -140,7 +150,7 @@ function GuideFigure({ guide }: { guide: PlateGuide }) {
 
       {/*------ Scenery ------*/}
       <div className={cn("relative translate-y-[4%]", guide.sceneryClassName)}>
-        <MascotCut name={guide.scenery} className="block w-full" />
+        <MascotCut name={guide.scenery} className={cn("block w-full", guide.dimScenery && "scenery-dim")} />
         <MascotCut name="plants" className="lively-sway-2 absolute right-[78%] bottom-0 w-[34%] -scale-x-100" />
       </div>
     </div>

@@ -27,7 +27,7 @@ function matchesPhone({ phone, typed }: { phone: string | null; typed: string })
  */
 function matchesQuery({ dog, typed }: { dog: AdminDog; typed: string }): boolean {
   // The file number is on the dog's QR code and certificate, so it is what the Admin is handed when someone calls about one.
-  const texts = [dog.name, dog.breed, dog.owner.name, dog.fileNumber];
+  const texts = [dog.name, dog.breed, dog.breedSecondary, dog.owner.name, dog.fileNumber];
   if (texts.some((text) => text !== null && normalizeForSearch(text).includes(typed))) return true;
   return matchesPhone({ phone: dog.owner.phoneNumber, typed });
 }

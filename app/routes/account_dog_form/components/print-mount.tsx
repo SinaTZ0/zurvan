@@ -7,20 +7,21 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { entryCalendar } from "~/lib/date-entry";
 import { toLatinDigits } from "~/lib/digits";
-import { birthDateFromAge, describeDogAge, describeWeight } from "~/lib/dog-format";
+import { birthDateFromAge, describeBreed, describeDogAge, describeWeight } from "~/lib/dog-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { DOG_SEX_LABELS } from "~/orpc/dog/constants";
+import { DOG_BREED_PURITIES, DOG_SEX_LABELS, DOG_TRAINING_GOAL_LABELS, DOG_TRAINING_GOALS } from "~/orpc/dog/constants";
 import type { Media } from "~/orpc/media/contract";
 import { m } from "~/paraglide/messages";
 import { PhotoPicker } from "~/routes/account_dog_form/components/photo-picker";
-import type { DogFormInput } from "~/routes/account_dog_form/schema";
+import { type DogFormInput, problemLines } from "~/routes/account_dog_form/schema";
 
 /*===== Print Mount =====*/
 /**
  * The buddy's file being written: the customer's dog's print pinned on a grained mount, filling in as the form is
  * typed. The print is the photo picker; the dog speaks for itself in a bubble from the print's corner («منم {name}!»,
- * or what it is doing while the form saves); its name is stamped in gold as it is typed, the facts line grows, and on
- * desktop what the head trainer reads first echoes the notes. The dog's bed and bowls wait at the mount's foot on a
+ * or what it is doing while the form saves); its name is stamped in gold as it is typed, the facts line grows (the
+ * breed as the site prints it, «پامرانین × شیتزو»), and on desktop the training goals hang under it as small tags and
+ * what the head trainer reads first echoes the behavior problems and the notes. The dog's bed and bowls wait at the mount's foot on a
  * short path. No drawn dog here: this column is the customer's dog's, and the mascot never stands for it.
  *
  * One grid, two layouts (the picker is rendered once, so CSS only moves things):
@@ -59,7 +60,14 @@ export function PrintMount({
   // Shown as it will be saved: Latin digits, no spaces.
   const microchipNumber = toLatinDigits(values.microchipNumber ?? "").replace(/\s+/g, "") || null;
   const facts = describePartialFacts(values);
-  const notes = [values.behaviorNotes, values.medicalNotes].map((note) => note?.trim()).filter(Boolean);
+  // In the order the trainer reads them: the problems one by one, then the notes; the first four.
+  const notes = [
+    ...problemLines(values.behaviorProblems ?? ""),
+    ...[values.behaviorNotes, values.medicalNotes].map((note) => note?.trim() ?? ""),
+  ]
+    .filter(Boolean)
+    .slice(0, 4);
+  const goals = DOG_TRAINING_GOALS.filter((goal) => values.trainingGoals?.includes(goal));
 
   return (
     <aside
@@ -107,6 +115,18 @@ export function PrintMount({
         <p className="mt-1 text-sm text-pretty text-muted-foreground lg:mt-2 lg:text-base">
           {facts || m.account_dog_form_facts_empty()}
         </p>
+        {goals.length > 0 && (
+          <ul className="mt-3 hidden flex-wrap gap-1.5 lg:flex">
+            {goals.map((goal) => (
+              <li
+                key={goal}
+                className="answer-in rounded-full border border-primary/50 px-2.5 py-0.5 text-xs font-bold text-primary"
+              >
+                {DOG_TRAINING_GOAL_LABELS[goal]}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/*===== The Dog's Words =====*/}
@@ -139,7 +159,7 @@ export function PrintMount({
         {notes.length > 0 ? (
           <ul className="mt-3 flex flex-col gap-2 text-sm text-pretty">
             {notes.map((note) => (
-              <li key={note} dir="auto" className="line-clamp-2 border-s-2 border-primary/50 ps-3">
+              <li key={note} dir="auto" className="answer-in line-clamp-2 border-s-2 border-primary/50 ps-3">
                 {note}
               </li>
             ))}
@@ -169,6 +189,13 @@ export function PrintMount({
 function describePartialFacts(values: DeepPartial<DogFormInput>): string {
   const parts: string[] = [];
   if (values.sex) parts.push(DOG_SEX_LABELS[values.sex]);
+
+  const breed = describeBreed({
+    breedPurity: DOG_BREED_PURITIES.find((purity) => purity === values.breedPurity) ?? null,
+    breed: values.breed?.trim() || null,
+    breedSecondary: values.breedSecondary?.trim() || null,
+  });
+  if (breed) parts.push(breed);
 
   const birthDate = previewBirthDate(values);
   if (birthDate) {

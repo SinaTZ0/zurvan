@@ -110,7 +110,8 @@ function AccountDogDetailPage() {
         </div>
 
         {/*------ Profile and File Card ------*/}
-        <div className="flex flex-col gap-16 lg:sticky lg:top-24">
+        {/* Sticky only where the whole column fits the window: with the dog's file photos it is taller than a laptop screen, and a taller sticky column hides its own bottom until the page ends. */}
+        <div className="flex flex-col gap-16 lg:[@media(min-height:1400px)]:sticky lg:[@media(min-height:1400px)]:top-24">
           <DogProfile dog={dog} />
           <FileCard
             dogName={dog.name}

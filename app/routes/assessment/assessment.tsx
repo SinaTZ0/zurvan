@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 
+import { describeBreed } from "~/lib/dog-format";
 import { pageHead } from "~/lib/seo";
 import { requireSession } from "~/lib/session-guard";
 import { orpc } from "~/orpc/client";
@@ -63,7 +64,7 @@ function toChoices({ dogs, evaluations }: { dogs: readonly Dog[]; evaluations: r
       : dog.isEvaluated || own.some((evaluation) => evaluation.status === "evaluated")
         ? "evaluated"
         : "requestable";
-    return { id: dog.id, name: dog.name, breed: dog.breed, photo: dog.photo, state };
+    return { id: dog.id, name: dog.name, breed: describeBreed(dog), photo: dog.photo, state };
   });
 }
 

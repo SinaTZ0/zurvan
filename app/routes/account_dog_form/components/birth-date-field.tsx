@@ -1,12 +1,12 @@
-import { useWatch, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
+import { useId } from "react";
+import { useFormContext, useWatch } from "react-hook-form";
 
 import { FieldError } from "~/components/ui/field";
-import { NativeSelect, NativeSelectOption } from "~/components/ui/native-select";
-import { entryCalendar } from "~/lib/date-entry";
 import { formatNumber } from "~/lib/locale-format";
-import { DOG_MAX_AGE_YEARS } from "~/orpc/dog/constants";
 import { m } from "~/paraglide/messages";
 import { ChoicePills } from "~/routes/account_dog_form/components/choice-pills";
+import { DateParts, PartSelect } from "~/routes/account_dog_form/components/date-parts";
+import { NativeSelectOption } from "~/components/ui/native-select";
 import {
   AGE_MONTH_OPTIONS,
   AGE_YEAR_OPTIONS,
@@ -16,27 +16,18 @@ import {
 
 /*===== Birth Date Field =====*/
 /**
- * The birth date, two ways: a date for owners who know it (Jalali on the Persian pages, Gregorian on the English
- * ones; the stored date is the same either way), or an age in years and months for the many who don't («approximate is
- * fine», spec entity 4). The age becomes an approximate date, and the site says «حدوداً» / "About".
+ * The birth date, two ways: a date for owners who know it (in the page's entry calendar, `DateParts`), or an age in
+ * years and months for the many who don't («approximate is fine», spec entity 4). The age becomes an approximate
+ * date, and the site says «حدوداً» / "About".
  */
-export function BirthDateField({
-  register,
-  control,
-  errors,
-}: {
-  register: UseFormRegister<DogFormInput>;
-  control: Control<DogFormInput, unknown, DogFormValues>;
-  errors: FieldErrors<DogFormInput>;
-}) {
-  const [mode, year, month] = useWatch({ control, name: ["birthMode", "birthYear", "birthMonth"] });
-
-  /*------ Options ------*/
-  const calendar = entryCalendar();
-  const thisYear = calendar.today().year;
-  const years = Array.from({ length: DOG_MAX_AGE_YEARS + 1 }, (_, index) => thisYear - index);
-  // Until a month and year are picked, the calendar offers 31 days; the schema rejects a day the month doesn't have.
-  const dayCount = calendar.monthLength({ year: Number(year), month: Number(month) });
+export function BirthDateField() {
+  const errorId = useId();
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext<DogFormInput, unknown, DogFormValues>();
+  const mode = useWatch({ control, name: "birthMode" });
   const error = mode === "approximate" ? errors.ageYears : errors.birthDay;
 
   return (
@@ -52,42 +43,22 @@ export function BirthDateField({
 
       {/*------ Exact Date ------*/}
       {mode === "exact" ? (
-        // English's "Day" runs wider than «روز» beside the select's chevron, and on a phone "September" needs the room
-        // too: there the three selects take less inner padding (the chevron still clears the text) and the month takes
-        // what the day and year columns give up.
-        <div className="grid grid-cols-[5rem_minmax(0,1fr)_6rem] gap-2 ltr:grid-cols-[5.75rem_minmax(0,1fr)_6rem] ltr:max-sm:grid-cols-[4.75rem_minmax(0,1fr)_5.25rem] ltr:max-sm:[&_select]:ps-3 ltr:max-sm:[&_select]:pe-8">
-          <DateSelect label={m.account_dog_form_birth_day()} registration={register("birthDay")} invalid={!!error}>
-            {Array.from({ length: dayCount }, (_, index) => (
-              <NativeSelectOption key={index + 1} value={index + 1}>
-                {calendar.dayLabel(index + 1)}
-              </NativeSelectOption>
-            ))}
-          </DateSelect>
-          <DateSelect label={m.account_dog_form_birth_month()} registration={register("birthMonth")} invalid={!!error}>
-            {calendar.months.map((name, index) => (
-              <NativeSelectOption key={name} value={index + 1}>
-                {name}
-              </NativeSelectOption>
-            ))}
-          </DateSelect>
-          <DateSelect label={m.account_dog_form_birth_year()} registration={register("birthYear")} invalid={!!error}>
-            {years.map((option) => (
-              <NativeSelectOption key={option} value={option}>
-                {calendar.yearLabel(option)}
-              </NativeSelectOption>
-            ))}
-          </DateSelect>
-        </div>
+        <DateParts
+          fields={{ day: "birthDay", month: "birthMonth", year: "birthYear" }}
+          invalid={!!error}
+          describedBy={error ? errorId : undefined}
+        />
       ) : (
         /*------ Age ------*/
         // "11 months" needs about 8rem with the chevron, so on English phones «حدوداً» ("About") takes its own row and
         // the two selects share the next one; from `sm` they sit in the row as in Persian.
         <div className="flex flex-wrap items-center gap-2 text-sm ltr:max-sm:grid ltr:max-sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
           <span className="text-muted-foreground ltr:max-sm:col-span-3">{m.account_dog_form_birth_about()}</span>
-          <DateSelect
+          <PartSelect
             label={m.account_dog_form_age_years_label()}
             registration={register("ageYears")}
             invalid={!!error}
+            describedBy={error ? errorId : undefined}
             className="w-24 ltr:w-full ltr:sm:w-36"
           >
             {AGE_YEAR_OPTIONS.map((option) => (
@@ -95,12 +66,13 @@ export function BirthDateField({
                 {ageYearsLabel(option)}
               </NativeSelectOption>
             ))}
-          </DateSelect>
+          </PartSelect>
           <span className="text-muted-foreground">{m.account_dog_form_birth_and()}</span>
-          <DateSelect
+          <PartSelect
             label={m.account_dog_form_age_months_label()}
             registration={register("ageMonths")}
             invalid={!!error}
+            describedBy={error ? errorId : undefined}
             className="w-24 ltr:w-full ltr:sm:w-36"
           >
             {AGE_MONTH_OPTIONS.map((option) => (
@@ -108,12 +80,14 @@ export function BirthDateField({
                 {ageMonthsLabel(option)}
               </NativeSelectOption>
             ))}
-          </DateSelect>
+          </PartSelect>
         </div>
       )}
 
       {/* Keyed by the message, so a new one rises in again. */}
-      <FieldError key={error?.message} errors={[error]} className="answer-in" />
+      <div id={errorId}>
+        <FieldError key={error?.message} errors={[error]} className="answer-in" />
+      </div>
     </div>
   );
 }
@@ -128,27 +102,4 @@ function ageYearsLabel(count: number) {
 function ageMonthsLabel(count: number) {
   const params = { count: formatNumber(count) };
   return count === 1 ? m.account_dog_form_age_months_one(params) : m.account_dog_form_age_months_other(params);
-}
-
-/*===== Date Select =====*/
-/** One part of the date. Its label is read by screen readers; sighted people see it as the empty option. */
-function DateSelect({
-  label,
-  registration,
-  invalid,
-  className,
-  children,
-}: {
-  label: string;
-  registration: ReturnType<UseFormRegister<DogFormInput>>;
-  invalid: boolean;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <NativeSelect aria-label={label} aria-invalid={invalid} className={className ?? "w-full"} {...registration}>
-      <NativeSelectOption value="">{label}</NativeSelectOption>
-      {children}
-    </NativeSelect>
-  );
 }
