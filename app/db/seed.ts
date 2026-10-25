@@ -44,9 +44,9 @@ async function seed() {
           minAgeMonths: entry.minAgeMonths ?? null,
           maxAgeMonths: entry.maxAgeMonths ?? null,
           sessionCount: entry.sessionCount ?? null,
-          place: entry.place ?? null,
+          places: entry.places ?? [],
+          recommendedPlace: null,
           price: toRial(entry.priceToman),
-          boardingPrice: toRial(entry.boardingPriceToman),
           position: index + 1,
         })),
       )
@@ -73,9 +73,9 @@ async function seed() {
           "minAgeMonths",
           "maxAgeMonths",
           "sessionCount",
-          "place",
+          "places",
+          "recommendedPlace",
           "price",
-          "boardingPrice",
           "position",
         ]),
       })

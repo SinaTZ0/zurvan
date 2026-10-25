@@ -1,6 +1,7 @@
 import { getDogVerdict, type DogVerdict } from "~/lib/dog-verdict";
 import { formatNumber } from "~/lib/locale-format";
 import type { CartItem, ReviewedItem } from "~/orpc/checkout/contract";
+import { resolveCoursePlace } from "~/orpc/course/constants";
 import { m } from "~/paraglide/messages";
 
 /*===== Types =====*/
@@ -29,7 +30,9 @@ export function isPayable(item: ReviewedItem): item is PayableItem {
 /*===== Current Items =====*/
 /**
  * The reviewed items that are still in the cart, in the cart's order. The review lags a removal by one request (it is
- * keyed by the items), so the page filters it by the live cart: a removed row leaves at once.
+ * keyed by the items), so the page filters it by the live cart: a removed row leaves at once. The place is resolved
+ * here from the live cart's pick (the review isn't asked again for one), the same way the server resolves it at
+ * «پرداخت»: the pick while the course offers it, else its only place.
  */
 export function selectCartItems({
   reviewed,
@@ -40,7 +43,7 @@ export function selectCartItems({
 }): ReviewedItem[] {
   return cart.flatMap((entry) => {
     const found = reviewed.find((item) => item.courseSlug === entry.courseSlug && item.dogId === entry.dogId);
-    return found ? [found] : [];
+    return found ? [{ ...found, place: resolveCoursePlace({ offered: found.places, picked: entry.place }) }] : [];
   });
 }
 
@@ -67,14 +70,25 @@ export function groupByDog(items: readonly ReviewedItem[]): { groups: DogGroup[]
   return { groups: [...groups.values()], orphans };
 }
 
+/*===== Places =====*/
+/** A payable item whose course offers places and none is picked: «پرداخت» waits for the customer to choose. */
+export function needsPlace(item: ReviewedItem): boolean {
+  return item.places.length > 0 && item.place === null;
+}
+
 /*===== Summary =====*/
-/** What the summary card counts: only what can be paid, and how many are left out. */
+/**
+ * What the summary card counts: only what can be paid, how many are left out, how many still need their place picked,
+ * and whether boarding was picked for any (its cost is settled on the phone, F5).
+ */
 export function summarize(items: readonly ReviewedItem[]) {
   const payable = items.filter(isPayable);
   return {
     payable,
     dogCount: new Set(payable.map((item) => item.dogId)).size,
     unavailableCount: items.length - payable.length,
+    unplacedCount: payable.filter(needsPlace).length,
+    hasBoarding: payable.some((item) => item.place === "boarding"),
   };
 }
 

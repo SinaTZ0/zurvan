@@ -256,7 +256,7 @@ export function getFaqGroups(): FaqGroupData[] {
         {
           id: "boarding",
           question: m.help_q_boarding_question(),
-          answer: <p>{m.help_q_boarding_answer()}</p>,
+          answer: <p>{m.help_q_boarding_answer({ trainer })}</p>,
         },
       ],
     },

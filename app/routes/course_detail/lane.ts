@@ -6,7 +6,7 @@ import type { Course } from "~/orpc/course/contract";
 // The two basics and BMC stand alone. Working dogs, sport dogs and behavior modification have no ages yet, so no lane.
 
 /** Just what the path section draws for each course in the lane. */
-export type LaneCourse = Pick<Course, "slug" | "title" | "minAgeMonths" | "maxAgeMonths" | "sessionCount" | "place">;
+export type LaneCourse = Pick<Course, "slug" | "title" | "minAgeMonths" | "maxAgeMonths" | "sessionCount">;
 
 export type CourseLane = {
   courses: LaneCourse[];
@@ -22,8 +22,8 @@ const EQUAL_PATHS: Partial<Record<Course["family"], Course["family"]>> = {
   companion: "obedience",
 };
 
-function toLaneCourse({ slug, title, minAgeMonths, maxAgeMonths, sessionCount, place }: Course): LaneCourse {
-  return { slug, title, minAgeMonths, maxAgeMonths, sessionCount, place };
+function toLaneCourse({ slug, title, minAgeMonths, maxAgeMonths, sessionCount }: Course): LaneCourse {
+  return { slug, title, minAgeMonths, maxAgeMonths, sessionCount };
 }
 
 /** The course's lane, or `null` when the course has no age to place it on the ruler. */

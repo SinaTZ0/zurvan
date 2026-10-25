@@ -35,9 +35,9 @@ export type CourseValues = Pick<
   | "minAgeMonths"
   | "maxAgeMonths"
   | "sessionCount"
-  | "place"
+  | "places"
+  | "recommendedPlace"
   | "price"
-  | "boardingPrice"
 >;
 
 export type CourseCoverValues = Pick<typeof course.$inferInsert, "coverImage" | "coverWidth" | "coverHeight">;

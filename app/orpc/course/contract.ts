@@ -18,11 +18,12 @@ export const courseSchema = z.object({
   minAgeMonths: z.number().int().nullable(),
   maxAgeMonths: z.number().int().nullable(),
   sessionCount: z.number().int().nullable(),
-  place: z.enum(COURSE_PLACES).nullable(),
+  /** Where it can be taught, in `COURSE_PLACES` order; the customer picks one in the cart. Empty: after the evaluation. */
+  places: z.array(z.enum(COURSE_PLACES)),
+  /** One of `places`, marked by the Admin, or null. */
+  recommendedPlace: z.enum(COURSE_PLACES).nullable(),
   /** Rial. Null when the course isn't sold online (F8). */
   price: z.number().int().nullable(),
-  /** Rial. Shown only: boarding isn't part of checkout. */
-  boardingPrice: z.number().int().nullable(),
   /** The courses a dog must have passed before buying this one (F4). */
   prerequisites: z.array(z.object({ slug: z.string(), title: z.string() })),
   /**
@@ -77,9 +78,9 @@ export const courseInputSchema = z.strictObject({
   minAgeMonths: z.number().int().nullable(),
   maxAgeMonths: z.number().int().nullable(),
   sessionCount: z.number().int().nullable(),
-  place: z.enum(COURSE_PLACES).nullable(),
+  places: z.array(z.enum(COURSE_PLACES)),
+  recommendedPlace: z.enum(COURSE_PLACES).nullable(),
   price: z.number().int().nullable(),
-  boardingPrice: z.number().int().nullable(),
   prerequisites: z.array(z.string()),
   // The English text (`/en`), all optional: blank is "not written yet", and an older client that sends none keeps
   // nothing (the update writes them as sent, so the form always sends all five).
@@ -123,7 +124,7 @@ export const adminGetCourseContract = oc
 /**
  * Appended at the end of the catalogue and on sale. Refusals are `INVALID_INPUT` with `fields.<name>` (`slug`, `title`,
  * `latinName`, `summary`, `highlights`, `commands`, `cover`, `coverAlt`, `minAgeMonths`, `maxAgeMonths`,
- * `sessionCount`, `price`, `boardingPrice`, `prerequisites`). `coverMediaId` is a `course` image from `media.upload`.
+ * `sessionCount`, `places`, `recommendedPlace`, `price`, `prerequisites`). `coverMediaId` is a `course` image from `media.upload`.
  */
 export const adminCreateCourseContract = oc
   .errors(adminErrors)

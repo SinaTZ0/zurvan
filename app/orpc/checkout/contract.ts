@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { INELIGIBILITY_KINDS } from "~/lib/eligibility";
 import { PAYMENT_STATUSES } from "~/orpc/checkout/constants";
+import { COURSE_PLACES } from "~/orpc/course/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { EVALUATION_PERIODS, EVALUATION_WEEKDAYS } from "~/orpc/evaluation/constants";
 import { mediaSchema } from "~/orpc/media/contract";
@@ -34,8 +35,15 @@ export const dogEligibilitySchema = verdictSchema.extend({ dog: dogSummarySchema
 
 export type DogEligibility = z.infer<typeof dogEligibilitySchema>;
 
-/** One item of the browser's cart: one course for one dog. */
-export const cartItemSchema = z.strictObject({ courseSlug: z.string(), dogId: z.string() });
+/**
+ * One item of the browser's cart: one course for one dog, and where the customer wants it taught once they pick
+ * (`place`, checked against the course on the server). Older carts have no `place`.
+ */
+export const cartItemSchema = z.strictObject({
+  courseSlug: z.string(),
+  dogId: z.string(),
+  place: z.enum(COURSE_PLACES).nullable().optional(),
+});
 
 export type CartItem = z.infer<typeof cartItemSchema>;
 
@@ -50,6 +58,14 @@ export const reviewedItemSchema = verdictSchema.extend({
   dog: dogSummarySchema.nullable(),
   /** Rial. Null when the course isn't sold. */
   price: z.number().int().nullable(),
+  /** The places the course offers now, in `COURSE_PLACES` order; empty when it asks for none (or is gone). */
+  places: z.array(z.enum(COURSE_PLACES)),
+  recommendedPlace: z.enum(COURSE_PLACES).nullable(),
+  /**
+   * The place it would be bought with: the customer's pick while the course offers it, or the only place offered. Null
+   * with `places` left to choose from means «پرداخت» refuses it until the customer picks.
+   */
+  place: z.enum(COURSE_PLACES).nullable(),
 });
 
 export type ReviewedItem = z.infer<typeof reviewedItemSchema>;
@@ -72,6 +88,8 @@ export const paymentItemSchema = z.object({
   course: z.object({ slug: z.string(), title: z.string() }),
   dog: z.object({ id: z.string(), name: z.string() }),
   price: z.number().int(),
+  /** Where the customer chose to be taught; null when the course asked for none, or bought before places existed. */
+  place: z.enum(COURSE_PLACES).nullable(),
   /** Set once the payment is paid and the item got its enrollment. */
   enrollment: z.object({ id: z.string(), status: z.string() }).nullable(),
 });

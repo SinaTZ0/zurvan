@@ -76,7 +76,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 **Passed courses.** A dog's profile lists the courses it has **passed**. A course gets there in two ways:
 
 - **Completed on the site:** the Admin marks an enrollment of it done ([F6](#f6-enrollments)).
-- **Marked by the Admin**, when she knows the dog already has it, e.g. it was trained before the site existed. She can unmark these too.
+- **Marked by the Admin**, when she knows the dog already has it, e.g. it was trained before the site existed, or it **passed the course's test** instead of taking it (the Companion cards' «داشتن لول سه یا گذراندن تست لول سه»; the test is held in person, and the app records only that it was passed). She can unmark these too.
 
 Both count the same for prerequisites ([F4](#f4-eligibility)). Only the Admin edits the passed courses; the customer sees them.
 
@@ -139,14 +139,15 @@ A failed check says **why**, e.g. «اول باید دوره‌ی سگ خونگ�
 
 **The cart lives in the customer's account** (a `cart_item` table), so it follows them to another device; the browser keeps a copy in local storage so the page shows it at once. It holds items of **one course for one dog**. A customer can add several (two courses for two dogs, say) and pay for them all at once.
 
-**Starting from the dog.** For someone who already knows what they want, «خرید دوره» (a button at the top of the catalogue, also `/buy`) starts the other way round. A visitor is sent to sign in and comes back to the same page, the dog in the address included. It asks **which of the customer's dogs** first (one tap, kept in the address as `?dog=`; a customer with one dog has it chosen already; one with none is asked to introduce a dog and brought back), then lists every course on sale with **the server's verdict for that dog**, the same [F4](#f4-eligibility) check the cart and «پرداخت» use (`checkout.dogCourses`: the caller's own dogs only; another owner's dog, a malformed id and an unknown dog all read as not found). A course the dog can take shows its price and «افزودن به سبد» (or «در سبد است» once it is there); one it can't shows each reason and the way out (the free evaluation, the course to finish first). Nothing here can be bought that the cart would refuse. The page offers no bundle, discount, program terms or choice of delivery format, because no approved facts for them exist yet (`docs/overnight/03-DECISIONS-NEEDED.md`).
+**Starting from the dog.** For someone who already knows what they want, «خرید دوره» (a button at the top of the catalogue, also `/buy`) starts the other way round. A visitor is sent to sign in and comes back to the same page, the dog in the address included. It asks **which of the customer's dogs** first (one tap, kept in the address as `?dog=`; a customer with one dog has it chosen already; one with none is asked to introduce a dog and brought back), then lists every course on sale with **the server's verdict for that dog**, the same [F4](#f4-eligibility) check the cart and «پرداخت» use (`checkout.dogCourses`: the caller's own dogs only; another owner's dog, a malformed id and an unknown dog all read as not found). A course the dog can take shows its price and «افزودن به سبد» (or «در سبد است» once it is there); one it can't shows each reason and the way out (the free evaluation, the course to finish first). Nothing here can be bought that the cart would refuse. The place is picked in the cart (step 2), not here. The page offers no bundle, discount or program terms, because no approved facts for them exist yet (`docs/overnight/03-DECISIONS-NEEDED.md`).
 
 1. **Add to cart.** On Course Detail the customer picks one of their dogs and presses «افزودن به سبد». Picking a dog needs signing in. The same course for the same dog can't be in the cart twice.
 2. **Cart.** It shows each item with the course's **current price** and its eligibility ([F4](#f4-eligibility)), read fresh from the server; an item that isn't eligible any more is marked and can't be paid for. The total is the sum of the eligible items.
+   - **Where it is taught.** An item whose course offers places ([F8](#f8-course-catalogue)) asks «کجا آموزش ببینه؟» with a chip per place, the recommended one tagged «پیشنهادی»; a course with one place just says it, and one with none asks nothing (the place is settled after the evaluation). The pick is saved with the cart item (`cart.setPlace`, only a place the course offers), so it follows the customer to another device. «پرداخت» waits until every payable item has its place, and says how many still need one. **Boarding costs extra, and the extra is never charged in the app:** picking it shows, under the item and under the total, that its cost isn't in the price and the head trainer will call to arrange it and agree on the cost. The price, the deposit and the partner's commission are the course's alone, whatever the place.
 3. **When are you free? (optional).** Under the dogs' bags the cart asks «کی هماهنگ کنیم؟»: the weekdays and the parts of the day the customer is usually free, as two lists of chips in the same words as the evaluation request ([F3](#f3-evaluation)). It is a **preference for the call, not a booking**: nothing is reserved and the page says so. It is sent with «پرداخت», kept on the payment (`available_days`, `available_periods`; only the known words, once each, in the order of the week), shown to the Admin beside the customer's name and number on the Payments page and to the customer on their Purchases page. Leaving it empty is fine and changes nothing about what can be bought.
-4. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price) and sends the amount due now to the gateway: the total, or, if the Admin has set a **deposit** ([F10](#f10-settings)), that share of it.
+4. **Pay.** «پرداخت» sends the items to the server, which checks each again and reads its price. It saves a **pending payment** listing the items (dog, course, price, place) and sends the amount due now to the gateway: the total, or, if the Admin has set a **deposit** ([F10](#f10-settings)), that share of it.
 5. **Result.** The gateway returns the customer to the Cart with a banner showing the result.
-   - **Success:** in one database transaction, the payment becomes **paid**, an **enrollment** is created for each item at the price saved in step 4, and the partner commission is written when it's due ([F7](#f7-partners)). The cart is emptied. The customer sees «پرداخت انجام شد؛ برای هماهنگی با شما تماس می‌گیریم» (paid; we'll call you), and the Admin gets an SMS ([F9](#f9-notifications)).
+   - **Success:** in one database transaction, the payment becomes **paid**, an **enrollment** is created for each item at the price and place saved in step 4, and the partner commission is written when it's due ([F7](#f7-partners)). The cart is emptied. The customer sees «پرداخت انجام شد؛ برای هماهنگی با شما تماس می‌گیریم» (paid; we'll call you), and the Admin gets an SMS ([F9](#f9-notifications)).
    - **Failure or abandoned:** the pending payment becomes **failed**; the cart is unchanged.
 
 Prices are fixed by the course. Discounts and changing a price for one customer are not in this version.
@@ -160,6 +161,8 @@ Prices are fixed by the course. Discounts and changing a price for one customer 
 - **The gateway calls back twice:** a unique index on the gateway's payment id, and a pending payment that can be settled only once, reject the second one.
 - **An item stops being eligible between checkout and the callback** (the same course bought for the same dog in another tab, or the Admin archives the course): the payment is still recorded as paid, but that item gets **no enrollment**. It is flagged on the Admin Dashboard as **paid, not enrolled**, and the Admin gives that money back outside the app and records the refund on the payment (see **Refunds** below).
 - **A price changes while the course is in the cart:** the cart always shows the current price; the customer pays what it showed at «پرداخت».
+- **The Admin takes a place off a course while it is in a cart:** the pick no longer counts. A course left with one place takes it; otherwise the item asks again, and a «پرداخت» sent with the old pick is refused like any changed item, so the customer reviews the cart.
+- **Where a purchase is taught** shows on the customer's Purchases page and on the Admin's Payments and Enrollments pages as a small pill (boarding in gold, with the note about its cost on Purchases), and in the Admin's purchase SMS. Purchases made before places existed show none.
 - **Another browser or device:** the cart is the account's, so it is there on any device. It is read again when the tab is used, so what was added elsewhere appears. A cart a browser held from before carts lived in the account is merged in once; after that the account's cart wins, so an item bought or removed elsewhere isn't put back by an out-of-date copy. Signing out empties the browser's copy and keeps the account's.
 - **A payment settles:** the items it bought leave the cart, on every device.
 
@@ -228,8 +231,9 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 **Who:** the public browses; the Admin manages the catalogue.
 
 - The catalogue and its course pages sell the head trainer and her courses, as today. Course Detail adds «افزودن به سبد» ([F5](#f5-cart-and-checkout)), and the catalogue's header has a «خرید دوره» button that starts the purchase from the dog.
-- Only the Admin creates and edits courses. Every course in this version has a **fixed price**, an age range and prerequisites. Its lesson count and lesson length are **shown to customers** as a description («حدوداً ۵ جلسه»); the app doesn't track lessons.
-- The full set of course settings is **pending the owner**, like dog profiles.
+- Only the Admin creates and edits courses. Every course in this version has a **fixed price**, an age range and prerequisites. Its length is its **session count**, shown to customers as a description («حدوداً ۵ جلسه»); the app doesn't track lessons.
+- **The course settings were settled on 2026-10-26**, from the owner's course card («حداقل سن، تعداد جلسات، محل آموزش، شرایط آموزش، دستورات»): the ages, the session count, the places, the prerequisites (a test passed instead is the Admin's mark on the dog, [F2](#f2-dog-profiles)) and the commands. They all existed already except the places.
+- **Places.** The Admin ticks where a course can be taught: **at the client's place** («منزل»), **at the center** («مرکز»), **outside** («بیرون») and **boarding** («پانسیون»), in that order, and may mark one of the ticked ones **recommended**. None ticked means the place is settled after the evaluation («بعد از ارزیابی»). Course Detail lists the places (the recommended one under them, «پیشنهاد طلا: …») and shows the boarding card only when boarding is offered, without a price: boarding's extra cost is agreed on the phone ([F5](#f5-cart-and-checkout)). Group classes are not a place: they aren't running.
 - Archived courses can't be bought, but their active enrollments continue, and a completed one still counts as a prerequisite. Archiving and restoring are reversible switches. A course is never deleted, and its link name (slug) never changes after it is created.
 - The Admin sets the catalogue order (up and down on the Courses page), uploads the cover, and picks prerequisites; a prerequisite that would make a cycle is refused. A new course goes on sale at once. A price change applies to later purchases only; existing enrollments keep the price paid (F5).
 - Courses without a price (working and sport dogs) are **not in this version**; they are a [future feature](#future-features).
@@ -242,16 +246,16 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 **Who:** sent automatically, by SMS, with an in-app copy. In showcase mode SMS land in the SMS Outbox instead of being sent. The outbox is read-only and paged (it gains a row per sign-in code).
 
-| Event                          | To                                          |
-| ------------------------------ | ------------------------------------------- |
-| A new evaluation request       | Admin                                       |
-| Evaluation marked «ارزیابی شد» | Customer: their dog's courses are now open  |
-| Evaluation rejected            | Customer (with the reason)                  |
-| A purchase paid                | Customer (receipt), and the Admin (to call) |
-| An enrollment marked done      | Customer                                    |
-| An enrollment cancelled        | Customer                                    |
-| A commission marked paid       | Partner                                     |
-| A refund marked paid           | Customer (with the transfer's reference)    |
+| Event                          | To                                                           |
+| ------------------------------ | ------------------------------------------------------------ |
+| A new evaluation request       | Admin                                                        |
+| Evaluation marked «ارزیابی شد» | Customer: their dog's courses are now open                   |
+| Evaluation rejected            | Customer (with the reason)                                   |
+| A purchase paid                | Customer (receipt), and the Admin (to call, with the places) |
+| An enrollment marked done      | Customer                                                     |
+| An enrollment cancelled        | Customer                                                     |
+| A commission marked paid       | Partner                                                      |
+| A refund marked paid           | Customer (with the transfer's reference)                     |
 
 **Pages:** SMS Outbox · the dashboards
 

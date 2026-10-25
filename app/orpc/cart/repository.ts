@@ -2,25 +2,27 @@ import { and, asc, eq, exists, inArray, sql } from "drizzle-orm";
 
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { cartItem, course, paymentItem } from "~/db/schema";
+import { isCoursePlace, type CoursePlace } from "~/orpc/course/constants";
 
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
 
-/** A cart row as the API shows it: the course by its slug, the dog by its id. */
-export type CartRow = { courseSlug: string; dogId: string };
+/** A cart row as the API shows it: the course by its slug, the dog by its id, and the place once picked. */
+export type CartRow = { courseSlug: string; dogId: string; place?: CoursePlace };
 
 /*===== Reads =====*/
 /** The customer's cart, oldest first. Scoped to the user in the query, so a service cannot forget it. */
-export function findCartRows({ db, userId }: Executor & { userId: string }): Promise<CartRow[]> {
-  return (
-    db
-      .select({ courseSlug: course.slug, dogId: cartItem.dogId })
-      .from(cartItem)
-      .innerJoin(course, eq(cartItem.courseId, course.id))
-      .where(eq(cartItem.userId, userId))
-      // `courseSlug` and `dogId` break ties between items added in the same instant.
-      .orderBy(asc(cartItem.createdAt), asc(course.slug), asc(cartItem.dogId))
-  );
+export async function findCartRows({ db, userId }: Executor & { userId: string }): Promise<CartRow[]> {
+  const rows = await db
+    .select({ courseSlug: course.slug, dogId: cartItem.dogId, place: cartItem.place })
+    .from(cartItem)
+    .innerJoin(course, eq(cartItem.courseId, course.id))
+    .where(eq(cartItem.userId, userId))
+    // `courseSlug` and `dogId` break ties between items added in the same instant.
+    .orderBy(asc(cartItem.createdAt), asc(course.slug), asc(cartItem.dogId));
+  // Plain text in the database: an unknown value reads as not picked. No pick leaves `place` out, the shape of a cart
+  // item that never had one.
+  return rows.map(({ place, ...row }) => (isCoursePlace(place) ? { ...row, place } : row));
 }
 
 /** How many items the customer's cart holds. */
@@ -69,6 +71,26 @@ export async function deleteCartRow({
   await db
     .delete(cartItem)
     .where(and(eq(cartItem.userId, userId), eq(cartItem.dogId, dogId), eq(cartItem.courseId, courseId)));
+}
+
+/**
+ * Sets where one item is taught, or clears it with null.
+ *
+ * @returns Whether the item was in the customer's cart.
+ */
+export async function updateCartRowPlace({
+  db,
+  userId,
+  dogId,
+  courseId,
+  place,
+}: Executor & { userId: string; dogId: string; courseId: string; place: CoursePlace | null }): Promise<boolean> {
+  const rows = await db
+    .update(cartItem)
+    .set({ place })
+    .where(and(eq(cartItem.userId, userId), eq(cartItem.dogId, dogId), eq(cartItem.courseId, courseId)))
+    .returning({ dogId: cartItem.dogId });
+  return rows.length > 0;
 }
 
 export async function deleteAllCartRows({ db, userId }: Executor & { userId: string }): Promise<void> {

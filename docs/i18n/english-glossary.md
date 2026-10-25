@@ -113,25 +113,25 @@ The course pages' dogs (`shared_course_mascot_*`) and the buy card's verdicts (`
 
 ### Kinds of training and places
 
-| Persian                                        | English                                      |
-| ---------------------------------------------- | -------------------------------------------- |
-| آموزش خصوصی                                    | private training                             |
-| خصوصی در محل شما                               | Private, at your place                       |
-| خصوصی در مرکز                                  | Private, at the center                       |
-| گروهی در مرکز                                  | Group, at the center (never worded as open)  |
-| پانسیون همراه با آموزش، با هماهنگی قبلی        | Boarding with training, by prior arrangement |
-| پانسیون همکار                                  | a partner kennel                             |
-| مرکز                                           | the center                                   |
-| منزل / بیرون / اکثراً بیرون (a course's place) | At home / Outside / Mostly outside           |
-| آموزش پایه و پیشرفته                           | Basic and advanced training                  |
-| رفتارشناسی و اصلاح رفتار                       | behavior and behavior modification           |
-| آموزش تخصصی                                    | specialist training                          |
-| آمادگی مسابقه                                  | competition prep                             |
-| مشاوره‌ی تخصصی                                 | expert advice                                |
-| فرمان‌پذیری                                    | obedience                                    |
-| نگهبانی، ردیابی، دفاع                          | guarding, tracking, protection               |
-| زنده‌یاب / موادیاب                             | search and rescue / detection                |
-| BH، IGP ۱ تا ۳، FH، WUSV، CGC، BMC             | BH, IGP 1 to 3, FH, WUSV, CGC, BMC (as is)   |
+| Persian                                           | English                                            |
+| ------------------------------------------------- | -------------------------------------------------- |
+| آموزش خصوصی                                       | private training                                   |
+| خصوصی در محل شما                                  | Private, at your place                             |
+| خصوصی در مرکز                                     | Private, at the center                             |
+| گروهی در مرکز                                     | Group, at the center (never worded as open)        |
+| پانسیون همراه با آموزش، با هماهنگی قبلی           | Boarding with training, by prior arrangement       |
+| پانسیون همکار                                     | a partner kennel                                   |
+| مرکز                                              | the center                                         |
+| منزل / مرکز / بیرون / پانسیون (a course's places) | At your place / At the center / Outside / Boarding |
+| آموزش پایه و پیشرفته                              | Basic and advanced training                        |
+| رفتارشناسی و اصلاح رفتار                          | behavior and behavior modification                 |
+| آموزش تخصصی                                       | specialist training                                |
+| آمادگی مسابقه                                     | competition prep                                   |
+| مشاوره‌ی تخصصی                                    | expert advice                                      |
+| فرمان‌پذیری                                       | obedience                                          |
+| نگهبانی، ردیابی، دفاع                             | guarding, tracking, protection                     |
+| زنده‌یاب / موادیاب                                | search and rescue / detection                      |
+| BH، IGP ۱ تا ۳، FH، WUSV، CGC، BMC                | BH, IGP 1 to 3, FH, WUSV, CGC, BMC (as is)         |
 
 ### Course families and courses
 

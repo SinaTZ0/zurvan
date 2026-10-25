@@ -4,6 +4,7 @@ import { CustomerContact } from "~/components/customer-contact";
 import { DogThumb } from "~/components/dog-thumb";
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { Link } from "~/components/link";
+import { PlaceChip } from "~/components/place-chip";
 import { formatToman } from "~/lib/course-format";
 import type { AdminPayment } from "~/orpc/checkout/contract";
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from "~/orpc/enrollment/constants";
@@ -19,7 +20,7 @@ function isEnrollmentStatus(status: string): status is EnrollmentStatus {
 /*===== Payment Item Row =====*/
 /**
  * One course bought in a paid payment: the dog's initial disc (a payment item carries no photo), the dog's name leading
- * to its Dog Detail, the course, what it turned into and the price at the end. On phones the chip drops under the
+ * to its Dog Detail, the course and the place the customer picked, what it turned into and the price at the end. On phones the chip drops under the
  * course; from `sm` it sits before the price.
  *
  * A paid item that got no enrollment is the torn piece of the slip: the same line inside a dashed destructive outline
@@ -50,6 +51,8 @@ export function PaymentItemRow({
           <bdi>{item.dog.name}</bdi>
         </Link>
         <p className="text-sm text-pretty text-muted-foreground">{item.course.title}</p>
+        {/* Where the customer asked for it; boarding (gold) means a call about its extra cost. */}
+        {item.place && <PlaceChip place={item.place} className="mt-1" />}
       </div>
 
       {chip && (

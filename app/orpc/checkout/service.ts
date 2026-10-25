@@ -41,7 +41,8 @@ import {
   findPrerequisitesByCourseIds,
   type CourseRecord,
 } from "~/orpc/course/repository";
-import { courseTitle, prerequisiteTitle } from "~/orpc/course/mapper";
+import { coursePlaceLabel, isCoursePlace, resolveCoursePlace, type CoursePlace } from "~/orpc/course/constants";
+import { coursePlaces, courseTitle, prerequisiteTitle } from "~/orpc/course/mapper";
 import {
   findDogsByOwner,
   findDogWithPhoto,
@@ -57,6 +58,12 @@ import { getLocale, type Locale } from "~/paraglide/runtime";
 /*===== Types =====*/
 type NotFoundResult = { kind: "not-found" };
 type InvalidResult = { kind: "invalid"; errors: string[]; fields: Record<string, string> };
+
+/** One item as the cart sends it: the course, the dog, and where the customer picked (checked against the course). */
+type CheckoutItem = { courseSlug: string; dogId: string; place?: CoursePlace | null };
+
+/** An item that got its enrollment, for the SMS. */
+type EnrolledTitle = { course: string; dog: string; place: CoursePlace | null };
 
 /** What an eligibility check reads: filled by {@link judge}. */
 type Judged = { dog: DogRecord; course: CourseRecord; problems: Ineligibility[] };
@@ -234,7 +241,7 @@ async function reviewItems({
 }: {
   db: DatabaseOrTransaction;
   customerId: string;
-  items: { courseSlug: string; dogId: string }[];
+  items: CheckoutItem[];
   now: Date;
   /** The language of the reasons and the course names: the cart's page. */
   locale?: Locale;
@@ -251,8 +258,8 @@ async function reviewItems({
   });
   const judged = await judge({ db, pairs, now, locale });
 
-  return items.map((item): ReviewedItem => {
-    const index = pairs.findIndex((pair) => pair.item === item);
+  return items.map(({ place: picked, ...item }): ReviewedItem => {
+    const index = pairs.findIndex((pair) => pair.item.courseSlug === item.courseSlug && pair.item.dogId === item.dogId);
     const verdict = judged[index];
     if (!verdict) {
       return {
@@ -260,16 +267,23 @@ async function reviewItems({
         course: null,
         dog: null,
         price: null,
+        places: [],
+        recommendedPlace: null,
+        place: null,
         eligible: false,
         problems: [{ kind: "not-for-sale", message: m.server_cart_item_gone({}, { locale }), courseSlug: null }],
       };
     }
     const { course, dog, problems } = verdict;
+    const { places, recommendedPlace } = coursePlaces(course);
     return {
       ...item,
       course: { slug: course.slug, title: courseTitle({ locale, course }), latinName: course.latinName },
       dog: toDogSummary(dog),
       price: course.price,
+      places,
+      recommendedPlace,
+      place: resolveCoursePlace({ offered: places, picked }),
       eligible: problems.length === 0,
       problems,
     };
@@ -285,7 +299,7 @@ export async function reviewCart({
 }: {
   db: DatabaseOrTransaction;
   customerId: string;
-  input: { items: { courseSlug: string; dogId: string }[] };
+  input: { items: CheckoutItem[] };
   now?: Date;
 }): Promise<CartReview> {
   // An empty, oversized or malformed cart reviews as empty: «پرداخت» reports it properly.
@@ -329,7 +343,7 @@ export async function payCart({
   gateway: PaymentGateway;
   customerId: string;
   input: {
-    items: { courseSlug: string; dogId: string }[];
+    items: CheckoutItem[];
     /** When the customer is usually free, for coordination (F5). Optional; unknown values are dropped. */
     availableDays?: readonly string[];
     availablePeriods?: readonly string[];
@@ -363,6 +377,18 @@ export async function payCart({
               })
             : problem.message,
         ),
+      ),
+    };
+  }
+
+  // A course that offers places is bought with one: the customer's pick, or its only place. Refused like a changed item,
+  // so the cart is reviewed again and shows the choice still to make (the Admin may have taken a place off meanwhile).
+  const unplaced = items.filter((item) => item.places.length > 0 && item.place === null);
+  if (unplaced.length > 0) {
+    return {
+      kind: "not-eligible",
+      errors: unplaced.map((item) =>
+        m.server_checkout_place_missing({ course: item.course?.title ?? item.courseSlug, dog: item.dog?.name ?? "" }),
       ),
     };
   }
@@ -405,6 +431,7 @@ export async function payCart({
         courseId: courses.find((course) => course.slug === item.courseSlug)?.id ?? "",
         dogId: item.dogId,
         price: item.price,
+        place: item.place,
       })),
     });
   });
@@ -422,7 +449,7 @@ type CallbackResult =
 type Settled = {
   result: CallbackResult;
   payment?: PaymentRecord;
-  enrolledTitles?: { course: string; dog: string }[];
+  enrolledTitles?: EnrolledTitle[];
   notEnrolled?: number;
 };
 
@@ -509,7 +536,7 @@ export async function completeGatewayPayment({
     const courses = await findCoursesByIds({ db: tx, ids: [...new Set(items.map((item) => item.courseId))] });
 
     let enrolledTotal = 0;
-    const enrolled: { course: string; dog: string }[] = [];
+    const enrolled: EnrolledTitle[] = [];
     for (const item of items) {
       const course = courses.find((candidate) => candidate.id === item.courseId);
       const dog = await findDogWithPhoto({ db: tx, id: item.dogId });
@@ -528,12 +555,13 @@ export async function completeGatewayPayment({
           customerId: payment.customerId,
           paymentItemId: item.id,
           price: item.price,
+          place: item.place,
           createdAt: now,
         },
       });
       if (!enrollmentId) continue;
       enrolledTotal += item.price;
-      enrolled.push({ course: course.title, dog: dog.name });
+      enrolled.push({ course: course.title, dog: dog.name, place: isCoursePlace(item.place) ? item.place : null });
     }
 
     /*------ Commission ------*/
@@ -583,13 +611,21 @@ async function notifyPaid({
 }: {
   db: Database;
   payment: PaymentRecord;
-  enrolled: { course: string; dog: string }[];
+  enrolled: EnrolledTitle[];
   notEnrolled: number;
 }) {
   const [row] = await findPaymentsWithItems({ db, customerId: payment.customerId }).then((rows) =>
     rows.filter((entry) => entry.payment.id === payment.id),
   );
   const what = enrolled.map((entry) => `${entry.course} برای ${entry.dog}`).join("، ");
+  // The Admin's copy says where each was asked for, so she knows which calls are about boarding's extra cost.
+  const whatWhere = enrolled
+    .map((entry) =>
+      entry.place
+        ? `${entry.course} برای ${entry.dog} (${coursePlaceLabel({ place: entry.place, locale: "fa" })})`
+        : `${entry.course} برای ${entry.dog}`,
+    )
+    .join("، ");
 
   await notify({
     phoneNumber: row?.customer.phoneNumber,
@@ -602,7 +638,7 @@ async function notifyPaid({
     phoneNumber: await findAdminPhoneNumber({ db }),
     kind: "payment-paid-admin",
     body:
-      `زروان: خرید تازه از ${row?.customer.name ?? "یک مشتری"}${what ? `: ${what}` : ""}. با او تماس بگیر.` +
+      `زروان: خرید تازه از ${row?.customer.name ?? "یک مشتری"}${whatWhere ? `: ${whatWhere}` : ""}. با او تماس بگیر.` +
       (notEnrolled > 0 ? ` ${notEnrolled} مورد پرداخت شد ولی ثبت‌نام نشد.` : ""),
   });
 }
@@ -638,6 +674,7 @@ function toPayment({
       course: { slug: entry.course.slug, title: courseTitle({ locale, course: entry.course }) },
       dog: entry.dog,
       price: entry.item.price,
+      place: isCoursePlace(entry.item.place) ? entry.item.place : null,
       enrollment: entry.enrollment,
     })),
     createdAt: payment.createdAt,

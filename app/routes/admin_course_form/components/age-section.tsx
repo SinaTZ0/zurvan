@@ -3,18 +3,11 @@ import { useFormContext, useWatch } from "react-hook-form";
 import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { formatNumberFa } from "~/lib/digits";
-import { COURSE_PLACE_LABELS, COURSE_PLACES } from "~/orpc/course/constants";
-import { ChoicePills } from "~/routes/admin_course_form/components/choice-pills";
 import { FieldHint, FieldMessage, describedBy } from "~/routes/admin_course_form/components/field-parts";
 import { FormSection } from "~/routes/admin_course_form/components/form-section";
-import { type CourseFormInput, NO_PLACE, parseWholeNumber } from "~/routes/admin_course_form/schema";
+import { type CourseFormInput, parseWholeNumber } from "~/routes/admin_course_form/schema";
 
-/*===== Constants =====*/
-const PLACE_OPTIONS = [
-  ...COURSE_PLACES.map((place) => ({ value: place, label: COURSE_PLACE_LABELS[place] })),
-  { value: NO_PLACE, label: "بعد از ارزیابی" },
-];
-
+/*===== Ages in Words =====*/
 /**
  * An age typed in months, said in years under the field («۲ سال و ۶ ماه»), so 30 is read as two and a half years at a
  * glance. An empty field means no limit, and says so.
@@ -28,7 +21,7 @@ function describeMonths(months: number | null): string {
 }
 
 /*===== Age Section =====*/
-/** «سن و جلسه‌ها»: the age range in months (empty means no limit), the number of sessions and where they are held. */
+/** «سن و جلسه‌ها»: the age range in months (empty means no limit) and the number of sessions. */
 export function AgeSection() {
   const {
     register,
@@ -101,14 +94,6 @@ export function AgeSection() {
           <FieldMessage id="course-sessionCount" message={errors.sessionCount?.message} />
         </Field>
       </div>
-
-      {/*------ Place ------*/}
-      <ChoicePills
-        legend="کجا برگزار می‌شه"
-        options={PLACE_OPTIONS}
-        registration={register("place")}
-        error={errors.place}
-      />
     </FormSection>
   );
 }

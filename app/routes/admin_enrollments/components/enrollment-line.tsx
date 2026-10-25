@@ -3,6 +3,7 @@ import { cn } from "cn";
 import { DogThumb } from "~/components/dog-thumb";
 import { EnrollmentStatusBadge } from "~/components/enrollment-status-badge";
 import { Link } from "~/components/link";
+import { PlaceChip } from "~/components/place-chip";
 import { Button } from "~/components/ui/button";
 import { formatToman } from "~/lib/course-format";
 import { formatJalaliTimestamp } from "~/lib/jalali";
@@ -18,7 +19,7 @@ export type LineExit = { kind: FinishKind; fold: boolean };
  * One dog taking one course, inside its customer's block: the dog (its page is a link away), the course, the price and
  * the purchase date, then the two endings. A closed line shows its chip and the day it ended instead of the buttons.
  * `showBadge` is for «همه», where lines of every status share the list: an active line's chip then sits after the dog's
- * name, so the buttons keep the same column in every view.
+ * name, so the buttons keep the same column in every view. The place the customer picked follows it, boarding in gold.
  *
  * Layout: phones stack it (the dog and the course, the price and the date, then the two buttons side by side, 44px);
  * from `md` it is one row in fixed columns, so the prices and the buttons line up from line to line and block to block.
@@ -73,6 +74,8 @@ export function EnrollmentLine({
                   <bdi>{dog.name}</bdi>
                 </Link>
                 {showBadge && isActive && <EnrollmentStatusBadge status={status} quiet />}
+                {/* Where the customer asked for it; boarding (gold) means a call about its extra cost. */}
+                {enrollment.place && <PlaceChip place={enrollment.place} />}
               </p>
               <p className="relative mt-0.5 w-fit max-w-full text-sm text-pretty text-foreground/85">
                 {course.title}{" "}

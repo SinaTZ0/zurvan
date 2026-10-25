@@ -7,7 +7,7 @@ import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import {
   describeAge,
-  describePlace,
+  describePlaces,
   describePrerequisites,
   describeSessions,
   latinNameAddsToTitle,
@@ -16,6 +16,7 @@ import { courseScene } from "~/lib/course-scenes";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { m } from "~/paraglide/messages";
+import { COURSE_PLACE_LABELS } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
 import { COLUMN } from "~/routes/course_detail/column";
 
@@ -180,8 +181,19 @@ function Facts({ course }: { course: Course }) {
           <FactTile icon={CakeIcon} label={m.course_detail_facts_age()}>
             {describeAge(course)}
           </FactTile>
-          <FactTile icon={MapPinIcon} label={m.course_detail_facts_place()}>
-            {describePlace(course)}
+          <FactTile
+            icon={MapPinIcon}
+            label={m.course_detail_facts_place()}
+            note={
+              course.recommendedPlace
+                ? m.course_detail_facts_place_recommended({
+                    trainer: HEAD_TRAINER.firstName,
+                    place: COURSE_PLACE_LABELS[course.recommendedPlace],
+                  })
+                : undefined
+            }
+          >
+            {describePlaces(course)}
           </FactTile>
         </>
       )}

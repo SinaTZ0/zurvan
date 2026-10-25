@@ -32,6 +32,7 @@ import { getPaymentGateway } from "~/lib/payment-gateway.server";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { deleteObjects, videoKey } from "~/lib/storage.server";
 import { completeGatewayPayment, payCart } from "~/orpc/checkout/service";
+import type { CoursePlace } from "~/orpc/course/constants";
 import { adminIssueCertificate } from "~/orpc/certificate/service";
 import { finishEnrollment } from "~/orpc/enrollment/service";
 import { markDogEvaluated, requestEvaluation } from "~/orpc/evaluation/service";
@@ -239,16 +240,19 @@ async function removeDemoHistory({ tx, customerIds }: { tx: Transaction; custome
 const CALLBACK_URL = "http://localhost/payment/callback";
 const DAY_MS = 24 * 3_600_000;
 
-/** Sara pays for `slugs` for Leo through the real checkout, and the demo gateway calls back at once. */
+/**
+ * Sara pays for `courses` for Leo through the real checkout, each at the place she picked, and the demo gateway calls
+ * back at once.
+ */
 async function purchase({
   customerId,
   dogId,
-  slugs,
+  courses,
   callBack = true,
 }: {
   customerId: string;
   dogId: string;
-  slugs: string[];
+  courses: { slug: string; place: CoursePlace }[];
   callBack?: boolean;
 }) {
   const gateway = getPaymentGateway();
@@ -256,11 +260,13 @@ async function purchase({
     db,
     gateway,
     customerId,
-    input: { items: slugs.map((courseSlug) => ({ courseSlug, dogId })) },
+    input: { items: courses.map(({ slug, place }) => ({ courseSlug: slug, dogId, place })) },
     callbackUrl: CALLBACK_URL,
   });
-  if (started.kind !== "redirect")
-    throw new Error(`purchase: ${slugs.join(", ")} could not be started: ${JSON.stringify(started)}`);
+  if (started.kind !== "redirect") {
+    const slugs = courses.map((entry) => entry.slug).join(", ");
+    throw new Error(`purchase: ${slugs} could not be started: ${JSON.stringify(started)}`);
+  }
 
   const params = new URL(started.url, "http://localhost").searchParams;
   const settle = () =>
@@ -304,15 +310,24 @@ async function seedStory({ accountIds, dogIds }: { accountIds: Map<string, strin
   if (evaluated.kind !== "success") throw new Error("seedStory: Leo could not be evaluated.");
 
   // The first purchase (each one writes Sara's partner a commission, F7), and the end of its training.
-  await purchase({ customerId: sara, dogId: leoId, slugs: ["companion-1", "cgc"] });
+  // CGC at boarding, so the Admin's pages and Sara's Purchases show the call about boarding's cost.
+  await purchase({
+    customerId: sara,
+    dogId: leoId,
+    courses: [
+      { slug: "companion-1", place: "home" },
+      { slug: "cgc", place: "boarding" },
+    ],
+  });
   const finished = await completeCourse({ dogId: leoId, slug: "companion-1" });
   const issued = await adminIssueCertificate({ db, issuerId: admin, enrollmentId: finished });
   if (issued.kind !== "success") throw new Error("seedStory: Leo's certificate could not be issued.");
-  await purchase({ customerId: sara, dogId: leoId, slugs: ["companion-2"] });
+  await purchase({ customerId: sara, dogId: leoId, courses: [{ slug: "companion-2", place: "home" }] });
 
   // Two payments for the same course started before either came back: the loser is paid, not enrolled.
-  const first = await purchase({ customerId: sara, dogId: leoId, slugs: ["elementary"], callBack: false });
-  const second = await purchase({ customerId: sara, dogId: leoId, slugs: ["elementary"], callBack: false });
+  const elementary = [{ slug: "elementary", place: "home" as const }];
+  const first = await purchase({ customerId: sara, dogId: leoId, courses: elementary, callBack: false });
+  const second = await purchase({ customerId: sara, dogId: leoId, courses: elementary, callBack: false });
   await first();
   await second();
 

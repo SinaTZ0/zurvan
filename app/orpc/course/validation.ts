@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { formatNumberFa } from "~/lib/digits";
-import { COURSE_PLACES, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
+import { COURSE_PLACES, normalizeCoursePlaces, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
 
 /*===== Limits =====*/
 export const COURSE_TITLE_MAX_LENGTH = 60;
@@ -120,9 +120,10 @@ export const courseFormSchema = z
       .min(1, "تعداد جلسه‌ها حداقل یکیه.")
       .max(COURSE_MAX_SESSIONS, `تعداد جلسه‌ها حداکثر ${formatNumberFa(COURSE_MAX_SESSIONS)} تاست.`)
       .nullable(),
-    place: z.enum(COURSE_PLACES).nullable(),
+    // Kept in `COURSE_PLACES` order, once each, whatever order they were ticked in.
+    places: z.array(z.enum(COURSE_PLACES, "جای آموزش رو از فهرست انتخاب کن.")).transform(normalizeCoursePlaces),
+    recommendedPlace: z.enum(COURSE_PLACES, "جای پیشنهادی رو از فهرست انتخاب کن.").nullable(),
     price: priceSchema("قیمت"),
-    boardingPrice: priceSchema("قیمت نگهداری"),
     prerequisites: z
       .array(z.string().trim())
       .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`)
@@ -140,6 +141,14 @@ export const courseFormSchema = z
         code: "custom",
         path: ["maxAgeMonths"],
         message: "حداکثر سن نمی‌تونه از حداقل سن کمتر باشه.",
+      });
+    }
+    // A recommendation the customer can't pick would point at nothing.
+    if (value.recommendedPlace !== null && !value.places.includes(value.recommendedPlace)) {
+      context.addIssue({
+        code: "custom",
+        path: ["recommendedPlace"],
+        message: "جای پیشنهادی باید یکی از جاهای تیک‌خورده باشه.",
       });
     }
   });

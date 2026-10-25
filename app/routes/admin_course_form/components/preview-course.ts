@@ -1,4 +1,4 @@
-import { COURSE_PLACES, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
+import { normalizeCoursePlaces, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
 import type { AdminCourse, Course } from "~/orpc/course/contract";
 import { type CourseFormInput, parseWholeNumber, splitLines } from "~/routes/admin_course_form/schema";
 
@@ -28,9 +28,9 @@ export function buildPreviewCourse({
   titles: ReadonlyMap<string, string>;
 }): Course {
   const price = parseWholeNumber(values.price ?? "");
-  const boardingPrice = parseWholeNumber(values.boardingPrice ?? "");
   const family = SELLABLE_COURSE_FAMILIES.find((candidate) => candidate === values.family);
-  const place = COURSE_PLACES.find((candidate) => candidate === values.place) ?? null;
+  const places = normalizeCoursePlaces(values.places ?? []);
+  const recommendedPlace = places.find((candidate) => candidate === values.recommendedPlace) ?? null;
 
   return {
     slug: course?.slug ?? (values.slug?.trim() || "slug"),
@@ -44,9 +44,9 @@ export function buildPreviewCourse({
     minAgeMonths: parseWholeNumber(values.minAgeMonths ?? ""),
     maxAgeMonths: parseWholeNumber(values.maxAgeMonths ?? ""),
     sessionCount: parseWholeNumber(values.sessionCount ?? ""),
-    place,
+    places,
+    recommendedPlace,
     price: price === null ? null : price * RIAL_PER_TOMAN,
-    boardingPrice: boardingPrice === null ? null : boardingPrice * RIAL_PER_TOMAN,
     prerequisites: (values.prerequisites ?? []).flatMap((slug) => {
       const title = titles.get(slug);
       return title ? [{ slug, title }] : [];

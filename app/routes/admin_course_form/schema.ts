@@ -2,7 +2,7 @@ import type { DefaultValues } from "react-hook-form";
 import { z } from "zod";
 
 import { formatNumberFa, toLatinDigits, toPersianDigits } from "~/lib/digits";
-import { COURSE_PLACES, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
+import { COURSE_PLACES, normalizeCoursePlaces, SELLABLE_COURSE_FAMILIES } from "~/orpc/course/constants";
 import type { AdminCourse, CourseInput } from "~/orpc/course/contract";
 import {
   COURSE_COMMANDS_MAX_LINES,
@@ -23,11 +23,11 @@ import {
 
 /*===== Course Form =====*/
 // Written for the person filling it in: numbers are typed text (Persian digits welcome), money is Toman, the two lists
-// are one item per line, and «بعد از ارزیابی» is a pill of its own. The server checks everything again
+// are one item per line, the places are ticks, and «پیشنهادی نداره» is a pill of its own. The server checks everything again
 // (`app/orpc/course/validation.ts`); the two are kept separate on purpose (docs/frontend-guideline.md, "Forms").
 
 const RIAL_PER_TOMAN = 10;
-/** The pill that means «no place yet»: radios hold strings, and the API's `null` has none. */
+/** The pill that means «no recommended place»: radios hold strings, and the API's `null` has none. */
 export const NO_PLACE = "none";
 /** Rial in the API, Toman in the form. */
 const MIN_PRICE_TOMAN = COURSE_MIN_PRICE / RIAL_PER_TOMAN;
@@ -157,9 +157,10 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
         min: 1,
         max: COURSE_MAX_SESSIONS,
       }),
-      place: z.enum([...COURSE_PLACES, NO_PLACE]).transform((value) => (value === NO_PLACE ? null : value)),
+      // Kept in the catalogue's order of places, whatever order they were ticked in.
+      places: z.array(z.string()).transform(normalizeCoursePlaces),
+      recommendedPlace: z.enum([...COURSE_PLACES, NO_PLACE]).transform((value) => (value === NO_PLACE ? null : value)),
       price: priceField("قیمت"),
-      boardingPrice: priceField("قیمت نگهداری"),
       prerequisites: z
         .array(z.string())
         .max(COURSE_MAX_PREREQUISITES, `حداکثر ${formatNumberFa(COURSE_MAX_PREREQUISITES)} پیش‌نیاز می‌شه گذاشت.`),
@@ -175,7 +176,7 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
     .superRefine(
       (value, context) => {
         // `typeof` and not `!== null`: with `when` below this also runs while other fields are wrong, and then only
-        // the two ages are known to have parsed.
+        // the fields `when` names are known to have parsed.
         const { minAgeMonths, maxAgeMonths } = value;
         if (typeof minAgeMonths === "number" && typeof maxAgeMonths === "number" && minAgeMonths > maxAgeMonths) {
           context.addIssue({
@@ -184,12 +185,24 @@ export function createCourseFormSchema({ isNew }: { isNew: boolean }) {
             message: "حداکثر سن نمی‌تونه از حداقل سن کمتر باشه.",
           });
         }
+        // The section clears a recommendation whose box is unticked; this catches what slips past it.
+        const { places, recommendedPlace } = value;
+        if (Array.isArray(places) && typeof recommendedPlace === "string" && !places.includes(recommendedPlace)) {
+          context.addIssue({
+            code: "custom",
+            path: ["recommendedPlace"],
+            message: "جای پیشنهادی باید یکی از جاهای تیک‌خورده باشه.",
+          });
+        }
       },
       {
         // Zod skips an object's refinement while any field has failed, so the age order would only be told after
-        // everything else was fixed. It runs whenever both ages parsed, so every message shows on the first submit.
+        // everything else was fixed. It runs whenever the ages and the places parsed, so every message shows on the
+        // first submit.
         when: (payload) =>
-          !payload.issues.some((issue) => issue.path?.[0] === "minAgeMonths" || issue.path?.[0] === "maxAgeMonths"),
+          !payload.issues.some((issue) =>
+            ["minAgeMonths", "maxAgeMonths", "places", "recommendedPlace"].includes(String(issue.path?.[0])),
+          ),
       },
     );
 }
@@ -217,9 +230,9 @@ export function toCourseInput({ values, slug }: { values: CourseFormValues; slug
     minAgeMonths: values.minAgeMonths,
     maxAgeMonths: values.maxAgeMonths,
     sessionCount: values.sessionCount,
-    place: values.place,
+    places: values.places,
+    recommendedPlace: values.recommendedPlace,
     price: values.price === null ? null : values.price * RIAL_PER_TOMAN,
-    boardingPrice: values.boardingPrice === null ? null : values.boardingPrice * RIAL_PER_TOMAN,
     prerequisites: values.prerequisites,
     titleEn: values.titleEn,
     summaryEn: values.summaryEn,
@@ -247,9 +260,9 @@ export function toFormDefaults(course: AdminCourse | null): DefaultValues<Course
       minAgeMonths: "",
       maxAgeMonths: "",
       sessionCount: "",
-      place: NO_PLACE,
+      places: [],
+      recommendedPlace: NO_PLACE,
       price: "",
-      boardingPrice: "",
       prerequisites: [],
       highlights: "",
       commands: "",
@@ -275,9 +288,9 @@ export function toFormDefaults(course: AdminCourse | null): DefaultValues<Course
     minAgeMonths: optionalDigits(course.minAgeMonths),
     maxAgeMonths: optionalDigits(course.maxAgeMonths),
     sessionCount: optionalDigits(course.sessionCount),
-    place: course.place ?? NO_PLACE,
+    places: course.places,
+    recommendedPlace: course.recommendedPlace ?? NO_PLACE,
     price: optionalDigits(course.price === null ? null : course.price / RIAL_PER_TOMAN),
-    boardingPrice: optionalDigits(course.boardingPrice === null ? null : course.boardingPrice / RIAL_PER_TOMAN),
     prerequisites: course.prerequisites.map((required) => required.slug),
     highlights: course.highlights.join("\n"),
     commands: course.commands.join("\n"),
@@ -316,9 +329,9 @@ export const FORM_FIELD_NAMES = new Set<string>([
   "minAgeMonths",
   "maxAgeMonths",
   "sessionCount",
-  "place",
+  "places",
+  "recommendedPlace",
   "price",
-  "boardingPrice",
   "prerequisites",
   "highlights",
   "commands",

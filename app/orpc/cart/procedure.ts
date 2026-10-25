@@ -1,4 +1,4 @@
-import { addToCart, clearCart, getCart, mergeIntoCart, removeFromCart } from "~/orpc/cart/service";
+import { addToCart, clearCart, getCart, mergeIntoCart, removeFromCart, setCartPlace } from "~/orpc/cart/service";
 import { base } from "~/orpc/implementer.server";
 import { requireRoleMiddleware } from "~/orpc/middleware/auth/auth.middleware";
 import { provideDbMiddleware } from "~/orpc/middleware/db/db.middleware";
@@ -38,3 +38,18 @@ export const mergeCartProcedure = base.cart.merge
   .use(requireRoleMiddleware("customer"))
   .use(provideDbMiddleware)
   .handler(({ context, input }) => mergeIntoCart({ db: context.db, userId: context.user.id, items: input.items }));
+
+/*===== Place =====*/
+export const setCartPlaceProcedure = base.cart.setPlace
+  .use(requireRoleMiddleware("customer"))
+  .use(provideDbMiddleware)
+  .handler(async ({ context, input, errors }) => {
+    const result = await setCartPlace({
+      db: context.db,
+      userId: context.user.id,
+      item: input.item,
+      place: input.place,
+    });
+    if (result.kind === "invalid") throw errors.INVALID_INPUT({ data: { errors: result.errors, fields: {} } });
+    return result.cart;
+  });

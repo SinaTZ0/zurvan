@@ -14,6 +14,7 @@ import {
   getCartProcedure,
   mergeCartProcedure,
   removeFromCartProcedure,
+  setCartPlaceProcedure,
 } from "~/orpc/cart/procedure";
 import {
   adminIssueCertificateProcedure,
@@ -136,6 +137,7 @@ export const router = implementer.router({
     remove: removeFromCartProcedure,
     clear: clearCartProcedure,
     merge: mergeCartProcedure,
+    setPlace: setCartPlaceProcedure,
   },
   certificate: {
     listMine: listMyCertificatesProcedure,

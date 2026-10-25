@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { CART_MAX_ITEMS } from "~/orpc/checkout/constants";
+import { COURSE_PLACES } from "~/orpc/course/constants";
 import { m } from "~/paraglide/messages";
 
 /*===== Cart =====*/
@@ -8,7 +9,14 @@ import { m } from "~/paraglide/messages";
 // dog only once however the cart got that way. The messages are functions so each failure is worded in its request's
 // language; the count keeps the Latin digits the Persian has always shown.
 export const cartItemsSchema = z
-  .array(z.object({ courseSlug: z.string().trim().min(1), dogId: z.string().trim().min(1) }))
+  .array(
+    z.object({
+      courseSlug: z.string().trim().min(1),
+      dogId: z.string().trim().min(1),
+      // Where the customer picked; checked against the course by the service.
+      place: z.enum(COURSE_PLACES).nullable().optional(),
+    }),
+  )
   .min(1, { error: () => m.server_cart_empty() })
   .max(CART_MAX_ITEMS, { error: () => m.server_cart_max_items({ max: String(CART_MAX_ITEMS) }) })
   .transform((items) => {

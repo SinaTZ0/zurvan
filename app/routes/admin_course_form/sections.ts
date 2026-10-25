@@ -1,10 +1,11 @@
 import type { CourseFormInput } from "~/routes/admin_course_form/schema";
 
 /*===== Form Plates =====*/
-// The seven plates of the form, in page order. Each has an anchor (the contents list beside the card jumps to it) and
+// The eight plates of the form, in page order. Each has an anchor (the contents list beside the card jumps to it) and
 // the fields it holds, so the list can mark the plate that has a message without asking each plate.
 
-export type CourseFormSectionId = "intro" | "cover" | "ages" | "price" | "prerequisites" | "text" | "english";
+export type CourseFormSectionId =
+  "intro" | "cover" | "ages" | "places" | "price" | "prerequisites" | "text" | "english";
 
 export const COURSE_FORM_SECTIONS: readonly {
   id: CourseFormSectionId;
@@ -13,8 +14,9 @@ export const COURSE_FORM_SECTIONS: readonly {
 }[] = [
   { id: "intro", title: "معرفی دوره", fields: ["title", "latinName", "slug", "family", "summary"] },
   { id: "cover", title: "عکس دوره", fields: ["coverMediaId", "coverAlt"] },
-  { id: "ages", title: "سن و جلسه‌ها", fields: ["minAgeMonths", "maxAgeMonths", "sessionCount", "place"] },
-  { id: "price", title: "قیمت", fields: ["price", "boardingPrice"] },
+  { id: "ages", title: "سن و جلسه‌ها", fields: ["minAgeMonths", "maxAgeMonths", "sessionCount"] },
+  { id: "places", title: "جای آموزش", fields: ["places", "recommendedPlace"] },
+  { id: "price", title: "قیمت", fields: ["price"] },
   { id: "prerequisites", title: "پیش‌نیازها", fields: ["prerequisites"] },
   { id: "text", title: "متن صفحه‌ی دوره", fields: ["highlights", "commands"] },
   {

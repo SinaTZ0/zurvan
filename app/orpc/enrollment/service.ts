@@ -5,6 +5,7 @@ import { isDogId } from "~/orpc/dog/validation";
 import { ENROLLMENT_STATUSES, type EnrollmentStatus } from "~/orpc/enrollment/constants";
 import type { AdminEnrollment, Enrollment } from "~/orpc/enrollment/contract";
 import { endActiveEnrollment, findEnrollments, type EnrollmentRow } from "~/orpc/enrollment/repository";
+import { isCoursePlace } from "~/orpc/course/constants";
 import { courseTitle } from "~/orpc/course/mapper";
 import { toPublicMedia } from "~/orpc/media/mapper";
 import { getLocale, type Locale } from "~/paraglide/runtime";
@@ -26,6 +27,8 @@ function toEnrollment({ row, locale }: { row: EnrollmentRow; locale: Locale }): 
     course: { slug: row.course.slug, title: courseTitle({ locale, course: row.course }), latinName: row.course.latinName },
     dog: { ...row.dog, photo: row.dogPhoto ? toPublicMedia(row.dogPhoto) : null },
     price: record.price,
+    // Plain text in the database: an unknown value reads as no place.
+    place: isCoursePlace(record.place) ? record.place : null,
     createdAt: record.createdAt,
     completedAt: record.completedAt,
     cancelledAt: record.cancelledAt,

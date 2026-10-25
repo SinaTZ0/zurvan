@@ -1,4 +1,4 @@
-import { COURSE_FAMILIES, COURSE_PLACES, COURSE_STATUSES } from "~/orpc/course/constants";
+import { COURSE_FAMILIES, COURSE_STATUSES, isCoursePlace, normalizeCoursePlaces } from "~/orpc/course/constants";
 import type { CourseFamily, CoursePlace, CourseStatus } from "~/orpc/course/constants";
 import type { AdminCourse, Course } from "~/orpc/course/contract";
 import type { Locale } from "~/paraglide/runtime";
@@ -37,10 +37,27 @@ export function prerequisiteTitle({ locale, prerequisite }: { locale: Locale; pr
   return inLocale({ locale, fa: prerequisite.title, en: prerequisite.titleEn });
 }
 
+/*===== Places =====*/
+/**
+ * Where a stored course can be taught and the place the Admin recommends. Plain text in the database: an unknown value
+ * is dropped, and a recommendation the course no longer offers reads as none.
+ */
+export function coursePlaces(record: Pick<CourseRecord, "places" | "recommendedPlace">): {
+  places: CoursePlace[];
+  recommendedPlace: CoursePlace | null;
+} {
+  const places = normalizeCoursePlaces(record.places);
+  const recommended = record.recommendedPlace;
+  return {
+    places,
+    recommendedPlace: isCoursePlace(recommended) && places.includes(recommended) ? recommended : null,
+  };
+}
+
 /*===== Public Course =====*/
 /**
  * Converts a stored course into its public shape in `locale`: picks each text in that language (Persian where the
- * English is missing), groups the cover columns, attaches its prerequisites, and narrows `family` and `place`, which
+ * English is missing), groups the cover columns, attaches its prerequisites, and narrows `family` and the places, which
  * are plain text in the database.
  */
 export function toPublicCourse({
@@ -74,10 +91,8 @@ export function toPublicCourse({
     minAgeMonths: record.minAgeMonths,
     maxAgeMonths: record.maxAgeMonths,
     sessionCount: record.sessionCount,
-    // An unknown place reads the same as "decided after the evaluation".
-    place: isCoursePlace(record.place) ? record.place : null,
+    ...coursePlaces(record),
     price: record.price,
-    boardingPrice: record.boardingPrice,
     prerequisites: prerequisites.map((prerequisite) => ({
       slug: prerequisite.slug,
       title: prerequisiteTitle({ locale, prerequisite }),
@@ -132,8 +147,4 @@ function isCourseStatus(value: string): value is CourseStatus {
 
 function isCourseFamily(value: string): value is CourseFamily {
   return (COURSE_FAMILIES as readonly string[]).includes(value);
-}
-
-function isCoursePlace(value: string | null): value is CoursePlace {
-  return value !== null && (COURSE_PLACES as readonly string[]).includes(value);
 }

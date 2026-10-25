@@ -1,12 +1,16 @@
 import { cn } from "cn";
-import { CircleAlertIcon } from "lucide-react";
+import { useSetAtom } from "jotai";
+import { CheckIcon, CircleAlertIcon, MapPinIcon } from "lucide-react";
 
+import { setCartItemPlaceAtom } from "~/atoms/cart";
+import { BoardingCostNote } from "~/components/boarding-cost-note";
 import { Link } from "~/components/link";
 import { Button } from "~/components/ui/button";
 import { formatToman, latinNameAddsToTitle } from "~/lib/course-format";
 import type { ReviewedItem } from "~/orpc/checkout/contract";
+import { COURSE_PLACE_LABELS } from "~/orpc/course/constants";
 import { m } from "~/paraglide/messages";
-import { getUnavailableVerdict, isPayable } from "~/routes/account_cart/cart-groups";
+import { getUnavailableVerdict, isPayable, needsPlace } from "~/routes/account_cart/cart-groups";
 import { removeKey } from "~/routes/account_cart/hooks/use-cart-removal";
 
 /*===== Cart Item Row =====*/
@@ -15,6 +19,9 @@ import { removeKey } from "~/routes/account_cart/hooks/use-cart-removal";
  * end on a small chalk price tag (gold, never wrapped), and the quiet «برداشتن» under it. A row that can't be paid says
  * so in words where the price would be, and under it each of the server's reasons in red with an icon (never colour
  * alone) and its way out. A row whose dog isn't the customer's (`dog: null`) can only be removed: no reason, no way.
+ *
+ * A payable row whose course offers places asks where it is taught (`PlacePicker`); boarding brings the note that its
+ * cost is extra and agreed on the phone, right under the price.
  *
  * `leaving` is the copy of a row that was just removed, folding away (`useFolding`): inert, hidden from assistive tech
  * and without `data-cart-remove`, so focus never lands on it.
@@ -76,6 +83,9 @@ export function CartItemRow({
             </div>
           </div>
 
+          {/*------ Place ------*/}
+          {payable && item.places.length > 0 && <PlacePicker item={item} disabled={leaving} />}
+
           {/*------ Reasons ------*/}
           {verdict && (
             <ul className="mt-1 flex flex-col gap-2 text-sm text-destructive">
@@ -103,6 +113,76 @@ export function CartItemRow({
         </div>
       </div>
     </li>
+  );
+}
+
+/*===== Place Picker =====*/
+/**
+ * Where the course is taught (F5): one chip per place the course offers, the recommended one tagged, as native radios
+ * (arrow keys and screen readers work as usual; picked is told by the gold border and the tick, not colour alone). A
+ * course with one place just says it. Picking is saved with the cart at once (`setCartItemPlaceAtom`); «پرداخت» waits
+ * while a row has no place, and the legend turns gold so the row that holds it up is easy to find.
+ */
+function PlacePicker({ item, disabled }: { item: ReviewedItem; disabled: boolean }) {
+  const setPlace = useSetAtom(setCartItemPlaceAtom);
+  const [only] = item.places;
+
+  return (
+    <div className="mt-2 flex flex-col gap-3">
+      {item.places.length === 1 && only ? (
+        <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <MapPinIcon aria-hidden strokeWidth={2} className="size-4 shrink-0 text-primary" />
+          {m.account_cart_place_one({ place: COURSE_PLACE_LABELS[only] })}
+        </p>
+      ) : (
+        <fieldset className="min-w-0" disabled={disabled}>
+          <legend
+            className={cn("mb-2 flex items-center gap-1.5 text-sm font-bold", needsPlace(item) && "text-primary")}
+          >
+            <MapPinIcon aria-hidden strokeWidth={2} className="size-4 shrink-0 text-primary" />
+            {m.account_cart_place_legend()}
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {item.places.map((place) => (
+              <label key={place} className="relative">
+                <input
+                  type="radio"
+                  name={`cart-place-${item.dogId}-${item.courseSlug}`}
+                  value={place}
+                  checked={item.place === place}
+                  onChange={() => setPlace({ item, place })}
+                  className="peer sr-only"
+                />
+                <span
+                  className={cn(
+                    "flex h-11 cursor-pointer items-center gap-1.5 rounded-full border border-foreground/20 bg-card px-4 text-sm font-bold text-muted-foreground select-none",
+                    "peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-foreground",
+                    "peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:border-primary/50 hover:text-foreground",
+                    "transition-colors motion-safe:transition-[translate,border-color,background-color,color] motion-safe:hover:-translate-y-0.5 motion-safe:active:translate-y-0",
+                  )}
+                >
+                  {item.place === place && (
+                    <CheckIcon
+                      aria-hidden
+                      className="answer-pop size-4 text-primary [--pop-origin:50%_50%]"
+                      strokeWidth={3}
+                    />
+                  )}
+                  {COURSE_PLACE_LABELS[place]}
+                  {place === item.recommendedPlace && (
+                    <span className="rounded-full bg-primary/15 px-1.5 py-0.5 text-[11px] leading-none font-bold text-primary">
+                      {m.shared_place_recommended()}
+                    </span>
+                  )}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {item.place === "boarding" && <BoardingCostNote />}
+    </div>
   );
 }
 

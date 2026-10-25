@@ -16,6 +16,7 @@ import { CoursePreview } from "~/routes/admin_course_form/components/course-prev
 import { useStickyColumn } from "~/routes/admin_course_form/hooks/use-sticky-column";
 import { IntroSection } from "~/routes/admin_course_form/components/intro-section";
 import { PrerequisitesSection } from "~/routes/admin_course_form/components/prerequisites-section";
+import { PlacesSection } from "~/routes/admin_course_form/components/places-section";
 import { PriceSection } from "~/routes/admin_course_form/components/price-section";
 import { SaveBar } from "~/routes/admin_course_form/components/save-bar";
 import { EnglishSection } from "~/routes/admin_course_form/components/english-section";
@@ -182,6 +183,7 @@ export function CourseForm({ course, courses }: { course: AdminCourse | null; co
             error={errors.coverMediaId?.message}
           />
           <AgeSection />
+          <PlacesSection />
           <PriceSection isNew={isNew} />
           <PrerequisitesSection options={options} requiredBy={requiredBy} />
           <TextSection />

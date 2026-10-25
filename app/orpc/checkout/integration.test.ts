@@ -36,11 +36,11 @@ const people = [partnerPerson, inactivePartnerPerson, plain, referred, referredT
 const PRICE = 7_000_005;
 const gateway = getPaymentGateway();
 const callbackUrl = "http://localhost/payment/callback";
-const ids = { courseA: "", courseB: "" };
-const slugs = { a: `test-a-${runId}`, b: `test-b-${runId}` };
+const ids = { courseA: "", courseB: "", courseC: "" };
+const slugs = { a: `test-a-${runId}`, b: `test-b-${runId}`, c: `test-c-${runId}` };
 const dogOf: Record<string, string> = {};
 
-async function insertCourse(slug: string): Promise<string> {
+async function insertCourse(slug: string, places: string[] = []): Promise<string> {
   const [row] = await db
     .insert(course)
     .values({
@@ -55,6 +55,7 @@ async function insertCourse(slug: string): Promise<string> {
       coverWidth: 1,
       coverHeight: 1,
       price: PRICE,
+      places,
       position: 9999,
     })
     .returning({ id: course.id });
@@ -113,6 +114,7 @@ beforeAll(async () => {
 
   ids.courseA = await insertCourse(slugs.a);
   ids.courseB = await insertCourse(slugs.b);
+  ids.courseC = await insertCourse(slugs.c, ["home", "boarding"]);
 
   for (const customer of [plain, referred, referredToInactive]) {
     const created = await createDog({
@@ -145,7 +147,7 @@ afterAll(async () => {
   await db.delete(dog).where(inArray(dog.ownerId, customerIds));
   await db.delete(partner).where(inArray(partner.userId, [partnerPerson.id, inactivePartnerPerson.id]));
   await db.update(user).set({ referredByPartnerId: null }).where(inArray(user.id, customerIds));
-  await db.delete(course).where(inArray(course.id, [ids.courseA, ids.courseB].filter(Boolean)));
+  await db.delete(course).where(inArray(course.id, [ids.courseA, ids.courseB, ids.courseC].filter(Boolean)));
   await db.delete(user).where(
     inArray(
       user.id,
@@ -229,5 +231,33 @@ describe("the partner's commission", () => {
   it("is not written for a customer without a partner, or whose partner is inactive", async () => {
     expect(await commissionsOf(plain.id)).toEqual([]);
     expect(await commissionsOf(referredToInactive.id)).toEqual([]);
+  });
+});
+
+describe("the place a course is taught", () => {
+  it("is required when the course offers several, must be one it offers, and stays with the payment and the enrollment", async () => {
+    const dogId = dogOf[plain.id] ?? "";
+    const pay = (place?: "home" | "center" | "boarding") =>
+      payCart({
+        db,
+        gateway,
+        customerId: plain.id,
+        input: { items: [{ courseSlug: slugs.c, dogId, place }] },
+        callbackUrl,
+      });
+
+    // No pick, and a place the course doesn't offer: nothing is saved and the customer is sent back to the cart.
+    expect(await pay()).toMatchObject({ kind: "not-eligible" });
+    expect(await pay("center")).toMatchObject({ kind: "not-eligible" });
+
+    const started = await pay("boarding");
+    if (started.kind !== "redirect") throw new Error(`Could not start the payment: ${JSON.stringify(started)}`);
+    expect(await callBack(new URL(started.url, "http://localhost").searchParams)).toMatchObject({ enrolled: 1 });
+
+    const [item] = await db.select().from(paymentItem).where(eq(paymentItem.courseId, ids.courseC));
+    const [enrolled] = await db.select().from(enrollment).where(eq(enrollment.courseId, ids.courseC));
+    // The price is the course's alone: boarding's extra cost is agreed on the phone.
+    expect(item).toMatchObject({ place: "boarding", price: PRICE });
+    expect(enrolled).toMatchObject({ place: "boarding", price: PRICE });
   });
 });

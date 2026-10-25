@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import { CourseCard } from "~/components/course-card";
 import { Link } from "~/components/link";
 import { ADMIN_HAIRLINE, ADMIN_PLATE, ADMIN_TEAR } from "~/lib/admin-plate";
-import { describeAge, describePlace, formatTomanShort } from "~/lib/course-format";
+import { describeAge, describePlaces } from "~/lib/course-format";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
+import { COURSE_PLACE_LABELS } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
 import { COURSE_FORM_SECTIONS, type CourseFormSectionId, sectionAnchor } from "~/routes/admin_course_form/sections";
 
@@ -18,7 +19,7 @@ const SETTLE_MS = 450;
  * The column beside the form (under it on phones): from `xl` a small contents list that jumps to each plate and marks
  * the ones with a message, then the plate «کارتش توی فهرست» with the real `CourseCard` the catalogue renders, fed what
  * is typed, so what he sees is what customers will see by construction. Under the card, the facts it doesn't show:
- * the page's address, the price when it is blank, the ages, the place and the boarding price.
+ * the page's address, the price when it is blank, the ages, the places and the recommended one.
  *
  * The card is inert (its link leads to a page that may not exist yet) and answers a change of title, price or cover
  * with a quick `answer-pop` once the typing rests, never on load.
@@ -103,10 +104,8 @@ export function CoursePreview({
           </Fact>
           {course.price === null && <Fact label="قیمت">بعد از ارزیابی</Fact>}
           <Fact label="سن">{describeAge(course)}</Fact>
-          <Fact label="کجا">{describePlace(course)}</Fact>
-          <Fact label="نگهداری شبانه">
-            {course.boardingPrice === null ? "نداره" : formatTomanShort(course.boardingPrice)}
-          </Fact>
+          <Fact label="کجا">{describePlaces(course)}</Fact>
+          {course.recommendedPlace && <Fact label="پیشنهادی">{COURSE_PLACE_LABELS[course.recommendedPlace]}</Fact>}
         </dl>
       </aside>
     </div>

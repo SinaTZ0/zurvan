@@ -1,6 +1,7 @@
 import { cn } from "cn";
 import { LockIcon } from "lucide-react";
 
+import { BoardingCostNote } from "~/components/boarding-cost-note";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { FormAlert } from "~/components/form-alert";
 import { Link } from "~/components/link";
@@ -36,7 +37,9 @@ function unbroken(text: string) {
 /**
  * «جمع سبد», the counter with the till: how many courses for how many dogs, what «پرداخت» charges now in big gold numerals
  * (the server's `dueNow`: the whole price, or the deposit with the full price and what's left said under it), how many
- * items aren't counted, and the one main button. Only what can be paid is counted.
+ * items aren't counted, and the one main button. Only what can be paid is counted. «پرداخت» waits while a course still
+ * needs its place picked (the line under it says how many), and with boarding picked the note under the total says
+ * its cost is apart, agreed on the phone.
  *
  * On the plate's top edge the center's dog lies counting his coins beside the dimmed till, in silence. While paying he
  * turns into the dog with the gold card in his mouth (a crossfade) and says «کارتو آوردم!»; the button says the same in
@@ -49,6 +52,8 @@ export function CartCounter({
   courseCount,
   dogCount,
   unavailableCount,
+  unplacedCount,
+  hasBoarding,
   total,
   depositPercent,
   dueNow,
@@ -64,6 +69,10 @@ export function CartCounter({
   courseCount: number;
   dogCount: number;
   unavailableCount: number;
+  /** Payable courses whose place isn't picked yet: «پرداخت» waits for them (F5). */
+  unplacedCount: number;
+  /** Boarding is picked for a course: its extra cost isn't in the total, and the note under the total says so. */
+  hasBoarding: boolean;
   /** Rial, from the server: the full price of what can be paid. */
   total: number;
   /** The deposit percent in force, from the server (100: the whole price is taken now). */
@@ -84,6 +93,7 @@ export function CartCounter({
   onPay: () => void;
 }) {
   const nothingToPay = courseCount === 0;
+  const waitsForPlace = !nothingToPay && unplacedCount > 0;
   const shown = nothingToPay ? 0 : dueNow;
   const totalChanged = useChanged(String(shown));
   const deposit = !nothingToPay && depositPercent < 100;
@@ -155,6 +165,8 @@ export function CartCounter({
             })}
           </p>
         )}
+        {/* Under the total it doesn't include: boarding's cost is agreed on the phone (F5). */}
+        {hasBoarding && !nothingToPay && <BoardingCostNote className="mt-3" />}
         {unavailableCount > 0 && (
           <p className="mt-3 text-sm text-pretty text-muted-foreground">
             {unavailableCount === 1
@@ -177,8 +189,8 @@ export function CartCounter({
             type="button"
             variant="solid"
             size="lg"
-            disabled={nothingToPay || refreshing || busy || (needsRules && !rulesTicked)}
-            aria-describedby={nothingToPay ? "cart-nothing-reason" : undefined}
+            disabled={nothingToPay || waitsForPlace || refreshing || busy || (needsRules && !rulesTicked)}
+            aria-describedby={nothingToPay ? "cart-nothing-reason" : waitsForPlace ? "cart-place-reason" : undefined}
             onClick={onPay}
             className="w-full"
           >
@@ -193,6 +205,13 @@ export function CartCounter({
           {nothingToPay && (
             <p id="cart-nothing-reason" className="text-center text-sm text-pretty text-muted-foreground">
               {m.account_cart_counter_nothing_reason()}
+            </p>
+          )}
+          {waitsForPlace && (
+            <p id="cart-place-reason" className="text-center text-sm font-bold text-pretty text-primary">
+              {unplacedCount === 1
+                ? m.account_cart_counter_unplaced_one({ count: formatNumber(unplacedCount) })
+                : m.account_cart_counter_unplaced_other({ count: formatNumber(unplacedCount) })}
             </p>
           )}
           <p className="flex items-start justify-center gap-2 text-center text-xs leading-relaxed text-pretty text-muted-foreground">

@@ -8,6 +8,7 @@ import {
   cartServerAtom,
   cartSyncingAtom,
   isInCart,
+  isSameCart,
   setCartItemsAtom,
   type CartServer,
 } from "~/atoms/cart";
@@ -66,6 +67,7 @@ export function CartSync() {
       add: (item) => client.cart.add({ item }).then(remember),
       remove: (item) => client.cart.remove({ item }).then(remember),
       clear: () => client.cart.clear().then(remember),
+      setPlace: (item, place) => client.cart.setPlace({ item, place }).then(remember),
     };
     setServer(server);
     return () => setServer(null);
@@ -108,8 +110,8 @@ export function CartSync() {
       markSynced();
     }
 
-    const same = held.length === serverItems.length && held.every((item) => isInCart(serverItems, item));
-    if (!same) setItems(serverItems);
+    // The places count too: one picked on another device shows here.
+    if (!isSameCart(held, serverItems)) setItems(serverItems);
   }, [query.data, queryClient, setItems, store]);
 
   return null;

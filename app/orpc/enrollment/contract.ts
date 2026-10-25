@@ -1,6 +1,7 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
 
+import { COURSE_PLACES } from "~/orpc/course/constants";
 import { ENROLLMENT_STATUSES } from "~/orpc/enrollment/constants";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { mediaSchema } from "~/orpc/media/contract";
@@ -14,6 +15,8 @@ export const enrollmentSchema = z.object({
   course: z.object({ slug: z.string(), title: z.string(), latinName: z.string() }),
   dog: z.object({ id: z.string(), name: z.string(), photo: mediaSchema.nullable() }),
   price: z.number().int(),
+  /** Where the customer chose to be taught, as bought; null when the course asked for none or before places existed. */
+  place: z.enum(COURSE_PLACES).nullable(),
   createdAt: z.date(),
   completedAt: z.date().nullable(),
   cancelledAt: z.date().nullable(),

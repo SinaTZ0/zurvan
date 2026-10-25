@@ -10,9 +10,9 @@ import { tomanInWords } from "~/routes/admin_course_form/toman-words";
 
 /*===== Price Section =====*/
 /**
- * «قیمت»: Toman, as people say it. Under each price the amount is read back as he types, with its separators and in
+ * «قیمت»: Toman, as people say it. Under the price the amount is read back as he types, with its separators and in
  * words («چهار میلیون و پانصد هزار تومان»), so a missing zero is seen before saving. An empty price is «بعد از
- * ارزیابی». The form sends Rial (Toman × 10).
+ * ارزیابی». The form sends Rial (Toman × 10). Boarding has no price here: its extra cost is agreed on the phone (F5).
  */
 export function PriceSection({ isNew }: { isNew: boolean }) {
   const {
@@ -21,7 +21,6 @@ export function PriceSection({ isNew }: { isNew: boolean }) {
     formState: { errors },
   } = useFormContext<CourseFormInput>();
   const priceText = useWatch({ control, name: "price" }) ?? "";
-  const boardingText = useWatch({ control, name: "boardingPrice" }) ?? "";
   const priceHint =
     priceText.trim() === ""
       ? "بدون قیمت، دوره خریدنی نیست."
@@ -47,23 +46,6 @@ export function PriceSection({ isNew }: { isNew: boolean }) {
           <AmountEcho text={priceText} empty="بعد از ارزیابی" />
           {priceHint && <FieldHint id="course-price">{priceHint}</FieldHint>}
           <FieldMessage id="course-price" message={errors.price?.message} />
-        </Field>
-
-        {/*------ Boarding Price ------*/}
-        <Field data-invalid={!!errors.boardingPrice} className="gap-2">
-          <FieldLabel htmlFor="course-boardingPrice">قیمت نگهداری شبانه (تومان، اختیاری)</FieldLabel>
-          <Input
-            id="course-boardingPrice"
-            inputMode="numeric"
-            autoComplete="off"
-            className="h-11 text-sm"
-            aria-invalid={!!errors.boardingPrice}
-            aria-describedby={describedBy({ id: "course-boardingPrice", hint: true, error: !!errors.boardingPrice })}
-            {...register("boardingPrice")}
-          />
-          <AmountEcho text={boardingText} empty="نداره" />
-          <FieldHint id="course-boardingPrice">فقط نشون داده می‌شه؛ همراه خرید پرداخت نمی‌شه.</FieldHint>
-          <FieldMessage id="course-boardingPrice" message={errors.boardingPrice?.message} />
         </Field>
       </div>
     </FormSection>

@@ -99,6 +99,7 @@ function connect(overrides: Partial<CartServer> = {}) {
     add: (item) => Promise.resolve([item]),
     remove: () => Promise.resolve([]),
     clear: () => Promise.resolve([]),
+    setPlace: () => Promise.resolve([]),
     ...overrides,
   };
   store.set(cartServerAtom, server);

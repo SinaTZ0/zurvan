@@ -1,18 +1,20 @@
 import { BedDoubleIcon } from "lucide-react";
 
+import { BoardingCostNote } from "~/components/boarding-cost-note";
 import { GroundStrip } from "~/components/ground-strip";
 import { MascotCut } from "~/components/mascot-cut";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
-import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { m } from "~/paraglide/messages";
+import { COURSE_PLACE_LABELS } from "~/orpc/course/constants";
 import type { Course } from "~/orpc/course/contract";
 import { ChalkCheck } from "~/routes/course_detail/components/chalk-check";
 
 /*===== Learn Section =====*/
 /**
  * What the course teaches, in the dog's voice: the owner's own card as a flat two-column list, one line about where the
- * training happens, and boarding as an option with its price (display only, it is not in the cart).
+ * training happens (the customer picks the place in the cart), and boarding when the course offers it, with its cost
+ * left to the head trainer's call (F5).
  *
  * Working and sport courses have no ages, sessions or commands yet, only branches, so they get pills and a note
  * instead of a list of commands: ticking a branch would promise a program that is decided after the evaluation.
@@ -45,7 +47,7 @@ export function LearnSection({ course }: { course: Course }) {
       </div>
 
       {/*------ Boarding ------*/}
-      {!isBranches && <Boarding boardingPrice={course.boardingPrice} />}
+      {!isBranches && course.places.includes("boarding") && <Boarding />}
     </section>
   );
 }
@@ -131,10 +133,10 @@ function BranchPills({ branches }: { branches: string[] }) {
 
 /*===== Boarding =====*/
 /**
- * Boarding is optional and paid apart from the course, so the price is only shown, never added to anything. A course
- * without a boarding price says to call rather than showing a made-up number.
+ * Boarding is one of the places a customer can pick in the cart. It costs extra, and that is never charged on the site:
+ * the head trainer calls to arrange it and agree on the price, so the card says that instead of a number.
  */
-function Boarding({ boardingPrice }: { boardingPrice: number | null }) {
+function Boarding() {
   return (
     // The partner pension's lodge stands at the card's end side on a short path; phones put it under the words.
     <div className="relative mt-6 overflow-hidden rounded-3xl border border-border bg-sunken paper-grain p-5 max-sm:pb-36 sm:p-6 sm:pe-56">
@@ -149,9 +151,7 @@ function Boarding({ boardingPrice }: { boardingPrice: number | null }) {
         <div className="min-w-0">
           <p className="font-extrabold">{m.course_detail_learn_boarding_title()}</p>
           <p className="mt-1 text-sm text-pretty text-muted-foreground">{m.course_detail_learn_boarding_text()}</p>
-          <p className="mt-2 text-sm font-bold">
-            {boardingPrice === null ? m.course_detail_learn_boarding_call() : formatToman(boardingPrice)}
-          </p>
+          <BoardingCostNote className="mt-3 w-fit" />
         </div>
       </div>
     </div>
@@ -159,12 +159,15 @@ function Boarding({ boardingPrice }: { boardingPrice: number | null }) {
 }
 
 /*===== Copy =====*/
-/** One line on where the lessons happen, as the catalogue's place says it. */
-function placeLine({ place }: Course): string {
+/** One line on where the lessons happen: picked in the cart, or told after the evaluation when the course names none. */
+function placeLine({ places }: Course): string {
   const trainer = HEAD_TRAINER.firstName;
-  if (place === "home") return m.course_detail_learn_place_home({ trainer });
-  if (place === "outside") return m.course_detail_learn_place_outside({ trainer });
-  return m.course_detail_learn_place_mostly_outside({ trainer });
+  if (places.length === 0) return m.course_detail_learn_place_later({ trainer });
+  const [only] = places;
+  if (places.length === 1 && only) {
+    return m.course_detail_learn_place_one({ trainer, place: COURSE_PLACE_LABELS[only] });
+  }
+  return m.course_detail_learn_place_pick({ trainer });
 }
 
 function branchesLine(): string {

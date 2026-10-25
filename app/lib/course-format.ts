@@ -7,7 +7,7 @@ import { m } from "~/paraglide/messages";
 // Every storefront page words a course's facts the same way. Sessions and ages on the owner's cards are approximate
 // ("حدوداً"), and the pages say them that way too. Worded in the page's language (`messages/shared/`).
 
-type Facts = Pick<Course, "minAgeMonths" | "maxAgeMonths" | "sessionCount" | "place">;
+type Facts = Pick<Course, "minAgeMonths" | "maxAgeMonths" | "sessionCount">;
 
 /** "از ۲ ماهگی", "۶ تا ۷ ماهگی", or "هر سنی" when there is no minimum. */
 export function describeAge(course: Facts): string {
@@ -30,9 +30,10 @@ export function describeSessions(course: Facts): string {
     : m.shared_course_sessions_other({ count });
 }
 
-/** "منزل", "بیرون", "اکثراً بیرون", or "بعد از ارزیابی". */
-export function describePlace(course: Facts): string {
-  return course.place === null ? m.shared_course_after_evaluation() : COURSE_PLACE_LABELS[course.place];
+/** The places a course can be taught, "منزل، بیرون، پانسیون", or "بعد از ارزیابی" when it offers none. */
+export function describePlaces(course: Pick<Course, "places">): string {
+  if (course.places.length === 0) return m.shared_course_after_evaluation();
+  return course.places.map((place) => COURSE_PLACE_LABELS[place]).join(m.shared_place_list_joiner());
 }
 
 /** "سگ همدم ۱", or `null` when the course has no prerequisite. The dog must have passed each one (F4). */

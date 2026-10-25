@@ -69,9 +69,10 @@ function courseInput(overrides: Partial<CourseInput> = {}): CourseInput {
     minAgeMonths: 3,
     maxAgeMonths: null,
     sessionCount: 8,
-    place: "home",
+    // One place, so a purchase takes it without a pick (the pick is the checkout test's).
+    places: ["home"],
+    recommendedPlace: null,
     price: PRICE,
-    boardingPrice: null,
     prerequisites: [],
     ...overrides,
   };

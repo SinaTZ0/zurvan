@@ -5,6 +5,7 @@ import { z } from "zod";
 import { CART_MAX_ITEMS } from "~/orpc/checkout/constants";
 import { cartItemSchema } from "~/orpc/checkout/contract";
 import type { CartItem } from "~/orpc/checkout/contract";
+import type { CoursePlace } from "~/orpc/course/constants";
 
 /*===== Storage =====*/
 /** The localStorage key. Internal identifiers keep the `zurvan` name (see CLAUDE.md). */
@@ -32,6 +33,14 @@ export function isSameCartItem(a: CartItem, b: CartItem) {
   return a.courseSlug === b.courseSlug && a.dogId === b.dogId;
 }
 
+/** Whether two carts hold the same items with the same places picked, in any order. */
+export function isSameCart(a: readonly CartItem[], b: readonly CartItem[]) {
+  return (
+    a.length === b.length &&
+    a.every((item) => b.some((other) => isSameCartItem(item, other) && (item.place ?? null) === (other.place ?? null)))
+  );
+}
+
 /** Whether the pair is already in the cart. */
 export function isInCart(items: readonly CartItem[], item: CartItem) {
   return items.some((existing) => isSameCartItem(existing, item));
@@ -39,7 +48,7 @@ export function isInCart(items: readonly CartItem[], item: CartItem) {
 
 /**
  * Turns whatever came out of localStorage into a safe cart. The value is user-editable and may come from an older
- * version of the app, so anything that isn't a list of `{ courseSlug, dogId }` becomes an empty cart (never a crash on
+ * version of the app, so anything that isn't a list of `{ courseSlug, dogId, place? }` becomes an empty cart (never a crash on
  * the page that reads it). A valid list is de-duplicated and cut to `CART_MAX_ITEMS`, the same limits the actions keep.
  */
 export function parseStoredCart(value: unknown): CartItem[] {
@@ -97,6 +106,7 @@ export type CartServer = {
   add: (item: CartItem) => Promise<CartItem[]>;
   remove: (item: CartItem) => Promise<CartItem[]>;
   clear: () => Promise<CartItem[]>;
+  setPlace: (item: CartItem, place: CoursePlace | null) => Promise<CartItem[]>;
 };
 
 /** Set by `CartSync` while a customer is signed in; without it the actions below change only this browser. */
@@ -153,6 +163,22 @@ export const removeCartItemAtom = atom(null, (get, set, item: CartItem) => {
   const target = { courseSlug: item.courseSlug, dogId: item.dogId };
   void set(pushToServerAtom, (server) => server.remove(target));
 });
+
+/**
+ * Picks where one item is taught (F5), or takes the pick back with null. The browser changes first, so the chip answers
+ * at once; the server checks the place against the course and answers with the cart as it is.
+ */
+export const setCartItemPlaceAtom = atom(
+  null,
+  (get, set, { item, place }: { item: CartItem; place: CoursePlace | null }) => {
+    set(
+      cartItemsAtom,
+      get(cartItemsAtom).map((existing) => (isSameCartItem(existing, item) ? { ...existing, place } : existing)),
+    );
+    const target = { courseSlug: item.courseSlug, dogId: item.dogId };
+    void set(pushToServerAtom, (server) => server.setPlace(target, place));
+  },
+);
 
 /** Empties the cart, here and on the server: what the customer asked for. Sign-out uses `resetCartAtom` instead. */
 export const clearCartAtom = atom(null, (_get, set) => {

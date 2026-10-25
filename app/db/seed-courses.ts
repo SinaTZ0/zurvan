@@ -13,10 +13,10 @@ type SeedCourse = {
   minAgeMonths?: number;
   maxAgeMonths?: number;
   sessionCount?: number;
-  place?: CoursePlace;
+  /** As on the owner's card: its place, and boarding, which every card offers «در صورت تمایل». */
+  places?: CoursePlace[];
   /** Toman, converted to Rial when seeded. */
   priceToman?: number;
-  boardingPriceToman?: number;
   /** Slugs of the courses this one requires. */
   requires?: string[];
   /**
@@ -29,7 +29,8 @@ type SeedCourse = {
 // The owner's course cards (docs/zurvan-courses.md), in catalogue order.
 //
 // Sample data: the prices and the cover photos are placeholders until the owner sends the real ones. The doc leaves
-// prices out on purpose. A missing boarding price shows as "price on request".
+// prices out on purpose. The card's «اکثراً بیرون» (Advanced) is at the client's place and outside: the places have no
+// "mostly". No card names the center, so it is left for the Admin to tick.
 export const SEED_COURSES: SeedCourse[] = [
   {
     slug: "house-manner",
@@ -93,9 +94,8 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 2,
     sessionCount: 5,
-    place: "home",
+    places: ["home", "boarding"],
     priceToman: 4_500_000,
-    boardingPriceToman: 3_000_000,
   },
   {
     slug: "cgc",
@@ -158,9 +158,8 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 2,
     sessionCount: 12,
-    place: "home",
+    places: ["home", "boarding"],
     priceToman: 9_000_000,
-    boardingPriceToman: 6_000_000,
   },
   {
     slug: "bmc",
@@ -220,7 +219,7 @@ export const SEED_COURSES: SeedCourse[] = [
     minAgeMonths: 6,
     maxAgeMonths: 7,
     sessionCount: 12,
-    place: "outside",
+    places: ["outside", "boarding"],
     priceToman: 9_500_000,
   },
   {
@@ -275,9 +274,8 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 2,
     sessionCount: 7,
-    place: "home",
+    places: ["home", "boarding"],
     priceToman: 6_000_000,
-    boardingPriceToman: 4_000_000,
   },
   {
     slug: "advanced",
@@ -325,7 +323,7 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 4,
     sessionCount: 10,
-    place: "mostly-outside",
+    places: ["home", "outside", "boarding"],
     priceToman: 9_000_000,
   },
   {
@@ -370,9 +368,8 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 2,
     sessionCount: 5,
-    place: "home",
+    places: ["home", "boarding"],
     priceToman: 3_500_000,
-    boardingPriceToman: 2_500_000,
   },
   {
     slug: "companion-2",
@@ -419,9 +416,8 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 3,
     sessionCount: 5,
-    place: "home",
+    places: ["home", "boarding"],
     priceToman: 4_000_000,
-    boardingPriceToman: 2_500_000,
     requires: ["companion-1"],
   },
   {
@@ -465,7 +461,7 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 5,
     sessionCount: 5,
-    place: "outside",
+    places: ["outside", "boarding"],
     priceToman: 4_500_000,
     requires: ["companion-2"],
   },
@@ -512,7 +508,7 @@ export const SEED_COURSES: SeedCourse[] = [
     },
     minAgeMonths: 8,
     sessionCount: 7,
-    place: "outside",
+    places: ["outside", "boarding"],
     priceToman: 6_000_000,
     requires: ["companion-3"],
   },

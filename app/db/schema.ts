@@ -319,10 +319,18 @@ export const course = pgTable(
     maxAgeMonths: integer("max_age_months"),
     /** Approximate, shown as a description only: lessons aren't tracked. */
     sessionCount: integer("session_count"),
-    place: text("place"),
+    /**
+     * Where the course can be taught (`app/orpc/course/constants.ts`, `COURSE_PLACES`), in that order; the customer
+     * picks one in the cart. Empty: settled after the evaluation, and the cart asks nothing.
+     */
+    places: text("places")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** One of `places` the Admin marks as recommended, or null for none. */
+    recommendedPlace: text("recommended_place"),
     // Money is Rial everywhere. A null price means the course isn't sold online (working and sport dogs, F8).
     price: bigint("price", { mode: "number" }),
-    boardingPrice: bigint("boarding_price", { mode: "number" }),
     /** Catalogue order. */
     position: integer("position").notNull(),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -589,6 +597,11 @@ export const paymentItem = pgTable(
       .references(() => dog.id, { onDelete: "restrict" }),
     /** Rial. */
     price: bigint("price", { mode: "number" }).notNull(),
+    /**
+     * Where the customer chose to be taught (`COURSE_PLACES`), as picked at «پرداخت». Null when the course offered no
+     * place, and on items bought before places existed. Boarding's extra cost is settled on the phone, not here.
+     */
+    place: text("place"),
   },
   (table) => [
     unique("payment_item_dog_course_unique").on(table.paymentId, table.dogId, table.courseId),
@@ -620,6 +633,8 @@ export const enrollment = pgTable(
       .references(() => paymentItem.id, { onDelete: "restrict" }),
     /** Rial, copied from the payment item. */
     price: bigint("price", { mode: "number" }).notNull(),
+    /** Copied from the payment item: where the customer chose to be taught, or null. */
+    place: text("place"),
     /** `active`, `completed` or `cancelled`. Allowed values in `app/orpc/enrollment/constants.ts`. */
     status: text("status").notNull().default("active"),
     completedAt: timestamp("completed_at"),
@@ -658,6 +673,8 @@ export const cartItem = pgTable(
     courseId: uuid("course_id")
       .notNull()
       .references(() => course.id, { onDelete: "cascade" }),
+    /** Where the customer wants it taught (`COURSE_PLACES`), once they pick; checked against the course at «پرداخت». */
+    place: text("place"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.dogId, table.courseId] })],

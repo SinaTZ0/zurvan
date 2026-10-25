@@ -182,6 +182,8 @@ function AccountCartPage() {
                 courseCount={summary.payable.length}
                 dogCount={summary.dogCount}
                 unavailableCount={summary.unavailableCount}
+                unplacedCount={summary.unplacedCount}
+                hasBoarding={summary.hasBoarding}
                 total={review.data?.total ?? 0}
                 depositPercent={review.data?.depositPercent ?? 100}
                 dueNow={review.data?.dueNow ?? 0}
@@ -194,7 +196,7 @@ function AccountCartPage() {
                 onRulesTick={setRulesTicked}
                 onPay={() =>
                   pay.start(
-                    summary.payable.map(({ courseSlug, dogId }) => ({ courseSlug, dogId })),
+                    summary.payable.map(({ courseSlug, dogId, place }) => ({ courseSlug, dogId, place })),
                     { acceptRules: needsRules, availableDays, availablePeriods },
                   )
                 }
