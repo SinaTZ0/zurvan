@@ -878,6 +878,19 @@ html:active-view-transition-type(back)::view-transition-new(root) {
     animation: answer-pop 0.38s cubic-bezier(0.3, 1.45, 0.5, 1) var(--answer-delay, 0s) both;
   }
 }
+/* The commission stairs (`commission-stairs.tsx`): each step rises from the floor in turn as they arrive, and a step
+   whose percent the Admin changes grows or shrinks to its new height, so he sees which step his number moved. */
+@media (prefers-reduced-motion: no-preference) {
+  .commission-step {
+    transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: commission-step-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) var(--step-delay, 0s) both;
+  }
+}
+@keyframes commission-step-rise {
+  from {
+    transform: scaleY(0);
+  }
+}
 @keyframes answer-in {
   from {
     opacity: 0;

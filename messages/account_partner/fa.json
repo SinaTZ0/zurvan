@@ -36,14 +36,16 @@
   "account_partner_commission_bubble": "اینا سهم توئه!",
   "account_partner_commission_awaiting": "منتظر پرداخت",
   "account_partner_commission_paid_total": "پرداخت‌شده",
-  "account_partner_commission_rule": "از اولین خرید هر مشتری {percent}٪ می‌گیری. {trainer} اون رو بانکی پرداخت می‌کنه و بهت پیامک می‌ده.",
+  "account_partner_commission_rule": "از هر خرید مشتری‌هات پورسانت می‌گیری و هرچی مشتری خریدار بیشتری بیاری، درصدت بالاتر می‌ره. {trainer} اون رو بانکی پرداخت می‌کنه و بهت پیامک می‌ده.",
   "account_partner_commission_list_label": "فهرست پورسانت‌ها",
   "account_partner_commission_paid_on": "پرداخت شد · {date}",
-  "account_partner_commission_none": "هنوز پورسانتی نیست. وقتی مشتریت اولین خریدش رو کرد، اینجا میاد.",
+  "account_partner_commission_none": "هنوز پورسانتی نیست. هر بار مشتریت خرید کنه، اینجا میاد.",
   "account_partner_error_incomplete_title": "حساب همکاریت کامل نیست",
   "account_partner_error_incomplete_body": "با مرکز تماس بگیر تا حسابت رو کامل کنن.",
   "account_partner_error_failed_title": "صفحه‌ی همکاری باز نشد",
   "account_partner_error_failed_body": "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا با مرکز تماس بگیر.",
   "account_partner_error_retry": "دوباره امتحان کن",
-  "account_partner_error_bubble": "ببخشید!"
+  "account_partner_error_bubble": "ببخشید!",
+  "account_partner_commission_progress": "تا حالا {count} مشتری خریدار آوردی؛ مشتری {next}امت با {percent} حساب می‌شه.",
+  "account_partner_commission_progress_none": "هنوز مشتری خریداری نیاوردی؛ اولین مشتریت با {percent} حساب می‌شه."
 }

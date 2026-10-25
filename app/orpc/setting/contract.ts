@@ -19,8 +19,24 @@ export const adminSettingSchema = z.object({
 
 export type AdminSetting = z.infer<typeof adminSettingSchema>;
 
+/** One step of the partner's commission (F7): from the `fromCustomer`-th paying customer on, `percent`. */
+export const commissionTierSchema = z.object({
+  fromCustomer: z.number().int(),
+  percent: z.number().int(),
+});
+
+/** The commission steps as the Admin edits them: the ones in force, the default ones, and when they were last saved. */
+export const adminCommissionTiersSchema = z.object({
+  tiers: z.array(commissionTierSchema),
+  defaultTiers: z.array(commissionTierSchema),
+  /** Null until the Admin first saves them. */
+  updatedAt: z.date().nullable(),
+});
+
+export type AdminCommissionTiers = z.infer<typeof adminCommissionTiersSchema>;
+
 /*===== Procedures =====*/
-/** The four settings in `SETTING_KEYS` order. */
+/** The three number settings in `SETTING_KEYS` order. */
 export const adminGetSettingsContract = oc
   .errors({ ...commonErrors, ...authErrors, ...roleErrors })
   .output(z.array(adminSettingSchema));
@@ -34,13 +50,30 @@ export const adminUpdateSettingContract = oc
   .input(z.strictObject({ key: z.enum(SETTING_KEYS), value: z.number() }))
   .output(adminSettingSchema);
 
-/** Public: the Partner Enquiry page shows the percent in force. */
-export const commissionPercentContract = oc.errors(commonErrors).output(z.object({ percent: z.number().int() }));
+export const adminGetCommissionTiersContract = oc
+  .errors({ ...commonErrors, ...authErrors, ...roleErrors })
+  .output(adminCommissionTiersSchema);
+
+/**
+ * Replaces the whole table. Steps that break the guardrails (`commissionTiersError`) are `INVALID_INPUT` with
+ * `fields.tiers`, and nothing is saved. Applies from the next commission; written ones keep their percent.
+ */
+export const adminUpdateCommissionTiersContract = oc
+  .errors({ ...commonErrors, ...authErrors, ...roleErrors })
+  .input(z.strictObject({ tiers: z.array(z.strictObject({ fromCustomer: z.number(), percent: z.number() })).max(50) }))
+  .output(adminCommissionTiersSchema);
+
+/** Public: the Partner Enquiry page shows the steps in force. */
+export const commissionTiersContract = oc
+  .errors(commonErrors)
+  .output(z.object({ tiers: z.array(commissionTierSchema) }));
 
 export const settingContract = {
-  commissionPercent: commissionPercentContract,
+  commissionTiers: commissionTiersContract,
   admin: {
     get: adminGetSettingsContract,
     update: adminUpdateSettingContract,
+    commissionTiers: adminGetCommissionTiersContract,
+    updateCommissionTiers: adminUpdateCommissionTiersContract,
   },
 };

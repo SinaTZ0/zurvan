@@ -1,27 +1,26 @@
+import { CommissionStairs } from "~/components/commission-stairs";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatNumber } from "~/lib/locale-format";
+import type { CommissionTier } from "~/lib/business-rules";
 import { m } from "~/paraglide/messages";
 
 /*===== Commission Card =====*/
 /**
- * The commission rules, as a raised grained plate at the end of the page's middle row. The percent is the Admin's
- * setting (read by the page's loader), so changing it there changes it here. Payment happens outside the app: the plate
- * says so, and the app only records whether it has been paid.
+ * The commission rules, as a raised grained plate at the end of the page's middle row. Under the heading, the steps as
+ * the staircase every page draws them with: the steps are the Admin's setting (read by the page's loader), so changing
+ * them there changes them here. Payment happens outside the app: the plate says so, and the app only records whether it
+ * has been paid.
  *
- * The dog with the basket walks along the plate's top edge at its end corner (the first purchase), a bush either side
+ * The dog with the basket walks along the plate's top edge at its end corner (a purchase), a bush either side
  * and a pool of warm light; he carries no bubble. His sides are physical: he is in the plate's left corner and his
  * picture looks to the right, at the words. The section's top padding is his headroom, and the same as the steps
- * board's beside it, so the two plates line up. The percent is a number of any width up to three digits: the big one
- * sits at the heading's end and wraps nothing.
+ * board's beside it, so the two plates line up.
  *
- * @param commissionPercent The commission percent in force (the Admin's setting).
+ * @param tiers The commission steps in force (the Admin's setting).
  */
-export function CommissionCard({ commissionPercent }: { commissionPercent: number }) {
-  const percent = m.join_partner_percent({ value: formatNumber(commissionPercent) });
-
+export function CommissionCard({ tiers }: { tiers: readonly CommissionTier[] }) {
   return (
     <section aria-labelledby="commission-title" className="relative flex flex-col pt-44 lg:pt-48">
       {/*------ Sky over the plate's headroom, beside the dog ------*/}
@@ -39,19 +38,16 @@ export function CommissionCard({ commissionPercent }: { commissionPercent: numbe
           <MascotCut name="basket" className="lively-wiggle-late relative block w-full translate-y-[3%]" />
         </div>
 
-        {/*------ Heading and the Percent ------*/}
+        {/*------ Heading and the Steps ------*/}
         <h2 id="commission-title" className={`${DISPLAY_HEADING} text-h2 text-balance`}>
           {m.join_partner_commission_title()}
         </h2>
-        {/* The number is a decoration of rule one (which says it in words), so it is hidden from assistive tech. */}
-        <p aria-hidden className="mt-1 font-display text-7xl leading-none font-black text-primary lg:text-8xl">
-          {percent}
-        </p>
+        <CommissionStairs tiers={tiers} className="mt-5" />
 
         {/*------ The Rules ------*/}
         <ul className="mt-6 flex flex-1 flex-col">
-          <CommissionItem>{m.join_partner_commission_rule_total({ percent })}</CommissionItem>
-          <CommissionItem>{m.join_partner_commission_rule_first()}</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_total()}</CommissionItem>
+          <CommissionItem>{m.join_partner_commission_rule_steps()}</CommissionItem>
           <CommissionItem>{m.join_partner_commission_rule_paid({ name: HEAD_TRAINER.firstName })}</CommissionItem>
           <CommissionItem>{m.join_partner_commission_rule_cancel()}</CommissionItem>
         </ul>

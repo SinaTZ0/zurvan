@@ -1,10 +1,9 @@
 import { randomInt, randomUUID } from "node:crypto";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
-import { DEFAULT_PARTNER_COMMISSION_PERCENT } from "~/lib/business-rules";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { issuesToErrorData } from "~/lib/schema-issues";
-import { findCommissionPercentSetting } from "~/orpc/commission/repository";
+import { countPayingCustomers, findCommissionTiers } from "~/orpc/commission/repository";
 import type { AdminPartner, PartnerPerson, PartnerPersonStage, PartnerProfile } from "~/orpc/partner/contract";
 import { toAdminPartner, toLinkPerson, toPartnerProfile, toPhonePerson } from "~/orpc/partner/mapper";
 import {
@@ -37,9 +36,21 @@ const PARTNER_PHONE_TAKEN_MESSAGE = "این شماره قبلاً در سایت 
 const PARTNER_CODE_TAKEN_MESSAGE = "این کد قبلاً گرفته شده.";
 
 /*===== Profile =====*/
-async function withPercent({ db, record }: { db: DatabaseOrTransaction; record: PartnerProfileRecord }) {
-  const commissionPercent = (await findCommissionPercentSetting({ db })) ?? DEFAULT_PARTNER_COMMISSION_PERCENT;
-  return toPartnerProfile({ record, commissionPercent });
+/** The row plus what the commission depends on: the steps in force and how many paying customers the partner has. */
+async function withCommission({
+  db,
+  userId,
+  record,
+}: {
+  db: DatabaseOrTransaction;
+  userId: string;
+  record: PartnerProfileRecord;
+}) {
+  const [commissionTiers, payingCustomers] = await Promise.all([
+    findCommissionTiers({ db }),
+    countPayingCustomers({ db, partnerId: userId }),
+  ]);
+  return toPartnerProfile({ record, commissionTiers, payingCustomers });
 }
 
 type GetProfileResult = { kind: "success"; profile: PartnerProfile } | NotFoundResult;
@@ -47,7 +58,7 @@ type GetProfileResult = { kind: "success"; profile: PartnerProfile } | NotFoundR
 /** @returns `not-found` for a partner user with no `partner` row. */
 export async function getPartnerProfile({ db, userId }: Own): Promise<GetProfileResult> {
   const record = await findPartnerProfile({ db, userId });
-  return record ? { kind: "success", profile: await withPercent({ db, record }) } : { kind: "not-found" };
+  return record ? { kind: "success", profile: await withCommission({ db, userId, record }) } : { kind: "not-found" };
 }
 
 type UpdateProfileResult = { kind: "success"; profile: PartnerProfile } | InvalidResult | NotFoundResult;
@@ -67,7 +78,7 @@ export async function updatePartnerProfile({
 
   /*------ Store ------*/
   const record = await updateShebaNumber({ db, userId, shebaNumber: parsed.data.shebaNumber });
-  return record ? { kind: "success", profile: await withPercent({ db, record }) } : { kind: "not-found" };
+  return record ? { kind: "success", profile: await withCommission({ db, userId, record }) } : { kind: "not-found" };
 }
 
 /*===== Stage =====*/

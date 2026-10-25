@@ -12,7 +12,7 @@ The source of truth for how the app works. The course catalog's content comes fr
 
 **Zurvann** (زروان) is a head trainer's private practice. She is the owner and the app's **Admin**. She is also the center's only trainer: the site introduces her alone (the two placeholder colleagues' cards are switched off since 2026-10-18 at the owner's request, but kept in the repo). Training is mostly private (one dog), at the client's place or at the center; the owner also plans group classes at the center and offers boarding by prior arrangement with a partner pension, but the app has no seats, schedule or booking for any of that.
 
-The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where she gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over she marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on a customer's first purchase.
+The app is a **small shop with locked items**. A new dog starts with a **free evaluation**, a first checkup where she gets to know the dog. Once a dog is evaluated, its owner can **buy courses** for it, as long as it has passed each course's prerequisites. Courses have a **fixed price** and are **paid upfront**. After a purchase the Admin calls the customer, and when the training is over she marks the enrollment **done**, which unlocks the next courses. **Partners** (clinics, groomers, pet shops) bring in customers and earn a commission on every purchase those customers make, at a percent that climbs with the number of paying customers the partner has brought.
 
 **The app doesn't run the business.** Lesson times, sessions and everything in between are handled by the Admin in real life, by phone. The app records what was requested, bought and finished, and shows her the general picture. There is no calendar, no lesson tracking, no trainer earnings, no refund policies, no deadlines and no automatic expiries. A refund the Admin decides is recorded ([F5](#f5-cart-and-checkout)); the money itself moves outside the app.
 
@@ -207,9 +207,14 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 - Deactivating a partner is reversible and stops new attributions **and** new commissions, including a first purchase by a customer he already had; written commissions stay payable.
 - The Admin creates the account with the partner's name, phone number and an optional link code. The code never changes, because it is printed on the partner's card and QR.
 
-**Commission.** At a customer's **first paid purchase**, if they have an active partner, the app writes one **commission**: a percentage (setting, default **10%**) of the total of the enrollments that payment created, rounded down to the Rial.
+**Commission.** At **every paid purchase** of a customer with an active partner, the app writes one **commission**: a percentage of the total of the enrollments that payment created, rounded down to the Rial. The percent is a **step** read from the partner's **paying customers** (settled 2026-10-25, from the owner's partner notes):
 
-- One commission per customer, ever. Later purchases earn nothing.
+- A partner's paying customers are the distinct customers who have earned them a commission, counted over the **whole partnership**; the count never resets. A customer counts once, with their first commission; a payment that created no enrollment doesn't count them. Any paid purchase qualifies; there is no other condition for now.
+- There are always **five steps**, a table in the settings ([F10](#f10-settings)). By default: customers 1 to 3 **10%**, the 4th **12%**, the 5th to the 8th **15%**, the 9th **15%**, the 10th and on **18%** (the notes' «۵ تا ۸» and «۱۰ مشتری»; the 9th shares 15%). For fewer steps the Admin gives neighbouring steps the same percent, and the partners see them as one step (the default reads as four: «۵–۹: ۱۵٪»).
+- Each commission is written at the step the partner is on **counting this customer**: a new customer can lift the partner to the next step, a repeat buyer doesn't. From then on, every purchase (by new or old customers) is on the new step.
+- A step applies **from the purchase that reaches it**: commissions already written keep their percent, nothing is topped up when the partner climbs, and a change to the steps applies to the next commission.
+- The partner sees the steps, their paying-customer count and the percent their next customer earns. The Partner Enquiry page shows the steps.
+- «پورسانت ویژه ۱۸٪» in the notes is the top step, not a deal for one partner.
 - The Admin pays partners **outside the app**, by bank, and presses **«پرداخت شد»** on each commission. The partner sees each commission as paid or unpaid, both in the commissions list and on the row of the person it came from in Leads and Customers (the amount and the state; never the purchase's price, the course or the dog).
 - **The enrollment is cancelled afterwards:** the partner keeps the commission.
 
@@ -253,11 +258,11 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 ### F10. Settings
 
-Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The Admin can set the commission from 1 to 50%, the deposit from 1 to 100%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
+Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The commission steps are a table: always five steps, the first from customer 1, each later one from a later customer (up to the 1000th), each percent 1 to 50%; the Admin edits them together and saves the table at once. The Admin can set the deposit from 1 to 100%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
 
 | Setting                | Default     |
 | ---------------------- | ----------- |
-| Partner commission     | 10%         |
+| Partner commission     | 10% / 12% from the 4th customer / 15% from the 5th and the 9th / 18% from the 10th |
 | Deposit                | 100%        |
 | OTP requests per phone | 5 per hour  |
 | OTP requests per IP    | 20 per hour |
@@ -299,11 +304,11 @@ Money is integer **Rial**. At this scale every number is a simple indexed query;
 | Paid prices never change          | Each item's price is saved on the pending payment at checkout and copied onto its enrollment.                                   |
 | A payment settles once            | A unique index on the gateway's payment id; a pending payment becomes paid or failed by a conditional update, once.             |
 | No double enrollment              | A partial unique index: one **active** enrollment per dog and course. The loser of a race becomes **paid, not enrolled**.       |
-| One commission per customer       | A unique index on the customer.                                                                                                 |
+| One commission per payment        | A unique index on the payment; the partner's row is locked while their customers are counted, so two can't land on one step.   |
 | A refund never exceeds the charge | The sum of the refunds that stand is checked under a lock on the payment.                                                       |
 | Statuses only move forward        | Each status change is a conditional update (e.g. evaluate only a `requested` evaluation; complete only an `active` enrollment). |
 
-**Tests** (focused, per the repository's testing rules): eligibility blocking each rule; a duplicate gateway callback rejected; two payments for the same dog and course leaving one enrollment and one flagged item; one commission per customer.
+**Tests** (focused, per the repository's testing rules): eligibility blocking each rule; a duplicate gateway callback rejected; two payments for the same dog and course leaving one enrollment and one flagged item; a commission per paid purchase, at the step the partner's paying customers are on.
 
 **Pages:** Cart · Purchases · Partner Dashboard · Admin Dashboard
 

@@ -7,7 +7,7 @@ import { commission, partner, partnerLead, user } from "~/db/schema";
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
 
-/** What the partner row itself holds: the profile minus the percent, which is a platform setting. */
+/** What the partner row itself holds: the profile minus the commission steps (a setting) and the count. */
 export type PartnerProfileRecord = { shebaNumber: string | null; code: string; isActive: boolean };
 
 /** A partner with the contact details the Admin sees. */
@@ -22,17 +22,25 @@ export type PartnerRecord = PartnerProfileRecord & {
  * Everything the stage of one phone lead depends on, read in the same query as the lead. `customer` is the user who
  * registered with the lead's number (any user, whoever they are attributed to).
  */
+/**
+ * What a partner has earned from one customer over all their purchases, in Rial: the total, the part not yet paid, and
+ * when the Admin last paid one. All null while there is no commission.
+ */
+export type EarnedFact = {
+  commissionAmount: number | null;
+  commissionUnpaidAmount: number | null;
+  commissionPaidAt: Date | null;
+};
+
 export type LeadFact = {
   id: string;
   partnerId: string;
   phoneNumber: string;
   createdAt: Date;
   customer: { name: string; referredByPartnerId: string | null; createdAt: Date } | null;
-  /** When this partner has a commission for that customer. */
+  /** When this partner's first commission for that customer was written; null while there is none. */
   boughtAt: Date | null;
-  /** That commission's amount (Rial) and when the Admin paid it; null while there is none or it is unpaid. */
-  commissionAmount: number | null;
-  commissionPaidAt: Date | null;
+} & EarnedFact & {
   /** An earlier lead on the same number by another active partner, ordered as `findPartnerForNewCustomer` does. */
   hasEarlierActiveLead: boolean;
 };
@@ -44,9 +52,7 @@ export type LinkCustomerFact = {
   name: string;
   createdAt: Date;
   boughtAt: Date | null;
-  commissionAmount: number | null;
-  commissionPaidAt: Date | null;
-};
+} & EarnedFact;
 
 export type PartnerCommissionSums = {
   partnerId: string;
@@ -96,6 +102,23 @@ export async function findPeople({
   db,
   partnerId,
 }: Executor & { partnerId?: string }): Promise<{ leads: LeadFact[]; linkCustomers: LinkCustomerFact[] }> {
+  /*------ Earned, per partner and customer ------*/
+  // A customer earns a commission on every purchase (F7), so they are summed here, one row per pair, before the joins.
+  const earned = db
+    .select({
+      partnerId: commission.partnerId,
+      customerId: commission.customerId,
+      firstAt: sql`min(${commission.createdAt})`.mapWith(commission.createdAt).as("first_at"),
+      amount: sql`sum(${commission.amount})`.mapWith(Number).as("amount"),
+      unpaidAmount: sql`coalesce(sum(${commission.amount}) filter (where ${commission.paidAt} is null), 0)`
+        .mapWith(Number)
+        .as("unpaid_amount"),
+      lastPaidAt: sql`max(${commission.paidAt})`.mapWith(commission.paidAt).as("last_paid_at"),
+    })
+    .from(commission)
+    .groupBy(commission.partnerId, commission.customerId)
+    .as("earned");
+
   /*------ Phone leads ------*/
   const earlierLead = alias(partnerLead, "earlier_lead");
   const earlierPartner = alias(partner, "earlier_partner");
@@ -127,15 +150,16 @@ export async function findPeople({
       customerName: user.name,
       customerReferredBy: user.referredByPartnerId,
       customerCreatedAt: user.createdAt,
-      boughtAt: commission.createdAt,
-      commissionAmount: commission.amount,
-      commissionPaidAt: commission.paidAt,
+      boughtAt: earned.firstAt,
+      commissionAmount: earned.amount,
+      commissionUnpaidAmount: earned.unpaidAmount,
+      commissionPaidAt: earned.lastPaidAt,
       hasEarlierActiveLead: sql<boolean>`${hasEarlierActiveLead}`,
     })
     .from(partnerLead)
     .leftJoin(user, eq(user.phoneNumber, partnerLead.phoneNumber))
-    // Only this partner's own commission counts as "bought" for his lead.
-    .leftJoin(commission, and(eq(commission.customerId, user.id), eq(commission.partnerId, partnerLead.partnerId)))
+    // Only this partner's own commissions count as "bought" for his lead.
+    .leftJoin(earned, and(eq(earned.customerId, user.id), eq(earned.partnerId, partnerLead.partnerId)))
     .where(partnerId ? eq(partnerLead.partnerId, partnerId) : undefined)
     .orderBy(asc(partnerLead.createdAt), asc(partnerLead.id));
 
@@ -150,6 +174,7 @@ export async function findPeople({
         : { name: row.customerName, referredByPartnerId: row.customerReferredBy, createdAt: row.customerCreatedAt },
     boughtAt: row.boughtAt,
     commissionAmount: row.commissionAmount,
+    commissionUnpaidAmount: row.commissionUnpaidAmount,
     commissionPaidAt: row.commissionPaidAt,
     hasEarlierActiveLead: row.hasEarlierActiveLead,
   }));
@@ -161,12 +186,13 @@ export async function findPeople({
       partnerId: user.referredByPartnerId,
       name: user.name,
       createdAt: user.createdAt,
-      boughtAt: commission.createdAt,
-      commissionAmount: commission.amount,
-      commissionPaidAt: commission.paidAt,
+      boughtAt: earned.firstAt,
+      commissionAmount: earned.amount,
+      commissionUnpaidAmount: earned.unpaidAmount,
+      commissionPaidAt: earned.lastPaidAt,
     })
     .from(user)
-    .leftJoin(commission, and(eq(commission.customerId, user.id), eq(commission.partnerId, user.referredByPartnerId)))
+    .leftJoin(earned, and(eq(earned.customerId, user.id), eq(earned.partnerId, user.referredByPartnerId)))
     .where(
       and(
         partnerId ? eq(user.referredByPartnerId, partnerId) : isNotNull(user.referredByPartnerId),

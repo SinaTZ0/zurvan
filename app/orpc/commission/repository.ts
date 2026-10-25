@@ -1,9 +1,11 @@
-import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, countDistinct, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { commission, partner, platformSetting, user } from "~/db/schema";
-import { COMMISSION_PERCENT_SETTING_KEY } from "~/orpc/commission/constants";
+import type { CommissionTier } from "~/lib/business-rules";
+import { COMMISSION_TIERS_SETTING_KEY } from "~/orpc/commission/constants";
+import { resolveCommissionTiers } from "~/orpc/commission/validation";
 
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
@@ -17,18 +19,44 @@ export type CommissionRow = {
 };
 
 /*===== Reads =====*/
-/** The stored commission percentage, or null when the Admin never changed it (the caller falls back to the default). */
-export async function findCommissionPercentSetting({ db }: Executor): Promise<number | null> {
+/** The commission steps in force: the stored ones, or the default when none are stored or the row is unreadable. */
+export async function findCommissionTiers({ db }: Executor): Promise<CommissionTier[]> {
   const [row] = await db
     .select({ value: platformSetting.value })
     .from(platformSetting)
-    .where(eq(platformSetting.key, COMMISSION_PERCENT_SETTING_KEY));
-  const percent = row ? Number(row.value) : Number.NaN;
-  return Number.isInteger(percent) && percent >= 0 && percent <= 100 ? percent : null;
+    .where(eq(platformSetting.key, COMMISSION_TIERS_SETTING_KEY));
+  return resolveCommissionTiers(row?.value);
 }
 
-/** The customer's partner, when they have one and it is active (F7: an inactive partner earns nothing). */
-export async function findActivePartnerOfCustomer({
+/** How many distinct customers have earned this partner a commission: the count the steps are read against (F7). */
+export async function countPayingCustomers({ db, partnerId }: Executor & { partnerId: string }): Promise<number> {
+  const [row] = await db
+    .select({ count: countDistinct(commission.customerId) })
+    .from(commission)
+    .where(eq(commission.partnerId, partnerId));
+  return row?.count ?? 0;
+}
+
+/** Whether this customer has already earned this partner a commission (a repeat buyer doesn't raise the count). */
+export async function hasEarnedFromCustomer({
+  db,
+  partnerId,
+  customerId,
+}: Executor & { partnerId: string; customerId: string }): Promise<boolean> {
+  const [row] = await db
+    .select({ id: commission.id })
+    .from(commission)
+    .where(and(eq(commission.partnerId, partnerId), eq(commission.customerId, customerId)))
+    .limit(1);
+  return row !== undefined;
+}
+
+/**
+ * The customer's partner, when they have one and it is active (F7: an inactive partner earns nothing). The partner's row
+ * is locked until the transaction ends, so two of their customers paying at once are counted one after the other and
+ * can't both land on the same step.
+ */
+export async function lockActivePartnerOfCustomer({
   db,
   customerId,
 }: Executor & { customerId: string }): Promise<string | undefined> {
@@ -36,7 +64,8 @@ export async function findActivePartnerOfCustomer({
     .select({ partnerId: partner.userId })
     .from(user)
     .innerJoin(partner, eq(user.referredByPartnerId, partner.userId))
-    .where(and(eq(user.id, customerId), eq(partner.isActive, true)));
+    .where(and(eq(user.id, customerId), eq(partner.isActive, true)))
+    .for("update", { of: partner });
   return row?.partnerId;
 }
 
@@ -69,8 +98,8 @@ export async function findCommissions({
 
 /*===== Writes =====*/
 /**
- * Writes the commission unless the customer already has one. The unique index on the customer is the arbiter (F12), so
- * "one commission per customer, ever" holds however many purchases race.
+ * Writes the commission unless the payment already has one. The unique index on the payment is the arbiter (F12), so a
+ * repeated callback can't write a second.
  *
  * @returns Whether a commission was written.
  */
@@ -81,7 +110,7 @@ export async function insertCommissionOnce({
   const rows = await db
     .insert(commission)
     .values(values)
-    .onConflictDoNothing({ target: commission.customerId })
+    .onConflictDoNothing({ target: commission.paymentId })
     .returning({ id: commission.id });
   return rows.length > 0;
 }

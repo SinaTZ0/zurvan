@@ -32,7 +32,7 @@ import {
 import { cartItemsSchema } from "~/orpc/checkout/validation";
 import { removePaidItemsFromCart } from "~/orpc/cart/service";
 import { hasAcceptedSiteRules } from "~/orpc/consent/service";
-import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
+import { recordPurchaseCommission } from "~/orpc/commission/service";
 import {
   findApprovedCourseBySlug,
   findApprovedCourses,
@@ -537,7 +537,7 @@ export async function completeGatewayPayment({
     }
 
     /*------ Commission ------*/
-    await recordFirstPurchaseCommission({
+    await recordPurchaseCommission({
       db: tx,
       customerId: payment.customerId,
       paymentId: payment.id,

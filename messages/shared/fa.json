@@ -172,5 +172,14 @@
   "shared_demo_note_clinic": "کلینیک همکار",
   "shared_demo_note_two_dogs": "مشتری با دو سگ",
   "shared_demo_note_new": "مشتری تازه، بدون سگ",
-  "shared_demo_note_evaluation_today": "مشتری با ارزیابی امروز"
+  "shared_demo_note_evaluation_today": "مشتری با ارزیابی امروز",
+  "shared_commission_percent": "{value}٪",
+  "shared_commission_stairs_label": "پله‌های پورسانت",
+  "shared_commission_stairs_axis": "مشتری خریدارِ چندم",
+  "shared_commission_stairs_range": "{from}–{to}",
+  "shared_commission_stairs_range_open": "{from} به بعد",
+  "shared_commission_stairs_sr_one": "مشتری {from}: {percent}",
+  "shared_commission_stairs_sr_range": "مشتری {from} تا {to}: {percent}",
+  "shared_commission_stairs_sr_open": "از مشتری {from} به بعد: {percent}",
+  "shared_commission_stairs_here": "الان اینجایی"
 }

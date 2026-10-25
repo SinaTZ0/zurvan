@@ -50,7 +50,7 @@ Facts only the owner or the client has. Each one says what the site does **until
 
 ## Partners
 
-- **Commission rules** (percentage, trigger, settlement). **The site already earns a 10% commission at a customer's first paid purchase and the Admin pays it by hand;** that is the demo's existing behaviour and was left exactly as it was, but it is not an approved commercial rule. Set the percentage to 0 in the Admin settings if it should not run until the rules exist.
+- **Commission rules** (percentage, trigger, settlement). **Settled 2026-10-25 from the owner's partner notes:** every paid purchase earns a commission, at one of five steps read from the partner's paying customers over the whole partnership (default 1–3 10%, 4th 12%, 5th–8th 15%, 9th 15%, 10th+ 18%; the Admin edits the steps in Settings, and the same percent on neighbouring steps makes fewer). Any paid purchase qualifies; «پورسانت ویژه ۱۸٪» is the top step. See app-spec F7.
 - **May partners register customers and dogs on their behalf, and see a dog's progress?** A privacy and consent question. Interim: partners see the status and commission of their own referrals read-only; no partner-side registration; no dogs or progress.
 - **Commercial-partner logos and contracts.** Interim: no logo is shown.
 

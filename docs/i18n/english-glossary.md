@@ -196,7 +196,7 @@ Added in Phase 4a. The labels are already in `messages/shared` (`shared_…_stat
 | ثبت‌نام (in a course): در حال آموزش / تمام شد / لغو شد         | enrollment: In training / Completed / Canceled                    |                                                                      |
 | بازپرداخت: در انتظار پرداخت / پرداخت شد / لغو شد               | refund: Awaiting payment / Paid / Canceled                        | A recorded fact; the money moves by bank transfer, outside the site. |
 | منتظر ثبت‌نام / ثبت‌نام کرد / خرید کرد / از دست رفت (a lead)   | Waiting to sign up / Signed up / Bought / Lost                    | A lead is a customer's number the partner entered.                   |
-| کمیسیون: پرداخت شد / پرداخت نشده                               | commission: Paid / Unpaid                                         | One per customer, at their first purchase.                           |
+| کمیسیون: پرداخت شد / پرداخت نشده                               | commission: Paid / Unpaid                                         | One per paid purchase, at the partner's step (F7).                   |
 | اسم · شماره‌ی ورود · رمز عبور · رمز عبور تازه · تکرار رمز عبور | name · mobile number · password · new password · confirm password | "Show password" / "Hide password".                                   |
 | کپی لینک / کپی شد                                              | Copy link / Copied                                                |                                                                      |
 

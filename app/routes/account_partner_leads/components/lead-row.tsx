@@ -30,14 +30,21 @@ function formatPhone(phoneNumber: string): string {
 }
 
 /*===== Commission =====*/
-/** What this partner is owed for a person who bought, and whether the Admin has paid it: «۹٬۵۰۰٬۰۰۰ تومان · منتظر پرداخت» ("9,500,000 Toman · Awaiting payment"). */
+/** What this partner has earned from a person who bought, and whether the Admin has paid it: «۹٬۵۰۰٬۰۰۰ تومان · منتظر پرداخت» ("9,500,000 Toman · Awaiting payment"). */
 function describeCommission(commission: NonNullable<PartnerPerson["commission"]>): string {
   return `${formatToman(commission.amount)} · ${commissionState(commission)}`;
 }
 
+/**
+ * The state of everything the person has earned him (one commission per purchase, F7): all paid (with the last day one
+ * was paid), all waiting, or the part still waiting.
+ */
 function commissionState(commission: NonNullable<PartnerPerson["commission"]>): string {
-  return commission.paidAt
-    ? m.account_partner_leads_row_paid_on({ date: formatTimestamp(commission.paidAt) })
+  if (commission.unpaidAmount === 0 && commission.paidAt) {
+    return m.account_partner_leads_row_paid_on({ date: formatTimestamp(commission.paidAt) });
+  }
+  return commission.unpaidAmount < commission.amount
+    ? m.account_partner_leads_row_awaiting_part({ amount: formatToman(commission.unpaidAmount) })
     : m.account_partner_leads_row_awaiting();
 }
 
@@ -45,7 +52,7 @@ function commissionState(commission: NonNullable<PartnerPerson["commission"]>): 
 /**
  * One person of the partner's, a small card: who (the number he typed, and once registered the customer's name; or a
  * link customer's name) with where they came from, the road they are on, and where they stand as a chip. For a buyer, a
- * stub under a dashed rule says what the partner is owed and whether it was paid. Never prices or dogs, and a lost
+ * stub under a dashed rule says what the partner has earned from all their purchases and whether it was paid. Never prices or dogs, and a lost
  * person shows no name: the card is grey and dashed (F12).
  *
  * From `xl` it is one line of three parts in fixed columns, so every row's road sits in the same column; below that the
@@ -146,7 +153,7 @@ export function LeadRow({
             <span
               className={cn(
                 "inline-flex h-6 items-center rounded-full px-2.5 text-xs font-bold whitespace-nowrap",
-                person.commission.paidAt
+                person.commission.unpaidAmount === 0
                   ? "border border-primary/60 text-primary"
                   : "border border-foreground/15 text-muted-foreground",
               )}

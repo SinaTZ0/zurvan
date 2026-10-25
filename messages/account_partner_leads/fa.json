@@ -31,7 +31,7 @@
   "account_partner_leads_how_rule_shared": "اگه چند همکار یه شماره رو بنویسن، اولین ثبت می‌مونه.",
   "account_partner_leads_how_rule_link": "اگه مشتری با لینک یه همکار بیاد، لینک مقدمه.",
   "account_partner_leads_how_rule_name": "بعد از ثبت‌نام، اسم مشتری رو می‌بینی؛ قیمت و سگش رو نه.",
-  "account_partner_leads_how_rule_commission": "برای هر خریدار، پورسانتت و این‌که واریز شده یا نه رو همین‌جا می‌بینی.",
+  "account_partner_leads_how_rule_commission": "برای هر خریدار، جمع پورسانتی که از خریدهاش گرفتی و این‌که واریز شده یا نه رو همین‌جا می‌بینی.",
   "account_partner_leads_form_title": "یه شماره بنویس",
   "account_partner_leads_form_label": "شماره‌ی موبایل مشتری",
   "account_partner_leads_form_placeholder": "۰۹۱۲…",
@@ -66,5 +66,6 @@
   "account_partner_leads_error_title_failed": "صفحه‌ی شماره‌ها باز نشد",
   "account_partner_leads_error_body": "یه مشکلی پیش اومد. صفحه رو دوباره باز کن یا چند دقیقه‌ی دیگه سر بزن.",
   "account_partner_leads_error_back": "برگرد به داشبورد",
-  "account_partner_leads_error_bubble": "ببخشید!"
+  "account_partner_leads_error_bubble": "ببخشید!",
+  "account_partner_leads_row_awaiting_part": "{amount} منتظر پرداخت"
 }

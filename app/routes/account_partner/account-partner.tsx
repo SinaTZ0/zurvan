@@ -86,7 +86,7 @@ function AccountPartnerPage() {
   const { data: profile } = useSuspenseQuery(orpc.partner.getMine.queryOptions());
   const { data: allCommissions } = useSuspenseQuery(orpc.commission.listMine.queryOptions());
   const { data: leads } = useSuspenseQuery(orpc.partner.leads.list.queryOptions());
-  const { isActive, shebaNumber, commissionPercent } = profile;
+  const { isActive, shebaNumber, commissionTiers, payingCustomers } = profile;
   // The referral link lands on the home page; the QR is the same link as a code the customer's phone can scan.
   const { link, qr } = profile;
   const { funnel, commissions, unpaidAmount, paidAmount } = summarize({ leads, commissions: allCommissions });
@@ -116,7 +116,8 @@ function AccountPartnerPage() {
               commissions={commissions}
               unpaidAmount={unpaidAmount}
               paidAmount={paidAmount}
-              commissionPercent={commissionPercent}
+              commissionTiers={commissionTiers}
+              payingCustomers={payingCustomers}
             />
           </div>
         </div>

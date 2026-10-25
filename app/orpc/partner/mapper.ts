@@ -1,5 +1,7 @@
+import type { CommissionTier } from "~/lib/business-rules";
 import type { AdminPartner, PartnerPerson, PartnerPersonStage, PartnerProfile } from "~/orpc/partner/contract";
 import type {
+  EarnedFact,
   LeadFact,
   LinkCustomerFact,
   PartnerCommissionSums,
@@ -10,16 +12,19 @@ import type {
 /*===== Profile =====*/
 export function toPartnerProfile({
   record,
-  commissionPercent,
+  commissionTiers,
+  payingCustomers,
 }: {
   record: PartnerProfileRecord;
-  commissionPercent: number;
+  commissionTiers: CommissionTier[];
+  payingCustomers: number;
 }): PartnerProfile {
   return {
     shebaNumber: record.shebaNumber,
     code: record.code,
     isActive: record.isActive,
-    commissionPercent,
+    commissionTiers,
+    payingCustomers,
   };
 }
 
@@ -59,9 +64,15 @@ export function toLinkPerson({ fact }: { fact: LinkCustomerFact }): PartnerPerso
   };
 }
 
-/** The partner's own commission for a person who bought, as the list shows it. */
-function toPersonCommission(fact: { commissionAmount: number | null; commissionPaidAt: Date | null }) {
-  return fact.commissionAmount === null ? null : { amount: fact.commissionAmount, paidAt: fact.commissionPaidAt };
+/** What the partner has earned from a person who bought, over all their purchases, as the list shows it. */
+function toPersonCommission(fact: EarnedFact) {
+  return fact.commissionAmount === null
+    ? null
+    : {
+        amount: fact.commissionAmount,
+        unpaidAmount: fact.commissionUnpaidAmount ?? 0,
+        paidAt: fact.commissionPaidAt,
+      };
 }
 
 /*===== Admin =====*/

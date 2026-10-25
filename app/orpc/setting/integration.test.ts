@@ -12,17 +12,23 @@ import {
 } from "~/lib/business-rules";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { readDepositPercent, readOtpLimits } from "~/lib/platform-settings.server";
-import { recordFirstPurchaseCommission } from "~/orpc/commission/service";
+import { recordPurchaseCommission } from "~/orpc/commission/service";
 import { getPartnerProfile } from "~/orpc/partner/service";
 import {
-  COMMISSION_PERCENT_KEY,
+  COMMISSION_TIERS_KEY,
   DEPOSIT_PERCENT_KEY,
   OTP_PER_IP_KEY,
   OTP_PER_PHONE_KEY,
   SETTING_DEFINITIONS,
   SETTING_KEYS,
 } from "~/orpc/setting/constants";
-import { adminGetSettings, getCommissionPercent, updateSetting } from "~/orpc/setting/service";
+import {
+  adminGetCommissionTiers,
+  adminGetSettings,
+  getCommissionTiers,
+  updateCommissionTiers,
+  updateSetting,
+} from "~/orpc/setting/service";
 
 /*===== Platform Settings =====*/
 // Runs against the real database: the settings are read by the commission and by sign-in, which only a real table shows.
@@ -37,13 +43,11 @@ const customers = [1, 2].map((index) => ({
   id: `test-setting-customer-${index}-${runId}`,
   phone: `0996${Math.floor(1000000 + Math.random() * 8999999)}`,
 }));
+const ALL_KEYS = [...SETTING_KEYS, COMMISSION_TIERS_KEY];
 let savedRows: (typeof platformSetting.$inferSelect)[] = [];
 
 beforeAll(async () => {
-  savedRows = await db
-    .select()
-    .from(platformSetting)
-    .where(inArray(platformSetting.key, [...SETTING_KEYS]));
+  savedRows = await db.select().from(platformSetting).where(inArray(platformSetting.key, ALL_KEYS));
 
   await db.insert(user).values({
     id: partnerUser.id,
@@ -73,12 +77,12 @@ afterAll(async () => {
   await db.delete(user).where(eq(user.id, partnerUser.id));
 
   // Put the keys back exactly as they were: rows that existed return with their values, the others are removed.
-  await db.delete(platformSetting).where(inArray(platformSetting.key, [...SETTING_KEYS]));
+  await db.delete(platformSetting).where(inArray(platformSetting.key, ALL_KEYS));
   if (savedRows.length > 0) await db.insert(platformSetting).values(savedRows);
   await db.$client.end();
 });
 
-/** The customer's first paid purchase, written the way the payment callback does: a paid payment, then the commission. */
+/** A paid purchase, written the way the payment callback does: a paid payment, then the commission. Returns its percent. */
 async function buy({ customerId, baseAmount }: { customerId: string; baseAmount: number }) {
   const [paid] = await db
     .insert(payment)
@@ -86,55 +90,77 @@ async function buy({ customerId, baseAmount }: { customerId: string; baseAmount:
       customerId,
       amount: baseAmount,
       gateway: "demo",
-      authority: `test-setting-${runId}-${customerId}`,
+      authority: `test-setting-${runId}-${randomUUID()}`,
       status: "paid",
       paidAt: new Date(),
     })
     .returning({ id: payment.id });
   if (!paid) throw new Error("Could not insert the test payment.");
-  return recordFirstPurchaseCommission({ db, customerId, paymentId: paid.id, baseAmount });
-}
-
-async function commissionOf(customerId: string) {
-  const [row] = await db.select().from(commission).where(eq(commission.customerId, customerId));
-  return row;
+  expect(await recordPurchaseCommission({ db, customerId, paymentId: paid.id, baseAmount })).toBe(true);
+  const [row] = await db.select().from(commission).where(eq(commission.paymentId, paid.id));
+  return row?.percent;
 }
 
 async function storedRows() {
-  return db
-    .select()
-    .from(platformSetting)
-    .where(inArray(platformSetting.key, [...SETTING_KEYS]));
+  return db.select().from(platformSetting).where(inArray(platformSetting.key, ALL_KEYS));
 }
 
 const [first, second] = customers as [(typeof customers)[number], (typeof customers)[number]];
 
+/** Five steps (always five), from customers 1 to 5, with these percents. */
+const steps = (...percents: number[]) => percents.map((percent, index) => ({ fromCustomer: index + 1, percent }));
+
 describe("platform settings", () => {
-  it("picks a change up, and each commission keeps the percent it was written with", async () => {
-    expect(await updateSetting({ db, key: COMMISSION_PERCENT_KEY, value: 10 })).toMatchObject({ kind: "success" });
-    expect(await buy({ customerId: first.id, baseAmount: 10_000_000 })).toBe(true);
+  it("writes every purchase at the step the partner's paying customers are on, and a change applies from the next", async () => {
+    expect(
+      await updateCommissionTiers({ db, tiers: steps(10, 15, 15, 15, 15) }),
+    ).toMatchObject({ kind: "success" });
 
-    expect(await updateSetting({ db, key: COMMISSION_PERCENT_KEY, value: 15 })).toMatchObject({
-      kind: "success",
-      setting: { key: COMMISSION_PERCENT_KEY, value: 15, defaultValue: 10, min: 1, max: 50 },
-    });
-    expect(await buy({ customerId: second.id, baseAmount: 10_000_000 })).toBe(true);
-
-    expect(await commissionOf(first.id)).toMatchObject({ percent: 10, amount: 1_000_000 });
-    expect(await commissionOf(second.id)).toMatchObject({ percent: 15, amount: 1_500_000 });
+    // The first customer is on the first step, and buying again doesn't make them a second customer.
+    expect(await buy({ customerId: first.id, baseAmount: 10_000_000 })).toBe(10);
+    expect(await buy({ customerId: first.id, baseAmount: 10_000_000 })).toBe(10);
+    // The second customer lifts the partner a step, and from then on the first one's purchases are on it too.
+    expect(await buy({ customerId: second.id, baseAmount: 10_000_000 })).toBe(15);
+    expect(await buy({ customerId: first.id, baseAmount: 10_000_000 })).toBe(15);
     expect(await getPartnerProfile({ db, userId: partnerUser.id })).toMatchObject({
-      profile: { commissionPercent: 15 },
+      profile: { payingCustomers: 2 },
     });
-    expect(await getCommissionPercent({ db })).toEqual({ percent: 15 });
+
+    // New steps apply to the next commission; those already written keep their percent.
+    await updateCommissionTiers({ db, tiers: steps(20, 20, 20, 20, 20) });
+    expect(await buy({ customerId: second.id, baseAmount: 10_000_000 })).toBe(20);
+    const written = await db.select().from(commission).where(eq(commission.partnerId, partnerUser.id));
+    expect(written.map((row) => row.percent)).toEqual(expect.arrayContaining([10, 10, 15, 15, 20]));
+    expect(written).toHaveLength(5);
+    expect(await getCommissionTiers({ db })).toEqual({ tiers: steps(20, 20, 20, 20, 20) });
   });
 
-  it("refuses a value outside the bounds or not a whole number, writing nothing", async () => {
+  it("refuses steps that make no table, writing nothing", async () => {
+    const before = await adminGetCommissionTiers({ db });
+    const attempts = [
+      // Not five steps.
+      steps(10, 12, 15, 18),
+      steps(10, 12, 15, 18, 18, 18),
+      // Not from the first customer, or not each from a later one.
+      steps(10, 12, 15, 18, 18).map((tier) => ({ ...tier, fromCustomer: tier.fromCustomer + 1 })),
+      steps(10, 12, 15, 18, 18).map((tier, index) => (index === 2 ? { ...tier, fromCustomer: 2 } : tier)),
+      // A percent out of bounds or not whole.
+      steps(10, 12, 15, 18, 51),
+      steps(10, 12, 15.5, 18, 18),
+    ];
+
+    for (const tiers of attempts) {
+      expect(await updateCommissionTiers({ db, tiers })).toMatchObject({ kind: "invalid", fields: { tiers: expect.any(String) } });
+    }
+    expect(await adminGetCommissionTiers({ db })).toEqual(before);
+  });
+
+  it("refuses a number setting outside the bounds or not a whole number, writing nothing", async () => {
     const before = await storedRows();
     const attempts = [
-      { key: COMMISSION_PERCENT_KEY, value: 0 },
-      { key: COMMISSION_PERCENT_KEY, value: 51 },
-      { key: COMMISSION_PERCENT_KEY, value: 10.5 },
-      { key: COMMISSION_PERCENT_KEY, value: Number.NaN },
+      { key: DEPOSIT_PERCENT_KEY, value: 0 },
+      { key: DEPOSIT_PERCENT_KEY, value: 10.5 },
+      { key: DEPOSIT_PERCENT_KEY, value: Number.NaN },
       { key: OTP_PER_IP_KEY, value: 4 },
     ] as const;
 
@@ -159,7 +185,6 @@ describe("platform settings", () => {
     await updateSetting({ db, key: OTP_PER_IP_KEY, value: 50 });
     expect(await readOtpLimits({ db })).toEqual({ perPhone: 3, perIp: 50 });
     expect(await adminGetSettings({ db })).toMatchObject([
-      { key: COMMISSION_PERCENT_KEY },
       { key: DEPOSIT_PERCENT_KEY },
       { key: OTP_PER_PHONE_KEY, value: 3, updatedAt: expect.any(Date) },
       { key: OTP_PER_IP_KEY, value: 50 },

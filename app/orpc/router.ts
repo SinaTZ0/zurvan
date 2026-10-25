@@ -96,9 +96,11 @@ import {
 import { getSessionProcedure } from "~/orpc/session/procedure";
 import { adminListSmsProcedure } from "~/orpc/sms/procedure";
 import {
+  adminGetCommissionTiersProcedure,
   adminGetSettingsProcedure,
+  adminUpdateCommissionTiersProcedure,
   adminUpdateSettingProcedure,
-  commissionPercentProcedure,
+  commissionTiersProcedure,
 } from "~/orpc/setting/procedure";
 import { siteConfigProcedure } from "~/orpc/site/procedure";
 import { adminListUsersProcedure, adminSetUserStatusProcedure, adminUpdateUserProcedure } from "~/orpc/user/procedure";
@@ -243,10 +245,12 @@ export const router = implementer.router({
     },
   },
   setting: {
-    commissionPercent: commissionPercentProcedure,
+    commissionTiers: commissionTiersProcedure,
     admin: {
       get: adminGetSettingsProcedure,
       update: adminUpdateSettingProcedure,
+      commissionTiers: adminGetCommissionTiersProcedure,
+      updateCommissionTiers: adminUpdateCommissionTiersProcedure,
     },
   },
   site: {

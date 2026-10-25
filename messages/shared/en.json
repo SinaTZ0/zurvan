@@ -172,5 +172,14 @@
   "shared_demo_note_clinic": "Partner clinic",
   "shared_demo_note_two_dogs": "Customer with two dogs",
   "shared_demo_note_new": "New customer, no dogs",
-  "shared_demo_note_evaluation_today": "Customer, evaluation today"
+  "shared_demo_note_evaluation_today": "Customer, evaluation today",
+  "shared_commission_percent": "{value}%",
+  "shared_commission_stairs_label": "Commission steps",
+  "shared_commission_stairs_axis": "Paying customer no.",
+  "shared_commission_stairs_range": "{from}–{to}",
+  "shared_commission_stairs_range_open": "{from} and on",
+  "shared_commission_stairs_sr_one": "Customer {from}: {percent}",
+  "shared_commission_stairs_sr_range": "Customers {from} to {to}: {percent}",
+  "shared_commission_stairs_sr_open": "Customer {from} and on: {percent}",
+  "shared_commission_stairs_here": "You're here"
 }

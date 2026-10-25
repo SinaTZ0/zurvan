@@ -1,15 +1,17 @@
 import type { DatabaseOrTransaction } from "~/db/client.server";
-import { calculateCommission, DEFAULT_PARTNER_COMMISSION_PERCENT } from "~/lib/business-rules";
+import { calculateCommission, commissionPercentFor } from "~/lib/business-rules";
 import { formatNumberFa } from "~/lib/digits";
 import { notify } from "~/lib/notify.server";
 import { isUuid } from "~/lib/uuid";
 import { user } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import {
-  findActivePartnerOfCustomer,
-  findCommissionPercentSetting,
+  countPayingCustomers,
   findCommissions,
+  findCommissionTiers,
+  hasEarnedFromCustomer,
   insertCommissionOnce,
+  lockActivePartnerOfCustomer,
   markCommissionPaid,
 } from "~/orpc/commission/repository";
 import type { AdminCommission, PartnerCommission } from "~/orpc/commission/contract";
@@ -17,16 +19,18 @@ import { toAdminCommission, toPartnerCommission } from "~/orpc/commission/mapper
 
 /*===== Record =====*/
 /**
- * F7: at a customer's first paid purchase, if they have an active partner, writes one commission: the setting's
- * percentage (default 10%) of the total of the enrollments that payment created, rounded down to the Rial.
+ * F7: at each paid purchase of a customer with an active partner, writes one commission: a percentage of the total of
+ * the enrollments that payment created, rounded down to the Rial. The percent is the step the partner's paying
+ * customers are on, counting this customer: a new customer may lift the partner to the next step, a repeat buyer
+ * doesn't. Commissions already written keep their percent; a step only applies from the purchase that reaches it.
  *
- * Runs inside the callback's transaction. Nothing is written when the payment created no enrollment (there is no base
- * to take a share of), and the customer's one commission is left for a later purchase that does. The unique index on
- * the customer keeps it to one however the purchases race.
+ * Runs inside the callback's transaction, with the partner's row locked so their customers are counted one at a time.
+ * Nothing is written when the payment created no enrollment (there is no base to take a share of), and that customer
+ * doesn't count until a purchase of theirs does. The unique index on the payment keeps it to one per payment.
  *
  * @returns Whether a commission was written.
  */
-export async function recordFirstPurchaseCommission({
+export async function recordPurchaseCommission({
   db,
   customerId,
   paymentId,
@@ -40,10 +44,15 @@ export async function recordFirstPurchaseCommission({
 }): Promise<boolean> {
   if (baseAmount <= 0) return false;
 
-  const partnerId = await findActivePartnerOfCustomer({ db, customerId });
+  const partnerId = await lockActivePartnerOfCustomer({ db, customerId });
   if (!partnerId) return false;
 
-  const percent = (await findCommissionPercentSetting({ db })) ?? DEFAULT_PARTNER_COMMISSION_PERCENT;
+  /*------ The Step ------*/
+  const counted = await countPayingCustomers({ db, partnerId });
+  const isNewCustomer = !(await hasEarnedFromCustomer({ db, partnerId, customerId }));
+  const tiers = await findCommissionTiers({ db });
+  const percent = commissionPercentFor({ tiers, customerCount: counted + (isNewCustomer ? 1 : 0) });
+
   return insertCommissionOnce({
     db,
     values: {

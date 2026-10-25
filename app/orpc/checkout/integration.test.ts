@@ -13,7 +13,7 @@ import { markDogEvaluated } from "~/orpc/evaluation/service";
 
 /*===== Checkout =====*/
 // Runs against the real database, where the consequences are: the gateway's callback settles a payment once, a lost race
-// leaves a paid item with no enrollment, and the partner's commission is written once per customer. Needs the schema
+// leaves a paid item with no enrollment, and the partner's commission is written once per paid purchase. Needs the schema
 // (`npm run db:push`). The test makes its own courses, people and partners, so it doesn't depend on the demo seed.
 
 const runId = randomUUID().slice(0, 8);
@@ -202,7 +202,7 @@ describe("the gateway callback", () => {
 });
 
 describe("the partner's commission", () => {
-  it("is written once, at the first paid purchase, rounded down", async () => {
+  it("is written at every paid purchase, once however often the gateway calls back, rounded down", async () => {
     const dogId = dogOf[referred.id] ?? "";
 
     await callBack(await startPayment({ customerId: referred.id, dogId, courseSlugs: [slugs.a] }));
@@ -216,9 +216,14 @@ describe("the partner's commission", () => {
       paidAt: null,
     });
 
-    // A later purchase earns nothing.
-    await callBack(await startPayment({ customerId: referred.id, dogId, courseSlugs: [slugs.b] }));
-    expect(await commissionsOf(referred.id)).toHaveLength(1);
+    // A later purchase earns its own; the same callback twice still writes one. The steps are read against distinct
+    // customers, so this partner's one customer stays on the first step (the steps themselves are the settings test's).
+    const later = await startPayment({ customerId: referred.id, dogId, courseSlugs: [slugs.b] });
+    await callBack(later);
+    await callBack(later);
+    const afterLater = await commissionsOf(referred.id);
+    expect(afterLater).toHaveLength(2);
+    expect(afterLater.map((row) => row.percent)).toEqual([10, 10]);
   });
 
   it("is not written for a customer without a partner, or whose partner is inactive", async () => {

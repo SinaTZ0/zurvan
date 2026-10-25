@@ -281,7 +281,7 @@ function AdminPartnersPage() {
               (unpaidBlocks.length === 0 ? (
                 <div key={`${arrival}-${settled}`} className={cn((arrival > 0 || settled > 0) && "answer-in")}>
                   <AdminEmptyState title="پورسانتی منتظر نیست" icon={CheckCheckIcon}>
-                    وقتی مشتریِ یکی از همکارها اولین خریدش رو بکنه، پورسانتش این‌جا میاد تا پرداختش کنی.
+                    هر بار مشتریِ یکی از همکارها خرید کنه، پورسانتش این‌جا میاد تا پرداختش کنی.
                   </AdminEmptyState>
                 </div>
               ) : (

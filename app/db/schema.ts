@@ -810,7 +810,10 @@ export const partnerLead = pgTable(
   ],
 );
 
-/** The partner's cut of a customer's first paid purchase (F7). The Admin pays it outside the app and marks it paid. */
+/**
+ * The partner's cut of one of their customer's paid purchases (F7): every purchase earns one. The Admin pays it outside
+ * the app and marks it paid.
+ */
 export const commission = pgTable(
   "commission",
   {
@@ -818,24 +821,27 @@ export const commission = pgTable(
     partnerId: text("partner_id")
       .notNull()
       .references(() => partner.userId, { onDelete: "restrict" }),
-    // Unique: one commission per customer, ever (F12).
     customerId: text("customer_id")
       .notNull()
-      .unique()
       .references(() => user.id, { onDelete: "restrict" }),
+    // Unique: one commission per payment, however the gateway's callbacks race (F12).
     paymentId: uuid("payment_id")
       .notNull()
+      .unique()
       .references(() => payment.id, { onDelete: "restrict" }),
     /** Rial: the total of the enrollments that payment created. */
     baseAmount: bigint("base_amount", { mode: "number" }).notNull(),
-    /** The setting at the time. */
+    /** The step the partner's paying customers were on at the time (the steps are a setting). */
     percent: integer("percent").notNull(),
     /** Rial, `baseAmount × percent ÷ 100` rounded down. */
     amount: bigint("amount", { mode: "number" }).notNull(),
     paidAt: timestamp("paid_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [index("commission_partner_id_idx").on(table.partnerId)],
+  (table) => [
+    index("commission_partner_id_idx").on(table.partnerId),
+    index("commission_customer_id_idx").on(table.customerId),
+  ],
 );
 
 /*===== Platform Settings =====*/

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { toLatinDigits } from "~/lib/digits";
+import { commissionTiersError } from "~/orpc/commission/validation";
 
 /*===== Setting Form =====*/
 // One text field holding a whole number. It is a string because the Admin types it with a Persian keyboard: Persian and
@@ -28,3 +29,24 @@ export function createSettingFormSchema({ min, max, message }: { min: number; ma
       .transform(Number),
   });
 }
+
+/*===== Commission Steps Form =====*/
+// The same kind of fields, one pair per step. Each field only has to be a whole number; whether the steps make a table
+// (the first from customer 1, each later one from a later customer, every percent 1 to 50) is the server's own rule,
+// `commissionTiersError`, which is browser-safe, so the page shows its message as he types. The server checks again.
+
+export type CommissionTiersFormInput = { tiers: { fromCustomer: string; percent: string }[] };
+export type CommissionTiersFormValues = { tiers: { fromCustomer: number; percent: number }[] };
+
+const wholeNumber = z
+  .string()
+  .transform((raw) => toLatinDigits(raw.trim()))
+  .refine((digits) => /^\d{1,4}$/.test(digits), "همه‌ی خونه‌ها یه عدد صحیح لازم دارن.")
+  .transform(Number);
+
+export const commissionTiersFormSchema = z
+  .object({ tiers: z.array(z.object({ fromCustomer: wholeNumber, percent: wholeNumber })) })
+  .superRefine(({ tiers }, context) => {
+    const error = commissionTiersError(tiers);
+    if (error) context.addIssue({ code: "custom", message: error, path: ["tiers"] });
+  });

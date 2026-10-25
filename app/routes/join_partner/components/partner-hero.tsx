@@ -8,13 +8,12 @@ import { buttonVariants } from "~/components/ui/button";
 import { CENTER_PHONE } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
-import { formatNumber } from "~/lib/locale-format";
 import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/join_partner/column";
 
 /*===== Partner Hero =====*/
 /**
- * The partner page's first screen: the headline, the line with the commission percent and the call button on the start
+ * The partner page's first screen: the headline, the line with the commission percents and the call button on the start
  * side, and on the end side a little street of the places a partner owns. The clinic and the pet shop stand side by
  * side on one path and the freshly groomed dog sits in front of them, the third kind of place (the groomer's), telling
  * the shop owner to send his like to the trainer.
@@ -22,12 +21,12 @@ import { COLUMN } from "~/routes/join_partner/column";
  * Wide: words at the start, the street at the end. Phones: the street on top, the words under.
  *
  * The street's pieces are placed by physical sides because they are tied to the pictures (he looks to the right, at the
- * words, and his bubble's tail is aimed at his head), not to the reading direction. The percent comes from the settings
- * (the Admin's); nothing here depends on its width.
+ * words, and his bubble's tail is aimed at his head), not to the reading direction. The percents come from the settings
+ * (the Admin's commission steps); nothing here depends on their width.
  *
- * @param commissionPercent The commission percent in force, read from the settings by the page.
+ * @param percentRange The lowest to the highest commission step, written out («۱۰ تا ۱۸٪»).
  */
-export function PartnerHero({ commissionPercent }: { commissionPercent: number }) {
+export function PartnerHero({ percentRange }: { percentRange: string }) {
   return (
     <section
       aria-labelledby="partner-title"
@@ -41,7 +40,7 @@ export function PartnerHero({ commissionPercent }: { commissionPercent: number }
           <span className="inline-block text-primary">{m.join_partner_hero_title_b()}</span>
         </h1>
         <p className="mt-4 max-w-md text-lead text-pretty text-muted-foreground">
-          {m.join_partner_hero_line({ percent: m.join_partner_percent({ value: formatNumber(commissionPercent) }) })}
+          {m.join_partner_hero_line({ percent: percentRange })}
         </p>
         <div className="mt-8">
           <a

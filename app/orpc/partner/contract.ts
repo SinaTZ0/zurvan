@@ -4,6 +4,7 @@ import { z } from "zod";
 import { qrLinkSchema } from "~/lib/qr";
 import { commonErrors, errorDataSchema } from "~/orpc/errors";
 import { authErrors, roleErrors } from "~/orpc/middleware/auth/auth.errors";
+import { commissionTierSchema } from "~/orpc/setting/contract";
 
 /*===== Schemas =====*/
 /** A partner's own profile row. Only the Sheba is theirs to edit (F1); the name is the user's (Better-Auth). */
@@ -14,8 +15,10 @@ export const partnerProfileSchema = z.object({
   code: z.string(),
   /** An inactive partner's link and leads attribute no one (F7). */
   isActive: z.boolean(),
-  /** The percent in force now (setting, else the default); a commission keeps the percent it was written with. */
-  commissionPercent: z.number().int(),
+  /** The commission steps in force now (setting, else the default); a commission keeps the percent it was written with. */
+  commissionTiers: z.array(commissionTierSchema),
+  /** How many distinct customers have earned this partner a commission: the count the steps are read against. */
+  payingCustomers: z.number().int(),
 });
 
 export type PartnerProfile = z.infer<typeof partnerProfileSchema>;
@@ -25,7 +28,7 @@ export const myPartnerProfileSchema = partnerProfileSchema.extend(qrLinkSchema.s
 
 /**
  * Where a person stands on the road (F7): `lead` (the number is entered, nobody has signed up with it), `registered`
- * (a customer attributed to this partner), `bought` (their first paid purchase wrote the commission), or `lost` (the
+ * (a customer attributed to this partner), `bought` (a paid purchase of theirs wrote a commission), or `lost` (the
  * number or customer went to someone else: another partner's earlier lead, or a referral link).
  */
 export const PARTNER_PERSON_STAGES = ["lead", "registered", "bought", "lost"] as const;
@@ -45,13 +48,16 @@ export const partnerPersonSchema = z.object({
   /** When the lead was entered; for a link customer, when they registered. */
   createdAt: z.date(),
   registeredAt: z.date().nullable(),
-  /** When the customer's first paid purchase wrote the commission. */
+  /** When the customer's first commission was written. */
   boughtAt: z.date().nullable(),
   /**
-   * What this partner is owed for the person, once `bought`: the commission's amount (Rial) and when the Admin paid it
-   * (null while it waits). Null before that and for a `lost` person. Never the purchase's price or what was bought.
+   * What this partner has earned from the person, once `bought`, over all their purchases (Rial): the total, the part
+   * the Admin hasn't paid yet, and when she last paid one (null while none is paid). Null before that and for a `lost`
+   * person. Never the purchases' prices or what was bought.
    */
-  commission: z.object({ amount: z.number().int(), paidAt: z.date().nullable() }).nullable(),
+  commission: z
+    .object({ amount: z.number().int(), unpaidAmount: z.number().int(), paidAt: z.date().nullable() })
+    .nullable(),
 });
 
 export type PartnerPerson = z.infer<typeof partnerPersonSchema>;

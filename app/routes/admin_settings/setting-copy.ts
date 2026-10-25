@@ -1,8 +1,7 @@
-import { calculateCommission, calculateDeposit } from "~/lib/business-rules";
+import { calculateDeposit } from "~/lib/business-rules";
 import { formatToman } from "~/lib/course-format";
 import { formatNumberFa } from "~/lib/digits";
 import {
-  COMMISSION_PERCENT_KEY,
   DEPOSIT_PERCENT_KEY,
   OTP_PER_IP_KEY,
   OTP_PER_PHONE_KEY,
@@ -11,7 +10,7 @@ import {
 
 /*===== Constants =====*/
 // The example sale the money sentences are worked on: 10,000,000 Toman, kept in Rial like every amount in the app.
-const EXAMPLE_SALE_RIAL = 100_000_000;
+export const EXAMPLE_SALE_RIAL = 100_000_000;
 
 /*===== Types =====*/
 /**
@@ -46,23 +45,8 @@ export function invalidSettingMessage({ min, max }: { min: number; max: number }
 }
 
 /*===== Setting Copy =====*/
-/** The words of each setting plate, in the Admin's own vocabulary («پورسانت», «کد ورود»), spoken. */
+/** The words of each number plate, in the Admin's own vocabulary («پیش‌پرداخت», «کد ورود»), spoken. */
 export const SETTING_COPY: Record<SettingKey, SettingCopy> = {
-  [COMMISSION_PERCENT_KEY]: {
-    name: "درصد پورسانت همکار",
-    description: "پورسانتِ اولین خرید هر مشتری‌ای که همکار آورده.",
-    notes: [
-      "فقط روی پورسانت‌های بعدی اثر داره؛ پورسانتی که نوشته شده همون درصدِ روز خریدش رو نگه می‌داره.",
-      "همین عدد توی صفحه‌ی همکاران، داشبورد خود همکار و صفحه‌ی همکاری با ما دیده می‌شه.",
-    ],
-    unit: "٪",
-    formatValue: percent,
-    liveSentence: (value) => [
-      `از خریدی به مبلغ ${formatToman(EXAMPLE_SALE_RIAL)}، `,
-      { value: formatToman(calculateCommission({ baseAmount: EXAMPLE_SALE_RIAL, percent: value })) },
-      " پورسانت می‌نویسیم.",
-    ],
-  },
   [DEPOSIT_PERCENT_KEY]: {
     name: "پیش‌پرداخت دوره",
     description:

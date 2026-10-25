@@ -42,7 +42,7 @@ import { attachMedia, deleteMedia, uploadMedia } from "~/orpc/media/service";
 // in with the showcase code, dogs (with photos) for the customers, and the evaluation-and-purchase story told through
 // the real services: Leo is evaluated and has bought, finished and started courses (one of them in a race that leaves a
 // paid, not enrolled item), Pesteh has an evaluation request waiting with a photo, and Rocky has none. Sara came in
-// through the partner's link, so her first purchase wrote a commission. Idempotent: accounts are upserted by phone
+// through the partner's link, so each of her purchases wrote the partner a commission. Idempotent: accounts are upserted by phone
 // number, and the demo customers' dogs, evaluations and purchases are replaced, along with their photos in the bucket,
 // so running it again resets the demo without duplicating anything.
 //
@@ -302,7 +302,7 @@ async function seedStory({ accountIds, dogIds }: { accountIds: Map<string, strin
   const evaluated = await markDogEvaluated({ db, dogId: leoId });
   if (evaluated.kind !== "success") throw new Error("seedStory: Leo could not be evaluated.");
 
-  // The first purchase, which writes Sara's partner's commission, and the end of its training.
+  // The first purchase (each one writes Sara's partner a commission, F7), and the end of its training.
   await purchase({ customerId: sara, dogId: leoId, slugs: ["companion-1", "cgc"] });
   const finished = await completeCourse({ dogId: leoId, slug: "companion-1" });
   const issued = await adminIssueCertificate({ db, issuerId: admin, enrollmentId: finished });
@@ -491,7 +491,7 @@ async function seedDemo() {
   /*------ Story ------*/
   // After the transaction: it goes through the app's own services, which run their own database transactions.
   await seedStory({ accountIds, dogIds: new Map(seededDogs.map((seeded) => [seeded.name, seeded.id])) });
-  console.log("Seeded the evaluations, purchases, enrollments and the partner's commission.");
+  console.log("Seeded the evaluations, purchases, enrollments and the partner's commissions.");
 }
 
 await seedDemo();

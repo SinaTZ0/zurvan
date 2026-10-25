@@ -8,7 +8,7 @@ import { commission, partner, partnerLead, payment, user } from "~/db/schema";
 import { toPersianDigits } from "~/lib/digits";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { findPartnerForNewCustomer } from "~/lib/referral.server";
-import { markPaid, recordFirstPurchaseCommission } from "~/orpc/commission/service";
+import { markPaid, recordPurchaseCommission } from "~/orpc/commission/service";
 import {
   addLead,
   adminListPartners,
@@ -72,7 +72,7 @@ describe("partner sheba number", () => {
   it("reads null until the partner writes it, and not-found without a partner row", async () => {
     expect(await getPartnerProfile({ db, userId: partnerA.id })).toEqual({
       kind: "success",
-      profile: { shebaNumber: null, code: `ta${runId}`, isActive: true, commissionPercent: expect.any(Number) },
+      profile: { shebaNumber: null, code: `ta${runId}`, isActive: true, commissionTiers: expect.any(Array), payingCustomers: 0 },
     });
     expect(await getPartnerProfile({ db, userId: orphan.id })).toEqual({ kind: "not-found" });
     expect(await updatePartnerProfile({ db, userId: orphan.id, input: { shebaNumber: shebaA } })).toEqual({
@@ -116,7 +116,7 @@ describe("partner sheba number", () => {
 
 /*===== Partner People =====*/
 // The stage of each lead is computed, not stored, so these tests prove the lists say what `findPartnerForNewCustomer`
-// and `recordFirstPurchaseCommission` actually do. Every test uses its own phone numbers, so the shared partners below
+// and `recordPurchaseCommission` actually do. Every test uses its own phone numbers, so the shared partners below
 // never see each other's people.
 
 const phoneBase = `097${Math.floor(10000 + Math.random() * 89999)}`;
@@ -190,7 +190,7 @@ async function makeLead({ partnerId, phone, minutesAgo }: { partnerId: string; p
     .values({ partnerId, phoneNumber: phone, createdAt: new Date(Date.now() - minutesAgo * 60_000) });
 }
 
-/** The customer's first paid purchase, written the way the callback does: a paid payment, then the commission. */
+/** A paid purchase, written the way the callback does: a paid payment, then the commission. */
 async function buy({ customerId, baseAmount }: { customerId: string; baseAmount: number }): Promise<boolean> {
   const [paid] = await db
     .insert(payment)
@@ -198,13 +198,13 @@ async function buy({ customerId, baseAmount }: { customerId: string; baseAmount:
       customerId,
       amount: baseAmount,
       gateway: "demo",
-      authority: `test-people-${runId}-${customerId}`,
+      authority: `test-people-${runId}-${randomUUID()}`,
       status: "paid",
       paidAt: new Date(),
     })
     .returning({ id: payment.id });
   if (!paid) throw new Error("Could not insert the test payment.");
-  return recordFirstPurchaseCommission({ db, customerId, paymentId: paid.id, baseAmount });
+  return recordPurchaseCommission({ db, customerId, paymentId: paid.id, baseAmount });
 }
 
 async function peopleOf(partnerId: string) {
@@ -244,7 +244,7 @@ describe("partner people", () => {
     expect(bought).toMatchObject({ stage: "bought", customerName: `Customer ${customerId}` });
     expect(bought?.boughtAt).toBeInstanceOf(Date);
     // The partner sees his own commission for the person (10% of 5,000,000) and that it is still waiting, not the purchase.
-    expect(bought?.commission).toEqual({ amount: 500_000, paidAt: null });
+    expect(bought?.commission).toEqual({ amount: 500_000, unpaidAmount: 500_000, paidAt: null });
     expect(Object.keys(bought ?? {})).not.toContain("price");
 
     // The loser learns nothing of the customer: no name, no dates, and not who won.
@@ -269,6 +269,12 @@ describe("partner people", () => {
     const settled = await personOnPhone({ partnerId: pB.id, phone });
     expect(settled?.commission?.amount).toBe(500_000);
     expect(settled?.commission?.paidAt).toBeInstanceOf(Date);
+
+    // A second purchase is still one person, with what both earned and the part that waits.
+    expect(await buy({ customerId, baseAmount: 3_000_000 })).toBe(true);
+    const twice = (await peopleOf(pB.id)).filter((person) => person.phoneNumber === phone);
+    expect(twice).toHaveLength(1);
+    expect(twice[0]?.commission).toMatchObject({ amount: 800_000, unpaidAmount: 300_000 });
   });
 
   it("a referral link beats a lead, and a partner never sees the other's customers", async () => {
@@ -295,7 +301,7 @@ describe("partner people", () => {
     // A link customer who buys shows the partner's commission the same way a phone lead does.
     expect(await buy({ customerId, baseAmount: 2_000_000 })).toBe(true);
     const bought = (await peopleOf(pB.id)).find((person) => person.id === customerId);
-    expect(bought).toMatchObject({ stage: "bought", commission: { amount: 200_000, paidAt: null } });
+    expect(bought).toMatchObject({ stage: "bought", commission: { amount: 200_000, unpaidAmount: 200_000, paidAt: null } });
   });
 
   it("an inactive partner attributes no one, cannot add, and earns no commission", async () => {

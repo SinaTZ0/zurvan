@@ -2,7 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 
 import type { DatabaseOrTransaction } from "~/db/client.server";
 import { platformSetting } from "~/db/schema";
-import { SETTING_KEYS, type SettingKey } from "~/orpc/setting/constants";
+import { COMMISSION_TIERS_KEY, SETTING_KEYS, type SettingKey } from "~/orpc/setting/constants";
 
 /*===== Types =====*/
 type Executor = { db: DatabaseOrTransaction };
@@ -18,7 +18,10 @@ export async function findSettingRows({ db }: Executor): Promise<SettingRecord[]
     .where(inArray(platformSetting.key, [...SETTING_KEYS]));
 }
 
-export async function findSettingRow({ db, key }: Executor & { key: SettingKey }): Promise<SettingRecord | undefined> {
+export async function findSettingRow({
+  db,
+  key,
+}: Executor & { key: SettingKey | typeof COMMISSION_TIERS_KEY }): Promise<SettingRecord | undefined> {
   const [row] = await db.select().from(platformSetting).where(eq(platformSetting.key, key));
   return row;
 }
@@ -34,6 +37,21 @@ export async function upsertSetting({
     .insert(platformSetting)
     .values({ key, value: String(value) })
     .onConflictDoUpdate({ target: platformSetting.key, set: { value: String(value), updatedAt: new Date() } })
+    .returning();
+  if (!row) throw new Error("Could not save the setting.");
+  return row;
+}
+
+/** Upsert of a setting whose value is not a number (the commission steps, as JSON). */
+export async function upsertSettingText({
+  db,
+  key,
+  value,
+}: Executor & { key: typeof COMMISSION_TIERS_KEY; value: string }): Promise<SettingRecord> {
+  const [row] = await db
+    .insert(platformSetting)
+    .values({ key, value })
+    .onConflictDoUpdate({ target: platformSetting.key, set: { value, updatedAt: new Date() } })
     .returning();
   if (!row) throw new Error("Could not save the setting.");
   return row;

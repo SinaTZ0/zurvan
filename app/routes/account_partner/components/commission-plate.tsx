@@ -1,7 +1,9 @@
 import { cn } from "cn";
 
 import { ChalkBubble } from "~/components/chalk-bubble";
+import { CommissionStairs } from "~/components/commission-stairs";
 import { MascotCut } from "~/components/mascot-cut";
+import { commissionPercentFor, type CommissionTier } from "~/lib/business-rules";
 import { formatToman } from "~/lib/course-format";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { formatNumber, formatTimestamp } from "~/lib/locale-format";
@@ -18,8 +20,9 @@ const STAGGERED = 5;
 
 /*===== Commission Plate =====*/
 /**
- * «پورسانت‌هات»: what the partner is owed and what was paid, in Toman, the rule that sets the percent, and one slip
- * per commission, newest first (the customer's name and day, the amount, paid or waiting). The head trainer pays by bank
+ * «پورسانت‌هات»: what the partner is owed and what was paid, in Toman, the rule, the commission steps with the one his
+ * next customer lands on marked (and a sentence saying how many paying customers he has and what the next one earns),
+ * and one slip per commission, newest first (the customer's name and day, the amount, paid or waiting). The head trainer pays by bank
  * transfer and texts the partner, which is why the rule says so: a partner shouldn't wonder when the money comes. Only
  * names and amounts (F12): no prices, dogs or courses, because the API sends nothing more.
  *
@@ -31,7 +34,8 @@ export function CommissionPlate({
   commissions,
   unpaidAmount,
   paidAmount,
-  commissionPercent,
+  commissionTiers,
+  payingCustomers,
 }: {
   /** Newest first. */
   commissions: readonly PartnerCommission[];
@@ -39,7 +43,9 @@ export function CommissionPlate({
   unpaidAmount: number;
   /** Rial, already paid. */
   paidAmount: number;
-  commissionPercent: number;
+  commissionTiers: readonly CommissionTier[];
+  /** Distinct customers who have earned him a commission: the count the steps are read against. */
+  payingCustomers: number;
 }) {
   const { ref, seen } = useInView<HTMLElement>({ threshold: 0.2 });
 
@@ -115,10 +121,15 @@ export function CommissionPlate({
 
         {/*===== The Rule =====*/}
         <p className="mt-5 text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
-          {m.account_partner_commission_rule({
-            percent: formatNumber(commissionPercent),
-            trainer: HEAD_TRAINER.firstName,
-          })}
+          {m.account_partner_commission_rule({ trainer: HEAD_TRAINER.firstName })}
+        </p>
+
+        {/*===== The Steps =====*/}
+        <div className="mt-5 rounded-3xl border border-foreground/10 bg-card paper-grain px-4 pt-5 pb-3 sm:px-6">
+          <CommissionStairs tiers={commissionTiers} reached={payingCustomers} />
+        </div>
+        <p className="mt-3 text-sm text-pretty sm:text-base">
+          <Progress tiers={commissionTiers} payingCustomers={payingCustomers} />
         </p>
 
         {/*===== Slips =====*/}
@@ -128,6 +139,23 @@ export function CommissionPlate({
       </div>
     </section>
   );
+}
+
+/*===== Progress =====*/
+/** How many paying customers he has, and the percent the next one is written with. */
+function Progress({ tiers, payingCustomers }: { tiers: readonly CommissionTier[]; payingCustomers: number }) {
+  const next = payingCustomers + 1;
+  const percent = m.shared_commission_percent({
+    value: formatNumber(commissionPercentFor({ tiers, customerCount: next })),
+  });
+
+  return payingCustomers === 0
+    ? m.account_partner_commission_progress_none({ percent })
+    : m.account_partner_commission_progress({
+        count: formatNumber(payingCustomers),
+        next: formatNumber(next),
+        percent,
+      });
 }
 
 /*===== Commission Slips =====*/

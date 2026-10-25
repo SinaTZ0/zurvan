@@ -36,14 +36,16 @@
   "account_partner_commission_bubble": "Your share!",
   "account_partner_commission_awaiting": "Awaiting payment",
   "account_partner_commission_paid_total": "Paid",
-  "account_partner_commission_rule": "You get {percent}% of each customer's first purchase. {trainer} pays it by bank transfer and texts you.",
+  "account_partner_commission_rule": "You earn a commission on every purchase your customers make, and the more paying customers you bring, the higher your share. {trainer} pays it by bank transfer and texts you.",
   "account_partner_commission_list_label": "Commission list",
   "account_partner_commission_paid_on": "Paid · {date}",
-  "account_partner_commission_none": "No commission yet. When your customer makes their first purchase, it will show up here.",
+  "account_partner_commission_none": "No commission yet. Each time your customer makes a purchase, it shows up here.",
   "account_partner_error_incomplete_title": "Your partner account isn't complete",
   "account_partner_error_incomplete_body": "Call the center and they'll complete your account.",
   "account_partner_error_failed_title": "The partnership page didn't open",
   "account_partner_error_failed_body": "Something went wrong. Open the page again or call the center.",
   "account_partner_error_retry": "Try again",
-  "account_partner_error_bubble": "Sorry!"
+  "account_partner_error_bubble": "Sorry!",
+  "account_partner_commission_progress": "You've brought {count} paying customers so far; your customer no. {next} earns {percent}.",
+  "account_partner_commission_progress_none": "No paying customers yet; your first one earns {percent}."
 }

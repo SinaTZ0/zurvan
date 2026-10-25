@@ -2,7 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useLocation } from "@tanstack/react-router";
 
 import { buttonVariants } from "~/components/ui/button";
+import type { CommissionTier } from "~/lib/business-rules";
 import { CENTER_PHONE } from "~/lib/contact";
+import { formatNumber } from "~/lib/locale-format";
 import { pageHead } from "~/lib/seo";
 import { orpc } from "~/orpc/client";
 import { m } from "~/paraglide/messages";
@@ -14,10 +16,10 @@ import { PartnerHero } from "~/routes/join_partner/components/partner-hero";
 import { WaysIn } from "~/routes/join_partner/components/ways-in";
 
 /*===== Route =====*/
-// Public. The one number on the page is the commission percent in force, which the Admin can change in the settings, so
-// it is read from the settings rather than fixed in the code.
+// Public. The numbers on the page are the commission steps in force, which the Admin can change in the settings, so
+// they are read from the settings rather than fixed in the code.
 export const Route = createFileRoute("/_public/join/partner")({
-  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.setting.commissionPercent.queryOptions()),
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(orpc.setting.commissionTiers.queryOptions()),
   head: () =>
     pageHead({
       path: "/join/partner",
@@ -33,12 +35,12 @@ export const Route = createFileRoute("/_public/join/partner")({
 // `tel:`. Nothing here writes anything.
 function JoinPartnerPage() {
   const {
-    data: { percent: commissionPercent },
-  } = useSuspenseQuery(orpc.setting.commissionPercent.queryOptions());
+    data: { tiers },
+  } = useSuspenseQuery(orpc.setting.commissionTiers.queryOptions());
 
   return (
     <>
-      <PartnerHero commissionPercent={commissionPercent} />
+      <PartnerHero percentRange={percentRange(tiers)} />
       <WaysIn />
 
       {/*===== Start and Commission =====*/}
@@ -46,13 +48,24 @@ function JoinPartnerPage() {
           edges line up; `items-stretch` makes the shorter one as tall as the other. */}
       <div className={`${COLUMN} grid gap-x-12 py-section-sm lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]`}>
         <HowToStart />
-        <CommissionCard commissionPercent={commissionPercent} />
+        <CommissionCard tiers={tiers} />
       </div>
 
       {/*===== The Ask =====*/}
       <PartnerAsk />
     </>
   );
+}
+
+/*===== Percent Range =====*/
+/** The lowest and highest step, as the hero says them: «۱۰ تا ۱۸٪», or «۱۰٪» when every step pays the same. */
+function percentRange(tiers: readonly CommissionTier[]): string {
+  const percents = tiers.map((tier) => tier.percent);
+  const low = Math.min(...percents);
+  const high = Math.max(...percents);
+  return low === high
+    ? m.join_partner_percent({ value: formatNumber(low) })
+    : m.join_partner_percent_range({ low: formatNumber(low), high: formatNumber(high) });
 }
 
 /*===== Error Boundary =====*/
