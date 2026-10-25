@@ -3,7 +3,7 @@ import { SITE_RULES } from "~/lib/site-rules";
 import { m } from "~/paraglide/messages";
 
 /*===== Storefront Navigation =====*/
-// The desktop header's four pages. On phones the tab bar carries «دوره‌ها» and «تماس» and the «بیشتر» sheet the rest
+// The desktop header's five pages. On phones the tab bar carries «دوره‌ها» and «تماس» and the «بیشتر» sheet the rest
 // (`MORE_LINKS`), so every page here is reachable on both. A link is listed only when its page is usable: «قوانین»
 // waits for text the owner has approved (it appears on its own once `SITE_RULES` is set). «همکاری با زروان» is in the
 // footer and the «بیشتر» sheet, not the header: the header speaks to dog owners. There is no search here: search lives
@@ -16,6 +16,12 @@ export const NAV_ITEMS = [
       return m.layout_public_nav_courses();
     },
     to: "/courses",
+  },
+  {
+    get label() {
+      return m.layout_public_nav_blog();
+    },
+    to: "/blog",
   },
   {
     get label() {
@@ -55,6 +61,12 @@ export const MORE_LINKS = [
       return m.layout_public_more_about();
     },
     to: "/about",
+  },
+  {
+    get label() {
+      return m.layout_public_more_blog();
+    },
+    to: "/blog",
   },
   {
     get label() {

@@ -1,4 +1,4 @@
-import { useLocation } from "@tanstack/react-router";
+import { useLocation, useMatches } from "@tanstack/react-router";
 import { Languages } from "lucide-react";
 
 import { cn } from "cn";
@@ -10,17 +10,29 @@ import { m } from "~/paraglide/messages";
 // «English» on the Persian pages and «فارسی» on the English ones, each written in its own language and script, so a
 // visitor who can't read the page still finds theirs. It opens the same page in the other language with a full page
 // load (the document's language, direction and faces change). A page that only exists in Persian (`/admin`, `/rules`)
-// has nowhere to go, so the switch isn't drawn there. Shared by the storefront's and the account's shells.
+// has nowhere to go, so the switch isn't drawn there. A page whose content may exist in one language only (a blog post
+// not yet translated) names where the switch leads instead, as `languageFallback` in its loader data (`/blog`).
+// Shared by the storefront's and the account's shells.
 
 /** Where the switch leads, or null on a Persian-only page. */
 function useLanguageTarget() {
   const location = useLocation({
     select: (current) => ({ pathname: current.pathname, publicHref: current.publicHref }),
   });
+  const fallback = useMatches({
+    select: (matches) => matches.map((match) => readFallback(match.loaderData)).filter(Boolean).at(-1),
+  });
   if (isPersianOnlyPath(location.pathname)) return null;
 
   const locale = isEnglish() ? "fa" : "en";
-  return { locale, href: hrefInLocale({ publicHref: location.publicHref, locale }) } as const;
+  return { locale, href: hrefInLocale({ publicHref: fallback ?? location.publicHref, locale }) } as const;
+}
+
+/** A loader's `languageFallback`: the internal path the switch opens when this page has no other-language version. */
+function readFallback(loaderData: unknown): string | undefined {
+  if (typeof loaderData !== "object" || loaderData === null || !("languageFallback" in loaderData)) return undefined;
+  const fallback = loaderData.languageFallback;
+  return typeof fallback === "string" && fallback.startsWith("/") ? fallback : undefined;
 }
 
 /**

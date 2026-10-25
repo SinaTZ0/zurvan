@@ -37,6 +37,7 @@ function footerGroups() {
       title: m.layout_public_footer_help(),
       links: [
         { label: m.layout_public_footer_faq(), link: linkOptions({ to: "/help" }) },
+        { label: m.layout_public_footer_blog(), link: linkOptions({ to: "/blog" }) },
         // The lookup, with no file number (an omitted param would keep the one on a dog's record page).
         {
           label: m.layout_public_footer_logbook(),

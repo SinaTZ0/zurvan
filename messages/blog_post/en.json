@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "blog_post_meta_title": "{title} | Zurvann blog",
+  "blog_post_meta_not_found": "Post not found | Zurvann",
+  "blog_post_missing_title": "This post isn't here",
+  "blog_post_missing_text": "Its address may have changed, or it's no longer published.",
+  "blog_post_missing_bubble": "I lost its trail!",
+  "blog_post_broken_title": "This post didn't open",
+  "blog_post_broken_text": "Try again; if it still doesn't work, come back a little later.",
+  "blog_post_broken_bubble": "One moment, I'll sniff again!",
+  "blog_post_retry": "Try again",
+  "blog_post_all": "All posts"
+}

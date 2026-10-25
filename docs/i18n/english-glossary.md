@@ -70,6 +70,16 @@ The course pages' dogs (`shared_course_mascot_*`) and the buy card's verdicts (`
 
 ## Fixed Terms
 
+### The blog
+
+| Persian                                      | English                                                | Notes                                                                                              |
+| -------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| وبلاگ                                        | Blog                                                   | The nav link and the page.                                                                         |
+| نوشته / نوشته‌های طلا                        | post / Tala's notes                                    | A single article is a "post"; the blog page's heading is "Tala's notes". Not "article" in buttons. |
+| بخش (رفتار، آموزش، نگهداری و سلامت، توله‌ها) | section (Behavior, Training, Care and health, Puppies) | The four categories.                                                                               |
+| {n} دقیقه مطالعه                             | {n} min read                                           |                                                                                                    |
+| سگ می‌گه                                     | (the tip bubble)                                       | The mascot's aside in a post; in English it is just his bubble, no label.                          |
+
 ### The journey
 
 | Persian                                    | English                                                | Notes                                                                                                                                         |

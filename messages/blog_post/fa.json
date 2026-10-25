@@ -1,0 +1,13 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "blog_post_meta_title": "{title} | وبلاگ زروان",
+  "blog_post_meta_not_found": "نوشته پیدا نشد | زروان",
+  "blog_post_missing_title": "این نوشته اینجا نیست",
+  "blog_post_missing_text": "شاید آدرسش عوض شده، یا دیگه منتشر نمی‌شه.",
+  "blog_post_missing_bubble": "ردشو گم کردم!",
+  "blog_post_broken_title": "این نوشته باز نشد",
+  "blog_post_broken_text": "یه بار دیگه امتحان کن؛ اگه باز هم نشد، کمی بعد سر بزن.",
+  "blog_post_broken_bubble": "یه لحظه، دوباره بو می‌کشم!",
+  "blog_post_retry": "دوباره امتحان کن",
+  "blog_post_all": "همه‌ی نوشته‌ها"
+}

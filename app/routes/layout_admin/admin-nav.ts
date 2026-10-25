@@ -5,6 +5,7 @@ import {
   HandshakeIcon,
   LayoutDashboardIcon,
   MessageSquareTextIcon,
+  NewspaperIcon,
   PawPrintIcon,
   ReceiptTextIcon,
   SlidersHorizontalIcon,
@@ -16,7 +17,7 @@ import type { StaticRoutePath } from "~/lib/route-path";
 
 /*===== Admin Navigation =====*/
 // The Admin's pages (docs/app-spec.md, Pages), in the order he works through a day: answer the requests, call the
-// customers, check the money. After those come the setup pages (courses, users, SMS, settings): the list has two groups
+// customers, check the money. After those come the setup pages (courses, blog, users, SMS, settings): the list has two groups
 // and the rail and the «بیشتر» sheet draw the slip's dashed tear between them. Add each page here when it is built; the
 // rail and the phone's tab bar both read this list. With more than four pages the bar keeps the first three and puts
 // the rest in the «بیشتر» sheet (`PHONE_TAB_COUNT`). The counts are added by the layout, from the Overview query.
@@ -47,6 +48,7 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
   { group: "daily", label: "همکاران", to: "/admin/partners", icon: HandshakeIcon },
   { group: "daily", label: "سگ‌ها", to: "/admin/dogs", icon: PawPrintIcon },
   { group: "setup", label: "دوره‌ها", to: "/admin/courses", icon: BookOpenIcon },
+  { group: "setup", label: "وبلاگ", to: "/admin/blog", icon: NewspaperIcon },
   { group: "setup", label: "کاربران", to: "/admin/users", icon: UsersIcon },
   { group: "setup", label: "پیامک‌ها", to: "/admin/sms", icon: MessageSquareTextIcon },
   { group: "setup", label: "تنظیمات", to: "/admin/settings", icon: SlidersHorizontalIcon },

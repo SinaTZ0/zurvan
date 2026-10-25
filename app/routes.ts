@@ -24,6 +24,9 @@ export const routes = rootRoute("../root.tsx", [
     // Checks a certificate: what its QR code opens.
     route("/certificate/$number", "certificate/certificate.tsx"),
     route("/join/partner", "join_partner/join-partner.tsx"),
+    // The head trainer's articles (F16): the list with its sections and search, and one article.
+    route("/blog", "blog_index/blog-index.tsx"),
+    route("/blog/$slug", "blog_post/blog-post.tsx"),
     // Every address nothing else answers: a 404 inside the shell, the same page `/rules` shows until it's published.
     route("$", "not_found/not-found.tsx"),
   ]),
@@ -60,6 +63,10 @@ export const routes = rootRoute("../root.tsx", [
     route("/courses/$slug/edit", "admin_course_form/admin-course-edit.tsx"),
     route("/settings", "admin_settings/admin-settings.tsx"),
     route("/sms", "admin_sms/admin-sms.tsx"),
+    route("/blog", "admin_posts/admin-posts.tsx"),
+    // One form for writing and editing a post; each route is a thin file over it.
+    route("/blog/new", "admin_post_form/admin-post-new.tsx"),
+    route("/blog/$id/edit", "admin_post_form/admin-post-edit.tsx"),
   ]),
 
   route("/auth", "auth/auth.tsx"),
@@ -73,4 +80,8 @@ export const routes = rootRoute("../root.tsx", [
   // The installable app (docs/mobile-app.md): its manifest and the page the service worker shows offline.
   route("/pwa/manifest.webmanifest", "pwa_manifest/pwa-manifest.ts"),
   route("/pwa/offline", "pwa_offline/pwa-offline.ts"),
+  // For search engines and feed readers (F16): the public pages, what robots may read, the blog's feed.
+  route("/sitemap.xml", "seo_files/sitemap.ts"),
+  route("/robots.txt", "seo_files/robots.ts"),
+  route("/blog/rss.xml", "seo_files/rss.ts"),
 ]);

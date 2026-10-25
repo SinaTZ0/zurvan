@@ -13,10 +13,13 @@ import { Route as layout_publicLayoutPublicRouteImport } from './routes/layout_p
 import { Route as layout_accountLayoutAccountRouteImport } from './routes/layout_account/layout-account'
 import { Route as layout_adminLayoutAdminRouteImport } from './routes/layout_admin/layout-admin'
 import { Route as authAuthRouteImport } from './routes/auth/auth'
+import { Route as seo_filesRobotsRouteImport } from './routes/seo_files/robots'
+import { Route as seo_filesSitemapRouteImport } from './routes/seo_files/sitemap'
 import { Route as homeHomeRouteImport } from './routes/home/home'
 import { Route as not_foundNotFoundRouteImport } from './routes/not_found/not-found'
 import { Route as aboutAboutRouteImport } from './routes/about/about'
 import { Route as assessmentAssessmentRouteImport } from './routes/assessment/assessment'
+import { Route as blog_indexBlogIndexRouteImport } from './routes/blog_index/blog-index'
 import { Route as buyBuyRouteImport } from './routes/buy/buy'
 import { Route as contactContactRouteImport } from './routes/contact/contact'
 import { Route as course_catalogueCourseCatalogueRouteImport } from './routes/course_catalogue/course-catalogue'
@@ -29,6 +32,7 @@ import { Route as account_partnerAccountPartnerRouteImport } from './routes/acco
 import { Route as account_profileAccountProfileRouteImport } from './routes/account_profile/account-profile'
 import { Route as account_purchasesAccountPurchasesRouteImport } from './routes/account_purchases/account-purchases'
 import { Route as admin_indexAdminIndexRouteImport } from './routes/admin_index/admin-index'
+import { Route as admin_postsAdminPostsRouteImport } from './routes/admin_posts/admin-posts'
 import { Route as admin_coursesAdminCoursesRouteImport } from './routes/admin_courses/admin-courses'
 import { Route as admin_dogsAdminDogsRouteImport } from './routes/admin_dogs/admin-dogs'
 import { Route as admin_enrollmentsAdminEnrollmentsRouteImport } from './routes/admin_enrollments/admin-enrollments'
@@ -39,10 +43,12 @@ import { Route as admin_settingsAdminSettingsRouteImport } from './routes/admin_
 import { Route as admin_smsAdminSmsRouteImport } from './routes/admin_sms/admin-sms'
 import { Route as admin_usersAdminUsersRouteImport } from './routes/admin_users/admin-users'
 import { Route as api_evaluation_videosApiEvaluationVideosRouteImport } from './routes/api_evaluation_videos/api-evaluation-videos'
+import { Route as seo_filesRssRouteImport } from './routes/seo_files/rss'
 import { Route as payment_callbackPaymentCallbackRouteImport } from './routes/payment_callback/payment-callback'
 import { Route as pwa_manifestPwaManifestRouteImport } from './routes/pwa_manifest/pwa-manifest'
 import { Route as pwa_offlinePwaOfflineRouteImport } from './routes/pwa_offline/pwa-offline'
 import { Route as rpcRpcRouteImport } from './routes/rpc/rpc'
+import { Route as blog_postBlogPostRouteImport } from './routes/blog_post/blog-post'
 import { Route as certificateCertificateRouteImport } from './routes/certificate/certificate'
 import { Route as course_detailCourseDetailRouteImport } from './routes/course_detail/course-detail'
 import { Route as join_partnerJoinPartnerRouteImport } from './routes/join_partner/join-partner'
@@ -50,11 +56,13 @@ import { Route as logbookLogbookRouteImport } from './routes/logbook/logbook'
 import { Route as account_dog_detailAccountDogDetailRouteImport } from './routes/account_dog_detail/account-dog-detail'
 import { Route as account_dog_formAccountDogNewRouteImport } from './routes/account_dog_form/account-dog-new'
 import { Route as account_partner_leadsAccountPartnerLeadsRouteImport } from './routes/account_partner_leads/account-partner-leads'
+import { Route as admin_post_formAdminPostNewRouteImport } from './routes/admin_post_form/admin-post-new'
 import { Route as admin_course_formAdminCourseNewRouteImport } from './routes/admin_course_form/admin-course-new'
 import { Route as admin_dog_detailAdminDogDetailRouteImport } from './routes/admin_dog_detail/admin-dog-detail'
 import { Route as api_authApiAuthRouteImport } from './routes/api_auth/api-auth'
 import { Route as api_evaluation_videoApiEvaluationVideoRouteImport } from './routes/api_evaluation_video/api-evaluation-video'
 import { Route as account_dog_formAccountDogEditRouteImport } from './routes/account_dog_form/account-dog-edit'
+import { Route as admin_post_formAdminPostEditRouteImport } from './routes/admin_post_form/admin-post-edit'
 import { Route as admin_course_formAdminCourseEditRouteImport } from './routes/admin_course_form/admin-course-edit'
 
 const layout_publicLayoutPublicRoute =
@@ -78,6 +86,16 @@ const authAuthRoute = authAuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const seo_filesRobotsRoute = seo_filesRobotsRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const seo_filesSitemapRoute = seo_filesSitemapRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const homeHomeRoute = homeHomeRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +114,11 @@ const aboutAboutRoute = aboutAboutRouteImport.update({
 const assessmentAssessmentRoute = assessmentAssessmentRouteImport.update({
   id: '/assessment',
   path: '/assessment',
+  getParentRoute: () => layout_publicLayoutPublicRoute,
+} as any)
+const blog_indexBlogIndexRoute = blog_indexBlogIndexRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => layout_publicLayoutPublicRoute,
 } as any)
 const buyBuyRoute = buyBuyRouteImport.update({
@@ -162,6 +185,11 @@ const admin_indexAdminIndexRoute = admin_indexAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => layout_adminLayoutAdminRoute,
 } as any)
+const admin_postsAdminPostsRoute = admin_postsAdminPostsRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => layout_adminLayoutAdminRoute,
+} as any)
 const admin_coursesAdminCoursesRoute =
   admin_coursesAdminCoursesRouteImport.update({
     id: '/courses',
@@ -219,6 +247,11 @@ const api_evaluation_videosApiEvaluationVideosRoute =
     path: '/api/evaluation-videos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const seo_filesRssRoute = seo_filesRssRouteImport.update({
+  id: '/blog/rss.xml',
+  path: '/blog/rss.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const payment_callbackPaymentCallbackRoute =
   payment_callbackPaymentCallbackRouteImport.update({
     id: '/payment/callback',
@@ -239,6 +272,11 @@ const rpcRpcRoute = rpcRpcRouteImport.update({
   id: '/rpc/$',
   path: '/rpc/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const blog_postBlogPostRoute = blog_postBlogPostRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => layout_publicLayoutPublicRoute,
 } as any)
 const certificateCertificateRoute = certificateCertificateRouteImport.update({
   id: '/certificate/$number',
@@ -279,6 +317,12 @@ const account_partner_leadsAccountPartnerLeadsRoute =
     path: '/partner/leads',
     getParentRoute: () => layout_accountLayoutAccountRoute,
   } as any)
+const admin_post_formAdminPostNewRoute =
+  admin_post_formAdminPostNewRouteImport.update({
+    id: '/blog/new',
+    path: '/blog/new',
+    getParentRoute: () => layout_adminLayoutAdminRoute,
+  } as any)
 const admin_course_formAdminCourseNewRoute =
   admin_course_formAdminCourseNewRouteImport.update({
     id: '/courses/new',
@@ -308,6 +352,12 @@ const account_dog_formAccountDogEditRoute =
     path: '/dogs/$dogId/edit',
     getParentRoute: () => layout_accountLayoutAccountRoute,
   } as any)
+const admin_post_formAdminPostEditRoute =
+  admin_post_formAdminPostEditRouteImport.update({
+    id: '/blog/$id/edit',
+    path: '/blog/$id/edit',
+    getParentRoute: () => layout_adminLayoutAdminRoute,
+  } as any)
 const admin_course_formAdminCourseEditRoute =
   admin_course_formAdminCourseEditRouteImport.update({
     id: '/courses/$slug/edit',
@@ -320,11 +370,14 @@ export interface FileRoutesByFullPath {
   '/account': typeof layout_accountLayoutAccountRouteWithChildren
   '/admin': typeof layout_adminLayoutAdminRouteWithChildren
   '/auth': typeof authAuthRoute
+  '/robots.txt': typeof seo_filesRobotsRoute
+  '/sitemap.xml': typeof seo_filesSitemapRoute
   '/account/': typeof account_homeAccountHomeRoute
   '/admin/': typeof admin_indexAdminIndexRoute
   '/$': typeof not_foundNotFoundRoute
   '/about': typeof aboutAboutRoute
   '/assessment': typeof assessmentAssessmentRoute
+  '/blog': typeof blog_indexBlogIndexRoute
   '/buy': typeof buyBuyRoute
   '/contact': typeof contactContactRoute
   '/courses': typeof course_catalogueCourseCatalogueRoute
@@ -335,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/account/partner': typeof account_partnerAccountPartnerRoute
   '/account/profile': typeof account_profileAccountProfileRoute
   '/account/purchases': typeof account_purchasesAccountPurchasesRoute
+  '/admin/blog': typeof admin_postsAdminPostsRoute
   '/admin/courses': typeof admin_coursesAdminCoursesRoute
   '/admin/dogs': typeof admin_dogsAdminDogsRoute
   '/admin/enrollments': typeof admin_enrollmentsAdminEnrollmentsRoute
@@ -345,10 +399,12 @@ export interface FileRoutesByFullPath {
   '/admin/sms': typeof admin_smsAdminSmsRoute
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
+  '/blog/rss.xml': typeof seo_filesRssRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
   '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
   '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
+  '/blog/$slug': typeof blog_postBlogPostRoute
   '/certificate/$number': typeof certificateCertificateRoute
   '/courses/$slug': typeof course_detailCourseDetailRoute
   '/join/partner': typeof join_partnerJoinPartnerRoute
@@ -356,21 +412,26 @@ export interface FileRoutesByFullPath {
   '/account/dogs/$dogId': typeof account_dog_detailAccountDogDetailRoute
   '/account/dogs/new': typeof account_dog_formAccountDogNewRoute
   '/account/partner/leads': typeof account_partner_leadsAccountPartnerLeadsRoute
+  '/admin/blog/new': typeof admin_post_formAdminPostNewRoute
   '/admin/courses/new': typeof admin_course_formAdminCourseNewRoute
   '/admin/dogs/$dogId': typeof admin_dog_detailAdminDogDetailRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/api/evaluation-videos/$id': typeof api_evaluation_videoApiEvaluationVideoRoute
   '/account/dogs/$dogId/edit': typeof account_dog_formAccountDogEditRoute
+  '/admin/blog/$id/edit': typeof admin_post_formAdminPostEditRoute
   '/admin/courses/$slug/edit': typeof admin_course_formAdminCourseEditRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof authAuthRoute
+  '/robots.txt': typeof seo_filesRobotsRoute
+  '/sitemap.xml': typeof seo_filesSitemapRoute
   '/': typeof homeHomeRoute
   '/account': typeof account_homeAccountHomeRoute
   '/admin': typeof admin_indexAdminIndexRoute
   '/$': typeof not_foundNotFoundRoute
   '/about': typeof aboutAboutRoute
   '/assessment': typeof assessmentAssessmentRoute
+  '/blog': typeof blog_indexBlogIndexRoute
   '/buy': typeof buyBuyRoute
   '/contact': typeof contactContactRoute
   '/courses': typeof course_catalogueCourseCatalogueRoute
@@ -381,6 +442,7 @@ export interface FileRoutesByTo {
   '/account/partner': typeof account_partnerAccountPartnerRoute
   '/account/profile': typeof account_profileAccountProfileRoute
   '/account/purchases': typeof account_purchasesAccountPurchasesRoute
+  '/admin/blog': typeof admin_postsAdminPostsRoute
   '/admin/courses': typeof admin_coursesAdminCoursesRoute
   '/admin/dogs': typeof admin_dogsAdminDogsRoute
   '/admin/enrollments': typeof admin_enrollmentsAdminEnrollmentsRoute
@@ -391,10 +453,12 @@ export interface FileRoutesByTo {
   '/admin/sms': typeof admin_smsAdminSmsRoute
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
+  '/blog/rss.xml': typeof seo_filesRssRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
   '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
   '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
+  '/blog/$slug': typeof blog_postBlogPostRoute
   '/certificate/$number': typeof certificateCertificateRoute
   '/courses/$slug': typeof course_detailCourseDetailRoute
   '/join/partner': typeof join_partnerJoinPartnerRoute
@@ -402,11 +466,13 @@ export interface FileRoutesByTo {
   '/account/dogs/$dogId': typeof account_dog_detailAccountDogDetailRoute
   '/account/dogs/new': typeof account_dog_formAccountDogNewRoute
   '/account/partner/leads': typeof account_partner_leadsAccountPartnerLeadsRoute
+  '/admin/blog/new': typeof admin_post_formAdminPostNewRoute
   '/admin/courses/new': typeof admin_course_formAdminCourseNewRoute
   '/admin/dogs/$dogId': typeof admin_dog_detailAdminDogDetailRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/api/evaluation-videos/$id': typeof api_evaluation_videoApiEvaluationVideoRoute
   '/account/dogs/$dogId/edit': typeof account_dog_formAccountDogEditRoute
+  '/admin/blog/$id/edit': typeof admin_post_formAdminPostEditRoute
   '/admin/courses/$slug/edit': typeof admin_course_formAdminCourseEditRoute
 }
 export interface FileRoutesById {
@@ -415,12 +481,15 @@ export interface FileRoutesById {
   '/account': typeof layout_accountLayoutAccountRouteWithChildren
   '/admin': typeof layout_adminLayoutAdminRouteWithChildren
   '/auth': typeof authAuthRoute
+  '/robots.txt': typeof seo_filesRobotsRoute
+  '/sitemap.xml': typeof seo_filesSitemapRoute
   '/_public/': typeof homeHomeRoute
   '/account/': typeof account_homeAccountHomeRoute
   '/admin/': typeof admin_indexAdminIndexRoute
   '/_public/$': typeof not_foundNotFoundRoute
   '/_public/about': typeof aboutAboutRoute
   '/_public/assessment': typeof assessmentAssessmentRoute
+  '/_public/blog': typeof blog_indexBlogIndexRoute
   '/_public/buy': typeof buyBuyRoute
   '/_public/contact': typeof contactContactRoute
   '/_public/courses': typeof course_catalogueCourseCatalogueRoute
@@ -431,6 +500,7 @@ export interface FileRoutesById {
   '/account/partner': typeof account_partnerAccountPartnerRoute
   '/account/profile': typeof account_profileAccountProfileRoute
   '/account/purchases': typeof account_purchasesAccountPurchasesRoute
+  '/admin/blog': typeof admin_postsAdminPostsRoute
   '/admin/courses': typeof admin_coursesAdminCoursesRoute
   '/admin/dogs': typeof admin_dogsAdminDogsRoute
   '/admin/enrollments': typeof admin_enrollmentsAdminEnrollmentsRoute
@@ -441,10 +511,12 @@ export interface FileRoutesById {
   '/admin/sms': typeof admin_smsAdminSmsRoute
   '/admin/users': typeof admin_usersAdminUsersRoute
   '/api/evaluation-videos': typeof api_evaluation_videosApiEvaluationVideosRoute
+  '/blog/rss.xml': typeof seo_filesRssRoute
   '/payment/callback': typeof payment_callbackPaymentCallbackRoute
   '/pwa/manifest.webmanifest': typeof pwa_manifestPwaManifestRoute
   '/pwa/offline': typeof pwa_offlinePwaOfflineRoute
   '/rpc/$': typeof rpcRpcRoute
+  '/_public/blog/$slug': typeof blog_postBlogPostRoute
   '/_public/certificate/$number': typeof certificateCertificateRoute
   '/_public/courses/$slug': typeof course_detailCourseDetailRoute
   '/_public/join/partner': typeof join_partnerJoinPartnerRoute
@@ -452,11 +524,13 @@ export interface FileRoutesById {
   '/account/dogs/$dogId': typeof account_dog_detailAccountDogDetailRoute
   '/account/dogs/new': typeof account_dog_formAccountDogNewRoute
   '/account/partner/leads': typeof account_partner_leadsAccountPartnerLeadsRoute
+  '/admin/blog/new': typeof admin_post_formAdminPostNewRoute
   '/admin/courses/new': typeof admin_course_formAdminCourseNewRoute
   '/admin/dogs/$dogId': typeof admin_dog_detailAdminDogDetailRoute
   '/api/auth/$': typeof api_authApiAuthRoute
   '/api/evaluation-videos/$id': typeof api_evaluation_videoApiEvaluationVideoRoute
   '/account/dogs/$dogId/edit': typeof account_dog_formAccountDogEditRoute
+  '/admin/blog/$id/edit': typeof admin_post_formAdminPostEditRoute
   '/admin/courses/$slug/edit': typeof admin_course_formAdminCourseEditRoute
 }
 export interface FileRouteTypes {
@@ -466,11 +540,14 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/auth'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/account/'
     | '/admin/'
     | '/$'
     | '/about'
     | '/assessment'
+    | '/blog'
     | '/buy'
     | '/contact'
     | '/courses'
@@ -481,6 +558,7 @@ export interface FileRouteTypes {
     | '/account/partner'
     | '/account/profile'
     | '/account/purchases'
+    | '/admin/blog'
     | '/admin/courses'
     | '/admin/dogs'
     | '/admin/enrollments'
@@ -491,10 +569,12 @@ export interface FileRouteTypes {
     | '/admin/sms'
     | '/admin/users'
     | '/api/evaluation-videos'
+    | '/blog/rss.xml'
     | '/payment/callback'
     | '/pwa/manifest.webmanifest'
     | '/pwa/offline'
     | '/rpc/$'
+    | '/blog/$slug'
     | '/certificate/$number'
     | '/courses/$slug'
     | '/join/partner'
@@ -502,21 +582,26 @@ export interface FileRouteTypes {
     | '/account/dogs/$dogId'
     | '/account/dogs/new'
     | '/account/partner/leads'
+    | '/admin/blog/new'
     | '/admin/courses/new'
     | '/admin/dogs/$dogId'
     | '/api/auth/$'
     | '/api/evaluation-videos/$id'
     | '/account/dogs/$dogId/edit'
+    | '/admin/blog/$id/edit'
     | '/admin/courses/$slug/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/'
     | '/account'
     | '/admin'
     | '/$'
     | '/about'
     | '/assessment'
+    | '/blog'
     | '/buy'
     | '/contact'
     | '/courses'
@@ -527,6 +612,7 @@ export interface FileRouteTypes {
     | '/account/partner'
     | '/account/profile'
     | '/account/purchases'
+    | '/admin/blog'
     | '/admin/courses'
     | '/admin/dogs'
     | '/admin/enrollments'
@@ -537,10 +623,12 @@ export interface FileRouteTypes {
     | '/admin/sms'
     | '/admin/users'
     | '/api/evaluation-videos'
+    | '/blog/rss.xml'
     | '/payment/callback'
     | '/pwa/manifest.webmanifest'
     | '/pwa/offline'
     | '/rpc/$'
+    | '/blog/$slug'
     | '/certificate/$number'
     | '/courses/$slug'
     | '/join/partner'
@@ -548,11 +636,13 @@ export interface FileRouteTypes {
     | '/account/dogs/$dogId'
     | '/account/dogs/new'
     | '/account/partner/leads'
+    | '/admin/blog/new'
     | '/admin/courses/new'
     | '/admin/dogs/$dogId'
     | '/api/auth/$'
     | '/api/evaluation-videos/$id'
     | '/account/dogs/$dogId/edit'
+    | '/admin/blog/$id/edit'
     | '/admin/courses/$slug/edit'
   id:
     | '__root__'
@@ -560,12 +650,15 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/auth'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/_public/'
     | '/account/'
     | '/admin/'
     | '/_public/$'
     | '/_public/about'
     | '/_public/assessment'
+    | '/_public/blog'
     | '/_public/buy'
     | '/_public/contact'
     | '/_public/courses'
@@ -576,6 +669,7 @@ export interface FileRouteTypes {
     | '/account/partner'
     | '/account/profile'
     | '/account/purchases'
+    | '/admin/blog'
     | '/admin/courses'
     | '/admin/dogs'
     | '/admin/enrollments'
@@ -586,10 +680,12 @@ export interface FileRouteTypes {
     | '/admin/sms'
     | '/admin/users'
     | '/api/evaluation-videos'
+    | '/blog/rss.xml'
     | '/payment/callback'
     | '/pwa/manifest.webmanifest'
     | '/pwa/offline'
     | '/rpc/$'
+    | '/_public/blog/$slug'
     | '/_public/certificate/$number'
     | '/_public/courses/$slug'
     | '/_public/join/partner'
@@ -597,11 +693,13 @@ export interface FileRouteTypes {
     | '/account/dogs/$dogId'
     | '/account/dogs/new'
     | '/account/partner/leads'
+    | '/admin/blog/new'
     | '/admin/courses/new'
     | '/admin/dogs/$dogId'
     | '/api/auth/$'
     | '/api/evaluation-videos/$id'
     | '/account/dogs/$dogId/edit'
+    | '/admin/blog/$id/edit'
     | '/admin/courses/$slug/edit'
   fileRoutesById: FileRoutesById
 }
@@ -610,7 +708,10 @@ export interface RootRouteChildren {
   layout_accountLayoutAccountRoute: typeof layout_accountLayoutAccountRouteWithChildren
   layout_adminLayoutAdminRoute: typeof layout_adminLayoutAdminRouteWithChildren
   authAuthRoute: typeof authAuthRoute
+  seo_filesRobotsRoute: typeof seo_filesRobotsRoute
+  seo_filesSitemapRoute: typeof seo_filesSitemapRoute
   api_evaluation_videosApiEvaluationVideosRoute: typeof api_evaluation_videosApiEvaluationVideosRoute
+  seo_filesRssRoute: typeof seo_filesRssRoute
   payment_callbackPaymentCallbackRoute: typeof payment_callbackPaymentCallbackRoute
   pwa_manifestPwaManifestRoute: typeof pwa_manifestPwaManifestRoute
   pwa_offlinePwaOfflineRoute: typeof pwa_offlinePwaOfflineRoute
@@ -649,6 +750,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authAuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof seo_filesRobotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof seo_filesSitemapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_public/': {
       id: '/_public/'
       path: '/'
@@ -675,6 +790,13 @@ declare module '@tanstack/react-router' {
       path: '/assessment'
       fullPath: '/assessment'
       preLoaderRoute: typeof assessmentAssessmentRouteImport
+      parentRoute: typeof layout_publicLayoutPublicRoute
+    }
+    '/_public/blog': {
+      id: '/_public/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof blog_indexBlogIndexRouteImport
       parentRoute: typeof layout_publicLayoutPublicRoute
     }
     '/_public/buy': {
@@ -761,6 +883,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof admin_indexAdminIndexRouteImport
       parentRoute: typeof layout_adminLayoutAdminRoute
     }
+    '/admin/blog': {
+      id: '/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof admin_postsAdminPostsRouteImport
+      parentRoute: typeof layout_adminLayoutAdminRoute
+    }
     '/admin/courses': {
       id: '/admin/courses'
       path: '/courses'
@@ -831,6 +960,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof api_evaluation_videosApiEvaluationVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/rss.xml': {
+      id: '/blog/rss.xml'
+      path: '/blog/rss.xml'
+      fullPath: '/blog/rss.xml'
+      preLoaderRoute: typeof seo_filesRssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/payment/callback': {
       id: '/payment/callback'
       path: '/payment/callback'
@@ -858,6 +994,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/rpc/$'
       preLoaderRoute: typeof rpcRpcRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_public/blog/$slug': {
+      id: '/_public/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof blog_postBlogPostRouteImport
+      parentRoute: typeof layout_publicLayoutPublicRoute
     }
     '/_public/certificate/$number': {
       id: '/_public/certificate/$number'
@@ -908,6 +1051,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof account_partner_leadsAccountPartnerLeadsRouteImport
       parentRoute: typeof layout_accountLayoutAccountRoute
     }
+    '/admin/blog/new': {
+      id: '/admin/blog/new'
+      path: '/blog/new'
+      fullPath: '/admin/blog/new'
+      preLoaderRoute: typeof admin_post_formAdminPostNewRouteImport
+      parentRoute: typeof layout_adminLayoutAdminRoute
+    }
     '/admin/courses/new': {
       id: '/admin/courses/new'
       path: '/courses/new'
@@ -943,6 +1093,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof account_dog_formAccountDogEditRouteImport
       parentRoute: typeof layout_accountLayoutAccountRoute
     }
+    '/admin/blog/$id/edit': {
+      id: '/admin/blog/$id/edit'
+      path: '/blog/$id/edit'
+      fullPath: '/admin/blog/$id/edit'
+      preLoaderRoute: typeof admin_post_formAdminPostEditRouteImport
+      parentRoute: typeof layout_adminLayoutAdminRoute
+    }
     '/admin/courses/$slug/edit': {
       id: '/admin/courses/$slug/edit'
       path: '/courses/$slug/edit'
@@ -958,12 +1115,14 @@ interface layout_publicLayoutPublicRouteChildren {
   not_foundNotFoundRoute: typeof not_foundNotFoundRoute
   aboutAboutRoute: typeof aboutAboutRoute
   assessmentAssessmentRoute: typeof assessmentAssessmentRoute
+  blog_indexBlogIndexRoute: typeof blog_indexBlogIndexRoute
   buyBuyRoute: typeof buyBuyRoute
   contactContactRoute: typeof contactContactRoute
   course_catalogueCourseCatalogueRoute: typeof course_catalogueCourseCatalogueRoute
   helpHelpRoute: typeof helpHelpRoute
   privacyPrivacyRoute: typeof privacyPrivacyRoute
   rulesRulesRoute: typeof rulesRulesRoute
+  blog_postBlogPostRoute: typeof blog_postBlogPostRoute
   certificateCertificateRoute: typeof certificateCertificateRoute
   course_detailCourseDetailRoute: typeof course_detailCourseDetailRoute
   join_partnerJoinPartnerRoute: typeof join_partnerJoinPartnerRoute
@@ -976,12 +1135,14 @@ const layout_publicLayoutPublicRouteChildren: layout_publicLayoutPublicRouteChil
     not_foundNotFoundRoute: not_foundNotFoundRoute,
     aboutAboutRoute: aboutAboutRoute,
     assessmentAssessmentRoute: assessmentAssessmentRoute,
+    blog_indexBlogIndexRoute: blog_indexBlogIndexRoute,
     buyBuyRoute: buyBuyRoute,
     contactContactRoute: contactContactRoute,
     course_catalogueCourseCatalogueRoute: course_catalogueCourseCatalogueRoute,
     helpHelpRoute: helpHelpRoute,
     privacyPrivacyRoute: privacyPrivacyRoute,
     rulesRulesRoute: rulesRulesRoute,
+    blog_postBlogPostRoute: blog_postBlogPostRoute,
     certificateCertificateRoute: certificateCertificateRoute,
     course_detailCourseDetailRoute: course_detailCourseDetailRoute,
     join_partnerJoinPartnerRoute: join_partnerJoinPartnerRoute,
@@ -1028,6 +1189,7 @@ const layout_accountLayoutAccountRouteWithChildren =
 
 interface layout_adminLayoutAdminRouteChildren {
   admin_indexAdminIndexRoute: typeof admin_indexAdminIndexRoute
+  admin_postsAdminPostsRoute: typeof admin_postsAdminPostsRoute
   admin_coursesAdminCoursesRoute: typeof admin_coursesAdminCoursesRoute
   admin_dogsAdminDogsRoute: typeof admin_dogsAdminDogsRoute
   admin_enrollmentsAdminEnrollmentsRoute: typeof admin_enrollmentsAdminEnrollmentsRoute
@@ -1037,14 +1199,17 @@ interface layout_adminLayoutAdminRouteChildren {
   admin_settingsAdminSettingsRoute: typeof admin_settingsAdminSettingsRoute
   admin_smsAdminSmsRoute: typeof admin_smsAdminSmsRoute
   admin_usersAdminUsersRoute: typeof admin_usersAdminUsersRoute
+  admin_post_formAdminPostNewRoute: typeof admin_post_formAdminPostNewRoute
   admin_course_formAdminCourseNewRoute: typeof admin_course_formAdminCourseNewRoute
   admin_dog_detailAdminDogDetailRoute: typeof admin_dog_detailAdminDogDetailRoute
+  admin_post_formAdminPostEditRoute: typeof admin_post_formAdminPostEditRoute
   admin_course_formAdminCourseEditRoute: typeof admin_course_formAdminCourseEditRoute
 }
 
 const layout_adminLayoutAdminRouteChildren: layout_adminLayoutAdminRouteChildren =
   {
     admin_indexAdminIndexRoute: admin_indexAdminIndexRoute,
+    admin_postsAdminPostsRoute: admin_postsAdminPostsRoute,
     admin_coursesAdminCoursesRoute: admin_coursesAdminCoursesRoute,
     admin_dogsAdminDogsRoute: admin_dogsAdminDogsRoute,
     admin_enrollmentsAdminEnrollmentsRoute:
@@ -1056,8 +1221,10 @@ const layout_adminLayoutAdminRouteChildren: layout_adminLayoutAdminRouteChildren
     admin_settingsAdminSettingsRoute: admin_settingsAdminSettingsRoute,
     admin_smsAdminSmsRoute: admin_smsAdminSmsRoute,
     admin_usersAdminUsersRoute: admin_usersAdminUsersRoute,
+    admin_post_formAdminPostNewRoute: admin_post_formAdminPostNewRoute,
     admin_course_formAdminCourseNewRoute: admin_course_formAdminCourseNewRoute,
     admin_dog_detailAdminDogDetailRoute: admin_dog_detailAdminDogDetailRoute,
+    admin_post_formAdminPostEditRoute: admin_post_formAdminPostEditRoute,
     admin_course_formAdminCourseEditRoute:
       admin_course_formAdminCourseEditRoute,
   }
@@ -1073,8 +1240,11 @@ const rootRouteChildren: RootRouteChildren = {
     layout_accountLayoutAccountRouteWithChildren,
   layout_adminLayoutAdminRoute: layout_adminLayoutAdminRouteWithChildren,
   authAuthRoute: authAuthRoute,
+  seo_filesRobotsRoute: seo_filesRobotsRoute,
+  seo_filesSitemapRoute: seo_filesSitemapRoute,
   api_evaluation_videosApiEvaluationVideosRoute:
     api_evaluation_videosApiEvaluationVideosRoute,
+  seo_filesRssRoute: seo_filesRssRoute,
   payment_callbackPaymentCallbackRoute: payment_callbackPaymentCallbackRoute,
   pwa_manifestPwaManifestRoute: pwa_manifestPwaManifestRoute,
   pwa_offlinePwaOfflineRoute: pwa_offlinePwaOfflineRoute,
