@@ -193,8 +193,18 @@ export const dog = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
     name: text("name").notNull(),
-    /** Free text; the form suggests common breeds. Locked for the customer once the dog is evaluated (F2). */
+    /**
+     * `purebred`, `cross` or `mixed` (F2). Null for the dogs written before it was asked: not stated until the Admin fills
+     * it in. Locked for the customer once the dog is evaluated, with the breeds.
+     */
+    breedPurity: text("breed_purity"),
+    /**
+     * Free text; the form suggests common breeds. The breed of a purebred, one parent of a cross, and what a mixed dog
+     * looks like (optional). Locked for the customer once the dog is evaluated (F2).
+     */
     breed: text("breed"),
+    /** The other parent of a cross; null for any other purity. Locked with `breed`. */
+    breedSecondary: text("breed_secondary"),
     // Plain text instead of pg enums, so adding a value is a code change, not a migration. Allowed values live in
     // `app/orpc/dog/constants.ts`.
     sex: text("sex").notNull(),
@@ -205,8 +215,27 @@ export const dog = pgTable(
     /** Kilograms, one decimal. */
     weightKg: numeric("weight_kg", { precision: 4, scale: 1, mode: "number" }).notNull(),
     isNeutered: boolean("is_neutered").notNull(),
+    /** Shoulder height in whole centimetres. */
+    heightCm: integer("height_cm"),
+    coatColor: text("coat_color"),
+    /** Distinctive marks: a white chest, a torn ear. */
+    markings: text("markings"),
     microchipNumber: text("microchip_number"),
+    /** `YYYY-MM-DD`, Gregorian. */
+    microchipImplantedOn: date("microchip_implanted_on", { mode: "string" }),
     vaccinationStatus: text("vaccination_status").notNull().default("unknown"),
+    /** The owner's own words about the vaccinations, under the status; the card's photos are `dog_record_photo`. */
+    vaccinationNotes: text("vaccination_notes"),
+    /** `home`, `sport` and/or `working`: what the owner trains the dog for. Empty when not stated. */
+    trainingGoals: text("training_goals")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** One problem per entry, as the owner wrote them (pulling on the leash, barking at the door). Shown above the diary. */
+    behaviorProblems: text("behavior_problems")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     /** Shown to the Admin, e.g. a fear of other dogs. */
     behaviorNotes: text("behavior_notes"),
     /** Shown to the Admin. */
@@ -220,6 +249,29 @@ export const dog = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [index("dog_owner_id_idx").on(table.ownerId)],
+);
+
+/**
+ * A photo in a dog's file (F2): its vaccination card (`vaccination`), a medical document (`medical`) or its tattoo
+ * (`tattoo`, at most one). An image in the media pipeline (`kind` `record`), public by its unguessable link like every
+ * image: decided on 2026-10-25 that these need no more than that. Only the owner uploads them.
+ */
+export const dogRecordPhoto = pgTable(
+  "dog_record_photo",
+  {
+    dogId: uuid("dog_id")
+      .notNull()
+      .references(() => dog.id, { onDelete: "restrict" }),
+    mediaId: uuid("media_id")
+      .notNull()
+      .unique()
+      .references(() => media.id, { onDelete: "restrict" }),
+    // Plain text; the allowed values live in `app/orpc/dog/constants.ts`.
+    purpose: text("purpose").notNull(),
+    /** 0-based within its purpose, in the order the owner put them. */
+    position: integer("position").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.dogId, table.mediaId] })],
 );
 
 /*===== Courses =====*/

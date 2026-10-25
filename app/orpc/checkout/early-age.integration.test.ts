@@ -81,7 +81,15 @@ async function makeDog({
   const created = await createDog({
     db,
     ownerId: customer.id,
-    input: { name, breed, sex: "male", birthDate: bornMonthsAgo(months), weightKg: 3, isNeutered: false },
+    input: {
+      breedPurity: "mixed",
+      name,
+      breed,
+      sex: "male",
+      birthDate: bornMonthsAgo(months),
+      weightKg: 3,
+      isNeutered: false,
+    },
   });
   if (created.kind !== "success") throw new Error(`Could not create ${name}: ${JSON.stringify(created)}`);
   return created.dog.id;

@@ -1,7 +1,8 @@
 import { and, asc, desc, eq, exists, inArray, sql } from "drizzle-orm";
 
 import type { Database, DatabaseOrTransaction } from "~/db/client.server";
-import { course, dog, dogPassedCourse, enrollment, evaluation, media, user } from "~/db/schema";
+import { course, dog, dogPassedCourse, dogRecordPhoto, enrollment, evaluation, media, user } from "~/db/schema";
+import type { DogRecordPhotoPurpose } from "~/orpc/dog/constants";
 import type { MediaRecord } from "~/orpc/media/repository";
 
 /*===== Types =====*/
@@ -12,14 +13,24 @@ export type DogRecord = typeof dog.$inferSelect & { photo: MediaRecord | null; i
 export type DogValues = Pick<
   typeof dog.$inferInsert,
   | "name"
+  | "breedPurity"
   | "breed"
+  | "breedSecondary"
   | "sex"
   | "birthDate"
   | "birthDateApproximate"
   | "weightKg"
   | "isNeutered"
+  | "heightCm"
+  | "coatColor"
+  | "markings"
   | "microchipNumber"
+  | "microchipImplantedOn"
   | "vaccinationStatus"
+  | "vaccinationNotes"
+  // `undefined` leaves the stored list as it is on update.
+  | "trainingGoals"
+  | "behaviorProblems"
   | "behaviorNotes"
   | "medicalNotes"
   // `undefined` leaves the photo as it is on update; `null` clears it.
@@ -38,6 +49,9 @@ export type PassedCourseRecord = {
 };
 
 export type DogOwnerRecord = { id: string; name: string; phoneNumber: string | null };
+
+/** A photo in a dog's file (`dog_record_photo`) with its media row. `purpose` is plain text in the database. */
+export type DogRecordPhotoRecord = { dogId: string; purpose: string; media: MediaRecord };
 
 /*===== Selection =====*/
 // One query returns the dog, its photo and whether it is evaluated, so a list never costs a query per dog.
@@ -232,6 +246,74 @@ export async function findPassedCourses({
   return [...records.values()].sort((a, b) => a.title.localeCompare(b.title));
 }
 
+/*===== Record Photos =====*/
+/** The photos in these dogs' files in one query, each purpose's in the order the owner put them. */
+export async function findRecordPhotos({
+  db,
+  dogIds,
+}: {
+  db: DatabaseOrTransaction;
+  dogIds: string[];
+}): Promise<DogRecordPhotoRecord[]> {
+  if (dogIds.length === 0) return [];
+  return db
+    .select({ dogId: dogRecordPhoto.dogId, purpose: dogRecordPhoto.purpose, media })
+    .from(dogRecordPhoto)
+    .innerJoin(media, eq(dogRecordPhoto.mediaId, media.id))
+    .where(inArray(dogRecordPhoto.dogId, dogIds))
+    .orderBy(asc(dogRecordPhoto.position));
+}
+
+/** The IDs of one purpose's photos in a dog's file. */
+export async function findRecordPhotoIds({
+  db,
+  dogId,
+  purpose,
+}: {
+  db: DatabaseOrTransaction;
+  dogId: string;
+  purpose: DogRecordPhotoPurpose;
+}): Promise<string[]> {
+  const rows = await db
+    .select({ mediaId: dogRecordPhoto.mediaId })
+    .from(dogRecordPhoto)
+    .where(and(eq(dogRecordPhoto.dogId, dogId), eq(dogRecordPhoto.purpose, purpose)));
+  return rows.map((row) => row.mediaId);
+}
+
+/** Which of these images are already in some dog's file, so one upload can't end up in two. */
+export async function findUsedRecordPhotoIds({
+  db,
+  mediaIds,
+}: {
+  db: DatabaseOrTransaction;
+  mediaIds: string[];
+}): Promise<Set<string>> {
+  if (mediaIds.length === 0) return new Set();
+  const rows = await db
+    .select({ mediaId: dogRecordPhoto.mediaId })
+    .from(dogRecordPhoto)
+    .where(inArray(dogRecordPhoto.mediaId, mediaIds));
+  return new Set(rows.map((row) => row.mediaId));
+}
+
+/** Replaces one purpose's photos in a dog's file with `mediaIds`, in that order. */
+export async function replaceRecordPhotos({
+  db,
+  dogId,
+  purpose,
+  mediaIds,
+}: {
+  db: DatabaseOrTransaction;
+  dogId: string;
+  purpose: DogRecordPhotoPurpose;
+  mediaIds: string[];
+}): Promise<void> {
+  await db.delete(dogRecordPhoto).where(and(eq(dogRecordPhoto.dogId, dogId), eq(dogRecordPhoto.purpose, purpose)));
+  if (mediaIds.length === 0) return;
+  await db.insert(dogRecordPhoto).values(mediaIds.map((mediaId, position) => ({ dogId, mediaId, purpose, position })));
+}
+
 /*===== Writes =====*/
 /** Inserts a dog for its owner and returns the stored row. */
 export async function insertDog({
@@ -239,7 +321,7 @@ export async function insertDog({
   ownerId,
   values,
 }: {
-  db: Database;
+  db: DatabaseOrTransaction;
   ownerId: string;
   values: DogValues;
 }): Promise<DogRecord> {
@@ -261,7 +343,7 @@ export async function updateDogByOwner({
   id,
   values,
 }: {
-  db: Database;
+  db: DatabaseOrTransaction;
   ownerId: string;
   id: string;
   values: DogValues;

@@ -31,7 +31,7 @@ async function makeDog(ownerId: string, name: string): Promise<string> {
   const created = await createDog({
     db,
     ownerId,
-    input: { name, sex: "male", birthDate: "2024-05-01", weightKg: 20, isNeutered: true },
+    input: { breedPurity: "mixed", name, sex: "male", birthDate: "2024-05-01", weightKg: 20, isNeutered: true },
   });
   if (created.kind !== "success") throw new Error("Could not create the test dog.");
   const evaluated = await markDogEvaluated({ db, dogId: created.dog.id });

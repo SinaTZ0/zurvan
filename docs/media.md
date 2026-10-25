@@ -21,20 +21,24 @@ Each kind of image has a fixed set of variants. Variants are generated once at u
 - **cover** crops to exactly the given size, keeping the most interesting part of the image (sharp's `attention` strategy).
 - **inside** fits the image inside the given box and keeps its aspect ratio. It never upscales and never stretches.
 
-| Kind          | Variant | Mode   | Size (px)   | Used for                                      |
-| ------------- | ------- | ------ | ----------- | --------------------------------------------- |
-| `avatar`      | `thumb` | cover  | 96 × 96     | Comment lists, tables, nav menu               |
-|               | `md`    | cover  | 320 × 320   | Profile pages, trainer profile                |
-| `dog`         | `thumb` | cover  | 160 × 160   | Dog pickers, dog rows, checkout               |
-|               | `card`  | cover  | 800 × 600   | Dog cards and the dog detail header (4:3)     |
-|               | `full`  | inside | 1600 × 1600 | Opening the photo                             |
-| `course`      | `thumb` | cover  | 480 × 270   | Order lists, admin tables, small cards (16:9) |
-|               | `card`  | cover  | 960 × 540   | Catalogue cards (16:9)                        |
-|               | `hero`  | cover  | 1920 × 823  | Course detail header (21:9)                   |
-| `certificate` | `thumb` | cover  | 320 × 240   | Certificate list on the trainer profile       |
-|               | `full`  | inside | 2000 × 2000 | Opening a certificate, readable text          |
-| `evaluation`  | `thumb` | cover  | 320 × 240   | The photos of an evaluation request           |
-|               | `full`  | inside | 1600 × 1600 | Opening a photo                               |
+| Kind          | Variant | Mode   | Size (px)   | Used for                                       |
+| ------------- | ------- | ------ | ----------- | ---------------------------------------------- |
+| `avatar`      | `thumb` | cover  | 96 × 96     | Comment lists, tables, nav menu                |
+|               | `md`    | cover  | 320 × 320   | Profile pages, trainer profile                 |
+| `dog`         | `thumb` | cover  | 160 × 160   | Dog pickers, dog rows, checkout                |
+|               | `card`  | cover  | 800 × 600   | Dog cards and the dog detail header (4:3)      |
+|               | `full`  | inside | 1600 × 1600 | Opening the photo                              |
+| `course`      | `thumb` | cover  | 480 × 270   | Order lists, admin tables, small cards (16:9)  |
+|               | `card`  | cover  | 960 × 540   | Catalogue cards (16:9)                         |
+|               | `hero`  | cover  | 1920 × 823  | Course detail header (21:9)                    |
+| `certificate` | `thumb` | cover  | 320 × 240   | Certificate list on the trainer profile        |
+|               | `full`  | inside | 2000 × 2000 | Opening a certificate, readable text           |
+| `evaluation`  | `thumb` | cover  | 320 × 240   | The photos of an evaluation request            |
+|               | `full`  | inside | 1600 × 1600 | Opening a photo                                |
+| `record`      | `thumb` | cover  | 320 × 240   | A dog's file: vaccination card, papers, tattoo |
+|               | `full`  | inside | 2000 × 2000 | Opening a page of papers, readable text        |
+
+A kind is lowercase letters only: the nginx route below matches `[a-z]+`.
 
 Sizes are about twice the largest CSS size each one is shown at, so they look sharp on high-density screens.
 
@@ -65,17 +69,17 @@ All processing uses [sharp](https://sharp.pixelplumbing.com/) on the server.
 
 One `media` table records every upload:
 
-| Field       | Notes                                                           |
-| ----------- | --------------------------------------------------------------- |
-| ID          | The `mediaId` in the storage key.                               |
-| Kind        | `avatar`, `dog`, `course`, `certificate`. Decides the variants. |
-| Uploaded By | User ID.                                                        |
-| Width       | Of the original after rotation, for the `full` aspect ratio.    |
-| Height      |                                                                 |
-| Placeholder | Data URI of the tiny blurred preview.                           |
-| Attached At | Set when an entity starts using it. Empty means it's an orphan. |
+| Field       | Notes                                                                                   |
+| ----------- | --------------------------------------------------------------------------------------- |
+| ID          | The `mediaId` in the storage key.                                                       |
+| Kind        | `avatar`, `dog`, `course`, `certificate`, `evaluation`, `record`. Decides the variants. |
+| Uploaded By | User ID.                                                                                |
+| Width       | Of the original after rotation, for the `full` aspect ratio.                            |
+| Height      |                                                                                         |
+| Placeholder | Data URI of the tiny blurred preview.                                                   |
+| Attached At | Set when an entity starts using it. Empty means it's an orphan.                         |
 
-Entities point to it with a nullable foreign key: `user.avatarMediaId`, `dog.photoMediaId`, `course.coverMediaId`, and a `trainer_certificate` table with `mediaId` and a title.
+Entities point to it with a nullable foreign key: `user.avatarMediaId`, `dog.photoMediaId`, `course.coverMediaId`, and a `trainer_certificate` table with `mediaId` and a title. Lists of images have their own table with a unique `mediaId` and a `position`: `evaluation_photo` (an evaluation request's photos) and `dog_record_photo` (a dog's file: `purpose` is `vaccination`, `medical` or `tattoo`; [app-spec.md](app-spec.md) F2). A form sends a list's IDs whole; the service claims the new ones and deletes the ones the list dropped once the save is done.
 
 ## Upload Flow
 

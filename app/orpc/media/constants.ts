@@ -4,7 +4,7 @@ import type { UserRole } from "~/lib/user-constants";
 // Browser-safe values shared by the upload API, the image component and the forms. See docs/media.md.
 
 /*===== Kinds =====*/
-export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation"] as const;
+export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation", "record"] as const;
 
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -42,6 +42,12 @@ export const MEDIA_VARIANTS = {
   evaluation: {
     thumb: { mode: "cover", width: 320, height: 240 },
     full: { mode: "inside", width: 1600, height: 1600 },
+  },
+  // A photo in a dog's file: its vaccination card, a medical document or its tattoo (F2). Papers need the larger full
+  // size to stay readable. Kinds are lowercase letters only: nginx's media route matches `[a-z]+` (docs/media.md).
+  record: {
+    thumb: { mode: "cover", width: 320, height: 240 },
+    full: { mode: "inside", width: 2000, height: 2000 },
   },
 } as const satisfies Record<MediaKind, Record<string, MediaVariantSpec>>;
 
@@ -87,7 +93,7 @@ export const MEDIA_ACCEPTED_TYPES = "image/jpeg,image/png,image/webp";
 /*===== Who Uploads What =====*/
 /** The kinds each role may upload: only the ones its pages use (customers have no course covers, for example). */
 export const MEDIA_UPLOAD_KINDS_BY_ROLE: Record<UserRole, readonly MediaKind[]> = {
-  customer: ["avatar", "dog", "evaluation"],
+  customer: ["avatar", "dog", "evaluation", "record"],
   partner: ["avatar"],
   admin: MEDIA_KINDS,
 };

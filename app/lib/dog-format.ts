@@ -93,3 +93,26 @@ export function describeDog(dog: Pick<Dog, "sex" | "birthDate" | "birthDateAppro
   const ageInLine = getLocale() === "en" ? age.charAt(0).toLowerCase() + age.slice(1) : age;
   return [DOG_SEX_LABELS[dog.sex], ageInLine, describeWeight(dog.weightKg)].join(m.shared_dog_facts_joiner());
 }
+
+/*===== Breed =====*/
+/**
+ * The dog's breed in one line, as its purity asks (F2): «مالینویز» for a purebred, «مالینویز × ژرمن شپرد» for a cross,
+ * «میکس، شبیه مالینویز» or «میکس» for a mixed dog. A dog written before purity was asked shows its breed as it is.
+ *
+ * @returns Null when there is nothing to show.
+ */
+export function describeBreed(
+  dog: Pick<Dog, "breedPurity" | "breed" | "breedSecondary">,
+  locale: Locale = getLocale(),
+): string | null {
+  const options = { locale };
+  if (dog.breedPurity === "mixed") {
+    return dog.breed
+      ? m.shared_dog_breed_mixed_like({ breed: dog.breed }, options)
+      : m.shared_dog_purity_mixed({}, options);
+  }
+  if (dog.breedPurity === "cross" && dog.breed && dog.breedSecondary) {
+    return m.shared_dog_breed_cross({ first: dog.breed, second: dog.breedSecondary }, options);
+  }
+  return dog.breed;
+}

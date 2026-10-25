@@ -119,6 +119,11 @@ describe("the early-age exception", () => {
     }
   });
 
+  it("counts a cross as working when either parent is", () => {
+    expect(kinds({ dog: { ...puppy, breedSecondary: "مالینویز" } })).toEqual(["not-evaluated"]);
+    expect(kinds({ dog: { ...puppy, breedSecondary: "شیتزو" } })).toEqual([]);
+  });
+
   it("fails closed for a dog with no breed written: an unclassified breed is not assumed harmless", () => {
     expect(kinds({ dog: { ...puppy, breed: null } })).toEqual(["not-evaluated"]);
     expect(kinds({ dog: { ...puppy, breed: "   " } })).toEqual(["not-evaluated"]);

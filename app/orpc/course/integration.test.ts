@@ -135,7 +135,14 @@ beforeAll(async () => {
     const created = await createDog({
       db,
       ownerId: buyer.id,
-      input: { name: "رکس", sex: "male", birthDate: "2024-05-01", weightKg: 20, isNeutered: true },
+      input: {
+        breedPurity: "mixed",
+        name: "رکس",
+        sex: "male",
+        birthDate: "2024-05-01",
+        weightKg: 20,
+        isNeutered: true,
+      },
     });
     if (created.kind !== "success") throw new Error("Could not create the test dog.");
     dogOf[buyer.id] = created.dog.id;

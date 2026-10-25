@@ -184,6 +184,10 @@ Added in Phase 4a. The labels are already in `messages/shared` (`shared_…_stat
 | تاریخ تولد / حدوداً                                            | birth date / about                                                | "Male, about 3 years old, 32.5 kg" (`describeDog`); "About …" alone. |
 | نر / ماده · نژاد · وزن (کیلو) · عقیم‌شده · میکروچیپ            | Male / Female · breed · weight (kg) · neutered · microchip number |                                                                      |
 | واکسن: کامل / ناقص / نمی‌دانم                                  | Vaccinations: Complete / Partial / I don't know                   |                                                                      |
+| نوع نژاد: خالص / دورگه / میکس                                  | Breed type: Purebred / Crossbreed / Mixed                         | A cross shows as «A × B»; mixed as "Mixed, looks like a …"           |
+| هدف آموزش: خانگی / ورزشی / کاری                                | Training goals: House dog / Sport / Working                       | Several allowed                                                      |
+| قد · رنگ پوشش · علائم ظاهری · تاریخ کاشت میکروچیپ · تتو        | height · coat color · markings · microchip date · tattoo          |                                                                      |
+| مشکلات رفتاری                                                  | behavior problems                                                 | One per line                                                         |
 | دوره‌های گذرانده                                               | passed courses; "has passed"                                      | A course passed counts for prerequisites.                            |
 | افزودن به سبد                                                  | Add to cart                                                       | "Sign in and add to cart" signed out.                                |
 | پرداخت (button)                                                | Pay                                                               |                                                                      |

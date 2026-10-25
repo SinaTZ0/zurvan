@@ -12,6 +12,7 @@ import {
   course,
   dog,
   dogPassedCourse,
+  dogRecordPhoto,
   enrollment,
   evaluation,
   evaluationPhoto,
@@ -68,14 +69,23 @@ const DEMO_DOGS = [
     ownerPhone: "09120000004",
     photoFile: "dog-leo.jpg",
     name: "لئو",
+    breedPurity: "purebred",
     breed: "ژرمن شپرد",
+    breedSecondary: null,
     sex: "male",
     birthDate: monthsAgo(36),
     birthDateApproximate: true,
     weightKg: 32.5,
     isNeutered: true,
+    heightCm: 63,
+    coatColor: "سیاه و قهوه‌ای",
+    markings: null,
     microchipNumber: "982000412345678",
+    microchipImplantedOn: monthsAgo(33),
     vaccinationStatus: "up_to_date",
+    vaccinationNotes: "هاری و چندگانه‌ی امسال زده شده.",
+    trainingGoals: ["home", "sport"],
+    behaviorProblems: ["ترس از صدای موتور", "پارس به اسکیت"],
     behaviorNotes: "از صدای موتور و اسکیت می‌ترسد و پارس می‌کند.",
     medicalNotes: null,
   },
@@ -83,14 +93,23 @@ const DEMO_DOGS = [
     ownerPhone: "09120000004",
     photoFile: "dog-pesteh.jpg",
     name: "پسته",
+    breedPurity: "cross",
     breed: "پامرانین",
+    breedSecondary: "شیتزو",
     sex: "female",
     birthDate: monthsAgo(10),
     birthDateApproximate: false,
     weightKg: 2.8,
     isNeutered: false,
+    heightCm: 22,
+    coatColor: "کرم",
+    markings: "یک لکه‌ی سفید روی سینه",
     microchipNumber: null,
+    microchipImplantedOn: null,
     vaccinationStatus: "partial",
+    vaccinationNotes: null,
+    trainingGoals: ["home"],
+    behaviorProblems: ["زوزه وقتی تنها می‌ماند"],
     behaviorNotes: "وقتی تنها می‌ماند زوزه می‌کشد.",
     medicalNotes: "به مرغ حساسیت دارد.",
   },
@@ -99,14 +118,24 @@ const DEMO_DOGS = [
     // No photo: shows a dog without one, and nothing suitable is in the repo.
     photoFile: null,
     name: "راکی",
-    breed: "مخلوط",
+    breedPurity: "mixed",
+    breed: null,
+    breedSecondary: null,
     sex: "male",
     birthDate: monthsAgo(5),
     birthDateApproximate: true,
     weightKg: 14,
     isNeutered: false,
+    heightCm: null,
+    coatColor: null,
+    markings: null,
     microchipNumber: null,
+    microchipImplantedOn: null,
     vaccinationStatus: "partial",
+    vaccinationNotes: null,
+    // Not stated yet: his owner left the training step for later.
+    trainingGoals: [],
+    behaviorProblems: [],
     behaviorNotes: "روی قلاده می‌کشد و به مهمان‌ها می‌پرد.",
     medicalNotes: null,
   },
@@ -145,9 +174,7 @@ async function removeDemoHistory({ tx, customerIds }: { tx: Transaction; custome
   // The demo seeds no diary, but sessions the Admin writes on a demo dog hold the dog and its enrollments.
   await tx
     .delete(logbookEntry)
-    .where(
-      inArray(logbookEntry.dogId, tx.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, customerIds))),
-    );
+    .where(inArray(logbookEntry.dogId, tx.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, customerIds))));
   await tx.delete(commission).where(inArray(commission.customerId, customerIds));
   // A certificate is never deleted by the app, but the demo's are remade with their enrollments.
   await tx
@@ -403,11 +430,18 @@ async function seedDemo() {
 
     /*------ Dogs ------*/
     // The old photos are collected before their dogs go, and deleted from the bucket once this commits.
+    const oldDogIds = tx.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, customerIds));
+    const oldRecordPhotos = await tx
+      .select({ mediaId: dogRecordPhoto.mediaId })
+      .from(dogRecordPhoto)
+      .where(inArray(dogRecordPhoto.dogId, oldDogIds))
+      .then((rows) => rows.map((row) => row.mediaId));
     const oldPhotos = await tx
       .select({ mediaId: dog.photoMediaId })
       .from(dog)
       .where(inArray(dog.ownerId, customerIds))
-      .then((rows) => rows.flatMap((row) => (row.mediaId ? [row.mediaId] : [])));
+      .then((rows) => [...rows.flatMap((row) => (row.mediaId ? [row.mediaId] : [])), ...oldRecordPhotos]);
+    await tx.delete(dogRecordPhoto).where(inArray(dogRecordPhoto.dogId, oldDogIds));
     await tx.delete(dog).where(inArray(dog.ownerId, customerIds));
 
     // One insert shares one `now()`, so space the creation times out to keep each list in the order above.

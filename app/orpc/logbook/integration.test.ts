@@ -95,7 +95,7 @@ beforeAll(async () => {
   const created = await createDog({
     db,
     ownerId: ana.id,
-    input: { name: "رکس", sex: "male", birthDate: "2024-05-01", weightKg: 20, isNeutered: true },
+    input: { breedPurity: "mixed", name: "رکس", sex: "male", birthDate: "2024-05-01", weightKg: 20, isNeutered: true },
   });
   if (created.kind !== "success") throw new Error("Could not create the test dog.");
   anasDog = { id: created.dog.id, fileNumber: created.dog.fileNumber };
@@ -103,7 +103,7 @@ beforeAll(async () => {
   const bens = await createDog({
     db,
     ownerId: ben.id,
-    input: { name: "بنی", sex: "male", birthDate: "2024-06-01", weightKg: 15, isNeutered: false },
+    input: { breedPurity: "mixed", name: "بنی", sex: "male", birthDate: "2024-06-01", weightKg: 15, isNeutered: false },
   });
   if (bens.kind !== "success") throw new Error("Could not create Ben's test dog.");
   bensDog = bens.dog.id;
@@ -165,7 +165,14 @@ describe("a dog's file number", () => {
     const second = await createDog({
       db,
       ownerId: ana.id,
-      input: { name: "لونا", sex: "female", birthDate: "2025-01-01", weightKg: 9, isNeutered: false },
+      input: {
+        breedPurity: "mixed",
+        name: "لونا",
+        sex: "female",
+        birthDate: "2025-01-01",
+        weightKg: 9,
+        isNeutered: false,
+      },
     });
     if (second.kind !== "success") throw new Error("Could not create the second test dog.");
     expect(second.dog.fileNumber).not.toBe(anasDog.fileNumber);
@@ -174,7 +181,14 @@ describe("a dog's file number", () => {
       db,
       ownerId: ana.id,
       id: anasDog.id,
-      input: { name: "رکس بزرگ", sex: "male", birthDate: "2024-05-01", weightKg: 22, isNeutered: true },
+      input: {
+        breedPurity: "mixed",
+        name: "رکس بزرگ",
+        sex: "male",
+        birthDate: "2024-05-01",
+        weightKg: 22,
+        isNeutered: true,
+      },
     });
     expect(edited.kind).toBe("success");
     const [row] = await db.select({ fileNumber: dog.fileNumber }).from(dog).where(eq(dog.id, anasDog.id));

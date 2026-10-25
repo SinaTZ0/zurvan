@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "~/db/client.server";
-import { dog, evaluation, media, user } from "~/db/schema";
+import { dog, dogRecordPhoto, evaluation, media, user } from "~/db/schema";
 import { phonePlaceholderEmail } from "~/lib/phone";
 import { adminUpdateDog, createDog, getDog, listDogs, updateDog } from "~/orpc/dog/service";
 import { markDogEvaluated } from "~/orpc/evaluation/service";
@@ -19,6 +19,7 @@ const ownerB = { id: `test-dog-b-${runId}`, phone: `0991${Math.floor(1000000 + M
 
 const dogInput = {
   name: "رکس",
+  breedPurity: "purebred",
   breed: "لابرادور",
   sex: "male",
   birthDate: "2023-05-01",
@@ -29,6 +30,13 @@ const dogInput = {
 let dogId: string;
 // A dog photo that ownerB uploaded: only the row exists, which is all the ownership check reads.
 const strangerMediaId = randomUUID();
+// File photos (`record`): one ownerB uploaded, two of ownerA's.
+const strangerRecordId = randomUUID();
+const vaccineCardIds = [randomUUID(), randomUUID()];
+
+function mediaRow({ id, kind, uploadedBy }: { id: string; kind: string; uploadedBy: string }) {
+  return { id, kind, uploadedBy, width: 800, height: 600, placeholder: "data:image/webp;base64," };
+}
 
 beforeAll(async () => {
   await db.insert(user).values(
@@ -41,14 +49,13 @@ beforeAll(async () => {
     })),
   );
 
-  await db.insert(media).values({
-    id: strangerMediaId,
-    kind: "dog",
-    uploadedBy: ownerB.id,
-    width: 800,
-    height: 600,
-    placeholder: "data:image/webp;base64,",
-  });
+  await db
+    .insert(media)
+    .values([
+      mediaRow({ id: strangerMediaId, kind: "dog", uploadedBy: ownerB.id }),
+      mediaRow({ id: strangerRecordId, kind: "record", uploadedBy: ownerB.id }),
+      ...vaccineCardIds.map((id) => mediaRow({ id, kind: "record", uploadedBy: ownerA.id })),
+    ]);
 
   const created = await createDog({ db, ownerId: ownerA.id, input: dogInput });
   if (created.kind !== "success") throw new Error("Could not create the test dog.");
@@ -59,8 +66,10 @@ afterAll(async () => {
   const ids = [ownerA.id, ownerB.id];
   // Evaluations and dogs first: they reference the users.
   await db.delete(evaluation).where(inArray(evaluation.customerId, ids));
+  const dogIds = (await db.select({ id: dog.id }).from(dog).where(inArray(dog.ownerId, ids))).map((row) => row.id);
+  if (dogIds.length > 0) await db.delete(dogRecordPhoto).where(inArray(dogRecordPhoto.dogId, dogIds));
   await db.delete(dog).where(inArray(dog.ownerId, ids));
-  await db.delete(media).where(eq(media.id, strangerMediaId));
+  await db.delete(media).where(inArray(media.id, [strangerMediaId, strangerRecordId, ...vaccineCardIds]));
   await db.delete(user).where(inArray(user.id, ids));
   await db.$client.end();
 });
@@ -103,6 +112,54 @@ describe("dog ownership", () => {
     expect(await getDog({ db, ownerId: ownerA.id, id: dogId })).toMatchObject({ dog: { photo: null } });
   });
 
+  it("keeps the file photos to the owner's own uploads, and deletes the ones taken out", async () => {
+    const stranger = await updateDog({
+      db,
+      ownerId: ownerA.id,
+      id: dogId,
+      input: { ...dogInput, vaccinationPhotoIds: [strangerRecordId] },
+    });
+    expect(stranger).toMatchObject({ kind: "invalid", fields: { vaccinationPhotoIds: expect.any(String) } });
+    expect(await getDog({ db, ownerId: ownerA.id, id: dogId })).toMatchObject({ dog: { vaccinationPhotos: [] } });
+
+    const added = await updateDog({
+      db,
+      ownerId: ownerA.id,
+      id: dogId,
+      input: { ...dogInput, vaccinationPhotoIds: vaccineCardIds },
+    });
+    expect(added).toMatchObject({
+      kind: "success",
+      dog: { vaccinationPhotos: vaccineCardIds.map((id) => ({ id })), medicalPhotos: [], tattooPhoto: null },
+    });
+
+    // Left out keeps them; a shorter list deletes the image it no longer has.
+    expect(await updateDog({ db, ownerId: ownerA.id, id: dogId, input: dogInput })).toMatchObject({
+      dog: { vaccinationPhotos: [{}, {}] },
+    });
+    const [kept] = vaccineCardIds;
+    await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, vaccinationPhotoIds: [kept] } });
+    expect(await db.select({ id: media.id }).from(media).where(inArray(media.id, vaccineCardIds))).toEqual([
+      { id: kept },
+    ]);
+  });
+
+  it("asks for the breed type and the breeds it needs", async () => {
+    const { breedPurity: _purity, ...noPurity } = dogInput;
+    expect(await createDog({ db, ownerId: ownerA.id, input: noPurity })).toMatchObject({
+      kind: "invalid",
+      fields: { breedPurity: expect.any(String) },
+    });
+    expect(
+      await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, breedPurity: "cross" } }),
+    ).toMatchObject({ kind: "invalid", fields: { breedSecondary: expect.any(String) } });
+
+    // Only a cross keeps a second breed.
+    expect(
+      await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, breedSecondary: "پودل" } }),
+    ).toMatchObject({ kind: "success", dog: { breedPurity: "purebred", breedSecondary: null } });
+  });
+
   it("treats a malformed id as not found", async () => {
     expect(await getDog({ db, ownerId: ownerA.id, id: "not-a-uuid" })).toEqual({ kind: "not-found" });
   });
@@ -120,16 +177,26 @@ describe("dog ownership", () => {
     expect(moved).toMatchObject({ kind: "invalid", fields: { birthDate: expect.any(String) } });
     const rebred = await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, breed: "پودل" } });
     expect(rebred).toMatchObject({ kind: "invalid", fields: { breed: expect.any(String) } });
+    const crossed = await updateDog({
+      db,
+      ownerId: ownerA.id,
+      id: dogId,
+      input: { ...dogInput, breedPurity: "cross", breedSecondary: "پودل" },
+    });
+    expect(crossed).toMatchObject({
+      kind: "invalid",
+      fields: { breedPurity: expect.any(String), breedSecondary: expect.any(String) },
+    });
 
     // Other fields still change, and so does the Admin's edit of the locked ones.
     expect(await updateDog({ db, ownerId: ownerA.id, id: dogId, input: { ...dogInput, weightKg: 30 } })).toMatchObject({
       kind: "success",
       dog: { weightKg: 30, isEvaluated: true },
     });
-    const { photoMediaId: _photo, ...adminInput } = { ...dogInput, birthDate: "2020-01-01", photoMediaId: null };
+    const adminInput = { ...dogInput, birthDate: "2020-01-01", breedPurity: "mixed" };
     expect(await adminUpdateDog({ db, id: dogId, input: adminInput })).toMatchObject({
       kind: "success",
-      dog: { birthDate: "2020-01-01" },
+      dog: { birthDate: "2020-01-01", breedPurity: "mixed" },
     });
   });
 });

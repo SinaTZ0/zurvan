@@ -1,6 +1,6 @@
 # Zurvann — App Specification
 
-The source of truth for how the app works. The course catalog's content comes from [zurvan-courses.md](zurvan-courses.md); the shape of a dog profile and of a course's settings is still being worked out with the owner (see [F2](#f2-dog-profiles) and [F8](#f8-course-catalogue)).
+The source of truth for how the app works. The course catalog's content comes from [zurvan-courses.md](zurvan-courses.md); a course's settings are still being worked out with the owner (see [F8](#f8-course-catalogue)); the dog profile's fields were settled on 2026-10-25 ([F2](#f2-dog-profiles)).
 
 **How to read it.** The spec is organized by **feature**, because one page often holds several features and one feature often shows up on several pages. Each feature says who uses it, its rules, its edge cases and the pages it appears on. [Pages](#pages) at the end lists every page with the features on it. Refer to a feature by its number (`F5`) in code comments and commits.
 
@@ -55,9 +55,22 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 
 **Who:** the customer manages their own dogs; the Admin sees and edits all.
 
-The exact fields are **pending the owner**. Until then the app keeps what exists today (name, breed, sex, birth date, weight, neutered, microchip, vaccinations, behavior and medical notes, photo) and builds nothing new on guesses. Details the customer doesn't fill in, the Admin gets in person and enters himself.
+**The fields** (the owner's project document, «فیلدهای پرونده», settled on 2026-10-25). Details the customer doesn't fill in, the Admin gets in person and enters herself.
 
-**Locked after the evaluation.** Once a dog is **evaluated** ([F3](#f3-evaluation)), the fields that decide eligibility ([F4](#f4-eligibility)) are **locked for the customer**: today the **birth date** and the **breed**. Only the Admin can change them from then on. Otherwise a customer could change a birth date to get past an age range.
+| Group     | Fields                                                                                                                                                                                                 | On the customer's form       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| Who it is | name, sex, birth date (or an age, kept as an estimate), **breed type** («خالص / دورگه / میکس») and the breed inputs it asks for, photo                                                                 | required, except the photo   |
+| Body      | weight, neutered, height (cm), coat color, markings                                                                                                                                                    | weight and neutered required |
+| Health    | vaccinations («کامل / ناقص / نمی‌دانم») with photos of the card and a note in the owner's words; microchip number and its implant date; a photo of the tattoo; medical notes with photos of the papers | optional                     |
+| Training  | training goals («خانگی / ورزشی / کاری», several allowed); behavior problems, one per line; a note for the trainer                                                                                      | optional                     |
+
+- **Breed type decides the breed inputs.** A **purebred** has one breed; a **cross** has its two parents' breeds (two different ones); a **mixed** dog (parents unknown) has at most what it looks like. Wherever a breed is shown in one line it reads «مالینویز», «پامرانین × شیتزو» or «میکس، شبیه …». A dog written before the breed type was asked has none («not stated») until the Admin fills it in, and keeps its breed as it is.
+- **The new dog form is four steps** (who it is, body, health, training); health and training can be left for later. Editing a dog is one page.
+- **Behavior problems** are shown on the Admin's dog page right above the diary ([F14](#f14-dog-file-logbook-and-certificate)).
+- **The photos in the file** (vaccination card up to 6, medical papers up to 6, tattoo 1) are uploaded by the owner and seen by the owner and the Admin. Like every image they are served by their unguessable link, with no check of who asks: decided on 2026-10-25 that a dog's papers need no more than that. The Admin can't upload them, the same as the dog's photo.
+- **Still open:** other species (T-02, dog-only until the owner decides); a section per vaccine with dates (T-18, needs the owner's list of vaccines); the "GPS" mentioned with the microchip (Q-13); PDFs (photos only, since the image pipeline takes images).
+
+**Locked after the evaluation.** Once a dog is **evaluated** ([F3](#f3-evaluation)), the fields that decide eligibility ([F4](#f4-eligibility)) are **locked for the customer**: the **birth date**, the **breed type** and the **breeds**. Only the Admin can change them from then on. Otherwise a customer could change a birth date to get past an age range. For the early-age exception, a cross counts as a working breed when either parent is one.
 
 **Passed courses.** A dog's profile lists the courses it has **passed**. A course gets there in two ways:
 

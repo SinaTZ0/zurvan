@@ -45,7 +45,8 @@ export type EligibilityCourse = {
 /**
  * Whether the owner's early-age exception lets this dog skip the evaluation **for this course**. It fails closed: with no
  * exception configured, a course it doesn't cover, an age outside its bounds, a dog with no breed written or one that
- * matches a working breed, it does not apply. It only ever replaces the evaluation; every other rule still applies.
+ * matches a working breed, it does not apply. A cross counts as working when either parent's breed is. It only ever
+ * replaces the evaluation; every other rule still applies.
  */
 export function qualifiesForEarlyAge({
   dog,
@@ -53,7 +54,7 @@ export function qualifiesForEarlyAge({
   exception,
   today,
 }: {
-  dog: { birthDate: string; breed?: string | null };
+  dog: { birthDate: string; breed?: string | null; breedSecondary?: string | null };
   course: { slug: string };
   exception: EarlyAgeException | null;
   today: string;
@@ -63,11 +64,11 @@ export function qualifiesForEarlyAge({
   const age = ageInMonths({ birthDate: dog.birthDate, today });
   if (age < exception.minMonths || age > exception.maxMonths) return false;
 
-  const breed = normalizeForSearch(dog.breed ?? "");
-  if (breed === "") return false;
+  if (normalizeForSearch(dog.breed ?? "") === "") return false;
+  const breeds = [dog.breed, dog.breedSecondary].map((breed) => normalizeForSearch(breed ?? "")).filter(Boolean);
   return !exception.workingBreeds.some((working) => {
     const folded = normalizeForSearch(working);
-    return folded !== "" && (breed.includes(folded) || folded.includes(breed));
+    return folded !== "" && breeds.some((breed) => breed.includes(folded) || folded.includes(breed));
   });
 }
 
@@ -91,7 +92,7 @@ export function checkEligibility({
   earlyAgeException = null,
   locale = "fa",
 }: {
-  dog: { name: string; birthDate: string; breed?: string | null };
+  dog: { name: string; birthDate: string; breed?: string | null; breedSecondary?: string | null };
   isEvaluated: boolean;
   course: EligibilityCourse;
   prerequisites: { id: string; slug: string; title: string }[];
