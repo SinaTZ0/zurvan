@@ -5,10 +5,10 @@ import { inArray } from "drizzle-orm";
 
 import { db } from "~/db/client.server";
 import { blogPost } from "~/db/schema";
-import { TEXT_BOLD, type BlogBlock, type BlogBody, type BlogInline } from "~/lib/blog-body";
+import { TEXT_BOLD, bodyFigures, type BlogBlock, type BlogBody, type BlogInline } from "~/lib/blog-body";
 import type { BlogInput } from "~/orpc/blog/contract";
 import { adminCreatePost, adminSetPostStatus } from "~/orpc/blog/service";
-import { uploadMedia } from "~/orpc/media/service";
+import { deleteMedia, uploadMedia } from "~/orpc/media/service";
 
 /*===== Demo Blog =====*/
 // Three published posts for the owner's showcase (F16), written through the Admin's own service like the rest of the
@@ -83,7 +83,12 @@ function excitedUrination(figureId: string): Omit<BlogInput, "coverMediaId"> {
         ["بازی‌های پرهیجان و صدای بلند هم می‌توانند شروعش کنند."],
         ["در توله‌های خجالتی، گاهی با ادرار از سر ترس اشتباه گرفته می‌شود."],
       ]),
-      { type: "figure", mediaId: figureId, alt: "توله‌سگ پشمالویی که روی زمین نشسته", caption: "آرام ماندن شما، آرام شدن توله را آسان‌تر می‌کند." },
+      {
+        type: "figure",
+        mediaId: figureId,
+        alt: "توله‌سگ پشمالویی که روی زمین نشسته",
+        caption: "آرام ماندن شما، آرام شدن توله را آسان‌تر می‌کند.",
+      },
       h2("در خانه چه کار کنیم؟"),
       h3("سلام را آرام کنید"),
       p(
@@ -114,16 +119,25 @@ function excitedUrination(figureId: string): Omit<BlogInput, "coverMediaId"> {
         ", and it is very common in puppies. The good news: with a few changes in how you greet them, it usually passes sooner than you think.",
       ),
       h2("Why does it happen?"),
-      p("A puppy's bladder control isn't finished yet. When excitement peaks, the body can't hold on. It isn't stubbornness, and your puppy doesn't know it happened."),
+      p(
+        "A puppy's bladder control isn't finished yet. When excitement peaks, the body can't hold on. It isn't stubbornness, and your puppy doesn't know it happened.",
+      ),
       list("bullet", [
         ["It mostly happens during ", { bold: "greetings" }, ": you coming home, or a guest arriving."],
         ["Loud, wild play can set it off too."],
         ["In shy puppies it can be mistaken for urinating out of fear."],
       ]),
-      { type: "figure", mediaId: figureId, alt: "A fluffy puppy sitting on the floor", caption: "Your calm makes it easier for your puppy to calm down." },
+      {
+        type: "figure",
+        mediaId: figureId,
+        alt: "A fluffy puppy sitting on the floor",
+        caption: "Your calm makes it easier for your puppy to calm down.",
+      },
       h2("What to do at home"),
       h3("Keep greetings calm"),
-      p("When you come in, ignore your puppy for a few minutes. Once they settle, crouch down and say hello softly. Ask guests to do the same."),
+      p(
+        "When you come in, ignore your puppy for a few minutes. Once they settle, crouch down and say hello softly. Ask guests to do the same.",
+      ),
       h3("Outside, before the excitement"),
       p("Take your puppy out to relieve themselves before guests arrive and right after you get home."),
       tip("Never scold a puppy for excited urination. Scolding adds excitement and fear, and makes it last longer."),
@@ -133,7 +147,9 @@ function excitedUrination(figureId: string): Omit<BlogInput, "coverMediaId"> {
         ["Reward every calm hello with a small treat."],
       ]),
       h2("When should we worry?"),
-      p("If it carries on past six months, or happens when your puppy is calm, see your vet first to rule out a medical cause. After that, a behavior evaluation helps us find where it comes from."),
+      p(
+        "If it carries on past six months, or happens when your puppy is calm, see your vet first to rule out a medical cause. After that, a behavior evaluation helps us find where it comes from.",
+      ),
       quote("Your patience and calm are the strongest tools at this stage."),
     ),
   };
@@ -148,9 +164,13 @@ const FIRST_WEEK: Omit<BlogInput, "coverMediaId"> = {
   coverAlt: "توله‌سگی که روی پتوی نرم در جای خوابش دراز کشیده",
   relatedCourseSlug: "house-manner",
   body: doc(
-    p("توله‌ای که تازه به خانه آمده، همه‌چیز را از نو یاد می‌گیرد: بوها، صداها و آدم‌ها. چیزی که بیشتر از هر وسیله‌ای کمکش می‌کند، یک روز قابل پیش‌بینی است."),
+    p(
+      "توله‌ای که تازه به خانه آمده، همه‌چیز را از نو یاد می‌گیرد: بوها، صداها و آدم‌ها. چیزی که بیشتر از هر وسیله‌ای کمکش می‌کند، یک روز قابل پیش‌بینی است.",
+    ),
     h2("یک جای امن برای خواب"),
-    p("یک گوشه‌ی آرام، دور از رفت‌وآمد، با یک پتوی نرم کافی است. توله‌ها روزی چندین ساعت می‌خوابند و خواب کافی هیجان و گاز گرفتن را کمتر می‌کند."),
+    p(
+      "یک گوشه‌ی آرام، دور از رفت‌وآمد، با یک پتوی نرم کافی است. توله‌ها روزی چندین ساعت می‌خوابند و خواب کافی هیجان و گاز گرفتن را کمتر می‌کند.",
+    ),
     h2("ساعت‌های ثابت"),
     list("bullet", [
       [{ bold: "غذا" }, " در ساعت‌های ثابت، به اندازه‌ای که دامپزشک گفته."],
@@ -159,7 +179,9 @@ const FIRST_WEEK: Omit<BlogInput, "coverMediaId"> = {
     ]),
     tip("هر بار که توله در جای درست دستشویی کرد، همان لحظه تشویقش کنید. زمان تشویق مهم‌تر از اندازه‌ی جایزه است."),
     h2("مهمان‌ها و بیرون رفتن"),
-    p("در هفته‌ی اول مهمانی شلوغ نگیرید. آشنایی با آدم‌ها و جاهای تازه را آرام و کم‌کم شروع کنید و قبل از بیرون رفتن در محیط‌های عمومی، برنامه‌ی واکسن را با دامپزشک هماهنگ کنید."),
+    p(
+      "در هفته‌ی اول مهمانی شلوغ نگیرید. آشنایی با آدم‌ها و جاهای تازه را آرام و کم‌کم شروع کنید و قبل از بیرون رفتن در محیط‌های عمومی، برنامه‌ی واکسن را با دامپزشک هماهنگ کنید.",
+    ),
   ),
 };
 
@@ -182,19 +204,41 @@ const COLLAR_AND_LEASH: Omit<BlogInput, "coverMediaId"> = {
     ]),
     tip("قلاده را اول چند بار کوتاه در خانه ببندید و با بازی و جایزه همراهش کنید، بعد بروید بیرون."),
     h2("اگر سگ لید را می‌کشد"),
-    p("کشیدن لید با تمرین درست می‌شود، نه با قلاده‌های آزاردهنده. هر بار که لید شل است، قدم بردارید و هر بار که کشید، بایستید. سگ زود می‌فهمد کدام راه جلو می‌رود."),
+    p(
+      "کشیدن لید با تمرین درست می‌شود، نه با قلاده‌های آزاردهنده. هر بار که لید شل است، قدم بردارید و هر بار که کشید، بایستید. سگ زود می‌فهمد کدام راه جلو می‌رود.",
+    ),
   ),
 };
 
 /*===== Seed =====*/
 /**
- * Replaces the demo posts: deletes the earlier ones (by their slugs), uploads the covers and the figure, then creates
- * and publishes the three posts as the Admin.
+ * Replaces the demo posts: deletes the earlier ones (by their slugs) and their images, uploads the covers and the
+ * figure, then creates and publishes the three posts as the Admin. Run again, it leaves nothing of the last run behind.
  *
  * @throws When an upload or a post is refused, so a broken demo is noticed at seed time.
  */
 export async function seedBlogPosts({ adminId }: { adminId: string }): Promise<void> {
+  /*------ Earlier demo posts and their images ------*/
+  const earlier = await db
+    .select({ coverMediaId: blogPost.coverMediaId, body: blogPost.body, bodyEn: blogPost.bodyEn })
+    .from(blogPost)
+    .where(inArray(blogPost.slug, DEMO_SLUGS));
+  const oldMediaIds = new Set(
+    earlier.flatMap((post) => [
+      ...(post.coverMediaId ? [post.coverMediaId] : []),
+      ...[post.body, post.bodyEn].flatMap((body) => (body ? bodyFigures(body as BlogBody).map((f) => f.mediaId) : [])),
+    ]),
+  );
   await db.delete(blogPost).where(inArray(blogPost.slug, DEMO_SLUGS));
+  // After the posts, which point at them. The seed uploads its own images, so no other post shares them; a cover that
+  // somehow is still used stays (its foreign key refuses the delete).
+  for (const mediaId of oldMediaIds) {
+    await deleteMedia({ db, mediaId }).catch((error: unknown) =>
+      console.warn(`seedBlog: kept media ${mediaId}, still in use`, error instanceof Error ? error.message : error),
+    );
+  }
+
+  /*------ New posts ------*/
 
   const [coverOne, coverTwo, coverThree, figure] = await Promise.all([
     upload({ adminId, kind: "post", file: path.join(PUBLIC_PHOTOS, "course-house-manner.webp") }),
@@ -212,6 +256,7 @@ export async function seedBlogPosts({ adminId }: { adminId: string }): Promise<v
     const created = await adminCreatePost({ db, userId: adminId, input });
     if (created.kind !== "success") throw new Error(`seedBlog: ${input.slug} was refused: ${JSON.stringify(created)}`);
     const published = await adminSetPostStatus({ db, userId: adminId, id: created.post.id, status: "published" });
-    if (published.kind !== "success") throw new Error(`seedBlog: ${input.slug} can't be published: ${JSON.stringify(published)}`);
+    if (published.kind !== "success")
+      throw new Error(`seedBlog: ${input.slug} can't be published: ${JSON.stringify(published)}`);
   }
 }
