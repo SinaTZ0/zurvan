@@ -14,9 +14,21 @@ import type { FamilyGroup } from "~/routes/course_catalogue/family-groups";
 // of path at the start, the name and its line beside him. As a stage, it is the panel's start column, at least as tall
 // as the cards, laid out top to bottom in flow: the name and its line, then the sky (which keeps room for his bubble),
 // then the path with the dog standing on it. In flow, a long line (a narrow column, or English) pushes the stage
-// taller instead of running under the moon and the bubble. The panel picks the breakpoint at which it becomes a stage,
-// or `none` to stay a row (see `ResultsGrid`); each class set is written out whole for Tailwind to find.
+// taller instead of running under the moon and the bubble. The panel picks the breakpoint at which it becomes a stage
+// (`base` for a stage from phones up), or `none` to stay a row (see `ResultsGrid`); each class set is written out whole for Tailwind to find.
 const STAGE_FROM = {
+  // From phones: a one-course family's stage beside its card. A half-width phone column has no room for his bubble
+  // between the family's line and the path, so the bubble and the sky wait for `sm`, as in the `sm` stage.
+  base: {
+    root: "relative flex-col items-stretch gap-0 p-3.5 sm:min-h-80 sm:p-6",
+    art: "-mx-3.5 -mb-3.5 h-36 w-auto sm:-mx-6 sm:-mb-6 sm:h-56 sm:w-auto",
+    ground: "h-9 sm:h-12",
+    dog: "bottom-[1.3rem] h-28 sm:bottom-[1.7rem] sm:h-44",
+    scene: "bottom-[1.3rem] sm:bottom-[1.7rem]",
+    bubble: "sm:block",
+    sky: "block min-h-0 sm:min-h-24",
+    words: "order-first pb-0",
+  },
   sm: {
     root: "sm:relative sm:min-h-80 sm:flex-col sm:items-stretch sm:gap-0 sm:p-6",
     art: "sm:-mx-6 sm:-mb-6 sm:h-56 sm:w-auto",
