@@ -1,4 +1,14 @@
 import {
+  adminCreateBlogPostProcedure,
+  adminDeleteBlogPostProcedure,
+  adminGetBlogPostProcedure,
+  adminListBlogPostsProcedure,
+  adminSetBlogPostStatusProcedure,
+  adminUpdateBlogPostProcedure,
+  getBlogPostProcedure,
+  listBlogPostsProcedure,
+} from "~/orpc/blog/procedure";
+import {
   addToCartProcedure,
   clearCartProcedure,
   getCartProcedure,
@@ -108,6 +118,18 @@ import { adminListUsersProcedure, adminSetUserStatusProcedure, adminUpdateUserPr
 /*===== API Router =====*/
 // Assembled with the undecorated implementer (see `implementer.server.ts`).
 export const router = implementer.router({
+  blog: {
+    list: listBlogPostsProcedure,
+    get: getBlogPostProcedure,
+    admin: {
+      list: adminListBlogPostsProcedure,
+      get: adminGetBlogPostProcedure,
+      create: adminCreateBlogPostProcedure,
+      update: adminUpdateBlogPostProcedure,
+      setStatus: adminSetBlogPostStatusProcedure,
+      delete: adminDeleteBlogPostProcedure,
+    },
+  },
   cart: {
     get: getCartProcedure,
     add: addToCartProcedure,

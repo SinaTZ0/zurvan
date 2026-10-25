@@ -351,6 +351,56 @@ export const coursePrerequisite = pgTable(
   ],
 );
 
+/*===== Blog =====*/
+// The head trainer's articles (docs/app-spec.md, F16). The body is the editor's JSON cut down to the nodes the article
+// draws (`app/lib/blog-body.ts`); the server stores only what passed that whitelist. A post is never public until it is
+// published, and a post without its full English text doesn't exist on `/en`.
+
+export const blogPost = pgTable(
+  "blog_post",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** The address (`/blog/<slug>`): lowercase Latin words and dashes. */
+    slug: text("slug").notNull().unique(),
+    /** Addresses the post had after it was first published; each answers with a permanent redirect to `slug`. */
+    previousSlugs: text("previous_slugs")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
+    /** `draft` or `published`. Allowed values live in `app/orpc/blog/constants.ts`. */
+    status: text("status").notNull().default("draft"),
+    category: text("category").notNull(),
+    title: text("title").notNull(),
+    /** The card's text and the meta description. Empty while a draft. */
+    excerpt: text("excerpt").notNull().default(""),
+    body: jsonb("body").notNull(),
+    /** Title, excerpt and body folded by `normalizeForSearch`, so a search runs one `LIKE`. */
+    searchText: text("search_text").notNull().default(""),
+    wordCount: integer("word_count").notNull().default(0),
+    /** A `post` image. Null while a draft has none; publishing needs one. */
+    coverMediaId: uuid("cover_media_id").references(() => media.id, { onDelete: "restrict" }),
+    coverAlt: text("cover_alt").notNull().default(""),
+    /** The course the article's closing card points to; without one it offers a free evaluation. */
+    relatedCourseId: uuid("related_course_id").references(() => course.id, { onDelete: "set null" }),
+    // The English text (`/en`): all four or none, so a post is either whole in English or absent there (`hasEnglish`).
+    titleEn: text("title_en"),
+    excerptEn: text("excerpt_en"),
+    bodyEn: jsonb("body_en"),
+    coverAltEn: text("cover_alt_en"),
+    searchTextEn: text("search_text_en"),
+    wordCountEn: integer("word_count_en"),
+    hasEnglish: boolean("has_english").notNull().default(false),
+    /** Set on the first publish and kept after: unpublishing and publishing again doesn't make an old post new. */
+    publishedAt: timestamp("published_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [index("blog_post_status_published_at_idx").on(table.status, table.publishedAt)],
+);
+
 /** A course the Admin marked as passed for a dog he already knows (F2). A completed enrollment counts the same. */
 export const dogPassedCourse = pgTable(
   "dog_passed_course",

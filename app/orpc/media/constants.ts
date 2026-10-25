@@ -4,7 +4,7 @@ import type { UserRole } from "~/lib/user-constants";
 // Browser-safe values shared by the upload API, the image component and the forms. See docs/media.md.
 
 /*===== Kinds =====*/
-export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation", "record"] as const;
+export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation", "record", "post", "figure"] as const;
 
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -47,6 +47,19 @@ export const MEDIA_VARIANTS = {
   // size to stay readable. Kinds are lowercase letters only: nginx's media route matches `[a-z]+` (docs/media.md).
   record: {
     thumb: { mode: "cover", width: 320, height: 240 },
+    full: { mode: "inside", width: 2000, height: 2000 },
+  },
+  // A blog post's cover (F16): the cards and the article's header like a course's, plus `og` at the size link
+  // previews ask for (`og:image`).
+  post: {
+    thumb: { mode: "cover", width: 480, height: 270 },
+    card: { mode: "cover", width: 960, height: 540 },
+    hero: { mode: "cover", width: 1920, height: 823 },
+    og: { mode: "cover", width: 1200, height: 630 },
+  },
+  // An image inside a post's text: `inline` fills the article's reading column (about 720px), `full` opens it.
+  figure: {
+    inline: { mode: "inside", width: 1440, height: 1440 },
     full: { mode: "inside", width: 2000, height: 2000 },
   },
 } as const satisfies Record<MediaKind, Record<string, MediaVariantSpec>>;

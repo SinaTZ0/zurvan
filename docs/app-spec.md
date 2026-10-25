@@ -32,6 +32,7 @@ The app is a **small shop with locked items**. A new dog starts with a **free ev
 | Enrollments (F6)                    |   Own    |     —     | Completes, cancels |
 | Referral link, QR, phone leads (F7) |    —     |    ✅     |         ✅         |
 | Commissions (F7)                    |    —     | Own, read |  All, marks paid   |
+| Blog (F16)                          |  Reads   |   Reads   | Writes, publishes  |
 
 ---
 
@@ -260,12 +261,12 @@ An enrollment is created **only by a successful payment** ([F5](#f5-cart-and-che
 
 Stored in the database so the Admin can change them without a release. Each is read on every use, so a change applies at once with no restart; a missing value means its default. A commission already written keeps the percent it was written with. The commission steps are a table: always five steps, the first from customer 1, each later one from a later customer (up to the 1000th), each percent 1 to 50%; the Admin edits them together and saves the table at once. The Admin can set the deposit from 1 to 100%, codes per phone from 1 to 30 and per IP from 5 to 200 (guardrails against a typo). The demo accounts skip the hourly per-phone cap. The code length, its 2-minute validity, 5 wrong tries and the 60-second wait are fixed in code.
 
-| Setting                | Default     |
-| ---------------------- | ----------- |
+| Setting                | Default                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------- |
 | Partner commission     | 10% / 12% from the 4th customer / 15% from the 5th and the 9th / 18% from the 10th |
-| Deposit                | 100%        |
-| OTP requests per phone | 5 per hour  |
-| OTP requests per IP    | 20 per hour |
+| Deposit                | 100%                                                                               |
+| OTP requests per phone | 5 per hour                                                                         |
+| OTP requests per IP    | 20 per hour                                                                        |
 
 **Pages:** Platform Settings
 
@@ -304,7 +305,7 @@ Money is integer **Rial**. At this scale every number is a simple indexed query;
 | Paid prices never change          | Each item's price is saved on the pending payment at checkout and copied onto its enrollment.                                   |
 | A payment settles once            | A unique index on the gateway's payment id; a pending payment becomes paid or failed by a conditional update, once.             |
 | No double enrollment              | A partial unique index: one **active** enrollment per dog and course. The loser of a race becomes **paid, not enrolled**.       |
-| One commission per payment        | A unique index on the payment; the partner's row is locked while their customers are counted, so two can't land on one step.   |
+| One commission per payment        | A unique index on the payment; the partner's row is locked while their customers are counted, so two can't land on one step.    |
 | A refund never exceeds the charge | The sum of the refunds that stand is checked under a lock on the payment.                                                       |
 | Statuses only move forward        | Each status change is a conditional update (e.g. evaluate only a `requested` evaluation; complete only an `active` enrollment). |
 
@@ -378,11 +379,31 @@ The same record serves a dog's public logbook ([F14](#f14-dog-file-logbook-and-c
 
 - The site installs as an app from the browser (a web app manifest; the only way onto an iPhone), and an Android app (a Trusted Web Activity) opens the live site full-screen, shared as a signed APK for now. Neither has features of its own: every deploy updates both. Without network, both show an offline page instead of the browser's error. How it is built: [mobile-app.md](mobile-app.md).
 
+### F16. Blog
+
+**Who:** the Admin writes; everyone reads. Settled with the user on 2026-10-25, from the blog item in the owner's project document; that document's own wording hasn't been checked against this yet.
+
+The head trainer's articles: advice on behavior, training, puppies and care, in her voice. She is the only author, so a post has no author field: the article names her from `app/lib/head-trainer.ts`.
+
+- **Writing.** The Admin writes in a rich-text editor (Lexical, pinned to an exact version): paragraphs, H2 and H3, bold and italic, bullet and numbered lists, quotes, links, images with alt text and a caption, and «سگ می‌گه», a tip the article draws as the mascot's chalk bubble. A paragraph that starts in English runs left to right inside a Persian post. Pasted text keeps only these; a pasted `h1` becomes H2, an unsafe link keeps its words and loses the link.
+- **Stored as data, drawn by the site.** The body is the editor's JSON cut down to those blocks (`app/lib/blog-body.ts`); the server stores only what passes that whitelist, writes each image's size from its upload, and never stores an image address. The public page draws the JSON with its own renderer, so no stored HTML ever reaches a page and an editor upgrade can't break a published post.
+- **Draft or published.** A draft may be unfinished. Publishing needs a summary of 40 to 300 characters (the card's text and the meta description), a cover image with its alt text, and some text. A published post stays published when edited, so an edit must still pass those. Unpublishing takes it off the site at once; publishing again keeps its first date. **Deleting** is for good, after a confirmation. Publishing, unpublishing and deleting are recorded in the audit trail.
+- **Address.** `/blog/<slug>`, Latin words and dashes. Changing the slug of a post that was ever published keeps the old one, which answers with a permanent redirect; no other post can take it.
+- **Sections.** A fixed list: رفتار، آموزش، نگهداری و سلامت، توله‌ها (`behavior`, `training`, `care`, `puppy`), a first proposal until the owner gives hers.
+- **English.** A post has English text only when all four are written: title, summary, cover alt text and body. Without them it doesn't exist on `/en` (not listed, its English address is a 404, no `hreflang` to it, and the language switch leads to `/en/blog`); half an English post can't be published.
+- **Search.** The blog page searches titles, summaries and text however Persian was typed (ی/ي, ک/ك, with or without spaces and نیم‌فاصله): «ادرار هیجانی» finds a post that says «ادرار هيجاني». Nothing found says so.
+- **The article** ends with the related course the Admin picked (only while it is on sale) or, without one, the free evaluation.
+- **For search engines:** each post has its canonical address, `hreflang` for the languages it exists in, Open Graph with the cover, and schema.org `BlogPosting` and breadcrumbs. The site serves `/sitemap.xml` (public pages, courses on sale, published posts with their languages), `/robots.txt` (keeps the Admin, account, sign-in, purchase pages and the API out) and `/blog/rss.xml` (the newest posts, in Persian).
+
+**Not in this version:** comments, more than one author, scheduled publishing, revision history, view counts, video in posts, pagination of the list.
+
+**Pages:** Blog · Article · Blog Posts (Admin) · Post Form (Admin)
+
 ## Pages
 
-Each page and the features on it: **34 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
+Each page and the features on it: **38 pages**. A list and its form or detail are one page wherever the form or detail fits in a **drawer** or **dialog**. Every drawer and dialog still has its own URL (e.g. `?evaluation=123`), so SMS links ([F9](#f9-notifications)) and the back button open it directly.
 
-**Public (12)**
+**Public (14)**
 
 | Page              | Features                                          |
 | ----------------- | ------------------------------------------------- |
@@ -398,6 +419,8 @@ Each page and the features on it: **34 pages**. A list and its form or detail ar
 | Rules             | F13 (a 404 until the owner approves the wording)  |
 | Dog Record        | F14 (private unless its owner says otherwise)     |
 | Certificate Check | F14 (valid, revoked or not found)                 |
+| Blog              | F16 (sections and search)                         |
+| Article           | F16                                               |
 
 **Customer (7)**
 
@@ -424,22 +447,24 @@ Each page and the features on it: **34 pages**. A list and its form or detail ar
 | Partner Dashboard: referral link, QR code, commissions | F7       |
 | Leads and Customers: lead → registered → bought        | F7       |
 
-**Admin (12)**
+**Admin (14)**
 
-| Page                                                                                | Features   |
-| ----------------------------------------------------------------------------------- | ---------- |
-| Admin Dashboard                                                                     | F11        |
-| Evaluations: requests with their photos and videos in a drawer; «ارزیابی شد» / «رد» | F3         |
-| Enrollments: active, completed and cancelled; «تمام شد» and «لغو» on each row       | F6         |
-| Payments: every payment and its items, with **paid, not enrolled** items flagged    | F5         |
-| Dogs                                                                                | F2         |
-| Dog Detail: edit, passed courses, mark evaluated, eligibility per course            | F2, F3, F4 |
-| Users (user form in a dialog)                                                       | F1         |
-| Courses                                                                             | F8         |
-| Course Form                                                                         | F8         |
-| Partners and Leads: partners, their customers, commissions with «پرداخت شد»         | F7         |
-| Platform Settings                                                                   | F10        |
-| SMS Outbox (showcase)                                                               | F9         |
+| Page                                                                                  | Features   |
+| ------------------------------------------------------------------------------------- | ---------- |
+| Admin Dashboard                                                                       | F11        |
+| Evaluations: requests with their photos and videos in a drawer; «ارزیابی شد» / «رد»   | F3         |
+| Enrollments: active, completed and cancelled; «تمام شد» and «لغو» on each row         | F6         |
+| Payments: every payment and its items, with **paid, not enrolled** items flagged      | F5         |
+| Dogs                                                                                  | F2         |
+| Dog Detail: edit, passed courses, mark evaluated, eligibility per course              | F2, F3, F4 |
+| Users (user form in a dialog)                                                         | F1         |
+| Courses                                                                               | F8         |
+| Course Form                                                                           | F8         |
+| Partners and Leads: partners, their customers, commissions with «پرداخت شد»           | F7         |
+| Platform Settings                                                                     | F10        |
+| SMS Outbox (showcase)                                                                 | F9         |
+| Blog Posts: drafts and published posts; «انتشار» / «لغو انتشار» and «حذف» on each row | F16        |
+| Post Form: the editor, cover, section, related course, English, preview               | F16        |
 
 ---
 

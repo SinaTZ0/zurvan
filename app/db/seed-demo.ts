@@ -5,6 +5,7 @@ import path from "node:path";
 import { eq, inArray, sql } from "drizzle-orm";
 
 import { db } from "~/db/client.server";
+import { seedBlogPosts } from "~/db/seed-blog";
 import type { Transaction } from "~/db/client.server";
 import {
   certificate,
@@ -492,6 +493,12 @@ async function seedDemo() {
   // After the transaction: it goes through the app's own services, which run their own database transactions.
   await seedStory({ accountIds, dogIds: new Map(seededDogs.map((seeded) => [seeded.name, seeded.id])) });
   console.log("Seeded the evaluations, purchases, enrollments and the partner's commissions.");
+
+  /*------ Blog ------*/
+  const adminId = accountIds.get("09120000001");
+  if (!adminId) throw new Error("seedDemo: the demo Admin is missing.");
+  await seedBlogPosts({ adminId });
+  console.log("Seeded the three demo blog posts.");
 }
 
 await seedDemo();
