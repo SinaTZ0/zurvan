@@ -197,12 +197,14 @@ function RailStop({
         <Marker number={number} isCurrent={isCurrent} />
       </div>
       {isCurrent ? (
-        <p aria-current="page" className="pt-1.5">
+        // A wrapping row with a real gap: an inline tag a margin away touched the title, since a final «ی» reaches
+        // past its own width.
+        <p aria-current="page" className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-1.5">
           <span className="font-extrabold text-primary">{entry.title}</span>
-          <span className="ms-2 rounded-full border border-primary/40 px-2 py-0.5 text-xs font-bold text-primary">
+          <span className="rounded-full border border-primary/40 px-2 py-0.5 text-xs font-bold text-primary">
             {m.course_detail_lane_this_course()}
           </span>
-          <span className="block text-sm text-muted-foreground">{facts}</span>
+          <span className="basis-full text-sm text-muted-foreground">{facts}</span>
         </p>
       ) : (
         <Link
