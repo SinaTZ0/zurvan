@@ -15,5 +15,6 @@
   "layout_account_footer_links_label": "Account links",
   "layout_account_footer_faq": "FAQ",
   "layout_account_footer_contact": "Contact",
-  "layout_account_footer_call": "Call"
+  "layout_account_footer_call": "Call",
+  "layout_account_footer_call_or": "or"
 }

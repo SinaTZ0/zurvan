@@ -1,11 +1,12 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
   "contact_meta_title": "Zurvann | Contact us",
-  "contact_meta_description": "Phone, Telegram, Instagram and YouTube for {trainer}. Working all over Tehran.",
+  "contact_meta_description": "Phone, Telegram, WhatsApp and Instagram for {trainer}. Working all over Tehran.",
   "contact_hero_title": "Talk to {trainer}",
   "contact_hero_lead": "Phone or message, whichever is easier for you.",
   "contact_hero_bubble": "Hello? It's Zurvann! This is the number.",
   "contact_hero_phone_label": "Phone number",
+  "contact_hero_phone_second_label": "Second number",
   "contact_hero_call": "Call",
   "contact_wall_title": "Send a message",
   "contact_wall_bubble": "Send a message and I'll deliver it myself!",

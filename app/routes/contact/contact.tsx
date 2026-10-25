@@ -22,8 +22,8 @@ export const Route = createFileRoute("/_public/contact")({
 });
 
 /*===== Page =====*/
-// Static: no loader. Only the details the owner printed on the business card (`app/lib/contact.ts`). A second phone
-// number and a WhatsApp link are still unconfirmed, so they are not here (and are never guessed).
+// Static: no loader. Only the details the owner gave (`app/lib/contact.ts`): the business card, and the second number
+// and WhatsApp in place of YouTube (2026-10-26).
 function ContactPage() {
   return (
     <>

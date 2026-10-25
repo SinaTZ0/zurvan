@@ -14,6 +14,17 @@ export const CENTER_PHONE = {
 };
 
 /**
+ * The owner's second number (sent 2026-10-26). Calls and the one-button asks keep using `CENTER_PHONE`; this one is
+ * listed beside it only where the center's details are listed in full (the contact page, the footers, the menu).
+ */
+export const CENTER_PHONE_SECOND = {
+  tel: "09023804420",
+  get display() {
+    return m.shared_contact_phone_second_display();
+  },
+};
+
+/**
  * The center's words: the wordmark («زروان», «Zurvann» on the English pages, the owner's choice of 2026-10-22), the
  * full name line under it (the owner asked for both, 2026-10-18) and the service area from the business card.
  */
@@ -48,16 +59,22 @@ export const CENTER_INSTAGRAM = {
   href: "https://www.instagram.com/k9training.zurvan/",
 } as const;
 
-export const CENTER_YOUTUBE = {
+/**
+ * On the main number (`CENTER_PHONE`), the owner's word of 2026-10-26; it took YouTube's place. The handle is the
+ * number as people read it.
+ */
+export const CENTER_WHATSAPP = {
   get label() {
-    return m.shared_contact_youtube();
+    return m.shared_contact_whatsapp();
   },
-  handle: "@k9trainingzurvan",
-  href: "https://www.youtube.com/@k9trainingzurvan",
+  get handle() {
+    return CENTER_PHONE.display;
+  },
+  // wa.me takes the number in international form, without the leading 0 or a +.
+  href: "https://wa.me/989214087867",
 } as const;
 
-// Still to come from the owner: the second phone number and a verified WhatsApp link (never guess either).
 // The «وب‌سایت: k9training.ir» link was dropped on 2026-10-18: the owner called it a redundant link to an old domain,
 // and the address didn't answer when checked.
 
-export const CENTER_LINKS = [CENTER_INSTAGRAM, CENTER_YOUTUBE, CENTER_TELEGRAM] as const;
+export const CENTER_LINKS = [CENTER_INSTAGRAM, CENTER_WHATSAPP, CENTER_TELEGRAM] as const;

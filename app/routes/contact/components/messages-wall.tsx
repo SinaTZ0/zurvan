@@ -1,14 +1,14 @@
 import { MascotCut } from "~/components/mascot-cut";
 import { ChalkBubble } from "~/components/chalk-bubble";
 import { BRICK } from "~/lib/brick";
-import { CENTER_INSTAGRAM, CENTER_TELEGRAM, CENTER_YOUTUBE } from "~/lib/contact";
+import { CENTER_INSTAGRAM, CENTER_TELEGRAM, CENTER_WHATSAPP } from "~/lib/contact";
 import { m } from "~/paraglide/messages";
 import { COLUMN } from "~/routes/contact/column";
 import { ProfileSign } from "~/routes/contact/components/profile-sign";
 
 /*===== Profiles =====*/
-// In the order the owner's card lists the messengers first: the chat, then the two channels.
-const PROFILES = [CENTER_TELEGRAM, CENTER_INSTAGRAM, CENTER_YOUTUBE] as const;
+// The two messengers first, then the channel.
+const PROFILES = [CENTER_TELEGRAM, CENTER_WHATSAPP, CENTER_INSTAGRAM] as const;
 
 /*===== Messages Wall =====*/
 /**

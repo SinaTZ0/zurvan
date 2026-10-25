@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 
-import { CENTER_INSTAGRAM, CENTER_TELEGRAM, CENTER_YOUTUBE } from "~/lib/contact";
+import { CENTER_INSTAGRAM, CENTER_TELEGRAM, CENTER_WHATSAPP } from "~/lib/contact";
 
 /*===== Social Icons =====*/
 // Lucide dropped its brand icons, so these are drawn here in its manner (24-unit box, round stroke in currentColor),
@@ -32,11 +32,12 @@ function InstagramIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function YoutubeIcon(props: SVGProps<SVGSVGElement>) {
+/** WhatsApp's speech bubble with its tail at the bottom left, and the handset inside it. */
+function WhatsappIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Glyph {...props}>
-      <path d="M2.5 17a24 24 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.6 49.6 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24 24 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.6 49.6 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
-      <path d="m10 15 5-3-5-3z" />
+      <path d="M3.5 20.5 4.8 16A8.6 8.6 0 1 1 8 19.2z" />
+      <path d="M9 8.6c0 3.3 3 6.4 6.4 6.4l1.1-1.4-1.8-1-1 .9a4.4 4.4 0 0 1-2.2-2.2l.9-1-1-1.8z" strokeWidth={1.4} />
     </Glyph>
   );
 }
@@ -54,6 +55,6 @@ function TelegramIcon(props: SVGProps<SVGSVGElement>) {
 /** The icon for each of the center's profiles in `CENTER_LINKS`, looked up by its address. */
 export const SOCIAL_ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => React.JSX.Element> = {
   [CENTER_INSTAGRAM.href]: InstagramIcon,
-  [CENTER_YOUTUBE.href]: YoutubeIcon,
+  [CENTER_WHATSAPP.href]: WhatsappIcon,
   [CENTER_TELEGRAM.href]: TelegramIcon,
 };

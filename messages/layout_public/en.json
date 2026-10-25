@@ -26,6 +26,7 @@
   "layout_public_more_my_account": "My account",
   "layout_public_more_my_panel": "My panel",
   "layout_public_more_call": "Call",
+  "layout_public_more_call_second": "or",
   "layout_public_cart": "Cart",
   "layout_public_cart_count": "Items in cart: {count}",
   "layout_public_search_open": "Search courses",

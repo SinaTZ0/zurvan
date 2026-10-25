@@ -1,4 +1,5 @@
 import { toPersianDigits } from "~/lib/digits";
+import { isoToJalali, todayIso } from "~/lib/jalali";
 import { m } from "~/paraglide/messages";
 import { getLocale } from "~/paraglide/runtime";
 
@@ -27,12 +28,18 @@ export const HEAD_TRAINER = {
   get role() {
     return m.shared_trainer_role();
   },
-  years: 13,
-  /** The year (Solar Hijri) the trainer started working with dogs; the new home page says «از سال ۱۳۹۲» (owner, 2026-10-20). */
-  since: 1392,
-  /** The same year in the Gregorian calendar (1392 began in March 2013), for the English pages. */
-  sinceGregorian: 2013,
-  /** «۱۳۹۲» on the Persian pages, «2013» on the English ones: the year in the page's own calendar and digits. */
+  /**
+   * Years since `since`, counted from today's Jalali year in Tehran, so it goes up by one at Nowruz without an edit.
+   * Tehran time (not the visitor's zone) keeps the server render and the browser on the same number.
+   */
+  get years() {
+    return isoToJalali(todayIso()).year - this.since;
+  },
+  /** The year (Solar Hijri) the trainer started working with dogs; the new home page says «از سال ۱۳۹۳» (owner, 2026-10-20; was ۱۳۹۲ until 2026-10-26). */
+  since: 1393,
+  /** The same year in the Gregorian calendar (1393 began in March 2014), for the English pages. */
+  sinceGregorian: 2014,
+  /** «۱۳۹۳» on the Persian pages, «2014» on the English ones: the year in the page's own calendar and digits. */
   get sinceYear() {
     return getLocale() === "fa" ? toPersianDigits(String(this.since)) : String(this.sinceGregorian);
   },

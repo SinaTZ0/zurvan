@@ -5,7 +5,7 @@ import { LanguageSwitch } from "~/components/language-switch";
 import { Link } from "~/components/link";
 import { MascotCut } from "~/components/mascot-cut";
 import { PROFILE_LINK } from "~/lib/account-links";
-import { CENTER, CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_PHONE, CENTER_PHONE_SECOND } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { m } from "~/paraglide/messages";
 
@@ -98,6 +98,15 @@ export function AccountFooter() {
               {m.layout_account_footer_call()}
               <span dir="ltr" className="font-bold text-primary tabular-nums hover:underline">
                 {CENTER_PHONE.display}
+              </span>
+            </a>
+            <a
+              href={`tel:${CENTER_PHONE_SECOND.tel}`}
+              className={`flex items-center gap-2 rounded py-1 text-foreground/85 ${FOCUS}`}
+            >
+              {m.layout_account_footer_call_or()}
+              <span dir="ltr" className="font-bold text-primary tabular-nums hover:underline">
+                {CENTER_PHONE_SECOND.display}
               </span>
             </a>
           </div>

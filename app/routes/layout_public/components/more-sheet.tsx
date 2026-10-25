@@ -9,7 +9,7 @@ import { SOCIAL_ICONS } from "~/components/social-icons";
 import { Sheet, SheetClose, SheetContent, SheetTitle } from "~/components/ui/sheet";
 import { useSignOut } from "~/hooks/use-sign-out";
 import { PROFILE_PATH } from "~/lib/account-links";
-import { CENTER, CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_LINKS, CENTER_PHONE, CENTER_PHONE_SECOND } from "~/lib/contact";
 import { isPersianOnlyPath } from "~/lib/i18n";
 import { LanguageSwitch } from "~/components/language-switch";
 import { MORE_LINKS } from "~/routes/layout_public/nav-items";
@@ -158,6 +158,16 @@ export function MoreSheet({
             {m.layout_public_more_call()}{" "}
             <span dir="ltr" className="tabular-nums">
               {CENTER_PHONE.display}
+            </span>
+          </a>
+          {/* The second number as a plain line under the pill, so the pill stays the one call to make. */}
+          <a
+            href={`tel:${CENTER_PHONE_SECOND.tel}`}
+            className={cn("mx-auto mt-2 block w-fit rounded py-1 text-sm text-foreground/75 hover:text-foreground", FOCUS)}
+          >
+            {m.layout_public_more_call_second()}{" "}
+            <span dir="ltr" className="font-bold tabular-nums">
+              {CENTER_PHONE_SECOND.display}
             </span>
           </a>
           <ul className="mt-4 flex justify-center gap-6 text-sm text-foreground/75">

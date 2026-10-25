@@ -18,7 +18,7 @@ English, never more.
 | فندق (the running dog chasing his ball) | (not named on the page)              | The internal name of the runner; the page never says it.                                                                                        |
 | فدراسیون جهانی سگ                       | World Dog Federation                 | «مدرک بین‌المللی از فدراسیون جهانی سگ» → "International certificate from the World Dog Federation".                                             |
 | تهران / تمام نقاط تهران                 | Tehran / All of Tehran               | "Working all over Tehran" in the footer, "wherever you are in Tehran" in copy.                                                                  |
-| تلگرام، اینستاگرام، یوتیوب              | Telegram, Instagram, YouTube         |                                                                                                                                                 |
+| تلگرام، اینستاگرام، واتساپ              | Telegram, Instagram, WhatsApp        |                                                                                                                                                 |
 
 ## Voice
 
@@ -229,7 +229,7 @@ Added in Phase 4a. The labels are already in `messages/shared` (`shared_…_stat
 
 - **Digits:** Latin (`formatNumber`, `formatDigits` in `app/lib/locale-format.ts`). Phone: "0921 408 7867".
 - **Dates:** Gregorian, day first: "3 October 2024", "October 2024" (`formatDate`, `formatTimestamp`,
-  `formatMonthYear`). Years in a sentence are Gregorian ("since 2013", from `HEAD_TRAINER.sinceYear`).
+  `formatMonthYear`). Years in a sentence are Gregorian ("since 2014", from `HEAD_TRAINER.sinceYear`).
 - **Money:** amount first, then **Toman** (never "Tomans", "IRT" or "Rials"): "1,200,000 Toman", short forms
   "1.2 million Toman", "800 thousand Toman" (`formatToman`, `formatTomanShort` in `app/lib/course-format.ts`).
 - **Ages:** "4 months old", "From 6 months old", "6 to 12 months old", "Any age" (`shared_course_age_*`,

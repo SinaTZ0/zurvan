@@ -3,7 +3,7 @@ import { ArrowUpLeft, MapPin, Phone, UserRound } from "lucide-react";
 import { linkOptions } from "@tanstack/react-router";
 
 import { Link } from "~/components/link";
-import { CENTER, CENTER_LINKS, CENTER_PHONE } from "~/lib/contact";
+import { CENTER, CENTER_LINKS, CENTER_PHONE, CENTER_PHONE_SECOND } from "~/lib/contact";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { SITE_RULES } from "~/lib/site-rules";
 import { BrandEmblem } from "~/components/brand-emblem";
@@ -113,16 +113,18 @@ export function SiteFooter() {
           <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <h2 className="font-display text-base font-bold text-foreground">{m.layout_public_footer_reach()}</h2>
             <ul className="mt-4 flex flex-col gap-3.5">
-              <li className="flex items-center gap-2.5">
-                <Phone aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
-                <a
-                  href={`tel:${CENTER_PHONE.tel}`}
-                  dir="ltr"
-                  className={`rounded font-bold text-foreground tabular-nums hover:underline ${FOOTER_FOCUS}`}
-                >
-                  {CENTER_PHONE.display}
-                </a>
-              </li>
+              {[CENTER_PHONE, CENTER_PHONE_SECOND].map((phone) => (
+                <li key={phone.tel} className="flex items-center gap-2.5">
+                  <Phone aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
+                  <a
+                    href={`tel:${phone.tel}`}
+                    dir="ltr"
+                    className={`rounded font-bold text-foreground tabular-nums hover:underline ${FOOTER_FOCUS}`}
+                  >
+                    {phone.display}
+                  </a>
+                </li>
+              ))}
               <li className="flex items-center gap-2.5">
                 <MapPin aria-hidden className="size-4 shrink-0 text-primary" strokeWidth={1.8} />
                 {m.layout_public_footer_area({ area: CENTER.serviceArea })}

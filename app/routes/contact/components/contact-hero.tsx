@@ -4,7 +4,7 @@ import { ChalkBubble } from "~/components/chalk-bubble";
 import { MascotCut } from "~/components/mascot-cut";
 import { NightSky } from "~/components/night-sky";
 import { buttonVariants } from "~/components/ui/button";
-import { CENTER_PHONE } from "~/lib/contact";
+import { CENTER_PHONE, CENTER_PHONE_SECOND } from "~/lib/contact";
 import { DISPLAY_HEADING } from "~/lib/display-heading";
 import { HEAD_TRAINER } from "~/lib/head-trainer";
 import { m } from "~/paraglide/messages";
@@ -72,6 +72,18 @@ export function ContactHero() {
                 <PhoneIcon aria-hidden strokeWidth={2} />
                 {m.contact_hero_call()}
               </a>
+
+              {/*------ Second Number ------*/}
+              {/* Quieter than the first: the hero stays the one number, this is for when it's busy. */}
+              <div className="mt-6 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-border pt-5">
+                <span className="text-sm font-bold text-muted-foreground">{m.contact_hero_phone_second_label()}</span>
+                <a
+                  href={`tel:${CENTER_PHONE_SECOND.tel}`}
+                  className="rounded font-display text-2xl font-black tracking-wide text-foreground tabular-nums outline-none hover:text-primary focus-visible:ring-3 focus-visible:ring-ring/60"
+                >
+                  <bdi dir="ltr">{CENTER_PHONE_SECOND.display}</bdi>
+                </a>
+              </div>
             </div>
           </div>
         </div>
