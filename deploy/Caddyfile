@@ -18,11 +18,13 @@
 
 	# The unauthenticated S3 service has no public ports. Only generated image
 	# variants are public; videos go through the app's authenticated routes.
+	# The kinds are MEDIA_KINDS (app/orpc/media/constants.ts); a test fails when
+	# one is missing here.
 	@media path /media /media/*
 	handle @media {
 		@image {
 			method GET HEAD
-			path_regexp image ^/media/((avatar|dog|course|certificate|evaluation)/[0-9a-f-]{36}/[a-z]+\.webp)$
+			path_regexp image ^/media/((avatar|dog|course|certificate|evaluation|record|post|figure)/[0-9a-f-]{36}/[a-z]+\.webp)$
 		}
 		handle @image {
 			# Drop all query parameters so callers cannot select S3 API operations.

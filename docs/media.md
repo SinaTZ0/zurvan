@@ -44,7 +44,7 @@ Each kind of image has a fixed set of variants. Variants are generated once at u
 | `figure`      | `inline` | inside | 1440 × 1440 | An image inside a post's text                  |
 |               | `full`   | inside | 2000 × 2000 | Opening it                                     |
 
-A kind is lowercase letters only: the nginx route below matches `[a-z]+`.
+A kind is lowercase letters only. **Production serves only the kinds its media route names** (`path_regexp image` in `deploy/Caddyfile`, which replaced the nginx rule below): a new kind goes there too, or its images show only their placeholder on the live site. `app/orpc/media/caddy-route.test.ts` fails when the two lists differ.
 
 Sizes are about twice the largest CSS size each one is shown at, so they look sharp on high-density screens.
 

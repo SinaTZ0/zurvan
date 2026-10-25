@@ -4,7 +4,20 @@ import type { UserRole } from "~/lib/user-constants";
 // Browser-safe values shared by the upload API, the image component and the forms. See docs/media.md.
 
 /*===== Kinds =====*/
-export const MEDIA_KINDS = ["avatar", "dog", "course", "certificate", "evaluation", "record", "post", "figure"] as const;
+/**
+ * Every kind of uploaded image. A new kind must also be added to the production media route in `deploy/Caddyfile`, or
+ * its images don't load on the live site (`caddy-route.test.ts` checks the two lists match).
+ */
+export const MEDIA_KINDS = [
+  "avatar",
+  "dog",
+  "course",
+  "certificate",
+  "evaluation",
+  "record",
+  "post",
+  "figure",
+] as const;
 
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
@@ -44,7 +57,7 @@ export const MEDIA_VARIANTS = {
     full: { mode: "inside", width: 1600, height: 1600 },
   },
   // A photo in a dog's file: its vaccination card, a medical document or its tattoo (F2). Papers need the larger full
-  // size to stay readable. Kinds are lowercase letters only: nginx's media route matches `[a-z]+` (docs/media.md).
+  // size to stay readable.
   record: {
     thumb: { mode: "cover", width: 320, height: 240 },
     full: { mode: "inside", width: 2000, height: 2000 },
