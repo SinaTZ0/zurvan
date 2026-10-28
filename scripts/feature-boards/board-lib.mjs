@@ -225,7 +225,18 @@ export async function createBoard({ name }) {
       created: now,
       lastRetrieved: now,
     };
-    add(base("image", { x, y, width: SHOT_WIDTH, height: shot.height, fileId, status: "saved", scale: [1, 1], crop: null }));
+    add(
+      base("image", {
+        x,
+        y,
+        width: SHOT_WIDTH,
+        height: shot.height,
+        fileId,
+        status: "saved",
+        scale: [1, 1],
+        crop: null,
+      }),
+    );
     // A thin frame, so the dark screen's edge reads on the white board.
     rect({ x: x - 4, y: y - 4, w: SHOT_WIDTH + 8, h: shot.height + 8, color: MUTED, width: 1 });
   }
@@ -256,13 +267,39 @@ export async function createBoard({ name }) {
     const groupIds = [`verify-${seq + 1}`];
     rect({ x: right - tickW, y, w: tickW, h: height, color: INK, width: 2, fill: "#fff9db", groupIds });
     text({ right: right - 24, y: y + height / 2 - 20, value: "تأیید شد", size: 32, width: 200, groupIds });
-    rect({ x: right - tickW + 24, y: y + height / 2 - 22, w: 44, h: 44, color: INK, width: 3, fill: "#ffffff", groupIds });
+    rect({
+      x: right - tickW + 24,
+      y: y + height / 2 - 22,
+      w: 44,
+      h: 44,
+      color: INK,
+      width: 3,
+      fill: "#ffffff",
+      groupIds,
+    });
 
     /*------ The notes card ------*/
     const notesRight = right - tickW - 30;
     const notesGroup = [`notes-${seq + 1}`];
-    rect({ x: notesRight - notesWidth, y, w: notesWidth, h: height, color: MUTED, width: 1, style: "dashed", groupIds: notesGroup });
-    text({ right: notesRight - 18, y: y + 14, value: "یادداشت:", size: 24, color: SUBTLE, width: 200, groupIds: notesGroup });
+    rect({
+      x: notesRight - notesWidth,
+      y,
+      w: notesWidth,
+      h: height,
+      color: MUTED,
+      width: 1,
+      style: "dashed",
+      groupIds: notesGroup,
+    });
+    text({
+      right: notesRight - 18,
+      y: y + 14,
+      value: "یادداشت:",
+      size: 24,
+      color: SUBTLE,
+      width: 200,
+      groupIds: notesGroup,
+    });
     return notesRight - notesWidth;
   }
 
@@ -271,8 +308,9 @@ export async function createBoard({ name }) {
    * The board's title, its one-line summary and the colour key, at the top right; the sign-off sits left of the title.
    *
    * @param key Labels in their colours, right to left, e.g. `[{ value: "سبز: مشتری قدیمی", color: RETURNING }]`.
+   * @param signOff Draws the tick box and the notes card; the index has its own boxes instead.
    */
-  function header({ title, summary, key = [] }) {
+  function header({ title, summary, key = [], signOff = true }) {
     const titleBox = text({ right: 0, y: -330, value: title, size: 52, width: 1600 });
     text({ right: 0, y: -250, width: 1600, size: 26, color: SUBTLE, value: summary });
     let keyRight = 0;
@@ -282,7 +320,7 @@ export async function createBoard({ name }) {
     }
     // Clear of the title and of the summary line, whichever is wider.
     const summaryWidth = Math.min(1600, lineWidth(summary, 26));
-    verification({ right: -Math.max(titleBox.width, summaryWidth) - 90, y: -335 });
+    if (signOff) verification({ right: -Math.max(titleBox.width, summaryWidth) - 90, y: -335 });
   }
 
   /*===== Step =====*/
@@ -336,7 +374,15 @@ export async function createBoard({ name }) {
 
   /** The big "next page" arrow, with what the person does written over it. */
   function nextArrow({ from, to, y, label, color = INK }) {
-    arrow({ points: [[from, y], [to, y]], color, width: 8, head: "triangle" });
+    arrow({
+      points: [
+        [from, y],
+        [to, y],
+      ],
+      color,
+      width: 8,
+      head: "triangle",
+    });
     text({ right: from - 10, y: y - 64, value: label, size: 26, color, width: from - to - 20 });
   }
 
