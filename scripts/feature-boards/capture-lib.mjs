@@ -2,13 +2,14 @@
 // the controls a board points at, signing in with the demo code, and writing `shots.json`.
 // The base URL defaults to the live site, which runs in demo mode (every SMS code is 12345); pass a local copy's URL
 // as the script's first argument to capture that instead.
-import { writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync } from "node:fs";
 import { chromium } from "playwright";
 
 export const LIVE_SITE = "https://k9training.zurvann.ir";
 export const DEMO_CODE = "12345";
 export const ADMIN_PHONE = "09120000001";
 export const PHONE = { width: 390, height: 844 };
+const SESSIONS = ".tmp-claude/feature-boards/.sessions";
 
 /*===== Page Helpers =====*/
 /** Page-space box of the first match (so it lines up with a full-page shot). */
@@ -27,6 +28,33 @@ export async function signInWithCode(page, phone) {
   await page.locator('input[autocomplete="one-time-code"], [data-input-otp]').first().waitFor();
 }
 
+/**
+ * Hides the bars fixed to the bottom of the screen (the tab bar) with an inline style, keeping them in `window` to show
+ * again; returns how many. (Marking them with an attribute and a style tag hangs the dog form's page.)
+ */
+async function hideFixedBars(page) {
+  return page.evaluate(() => {
+    window.boardHidden = [];
+    for (const el of document.querySelectorAll("body *")) {
+      if (getComputedStyle(el).position !== "fixed") continue;
+      const rect = el.getBoundingClientRect();
+      if (rect.height > 0 && rect.top > innerHeight / 2 && rect.bottom >= innerHeight - 40) {
+        el.style.visibility = "hidden";
+        window.boardHidden.push(el);
+      }
+    }
+    return window.boardHidden.length;
+  });
+}
+
+/** Shows the bars `hideFixedBars` hid. */
+async function showFixedBars(page) {
+  await page.evaluate(() => {
+    for (const el of window.boardHidden ?? []) el.style.visibility = "";
+    window.boardHidden = [];
+  });
+}
+
 /*===== Capture =====*/
 /**
  * Starts a capture for one board.
@@ -39,14 +67,16 @@ export async function createCapture({ board, base = process.argv[2] ?? LIVE_SITE
   const BASE = base.replace(/\/$/, "");
   const OUT = `.tmp-claude/feature-boards/${board}/shots`;
   mkdirSync(OUT, { recursive: true });
+  mkdirSync(SESSIONS, { recursive: true });
 
   const browser = await chromium.launch();
   const errors = [];
   const shots = {};
 
   /** A fresh phone-sized context (its own cookies), in Persian with reduced motion. */
-  async function newPage({ locale = "fa-IR" } = {}) {
+  async function newPage({ locale = "fa-IR", storageState } = {}) {
     const context = await browser.newContext({
+      storageState,
       viewport: PHONE,
       deviceScaleFactor: 2,
       reducedMotion: "reduce",
@@ -77,14 +107,19 @@ export async function createCapture({ board, base = process.argv[2] ?? LIVE_SITE
     }
     const fullHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const height = Math.min(fullHeight - top, maxHeight);
+    // A shot taller than the screen would strand the fixed tab bar mid-page: it's hidden for the shot.
+    const hidden = height > PHONE.height ? await hideFixedBars(page) : 0;
     await page.screenshot({
       path: `${OUT}/${name}.png`,
       fullPage: true,
       clip: { x: 0, y: top, width: PHONE.width, height },
       animations: "disabled",
     });
+    if (hidden) await showFixedBars(page);
     shots[name] = { width: PHONE.width, height, fullHeight, url: page.url().replace(BASE, ""), boxes };
-    const lost = Object.entries(boxes).filter(([, b]) => !b).map(([k]) => k);
+    const lost = Object.entries(boxes)
+      .filter(([, b]) => !b)
+      .map(([k]) => k);
     if (lost.length) console.warn(`${name}: not found: ${lost.join(", ")}`);
   }
 
@@ -95,6 +130,18 @@ export async function createCapture({ board, base = process.argv[2] ?? LIVE_SITE
    * @returns The signed-in page and its context.
    */
   async function signIn({ phone, name, locale } = {}) {
+    /*------ A session kept from an earlier run ------*/
+    // Every code sent counts against the site's hourly limits per number and per address, so a number signed in once
+    // keeps its cookies in the scratch folder and later runs reuse them while they're still good.
+    const saved = `${SESSIONS}/${new URL(BASE).host}-${phone}.json`;
+    if (existsSync(saved)) {
+      const reused = await newPage({ locale, storageState: saved });
+      await go(reused.page, "/account");
+      if (!/\/auth/.test(new URL(reused.page.url()).pathname)) return reused;
+      await reused.context.close();
+    }
+
+    /*------ Signing in with the code ------*/
     const { context, page } = await newPage({ locale });
     await go(page, locale === "en-US" ? "/en/auth" : "/auth");
     await page.locator("#sign-in-phone").waitFor();
@@ -112,6 +159,7 @@ export async function createCapture({ board, base = process.argv[2] ?? LIVE_SITE
       await page.waitForURL((url) => !/\/auth/.test(url.pathname));
     }
     await page.waitForLoadState("networkidle");
+    await context.storageState({ path: saved });
     return { context, page };
   }
 
