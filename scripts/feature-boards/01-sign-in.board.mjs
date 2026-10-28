@@ -114,7 +114,12 @@ const s7 = await step({
   color: ADMIN,
   titleColor: ADMIN,
   // The whole row, from its name line.
-  notes: [{ area: { x: 16, y: shots["07-admin-users"].boxes.row.y - 12, w: 358, h: 78 }, text: "مشتری تازه همون لحظه اینجاست" }],
+  notes: [
+    {
+      area: { x: 16, y: shots["07-admin-users"].boxes.row.y - 12, w: 358, h: 78 },
+      text: "مشتری تازه همون لحظه اینجاست",
+    },
+  ],
 });
 turnArrow({ from: s5, to: s7, label: "پنل مدیریت", color: ADMIN });
 
